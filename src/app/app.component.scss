@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.shadow-glow-primary {
+  box-shadow: 0 4px 20px rgba(30, 58, 138, 0.25);
+}

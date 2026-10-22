@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Dynamic Brand Palette (Light Mode) — Spider Math Logo Palette */
+  --color-brand-primary: #1e3a8a;     /* Deep Spider Cobalt */
+  --color-brand-secondary: #0284c7;   /* Cyan / Azure Electric Blue */
+  --color-brand-accent: #e11d48;      /* Spider Crimson Accent */
+  
+  --surface-bg: #f8fafc;              /* Slate 50 */
+  --surface-card: #ffffff;
+  --surface-border: #e2e8f0;
+  
+  --text-primary: #0f172a;            /* Slate 900 */
+  --text-secondary: #475569;          /* Slate 600 */
+  --text-muted: #94a3b8;              /* Slate 400 */
+
+  --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-english: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+html.dark {
+  /* Dynamic Brand Palette (Dark Mode) */
+  --color-brand-primary: #3b82f6;     /* Electric Cobalt Glow */
+  --color-brand-secondary: #38bdf8;   /* Vivid Cyan */
+  --color-brand-accent: #f43f5e;      /* Spider Neon Rose / Crimson */
+  
+  --surface-bg: #0b0f19;              /* Deep Space Dark */
+  --surface-card: #111827;            /* Gray 900 */
+  --surface-border: #1f2937;          /* Gray 800 */
+  
+  --text-primary: #f8fafc;            /* Slate 50 */
+  --text-secondary: #cbd5e1;          /* Slate 300 */
+  --text-muted: #64748b;              /* Slate 500 */
+}
+
+/* Global resets & typography */
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-english);
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html[dir="rtl"] {
+  font-family: var(--font-arabic);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Spider Math Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .glass-panel {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(31, 41, 55, 0.8);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-secondary);
+}

@@ -1,0 +1,63 @@
+{
+  "BRAND": {
+    "NAME": "Spider Math",
+    "TAGLINE": "Excellence in Mathematics with Eng. Heba Abdel-Wahab",
+    "SUBTITLE": "From Fundamentals to World-Class Mathematical Mastery",
+    "TEACHER": "Eng. Heba Abdel-Wahab"
+  },
+  "NAV": {
+    "HOME": "Home",
+    "CURRICULUM": "Curriculums",
+    "PLACEMENT_TEST": "Placement Test",
+    "PRICING": "Packages",
+    "LOGIN": "Sign In",
+    "GET_STARTED": "Get Started",
+    "DASHBOARD": "Dashboard",
+    "LOGOUT": "Sign Out"
+  },
+  "CURRICULUM": {
+    "CHOOSE_TITLE": "Choose Your Curriculum",
+    "CHOOSE_SUBTITLE": "Comprehensive mathematics curricula tailored for highest academic scores",
+    "EGYPTIAN": {
+      "TITLE": "Egyptian Curriculum",
+      "TAGLINE": "From Fundamentals to Thanaweya Amma Excellence",
+      "DESCRIPTION": "Complete coverage of Prep and Secondary mathematics with continuous drills and exam simulations."
+    },
+    "GULF": {
+      "TITLE": "Gulf Curriculum",
+      "TAGLINE": "Clear Explanations & Continuous Mastery",
+      "DESCRIPTION": "Aligned with UAE, Saudi Arabia, and Gulf ministerial standards for Grades 7 to 12."
+    },
+    "INTERNATIONAL": {
+      "TITLE": "International Curricula (IGCSE / British)",
+      "TAGLINE": "Global Standard Mathematics",
+      "DESCRIPTION": "Cambridge & Pearson Edexcel IGCSE, OL, AS & AL Mathematics with comprehensive past-paper workouts."
+    },
+    "AMERICAN": {
+      "TITLE": "American Diploma (SAT • EST • ACT)",
+      "TAGLINE": "SAT • EST • ACT College Board Readiness",
+      "DESCRIPTION": "High-scoring strategies, mental math shortcuts, and Desmos calculator mastery."
+    },
+    "TERMS": {
+      "TERM_1": "First Term",
+      "TERM_2": "Second Term"
+    }
+  },
+  "DEVICE_LOCK": {
+    "TITLE": "Device Pending Approval",
+    "DESCRIPTION": "This new device has been linked to your account and is waiting for teacher authorization.",
+    "STATUS": "Pending Teacher Approval",
+    "NOTICE": "Eng. Heba Abdel-Wahab will review and approve your device shortly. Your existing devices remain fully active.",
+    "REFRESH": "Check Approval Status"
+  },
+  "COMMON": {
+    "LOADING": "Loading...",
+    "CONTINUE": "Continue",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "SEARCH": "Search",
+    "LIGHT_MODE": "Light Mode",
+    "DARK_MODE": "Dark Mode",
+    "LANGUAGE": "Language"
+  }
+}
