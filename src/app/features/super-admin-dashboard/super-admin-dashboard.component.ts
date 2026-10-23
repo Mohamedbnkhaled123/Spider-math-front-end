@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
@@ -52,35 +53,16 @@ export interface StudentAdminSummary {
   styleUrl: './super-admin-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SuperAdminDashboardComponent {
+export class SuperAdminDashboardComponent implements OnInit {
+  private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
-  readonly activeTab = signal<'devices' | 'grading' | 'students'>('devices');
+  readonly activeTab = signal<'devices' | 'grading' | 'students'>('students');
+  readonly isLoading = signal<boolean>(false);
 
-  // 1. Pending Device Approvals (Additive Security Lock HTTP 423)
-  readonly pendingDevices = signal<PendingDeviceRequest[]>([
-    {
-      id: 'req-01',
-      studentName: 'عمر خالد محمود',
-      haCode: 'HA3109',
-      curriculum: 'المنهج المصري — الثانوية العامة',
-      deviceInfo: 'Windows 11 PC • Chrome 122.0 (الجهاز الثاني)',
-      ipAddress: '156.204.18.92 (القاهرة)',
-      requestedAt: 'منذ 15 دقيقة',
-      status: 'PENDING'
-    },
-    {
-      id: 'req-02',
-      studentName: 'مريم طارق سعيد',
-      haCode: 'HA8201',
-      curriculum: 'المنهج الكويتي — الصف الحادي عشر',
-      deviceInfo: 'iPad Pro iPadOS 17.4 • Safari',
-      ipAddress: '188.70.42.110 (الكويت)',
-      requestedAt: 'منذ ساعة',
-      status: 'PENDING'
-    }
-  ]);
+  // 1. Pending Device Approvals (from Atlas)
+  readonly pendingDevices = signal<PendingDeviceRequest[]>([]);
 
   // 2. Pending Essay Submissions Grading
   readonly pendingGrading = signal<PendingEssayGrading[]>([
@@ -100,42 +82,59 @@ export class SuperAdminDashboardComponent {
     }
   ]);
 
-  // 3. Students Management & Subscriptions
-  readonly studentsList = signal<StudentAdminSummary[]>([
-    {
-      id: 'std-01',
-      name: 'أحمد محمد علي',
-      haCode: 'HA4920',
-      curriculum: 'المصري',
-      gradeLevel: 'SEC_3',
-      hasActiveSubscription: true,
-      totalXp: 1450,
-      approvedDevices: 1,
-      isLocked: false
-    },
-    {
-      id: 'std-02',
-      name: 'سارة محمد علي',
-      haCode: 'HA1804',
-      curriculum: 'IGCSE',
-      gradeLevel: 'Year 10',
-      hasActiveSubscription: true,
-      totalXp: 980,
-      approvedDevices: 1,
-      isLocked: false
-    },
-    {
-      id: 'std-03',
-      name: 'سارة أحمد محمود',
-      haCode: 'HA5521',
-      curriculum: 'المصري',
-      gradeLevel: 'SEC_2',
-      hasActiveSubscription: false,
-      totalXp: 0,
-      approvedDevices: 1,
-      isLocked: false
-    }
-  ]);
+  // 3. Registered Users & Students (Live from MongoDB Atlas)
+  readonly studentsList = signal<StudentAdminSummary[]>([]);
+
+  ngOnInit(): void {
+    this.fetchRealAtlasData();
+  }
+
+  fetchRealAtlasData(): void {
+    this.isLoading.set(true);
+
+    // 1. Fetch real registered users directly from MongoDB Atlas
+    this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/users/students').subscribe({
+      next: (res) => {
+        if (res?.data && res.data.length > 0) {
+          const mapped: StudentAdminSummary[] = res.data.map((u) => ({
+            id: u._id,
+            name: u.full_name || 'طالب مسجل',
+            haCode: u.student_code || (u.role === 'SUPER_ADMIN' ? 'ADMIN' : '—'),
+            curriculum: u.curriculum || (u.role === 'SUPER_ADMIN' ? 'إشراف أكاديمي' : 'المصري'),
+            gradeLevel: u.grade_level || (u.role === 'SUPER_ADMIN' ? 'Super Admin' : 'SEC_3'),
+            hasActiveSubscription: !!u.has_active_subscription,
+            totalXp: u.total_xp || 0,
+            approvedDevices: Array.isArray(u.approved_devices) ? u.approved_devices.length : 1,
+            isLocked: u.account_lock_status === 'LOCKED'
+          }));
+          this.studentsList.set(mapped);
+        }
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+
+    // 2. Fetch pending device requests from Atlas
+    this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/device-requests').subscribe({
+      next: (res) => {
+        if (res?.data && res.data.length > 0) {
+          const mappedDevices: PendingDeviceRequest[] = res.data.map((d) => ({
+            id: d._id,
+            studentName: d.full_name,
+            haCode: d.student_code,
+            curriculum: d.curriculum || 'المنهج المصري',
+            deviceInfo: d.pending_device_req?.device_type || 'Windows PC',
+            ipAddress: d.pending_device_req?.ip_address || '127.0.0.1',
+            requestedAt: new Date(d.pending_device_req?.requested_at || d.createdAt).toLocaleTimeString('ar-EG'),
+            status: d.pending_device_req?.status || 'PENDING'
+          }));
+          this.pendingDevices.set(mappedDevices);
+        }
+      }
+    });
+  }
 
   setTab(tab: 'devices' | 'grading' | 'students'): void {
     this.activeTab.set(tab);
