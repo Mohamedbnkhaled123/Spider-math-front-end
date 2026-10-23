@@ -1,0 +1,121 @@
+@if (isOpen() && config().isSupported) {
+  <div
+    class="graph-modal-wrapper fixed z-layer-modal"
+    [class.maximized]="isMaximized()"
+    [class.collapsed]="isCollapsed()"
+    [class.dragging]="isDragging()"
+    [style.left.px]="isMaximized() ? 0 : position().x"
+    [style.top.px]="isMaximized() ? 0 : position().y"
+  >
+    <!-- Modal Window Container -->
+    <div class="calculator-window rounded-2xl border border-surface-border glass-panel shadow-glass overflow-hidden flex flex-col">
+      
+      <!-- Draggable Header Bar -->
+      <div
+        class="modal-header h-12 px-4 flex items-center justify-between border-b border-surface-border bg-surface-card/90 select-none cursor-move"
+        (mousedown)="startDrag($event)"
+        (touchstart)="startDrag($event)"
+      >
+        <!-- Title & Brand Badge -->
+        <div class="flex items-center gap-2.5">
+          <div class="text-text-muted hover:text-brand-accent transition-colors">
+            <app-icon name="grid" [size]="16" />
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-brand-primary dark:text-brand-accent tracking-tight">
+              DESMOS
+            </span>
+            <span class="text-xs font-bold text-text-primary hidden sm:inline">
+              | آلة ديسموس البيانية
+            </span>
+          </div>
+
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
+            رسم بياني تفاعلي
+          </span>
+        </div>
+
+        <!-- Action Controls (Minimize, Maximize, Close) -->
+        <div class="flex items-center gap-1">
+          <!-- Quick Copy Notification Toast -->
+          @if (copiedNotification(); as toast) {
+            <span class="text-[11px] font-bold text-emerald-500 mr-2 animate-fade-in truncate max-w-[150px]">
+              {{ toast }}
+            </span>
+          }
+
+          <!-- Collapse / Restore Button -->
+          <button
+            type="button"
+            (click)="toggleCollapse()"
+            class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors"
+            [title]="isCollapsed() ? 'توسيع' : 'طي النافذة'"
+          >
+            <app-icon [name]="isCollapsed() ? 'chevron-down' : 'minus'" [size]="14" />
+          </button>
+
+          <!-- Maximize / Restore Button -->
+          <button
+            type="button"
+            (click)="toggleMaximize()"
+            class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors hidden sm:inline-flex"
+            [title]="isMaximized() ? 'استعادة الحجم' : 'تكبير الشاشة'"
+          >
+            <app-icon [name]="isMaximized() ? 'minimize' : 'maximize'" [size]="14" />
+          </button>
+
+          <!-- Close Modal Button -->
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="p-1.5 rounded-lg text-text-muted hover:text-feedback-danger hover:bg-feedback-danger/10 transition-colors"
+            title="إغلاق الآلة الحاسبة"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Collapsible Body Section -->
+      @if (!isCollapsed()) {
+        <!-- Mathematical Function Presets Bar -->
+        <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex items-center gap-2 overflow-x-auto text-xs">
+          <span class="text-[11px] font-bold text-text-muted whitespace-nowrap">
+            دوال سريعة:
+          </span>
+          @for (preset of presets; track preset.latex) {
+            <button
+              type="button"
+              (click)="copyPreset(preset.latex, preset.labelAr)"
+              class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-[11px] font-medium text-text-primary transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 shadow-sm"
+              [title]="'نسخ ' + preset.latex"
+            >
+              <app-icon name="copy" [size]="11" className="text-brand-accent" />
+              <span>{{ preset.labelAr }}</span>
+            </button>
+          }
+        </div>
+
+        <!-- Desmos Embed IFrame -->
+        <div class="calculator-embed-container relative w-full bg-white flex-1">
+          @if (safeEmbedUrl()) {
+            <iframe
+              [src]="safeEmbedUrl()"
+              class="w-full h-full border-0"
+              title="Desmos Graphing Calculator"
+              allow="clipboard-write"
+              loading="lazy"
+            ></iframe>
+          }
+        </div>
+
+        <!-- Footer Hint -->
+        <div class="modal-footer px-3 py-1.5 bg-surface-card/90 border-t border-surface-border/50 flex items-center justify-between text-[11px] text-text-muted">
+          <span>يمكنك تحريك الآلة الحاسبة بالسحب من الشريط العلوي</span>
+          <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Engine</span>
+        </div>
+      }
+    </div>
+  </div>
+}
