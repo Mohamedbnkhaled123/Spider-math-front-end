@@ -15,8 +15,11 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    redirectTo: '/',
-    pathMatch: 'full'
+    loadComponent: () =>
+      import('./features/auth/login-page/login-page.component').then(
+        m => m.LoginPageComponent
+      ),
+    title: 'تسجيل الدخول ومحاكاة الأدوار | Spider Math Platform'
   },
   {
     path: 'placement-test',

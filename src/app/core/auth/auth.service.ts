@@ -9,6 +9,7 @@ export interface IUserDto {
   readonly student_ha_code?: string;
   readonly full_name: string;
   readonly email: string;
+  readonly phone?: string;
   readonly role: UserRole;
   readonly curriculum?: string;
   readonly grade_level?: string;

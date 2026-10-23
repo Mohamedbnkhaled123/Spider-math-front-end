@@ -52,7 +52,9 @@ export type AppIconName =
   | 'external-link'
   | 'activity'
   | 'user-plus'
-  | 'video';
+  | 'video'
+  | 'hash'
+  | 'log-in';
 
 @Component({
   selector: 'app-icon',

@@ -88,15 +88,14 @@
           </span>
 
           <!-- Switch Role Button -->
-          <button
-            type="button"
-            (click)="openAuthModal()"
+          <a
+            routerLink="/login"
             class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1 shadow-sm cursor-pointer"
             title="تبديل الصلاحية / Switch Role"
           >
             <app-icon name="user" [size]="14" className="text-brand-accent" />
             <span class="hidden lg:inline">تبديل الدور</span>
-          </button>
+          </a>
 
           <!-- Logout Button -->
           <button
@@ -121,14 +120,13 @@
           </a>
 
           <!-- Login & Role Simulator Trigger Button -->
-          <button
-            type="button"
-            (click)="openAuthModal()"
+          <a
+            routerLink="/login"
             class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="sparkles" [size]="14" />
             <span>تسجيل الدخول / تجربة الصلاحيات</span>
-          </button>
+          </a>
         </div>
       }
     </div>
