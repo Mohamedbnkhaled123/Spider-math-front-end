@@ -1,0 +1,222 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 overflow-y-auto">
+    
+    <!-- Modal Backdrop -->
+    <div
+      (click)="closeModal()"
+      class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity"
+    ></div>
+
+    <!-- Modal Box (Glassmorphic) -->
+    <div class="relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-glass overflow-hidden z-10 my-8">
+      
+      <!-- Ambient Lock Glow -->
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 bg-brand-primary/15 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Close Button -->
+      <button
+        type="button"
+        (click)="closeModal()"
+        class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-text-primary p-2 rounded-xl hover:bg-surface-bg transition-colors"
+        [attr.aria-label]="'COMMON.CLOSE' | transloco"
+      >
+        <app-icon name="x" [size]="18" />
+      </button>
+
+      <!-- ===================================================================== -->
+      <!-- State 1: Locked Form (Google Sign-In + WhatsApp Input)                -->
+      <!-- ===================================================================== -->
+      @if (!unlockedResult()) {
+        <div class="text-center">
+          
+          <!-- Shield/Target Icon -->
+          <div class="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-accent/30 text-brand-primary dark:text-brand-accent mx-auto flex items-center justify-center mb-4 shadow-sm">
+            <app-icon name="target" [size]="28" />
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-2">
+            {{ langService.isArabic() ? 'نتيجة امتحان تحديد المستوى جاهزة!' : 'Placement Assessment Report Ready!' }}
+          </h3>
+          <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
+            {{ langService.isArabic() ? 'أدخل اسم الطالب ورقم الواتساب للاطلاع الفوري على التقرير التفصيلي، نقاط القوة ونقاط التحسين، والحصول على كود الخصم.' : 'Enter student full name and WhatsApp phone to instantly unlock your diagnostic score report and academic recommendations.' }}
+          </p>
+
+          <!-- One-Click Google Sign-In Button -->
+          <button
+            type="button"
+            (click)="triggerGoogleSignIn()"
+            class="w-full py-3 px-4 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-3 shadow-sm active:scale-95 mb-4"
+          >
+            <app-icon name="globe" [size]="18" className="text-brand-primary" />
+            <span>{{ langService.isArabic() ? 'المتابعة بنقرة واحدة عبر حساب Google' : 'Continue with 1-Click Google Sign-In' }}</span>
+          </button>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-3 my-4">
+            <div class="h-px bg-surface-border flex-1"></div>
+            <span class="text-xs font-semibold text-text-muted">
+              {{ langService.isArabic() ? 'أو عبر بيانات الواتساب' : 'or via WhatsApp details' }}
+            </span>
+            <div class="h-px bg-surface-border flex-1"></div>
+          </div>
+
+          <!-- Form Inputs -->
+          <form (ngSubmit)="submitUnlock()" class="space-y-4 text-left rtl:text-right">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'اسم الطالب ثلاثياً:' : 'Student Full Name:' }}
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  [ngModel]="fullName()"
+                  (ngModelChange)="fullName.set($event)"
+                  name="fullName"
+                  placeholder="محمد أحمد إبراهيم"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'رقم هاتف الواتساب (لإرسال النتيجة):' : 'WhatsApp Phone Number:' }}
+              </label>
+              <input
+                type="tel"
+                [ngModel]="phone()"
+                (ngModelChange)="phone.set($event)"
+                name="phone"
+                placeholder="+20 100 000 0000"
+                dir="ltr"
+                required
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
+              />
+            </div>
+
+            @if (errorMessage()) {
+              <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+                <app-icon name="alert-circle" [size]="14" />
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+            >
+              @if (isSubmitting()) {
+                <app-icon name="refresh" [size]="16" className="animate-spin" />
+                <span>{{ langService.isArabic() ? 'جاري فتح التقرير...' : 'Unlocking Report...' }}</span>
+              } @else {
+                <app-icon name="award" [size]="16" />
+                <span>{{ langService.isArabic() ? 'فتح التقرير الأكاديمي الشامل الآن' : 'Unlock Score Report Now' }}</span>
+              }
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- ===================================================================== -->
+      <!-- State 2: Unlocked Diagnostic Report Showcase                         -->
+      <!-- ===================================================================== -->
+      @if (unlockedResult(); as report) {
+        <div class="text-center animate-fade-in">
+          
+          <!-- Celebratory Level Badge -->
+          <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 mx-auto flex items-center justify-center mb-4 shadow-sm">
+            <app-icon name="check-circle" [size]="32" />
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-1">
+            {{ langService.isArabic() ? 'مبارك! تم فتح التقرير بنجاح' : 'Congratulations! Report Unlocked' }}
+          </h3>
+          <p class="text-xs text-text-secondary mb-4">
+            {{ langService.isArabic() ? 'تقرير تقييم مستوى الطالب: ' + report.fullName : 'Diagnostic Report for: ' + report.fullName }}
+          </p>
+
+          <!-- Score Card -->
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg mb-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-text-muted">
+                {{ langService.isArabic() ? 'المستوى الأكاديمي المقدر:' : 'Academic Level Assessment:' }}
+              </span>
+              <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 font-numeric">
+                {{ report.percentage }}%
+              </span>
+            </div>
+            <div class="w-full bg-surface-border h-2.5 rounded-full overflow-hidden mb-3">
+              <div
+                class="bg-gradient-spider h-full rounded-full transition-all duration-1000"
+                [style.width]="report.percentage + '%'"
+              ></div>
+            </div>
+            <div class="px-3 py-1.5 rounded-xl bg-brand-primary/10 border border-brand-accent/20 text-brand-primary dark:text-brand-accent font-extrabold text-xs inline-block">
+              {{ langService.isArabic() ? report.academicLevelBadgeAr : report.academicLevelBadgeEn }}
+            </div>
+          </div>
+
+          <!-- Strengths & Weaknesses Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-left rtl:text-right text-xs">
+            <!-- Strengths -->
+            <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <h5 class="font-bold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                <app-icon name="check" [size]="14" />
+                <span>{{ langService.isArabic() ? 'نقاط القوة المتقنة:' : 'Mastered Strengths:' }}</span>
+              </h5>
+              <ul class="space-y-1.5 text-text-secondary">
+                @for (str of report.strengths; track str) {
+                  <li class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>{{ str }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Weaknesses -->
+            <div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <h5 class="font-bold text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
+                <app-icon name="alert-circle" [size]="14" />
+                <span>{{ langService.isArabic() ? 'نقاط تحتاج لتركيز إضافي:' : 'Areas for Improvement:' }}</span>
+              </h5>
+              <ul class="space-y-1.5 text-text-secondary">
+                @for (weak of report.weaknesses; track weak) {
+                  <li class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span>{{ weak }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col gap-2.5">
+            <button
+              type="button"
+              (click)="proceedToRegistration()"
+              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 active:scale-95"
+            >
+              <app-icon name="user" [size]="16" />
+              <span>{{ langService.isArabic() ? 'استكمال التسجيل وإصدار كود الطالب (HAxxxx)' : 'Complete Profile & Get Student Code' }}</span>
+            </button>
+
+            @if (report.whatsAppAlertUrl) {
+              <a
+                [href]="report.whatsAppAlertUrl"
+                target="_blank"
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-2"
+              >
+                <app-icon name="message-circle" [size]="16" />
+                <span>{{ langService.isArabic() ? 'إرسال التقرير للمهندسة هبة عبر واتساب' : 'Share Report on WhatsApp' }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

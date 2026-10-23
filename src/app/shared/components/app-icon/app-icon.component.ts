@@ -20,7 +20,22 @@ export type AppIconName =
   | 'clock'
   | 'shield'
   | 'award'
-  | 'alert-circle';
+  | 'alert-circle'
+  | 'phone'
+  | 'user'
+  | 'map-pin'
+  | 'calendar'
+  | 'file-text'
+  | 'check-circle'
+  | 'x'
+  | 'chevron-right'
+  | 'chevron-left'
+  | 'chevron-down'
+  | 'play'
+  | 'star'
+  | 'arrow-right'
+  | 'arrow-left'
+  | 'calculator';
 
 @Component({
   selector: 'app-icon',

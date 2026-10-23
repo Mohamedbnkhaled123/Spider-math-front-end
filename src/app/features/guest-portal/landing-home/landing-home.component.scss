@@ -1,0 +1,21 @@
+// Animation 4.1: Interactive Cursor Spotlight (Desktop)
+.hero-container {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+.hero-spotlight-glow {
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    rgba(0, 242, 254, 0.08),
+    rgba(124, 58, 237, 0.04) 40%,
+    transparent 70%
+  );
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .hero-spotlight-glow {
+    display: none; // Save mobile GPU battery
+  }
+}

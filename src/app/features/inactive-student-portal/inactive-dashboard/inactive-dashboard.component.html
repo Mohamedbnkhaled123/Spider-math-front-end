@@ -1,0 +1,149 @@
+<div class="max-w-5xl mx-auto px-4 py-10 sm:py-14">
+
+  <!-- ========================================================================= -->
+  <!-- 1. Top Student Identity & HA Code Showcase                                -->
+  <!-- ========================================================================= -->
+  <div class="rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-10 shadow-glass mb-8 relative overflow-hidden">
+    
+    <!-- Ambient Corner Glow -->
+    <div class="absolute -top-16 -right-16 rtl:-right-auto rtl:-left-16 w-52 h-52 bg-brand-primary/15 rounded-full blur-2xl pointer-events-none"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+      
+      <!-- Student Info -->
+      <div class="flex items-start sm:items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-accent/30 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0 shadow-sm">
+          <app-icon name="user" [size]="32" />
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="text-xl sm:text-2xl font-black text-text-primary">
+              {{ studentName() }}
+            </h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-bold">
+              {{ langService.isArabic() ? 'بانتظار التفعيل' : 'Subscription Pending' }}
+            </span>
+          </div>
+
+          <!-- Academic Scope Badges -->
+          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-text-muted">
+            <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
+              {{ curriculum() }}
+            </span>
+            <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
+              {{ gradeLevel() }}
+            </span>
+            <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
+              {{ term() }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permanent HA Code Display -->
+      <div class="p-3.5 sm:p-4 rounded-2xl border border-brand-accent/40 bg-surface-bg shadow-sm text-center sm:text-right rtl:sm:text-left self-stretch sm:self-auto flex sm:flex-col justify-between items-center sm:items-end">
+        <span class="text-[11px] font-bold text-text-muted">
+          {{ langService.isArabic() ? 'كود الطالب الدائم:' : 'Student HA Code:' }}
+        </span>
+        <code class="font-mono text-xl sm:text-2xl font-black text-brand-primary dark:text-brand-accent tracking-wider">
+          {{ haCode() }}
+        </code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. Subscription Activation Banner (WhatsApp CTA)                          -->
+  <!-- ========================================================================= -->
+  <div class="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 sm:p-8 shadow-sm mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+        <app-icon name="message-circle" [size]="24" />
+      </div>
+      <div>
+        <h3 class="text-base sm:text-lg font-black text-text-primary mb-1">
+          {{ langService.isArabic() ? 'تفعيل الاشتراك الأكاديمي مع فريق م/ هبة عبدالوهاب' : 'Activate Full Academic Subscription via WhatsApp' }}
+        </h3>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-xl">
+          {{ langService.isArabic() ? 'لتفعيل الوصول الكامل إلى بنك الأسئلة والواجبات والمحاضرات المحمية، يرجى إرسال كود الطالب عبر واتساب.' : 'Unlock full lecture streaming, smart question bank, homework submissions and PDF study handouts.' }}
+        </p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="openWhatsAppSubscription()"
+      class="px-6 py-3.5 rounded-xl font-extrabold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+    >
+      <app-icon name="phone" [size]="16" />
+      <span>{{ langService.isArabic() ? 'تفعيل الاشتراك عبر واتساب' : 'Subscribe via WhatsApp' }}</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. Free Trial Lectures Matched to (Curriculum, GradeLevel, Term)          -->
+  <!-- ========================================================================= -->
+  <div class="mb-10">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-bold mb-1">
+          <app-icon name="play" [size]="14" />
+          <span>{{ langService.isArabic() ? 'المحاضرات التجريبية المجانية' : 'Free Trial Masterclasses' }}</span>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-black text-text-primary">
+          {{ langService.isArabic() ? 'ابدأ مشاهدة الحصص التمهيدية المجانية المتاحة لمنهجك' : 'Explore Free Sample Lessons for Your Curriculum' }}
+        </h3>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      @for (lec of trialLectures(); track lec._id) {
+        <div class="rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm hover:border-brand-accent transition-all duration-200 flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border/50">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-brand-primary/15 text-brand-primary dark:text-brand-accent font-numeric">
+                {{ lec.curriculum }} • {{ lec.gradeLevel }}
+              </span>
+              <span class="text-xs font-bold text-text-muted flex items-center gap-1 font-numeric">
+                <app-icon name="clock" [size]="14" />
+                <span>{{ lec.durationMinutes }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}</span>
+              </span>
+            </div>
+
+            <h4 class="text-base font-bold text-text-primary mb-2 group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
+              {{ langService.isArabic() ? lec.titleAr : lec.titleEn }}
+            </h4>
+            <p class="text-xs text-text-secondary leading-relaxed mb-6">
+              {{ langService.isArabic() ? lec.descriptionAr : lec.descriptionEn }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="openWhatsAppSubscription()"
+            class="w-full py-2.5 px-4 rounded-xl font-bold text-xs border border-brand-accent text-brand-primary dark:text-brand-accent hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2"
+          >
+            <app-icon name="play" [size]="14" />
+            <span>{{ langService.isArabic() ? 'مشاهدة المحاضرة التجريبية' : 'Watch Free Trial Lecture' }}</span>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. Session Controls (Logout)                                              -->
+  <!-- ========================================================================= -->
+  <div class="text-center pt-8 border-t border-surface-border/50">
+    <button
+      type="button"
+      (click)="logout()"
+      class="text-xs font-bold text-text-muted hover:text-red-500 transition-colors inline-flex items-center gap-1.5"
+    >
+      <app-icon name="log-out" [size]="14" />
+      <span>{{ 'NAV.LOGOUT' | transloco }}</span>
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,279 @@
+<div class="min-h-[85vh] flex items-center justify-center px-4 py-12">
+  <div class="max-w-2xl w-full rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-10 shadow-glass relative overflow-hidden">
+    
+    <!-- Ambient Corner Glow -->
+    <div class="absolute -top-16 -right-16 rtl:-right-auto rtl:-left-16 w-48 h-48 bg-brand-primary/15 rounded-full blur-2xl pointer-events-none"></div>
+
+    <!-- ======================================================================= -->
+    <!-- Form State: Collect Profile & Enforce Conditional Governorate           -->
+    <!-- ======================================================================= -->
+    @if (!issuedHaCode()) {
+      <div>
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-accent/30 text-brand-primary dark:text-brand-accent mx-auto flex items-center justify-center mb-3 shadow-sm">
+            <app-icon name="user" [size]="28" />
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-text-primary mb-2">
+            {{ langService.isArabic() ? 'استكمال بيانات الطالب وإصدار كود الـ HA' : 'Complete Profile & Issue Student HA Code' }}
+          </h2>
+          <p class="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto">
+            {{ langService.isArabic() ? 'يرجى استكمال البيانات الأكاديمية بدقة لربط الحساب بالمنهج المناسب وتفعيل المتابعة مع ولي الأمر.' : 'Please provide accurate academic information to link your account to the correct curriculum track.' }}
+          </p>
+        </div>
+
+        <form (ngSubmit)="submitProfile()" class="space-y-5 text-left rtl:text-right">
+          
+          <!-- Full Name -->
+          <div>
+            <label class="block text-xs font-bold text-text-secondary mb-1.5">
+              {{ langService.isArabic() ? 'اسم الطالب بالكامل:' : 'Student Full Name:' }}
+            </label>
+            <input
+              type="text"
+              [ngModel]="fullName()"
+              (ngModelChange)="fullName.set($event)"
+              name="fullName"
+              placeholder="محمد أحمد إبراهيم"
+              required
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
+            />
+          </div>
+
+          <!-- Student Phone & Parent Phone Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'رقم هاتف الطالب (واتساب):' : 'Student Phone (WhatsApp):' }}
+              </label>
+              <input
+                type="tel"
+                [ngModel]="phone()"
+                (ngModelChange)="phone.set($event)"
+                name="phone"
+                placeholder="+20 100 000 0000"
+                dir="ltr"
+                required
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'رقم هاتف ولي الأمر (للمتابعة):' : 'Parent Phone (For Reports):' }}
+              </label>
+              <input
+                type="tel"
+                [ngModel]="parentPhone()"
+                (ngModelChange)="parentPhone.set($event)"
+                name="parentPhone"
+                placeholder="+20 110 000 0000"
+                dir="ltr"
+                required
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
+              />
+            </div>
+          </div>
+
+          <!-- 4 Curriculums Selector -->
+          <div>
+            <label class="block text-xs font-bold text-text-secondary mb-1.5">
+              {{ langService.isArabic() ? 'المنهج والمسار الدراسي:' : 'Academic Curriculum Track:' }}
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              @for (c of curriculumTree; track c.code) {
+                <button
+                  type="button"
+                  (click)="onCurriculumChange(c.code)"
+                  class="p-2.5 rounded-xl border text-center transition-all duration-200"
+                  [ngClass]="{
+                    'border-brand-accent bg-brand-primary/10 text-brand-primary dark:text-brand-accent font-extrabold shadow-sm':
+                      curriculum() === c.code,
+                    'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
+                      curriculum() !== c.code
+                  }"
+                >
+                  <span class="block text-xs font-bold truncate">
+                    {{ langService.isArabic() ? c.titleAr : c.titleEn }}
+                  </span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Grade Level & Term Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'الصف الدراسي:' : 'Grade Level:' }}
+              </label>
+              <select
+                [ngModel]="gradeLevel()"
+                (ngModelChange)="gradeLevel.set($event)"
+                name="gradeLevel"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
+              >
+                @for (grade of availableGrades(); track grade.code) {
+                  <option [value]="grade.code">
+                    {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  (click)="academicTerm.set('TERM_1')"
+                  class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all"
+                  [ngClass]="{
+                    'border-brand-primary bg-brand-primary text-white shadow-sm': academicTerm() === 'TERM_1',
+                    'border-surface-border bg-surface-bg text-text-secondary hover:bg-surface-card': academicTerm() !== 'TERM_1'
+                  }"
+                >
+                  {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="academicTerm.set('TERM_2')"
+                  class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all"
+                  [ngClass]="{
+                    'border-brand-primary bg-brand-primary text-white shadow-sm': academicTerm() === 'TERM_2',
+                    'border-surface-border bg-surface-bg text-text-secondary hover:bg-surface-card': academicTerm() !== 'TERM_2'
+                  }"
+                >
+                  {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Country Selection & Conditional Governorate -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'دولة الإقامة:' : 'Country of Residence:' }}
+              </label>
+              <select
+                [ngModel]="country()"
+                (ngModelChange)="country.set($event)"
+                name="country"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
+              >
+                <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية' : 'Egypt (EG)' }}</option>
+                <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية' : 'Saudi Arabia (SA)' }}</option>
+                <option value="AE">{{ langService.isArabic() ? 'دولة الإمارات العربية المتحدة' : 'United Arab Emirates (AE)' }}</option>
+                <option value="KW">{{ langService.isArabic() ? 'دولة الكويت' : 'Kuwait (KW)' }}</option>
+                <option value="QA">{{ langService.isArabic() ? 'دولة قطر' : 'Qatar (QA)' }}</option>
+                <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى (دولي)' : 'Other International' }}</option>
+              </select>
+            </div>
+
+            <!-- Conditional Egyptian Governorate Dropdown (Renders ONLY when country === 'EG') -->
+            @if (isEgypt()) {
+              <div class="animate-fade-in">
+                <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                  {{ langService.isArabic() ? 'المحافظة (مطلوبة داخل مصر):' : 'Egyptian Governorate:' }}
+                </label>
+                <select
+                  [ngModel]="governorate()"
+                  (ngModelChange)="governorate.set($event)"
+                  name="governorate"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
+                >
+                  @for (gov of egyptGovernorates; track gov.code) {
+                    <option [value]="gov.code">
+                      {{ langService.isArabic() ? gov.name_ar : gov.name_en }}
+                    </option>
+                  }
+                </select>
+              </div>
+            }
+          </div>
+
+          <!-- Error Alert -->
+          @if (errorMessage()) {
+            <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+              <app-icon name="alert-circle" [size]="14" />
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+            >
+              @if (isSubmitting()) {
+                <app-icon name="refresh" [size]="16" className="animate-spin" />
+                <span>{{ langService.isArabic() ? 'جاري حفظ البيانات وإصدار الكود...' : 'Issuing Student Code...' }}</span>
+              } @else {
+                <app-icon name="check" [size]="16" />
+                <span>{{ langService.isArabic() ? 'حفظ البيانات وإصدار كود الطالب (HAxxxx)' : 'Save & Issue HA Student Code' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- ======================================================================= -->
+    <!-- Success State: Celebratory Student HA Code Display                      -->
+    <!-- ======================================================================= -->
+    @if (issuedHaCode(); as code) {
+      <div class="text-center animate-fade-in py-6">
+        
+        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 mx-auto flex items-center justify-center mb-4 shadow-sm">
+          <app-icon name="award" [size]="32" />
+        </div>
+
+        <h3 class="text-2xl sm:text-3xl font-black text-text-primary mb-2">
+          {{ langService.isArabic() ? 'مبارك! تم إصدار كود الطالب بنجاح' : 'Congratulations! Student Code Issued' }}
+        </h3>
+        <p class="text-sm text-text-secondary max-w-md mx-auto mb-6">
+          {{ langService.isArabic() ? 'احتفظ بهذا الكود الخاص بك، ستستخدمه دائماً لتفعيل الاشتراكات ومتابعة الحصص مع م/ هبة عبدالوهاب.' : 'Keep this permanent code safe. You will use it for subscription activation and academic progress tracking.' }}
+        </p>
+
+        <!-- HA Code Badge (Glowing Card) -->
+        <div class="max-w-xs mx-auto p-5 rounded-2xl border-2 border-brand-accent bg-surface-bg shadow-brand-glow mb-8">
+          <span class="block text-xs font-bold text-text-muted mb-1">
+            {{ langService.isArabic() ? 'كود الطالب الأكاديمي الدائم:' : 'Permanent Student HA Code:' }}
+          </span>
+          <span class="block text-3xl font-black font-numeric text-brand-primary dark:text-brand-accent tracking-wider">
+            {{ code }}
+          </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            type="button"
+            (click)="openWhatsAppActivation()"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-md flex items-center justify-center gap-2"
+          >
+            <app-icon name="phone" [size]="16" />
+            <span>{{ langService.isArabic() ? 'إرسال الكود لتفعيل الاشتراك عبر واتساب' : 'Send Code for WhatsApp Activation' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="goToInactivePortal()"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary transition-colors flex items-center justify-center gap-2"
+          >
+            <app-icon name="home" [size]="16" />
+            <span>{{ langService.isArabic() ? 'الدخول إلى بوابة الطالب' : 'Go to Student Portal' }}</span>
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

@@ -8,16 +8,32 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/guest-portal/landing-page/landing-page.component').then(
-        m => m.LandingPageComponent
+      import('./features/guest-portal/landing-home/landing-home.component').then(
+        m => m.LandingHomeComponent
       ),
     title: 'Spider Math Platform | منصة سبايدر ماث التعليمية'
+  },
+  {
+    path: 'placement-test',
+    loadComponent: () =>
+      import(
+        './features/guest-portal/placement-exam-runner/placement-exam-runner.component'
+      ).then(m => m.PlacementExamRunnerComponent),
+    title: 'Placement Assessment | امتحان تحديد المستوى التفاعلي'
+  },
+  {
+    path: 'complete-profile',
+    loadComponent: () =>
+      import(
+        './features/guest-portal/student-profile-completion/student-profile-completion.component'
+      ).then(m => m.StudentProfileCompletionComponent),
+    title: 'Complete Student Profile | استكمال بيانات الطالب'
   },
   {
     path: 'pending-device-approval',
     loadComponent: () =>
       import(
-        './features/auth-device/pending-device-approval/pending-device-approval.component'
+        './features/inactive-student-portal/pending-device-approval/pending-device-approval.component'
       ).then(m => m.PendingDeviceApprovalComponent),
     title: 'Device Pending Approval | الجهاز بانتظار الاعتماد'
   },
@@ -26,8 +42,8 @@ export const routes: Routes = [
     canActivate: [authGuard, deviceApprovedGuard],
     loadComponent: () =>
       import(
-        './features/inactive-student-portal/inactive-student-portal.component'
-      ).then(m => m.InactiveStudentPortalComponent),
+        './features/inactive-student-portal/inactive-dashboard/inactive-dashboard.component'
+      ).then(m => m.InactiveDashboardComponent),
     title: 'Inactive Student Portal | بوابة الطالب غير المشترك'
   },
   {
