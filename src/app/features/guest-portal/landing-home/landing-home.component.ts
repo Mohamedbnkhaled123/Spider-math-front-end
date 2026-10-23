@@ -56,7 +56,7 @@ export class LandingHomeComponent implements OnInit {
   // Filtered Schedules Table
   readonly filteredSchedules = computed<IScheduleItem[]>(() => {
     const data = this.landingData();
-    if (!data) return [];
+    if (!data || !Array.isArray(data.schedules)) return [];
     const curr = this.selectedCurriculum();
     const list = data.schedules.filter(s => s.curriculum === curr);
     return list.length > 0 ? list : data.schedules;
@@ -65,7 +65,7 @@ export class LandingHomeComponent implements OnInit {
   // Filtered Pricing Packages
   readonly filteredPackages = computed<IPricingPackage[]>(() => {
     const data = this.landingData();
-    if (!data) return [];
+    if (!data || !Array.isArray(data.pricingPackages)) return [];
     const curr = this.selectedCurriculum();
     const list = data.pricingPackages.filter(p => p.curriculum === curr);
     return list.length > 0 ? list : data.pricingPackages;

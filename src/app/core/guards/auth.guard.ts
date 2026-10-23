@@ -13,8 +13,8 @@ export const authGuard: CanActivateFn = (_route, state) => {
     return true;
   }
 
-  // Preserve attempted return URL
-  return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl: state.url }
+  // Preserve attempted return URL and redirect to home
+  return router.createUrlTree(['/'], {
+    queryParams: { loginRequired: 'true', returnUrl: state.url }
   });
 };

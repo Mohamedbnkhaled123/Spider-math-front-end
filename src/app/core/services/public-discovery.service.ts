@@ -61,10 +61,34 @@ export class PublicDiscoveryService {
    * Fetches cached public landing CMS data (Bio, schedules, packages, testimonials).
    */
   getLandingData(): Observable<IPublicLandingData> {
-    return this.http.get<{ success: boolean; data: IPublicLandingData }>(
+    return this.http.get<{ success: boolean; data: any }>(
       `${this.apiBase}/public/landing-data`
     ).pipe(
-      map(res => res.data),
+      map(res => {
+        const raw = res?.data;
+        const fallback = this.getFallbackLandingData();
+        if (!raw) return fallback;
+
+        return {
+          teacherBio: fallback.teacherBio,
+          schedules: (raw.schedules && raw.schedules.length > 0)
+            ? raw.schedules
+            : (raw.schedules_table && raw.schedules_table.length > 0)
+              ? raw.schedules_table
+              : fallback.schedules,
+          pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
+            ? raw.pricingPackages
+            : (raw.pricing_packages && raw.pricing_packages.length > 0)
+              ? raw.pricing_packages
+              : fallback.pricingPackages,
+          testimonials: (raw.testimonials && raw.testimonials.length > 0)
+            ? raw.testimonials
+            : (raw.testimonials_items && raw.testimonials_items.length > 0)
+              ? raw.testimonials_items
+              : fallback.testimonials,
+          whatsappSupportNumber: raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber
+        };
+      }),
       catchError(() => of(this.getFallbackLandingData()))
     );
   }

@@ -14,6 +14,11 @@ export const routes: Routes = [
     title: 'Spider Math Platform | منصة سبايدر ماث التعليمية'
   },
   {
+    path: 'login',
+    redirectTo: '/',
+    pathMatch: 'full'
+  },
+  {
     path: 'placement-test',
     loadComponent: () =>
       import(
