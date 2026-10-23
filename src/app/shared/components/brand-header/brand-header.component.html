@@ -63,6 +63,17 @@
       @if (authService.isAuthenticated()) {
         <div class="flex items-center gap-2 sm:gap-2.5 pl-1 rtl:pr-1 rtl:pl-0">
           
+          <!-- Direct Portal CTA Link -->
+          @if (activePortal(); as portal) {
+            <a
+              [routerLink]="portal.route"
+              class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 shadow-brand-glow flex items-center gap-1.5 transition-all"
+            >
+              <app-icon name="sparkles" [size]="14" />
+              <span>{{ portal.label }}</span>
+            </a>
+          }
+
           <!-- Monospace Student HAxxxx Code -->
           @if (authService.currentUser()?.student_ha_code; as haCode) {
             <span class="ha-code-badge hidden md:inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-xs font-bold text-brand-secondary font-numeric">
@@ -76,30 +87,53 @@
             <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
           </span>
 
-          <!-- User Name Pill -->
-          <span class="hidden sm:inline-block text-xs font-bold px-2.5 py-1 rounded-lg bg-surface-card border border-surface-border text-text-primary max-w-[130px] truncate">
-            {{ authService.currentUser()?.full_name }}
-          </span>
+          <!-- Switch Role Button -->
+          <button
+            type="button"
+            (click)="openAuthModal()"
+            class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+            title="تبديل الصلاحية / Switch Role"
+          >
+            <app-icon name="user" [size]="14" className="text-brand-accent" />
+            <span class="hidden lg:inline">تبديل الدور</span>
+          </button>
 
           <!-- Logout Button -->
           <button
             type="button"
             (click)="logout()"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1"
+            class="px-2 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
+            title="تسجيل الخروج"
           >
             <app-icon name="log-out" [size]="14" />
-            <span>{{ 'NAV.LOGOUT' | transloco }}</span>
+            <span class="hidden sm:inline">{{ 'NAV.LOGOUT' | transloco }}</span>
           </button>
         </div>
       } @else {
-        <!-- Get Started Primary CTA with Gradient -->
-        <a
-          routerLink="/"
-          class="px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200"
-        >
-          {{ 'NAV.GET_STARTED' | transloco }}
-        </a>
+        <div class="flex items-center gap-2 sm:gap-2.5">
+          <!-- Free Placement Test Link -->
+          <a
+            routerLink="/placement-test"
+            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all shadow-sm"
+          >
+            <app-icon name="target" [size]="14" className="text-brand-accent" />
+            <span>امتحان تحديد المستوى</span>
+          </a>
+
+          <!-- Login & Role Simulator Trigger Button -->
+          <button
+            type="button"
+            (click)="openAuthModal()"
+            class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+          >
+            <app-icon name="sparkles" [size]="14" />
+            <span>تسجيل الدخول / تجربة الصلاحيات</span>
+          </button>
+        </div>
       }
     </div>
   </div>
+
+  <!-- Auth & Role Simulator Modal -->
+  <app-auth-role-modal [(isOpen)]="isAuthModalOpen" />
 </header>

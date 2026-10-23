@@ -1,17 +1,400 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-  <div class="rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-10 shadow-glass">
-    <div class="flex items-center justify-between pb-6 border-b border-surface-border mb-6">
-      <div>
-        <h2 class="text-2xl font-black text-brand-primary dark:text-blue-400">
-          {{ langService.isArabic() ? 'لوحة تحكم الإدارة — المهندسة هبة عبدالوهاب' : 'Super Admin Studio — Eng. Heba Abdel-Wahab' }}
-        </h2>
-        <p class="text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'إدارة الهيكل الأكاديمي، تفعيل الاشتراكات، اعتماد الأجهزة، استوديو التصحيح والنسخ الاحتياطي' : 'Manage academic hierarchy, subscriptions, additive device approvals, grading studio & DB backups.' }}
-        </p>
+<div class="super-admin-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- ========================================================================= -->
+  <!-- 1. Header Bar                                                             -->
+  <!-- ========================================================================= -->
+  <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-surface-border mb-8">
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 flex items-center gap-1.5">
+          <app-icon name="shield" [size]="14" />
+          <span>لوحة الإدارة المركزية المعتمدة</span>
+        </span>
+        <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
+          Super Admin Studio
+        </span>
       </div>
-      <div class="px-4 py-2 rounded-xl bg-brand-accent/10 text-brand-accent font-bold text-sm">
-        Super Admin
+
+      <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
+        لوحة تحكم وإشراف المهندسة هبة عبد الوهاب ✦
+      </h1>
+      <p class="text-xs sm:text-sm text-text-secondary mt-1">
+        إدارة الهيكل الأكاديمي، اعتماد الأجهزة الإضافية (Device Lock)، وتصحيح الأسئلة المقالية وإرفاق روابط الشرح.
+      </p>
+    </div>
+
+    <!-- Quick Shortcuts -->
+    <div class="flex items-center gap-2.5">
+      <a
+        routerLink="/student"
+        class="px-3.5 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+      >
+        <app-icon name="graduation-cap" [size]="14" className="text-brand-primary" />
+        <span>معاينة بوابة الطالب</span>
+      </a>
+
+      <a
+        routerLink="/parent"
+        class="px-3.5 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-secondary text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+      >
+        <app-icon name="shield" [size]="14" className="text-brand-secondary" />
+        <span>معاينة بوابة ولي الأمر</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. Overview Quick Metrics Bar                                             -->
+  <!-- ========================================================================= -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="p-5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-text-muted mb-1">أجهزة بانتظار الاعتماد</div>
+        <div class="text-2xl font-black font-numeric text-amber-500">
+          {{ pendingDevices().length }}
+        </div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+        <app-icon name="lock" [size]="20" />
       </div>
     </div>
+
+    <div class="p-5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-text-muted mb-1">امتحانات بانتظار التصحيح</div>
+        <div class="text-2xl font-black font-numeric text-brand-primary dark:text-brand-accent">
+          {{ pendingGrading().length }}
+        </div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center">
+        <app-icon name="file-text" [size]="20" />
+      </div>
+    </div>
+
+    <div class="p-5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-text-muted mb-1">إجمالي الطلاب المسجلين</div>
+        <div class="text-2xl font-black font-numeric text-emerald-500">
+          {{ studentsList().length }}
+        </div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+        <app-icon name="user" [size]="20" />
+      </div>
+    </div>
+
+    <div class="p-5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs font-bold text-text-muted mb-1">الاشتراكات المفعلة</div>
+        <div class="text-2xl font-black font-numeric text-brand-secondary">
+          2
+        </div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center">
+        <app-icon name="award" [size]="20" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. Navigation Tabs                                                        -->
+  <!-- ========================================================================= -->
+  <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-surface-card border border-surface-border mb-6 overflow-x-auto shadow-sm">
+    <button
+      type="button"
+      (click)="setTab('devices')"
+      class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0"
+      [class.bg-brand-primary]="activeTab() === 'devices'"
+      [class.text-white]="activeTab() === 'devices'"
+      [class.shadow-sm]="activeTab() === 'devices'"
+      [class.text-text-secondary]="activeTab() !== 'devices'"
+    >
+      <app-icon name="lock" [size]="16" />
+      <span>طلبات اعتماد الأجهزة ({{ pendingDevices().length }})</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('grading')"
+      class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0"
+      [class.bg-brand-primary]="activeTab() === 'grading'"
+      [class.text-white]="activeTab() === 'grading'"
+      [class.shadow-sm]="activeTab() === 'grading'"
+      [class.text-text-secondary]="activeTab() !== 'grading'"
+    >
+      <app-icon name="file-text" [size]="16" />
+      <span>استوديو التصحيح ورصد الدرجات ({{ pendingGrading().length }})</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('students')"
+      class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0"
+      [class.bg-brand-primary]="activeTab() === 'students'"
+      [class.text-white]="activeTab() === 'students'"
+      [class.shadow-sm]="activeTab() === 'students'"
+      [class.text-text-secondary]="activeTab() !== 'students'"
+    >
+      <app-icon name="user" [size]="16" />
+      <span>إدارة الطلاب والاشتراكات ({{ studentsList().length }})</span>
+    </button>
   </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 1: Device Approvals Queue (HTTP 423)                                  -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'devices') {
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-text-primary">
+            طابور طلبات اعتماد الأجهزة الجديدة (Additive Device Approvals)
+          </h3>
+          <p class="text-xs text-text-secondary mt-0.5">
+            عند محاولة الطالب تسجيل الدخول من جهاز ثانٍ غير معتمد، يتم حجزه تلقائياً بانتظار موافقتك.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        @for (req of pendingDevices(); track req.id) {
+          <div class="p-5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-text-primary">{{ req.studentName }}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
+                  {{ req.haCode }}
+                </span>
+                <span class="text-xs text-text-muted">• {{ req.curriculum }}</span>
+              </div>
+              <div class="text-xs text-text-secondary flex flex-wrap items-center gap-3">
+                <span class="font-mono">{{ req.deviceInfo }}</span>
+                <span>•</span>
+                <span class="font-mono text-text-muted">{{ req.ipAddress }}</span>
+                <span>•</span>
+                <span class="text-amber-500 font-bold">{{ req.requestedAt }}</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2.5 shrink-0">
+              @if (req.status === 'PENDING') {
+                <button
+                  type="button"
+                  (click)="approveDevice(req.id)"
+                  class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                >
+                  <app-icon name="check" [size]="14" />
+                  <span>اعتماد الجهاز</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="rejectDevice(req.id)"
+                  class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <app-icon name="x" [size]="14" />
+                  <span>رفض</span>
+                </button>
+              } @else if (req.status === 'APPROVED') {
+                <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-500 flex items-center gap-1.5">
+                  <app-icon name="check-circle" [size]="14" />
+                  <span>تم اعتماد الجهاز بنجاح</span>
+                </span>
+              } @else {
+                <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-500 flex items-center gap-1.5">
+                  <app-icon name="alert-circle" [size]="14" />
+                  <span>تم رفض الطلب</span>
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 2: Essay Grading Studio (الدرجات، الملاحظات، ويوتيوب)                   -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'grading') {
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-text-primary">
+            استوديو تصحيح إجابات الطلاب المقالية ورصد الفيدباك
+          </h3>
+          <p class="text-xs text-text-secondary mt-0.5">
+            قم بإدخال الدرجة وكتابة الملاحظة العلاجية وإرفاق رابط شرح فيديو يوتيوب غير المحمي لنشره فوراً للطالب وولي الأمر.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        @for (item of pendingGrading(); track item.id) {
+          <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-6">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-border">
+              <div>
+                <span class="text-xs font-bold text-brand-secondary block mb-1">
+                  {{ item.assessmentTitle }}
+                </span>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm sm:text-base font-bold text-text-primary">
+                    طالب: {{ item.studentName }}
+                  </h4>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-primary">
+                    {{ item.haCode }}
+                  </span>
+                </div>
+              </div>
+
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500">
+                السؤال رقم {{ item.questionNumber }} (مقالي)
+              </span>
+            </div>
+
+            <!-- Question Text -->
+            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-xs sm:text-sm text-text-primary font-medium leading-relaxed">
+              <span class="font-bold text-brand-primary block mb-1">نص المسألة:</span>
+              {{ item.questionText }}
+            </div>
+
+            <!-- Grade & Feedback Form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Score Input -->
+              <div>
+                <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                  الدرجة المستحقة (من {{ item.maxScore }})
+                </label>
+                <input
+                  type="number"
+                  [max]="item.maxScore"
+                  min="0"
+                  [(ngModel)]="item.awardedScore"
+                  class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-sm text-text-primary focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <!-- YouTube Solution URL -->
+              <div>
+                <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                  رابط فيديو شرح الحل على يوتيوب (Unprotected YouTube URL)
+                </label>
+                <input
+                  type="url"
+                  [(ngModel)]="item.youtubeSolutionUrl"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg font-mono text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <!-- Written Error Note -->
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                  الملاحظة التشخيصية والتوجيه المكتوب للطالب (error_note)
+                </label>
+                <textarea
+                  rows="2"
+                  [(ngModel)]="item.errorNote"
+                  class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary leading-relaxed"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Publish Button -->
+            <div class="flex items-center justify-end pt-2">
+              @if (item.status === 'PENDING') {
+                <button
+                  type="button"
+                  (click)="publishGrade(item.id)"
+                  class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 shadow-brand-glow flex items-center gap-2 cursor-pointer"
+                >
+                  <app-icon name="check" [size]="14" />
+                  <span>اعتماد ونشر النتيجة للطالب وولي الأمر</span>
+                </button>
+              } @else {
+                <span class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-500 flex items-center gap-2">
+                  <app-icon name="check-circle" [size]="16" />
+                  <span>تم نشر التصحيح والدرجات بنجاح (PUBLISHED_TO_STUDENT_AND_PARENT)</span>
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 3: Students Management & Subscriptions                                -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'students') {
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-text-primary">
+            سجل الطلاب والاشتراكات والأجهزة المعتمدة
+          </h3>
+          <p class="text-xs text-text-secondary mt-0.5">
+            تفعيل وإلغاء اشتراكات الطلاب، فك قفل الحسابات، ومتابعة الأجهزة.
+          </p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-2xl border border-surface-border bg-surface-card shadow-sm">
+        <table class="w-full text-right rtl:text-right text-xs">
+          <thead class="bg-surface-bg border-b border-surface-border text-text-muted font-bold">
+            <tr>
+              <th class="p-4">اسم الطالب</th>
+              <th class="p-4">الكود الفريد</th>
+              <th class="p-4">المنهج والصف</th>
+              <th class="p-4">نقاط XP</th>
+              <th class="p-4">حالة الاشتراك</th>
+              <th class="p-4">الأجهزة</th>
+              <th class="p-4 text-center">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-border">
+            @for (std of studentsList(); track std.id) {
+              <tr class="hover:bg-surface-bg/50 transition-colors">
+                <td class="p-4 font-bold text-text-primary">{{ std.name }}</td>
+                <td class="p-4 font-mono font-bold text-brand-secondary">{{ std.haCode }}</td>
+                <td class="p-4 text-text-secondary">{{ std.curriculum }} • {{ std.gradeLevel }}</td>
+                <td class="p-4 font-mono font-black text-brand-primary dark:text-brand-accent">+{{ std.totalXp }}</td>
+                <td class="p-4">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-[10px] font-black"
+                    [class.bg-emerald-500/10]="std.hasActiveSubscription"
+                    [class.text-emerald-500]="std.hasActiveSubscription"
+                    [class.bg-slate-500/10]="!std.hasActiveSubscription"
+                    [class.text-slate-500]="!std.hasActiveSubscription"
+                  >
+                    {{ std.hasActiveSubscription ? 'اشتراك نشط' : 'غير مشترك' }}
+                  </span>
+                </td>
+                <td class="p-4 font-mono text-text-secondary">{{ std.approvedDevices }} / 2</td>
+                <td class="p-4 text-center">
+                  <button
+                    type="button"
+                    (click)="toggleSubscription(std.id)"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer"
+                    [class.border-emerald-500]="!std.hasActiveSubscription"
+                    [class.text-emerald-500]="!std.hasActiveSubscription"
+                    [class.hover:bg-emerald-500/10]="!std.hasActiveSubscription"
+                    [class.border-rose-500]="std.hasActiveSubscription"
+                    [class.text-rose-500]="std.hasActiveSubscription"
+                    [class.hover:bg-rose-500/10]="std.hasActiveSubscription"
+                  >
+                    {{ std.hasActiveSubscription ? 'إلغاء التفعيل' : 'تفعيل الاشتراك' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
 </div>

@@ -1,0 +1,228 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+    <div class="modal-dialog w-full max-w-2xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto animate-scale-up">
+
+      <!-- Close Button -->
+      <button
+        type="button"
+        (click)="close()"
+        class="absolute top-5 left-5 rtl:left-5 rtl:right-auto p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer"
+        aria-label="إغلاق"
+      >
+        <app-icon name="x" [size]="20" />
+      </button>
+
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-accent text-xs font-black mb-2">
+          <app-icon name="sparkles" [size]="14" />
+          <span>بوابة الصلاحيات وتسجيل الدخول — منصة سبايدر ماث</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-text-primary">
+          اختر الصلاحية لتجربة كافة شاشات وميزات المنصة ✦
+        </h2>
+        <p class="text-xs sm:text-sm text-text-secondary mt-1">
+          بإمكانك التبديل الفوري بين أي من أدوار المنصة الـ 5 بنقرة واحدة لتجربة المحاضرات والامتحانات ورادار السونار ولوحة الإدارة.
+        </p>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="flex items-center gap-2 p-1 rounded-2xl bg-surface-bg border border-surface-border mb-6">
+        <button
+          type="button"
+          (click)="setTab('presets')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+          [class.bg-brand-primary]="activeTab() === 'presets'"
+          [class.text-white]="activeTab() === 'presets'"
+          [class.shadow-sm]="activeTab() === 'presets'"
+          [class.text-text-secondary]="activeTab() !== 'presets'"
+        >
+          <app-icon name="sparkles" [size]="14" />
+          <span>محاكاة الأدوار الـ 5 فوراً</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setTab('student-login')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+          [class.bg-brand-primary]="activeTab() === 'student-login'"
+          [class.text-white]="activeTab() === 'student-login'"
+          [class.shadow-sm]="activeTab() === 'student-login'"
+          [class.text-text-secondary]="activeTab() !== 'student-login'"
+        >
+          <app-icon name="graduation-cap" [size]="14" />
+          <span>دخول الطالب (HA Code)</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setTab('parent-login')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+          [class.bg-brand-primary]="activeTab() === 'parent-login'"
+          [class.text-white]="activeTab() === 'parent-login'"
+          [class.shadow-sm]="activeTab() === 'parent-login'"
+          [class.text-text-secondary]="activeTab() !== 'parent-login'"
+        >
+          <app-icon name="shield" [size]="14" />
+          <span>دخول ولي الأمر</span>
+        </button>
+      </div>
+
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div class="p-3 mb-5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-bold text-rose-500 flex items-center gap-2">
+          <app-icon name="alert-circle" [size]="16" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- ===================================================================== -->
+      <!-- TAB 1: 1-Click Role Presets                                           -->
+      <!-- ===================================================================== -->
+      @if (activeTab() === 'presets') {
+        <div class="space-y-3">
+          @for (preset of rolePresets; track preset.id) {
+            <button
+              type="button"
+              (click)="activatePreset(preset)"
+              class="w-full text-left rtl:text-right p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-primary/50 hover:bg-brand-primary/[0.03] transition-all duration-200 flex items-center justify-between gap-4 group cursor-pointer shadow-sm hover:shadow-brand-glow"
+            >
+              <div class="flex items-start gap-3.5 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-surface-bg border border-surface-border group-hover:border-brand-primary/30 flex items-center justify-center text-brand-primary dark:text-brand-accent shrink-0 transition-colors">
+                  <app-icon [name]="preset.icon" [size]="20" />
+                </div>
+                <div class="truncate">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+                      {{ preset.titleAr }}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent shrink-0">
+                      {{ preset.badgeText }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-text-secondary truncate font-medium">
+                    {{ preset.subtitleAr }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="shrink-0 flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-brand-accent group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">
+                <span>تجربة الآن</span>
+                <app-icon name="chevron-left" [size]="14" />
+              </div>
+            </button>
+          }
+
+          <!-- Reset to Guest Button -->
+          <div class="pt-3 border-t border-surface-border flex items-center justify-between">
+            <span class="text-xs text-text-muted">تريد تصفح الموقع دون تسجيل؟</span>
+            <button
+              type="button"
+              (click)="switchToGuest()"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <app-icon name="log-out" [size]="14" />
+              <span>العودة كزائر (Guest Mode)</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ===================================================================== -->
+      <!-- TAB 2: Student Login (HA Code)                                        -->
+      <!-- ===================================================================== -->
+      @if (activeTab() === 'student-login') {
+        <div class="space-y-4">
+          <div>
+            <label for="studentHaInput" class="block text-xs font-bold text-text-secondary mb-1.5">
+              كود الطالب الفريد (HA Code)
+            </label>
+            <input
+              id="studentHaInput"
+              type="text"
+              maxlength="10"
+              placeholder="مثال: HA4920"
+              [value]="studentHaCode()"
+              (input)="studentHaCode.set($any($event.target).value)"
+              class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono font-bold tracking-widest uppercase placeholder:text-text-muted/60 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-sm"
+            />
+            <p class="text-[11px] text-text-muted mt-1.5">
+              أدخل كود الطالب المسلم لك عند الاشتراك أو استخدم الكود التجريبي: <span class="font-mono font-bold text-brand-secondary">HA4920</span>
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <button
+              type="button"
+              (click)="submitStudentLogin()"
+              [disabled]="isSubmitting() || !studentHaCode()"
+              class="w-full py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 disabled:opacity-50 transition-all shadow-brand-glow flex items-center justify-center gap-2 cursor-pointer"
+            >
+              @if (isSubmitting()) {
+                <app-icon name="loader" [size]="16" className="animate-spin" />
+                <span>جاري تسجيل الدخول...</span>
+              } @else {
+                <app-icon name="graduation-cap" [size]="16" />
+                <span>دخول استوديو الطالب</span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ===================================================================== -->
+      <!-- TAB 3: Parent Login                                                   -->
+      <!-- ===================================================================== -->
+      @if (activeTab() === 'parent-login') {
+        <div class="space-y-4">
+          <div>
+            <label for="parentPhoneInput" class="block text-xs font-bold text-text-secondary mb-1.5">
+              رقم هاتف ولي الأمر المسجل
+            </label>
+            <input
+              id="parentPhoneInput"
+              type="tel"
+              placeholder="مثال: 01012345678"
+              [value]="parentPhone()"
+              (input)="parentPhone.set($any($event.target).value)"
+              class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono font-bold placeholder:text-text-muted/60 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-sm"
+            />
+          </div>
+
+          <div>
+            <label for="parentChildCodeInput" class="block text-xs font-bold text-text-secondary mb-1.5">
+              كود أحد الأبناء (HAxxxx)
+            </label>
+            <input
+              id="parentChildCodeInput"
+              type="text"
+              maxlength="10"
+              placeholder="مثال: HA4920"
+              [value]="parentChildCode()"
+              (input)="parentChildCode.set($any($event.target).value)"
+              class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono font-bold tracking-widest uppercase placeholder:text-text-muted/60 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-sm"
+            />
+          </div>
+
+          <div class="pt-2">
+            <button
+              type="button"
+              (click)="submitParentLogin()"
+              [disabled]="isSubmitting() || !parentPhone() || !parentChildCode()"
+              class="w-full py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 disabled:opacity-50 transition-all shadow-brand-glow flex items-center justify-center gap-2 cursor-pointer"
+            >
+              @if (isSubmitting()) {
+                <app-icon name="loader" [size]="16" className="animate-spin" />
+                <span>جاري تسجيل الدخول...</span>
+              } @else {
+                <app-icon name="shield" [size]="16" />
+                <span>دخول بوابة متابعة ولي الأمر</span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}
