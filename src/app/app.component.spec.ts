@@ -32,12 +32,4 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
-
-  it('should toggle theme when toggleTheme is called', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    const initialTheme = app.themeService.currentTheme();
-    app.toggleTheme();
-    expect(app.themeService.currentTheme()).not.toEqual(initialTheme);
-  });
 });

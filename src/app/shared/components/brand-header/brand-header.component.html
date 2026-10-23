@@ -1,0 +1,104 @@
+<header class="sticky top-0 z-layer-header glass-panel border-b border-surface-border transition-colors duration-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+    
+    <!-- Brand Logo & Dual-Spectrum Wordmark -->
+    <a routerLink="/" class="flex items-center gap-3.5 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02]">
+      <!-- Official Geometric Logo Icon -->
+      <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-brand-accent transition-colors duration-200">
+        <img
+          src="/assets/branding/spider-math-logo.webp"
+          alt="Spider Math Logo — المهندسة هبة عبدالوهاب"
+          class="w-full h-full object-contain p-1 filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
+          loading="eager"
+        />
+        <!-- Node Glow Ambient Effect -->
+        <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-accent animate-node-glow"></span>
+      </div>
+
+      <!-- Split-Spectrum Wordmark -->
+      <div class="flex flex-col">
+        <div class="flex items-center tracking-tight font-black text-xl sm:text-2xl leading-none">
+          <span class="brand-spider">Spider</span>
+          <span class="brand-math ml-1 rtl:mr-1 rtl:ml-0 flex items-center">
+            Math<span class="spark-star inline-block text-brand-accent text-lg sm:text-xl font-normal ml-0.5 rtl:mr-0.5 rtl:ml-0 animate-spark-twinkle">✦</span>
+          </span>
+        </div>
+        <span class="text-[11px] sm:text-xs text-text-secondary font-medium tracking-normal mt-0.5">
+          {{ 'BRAND.TEACHER' | transloco }}
+        </span>
+      </div>
+    </a>
+
+    <!-- Action Bar Controls (Lang, Theme, User Auth Status) -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      
+      <!-- Language Switcher (EN / عربي) -->
+      <button
+        type="button"
+        (click)="toggleLanguage()"
+        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs sm:text-sm font-bold text-text-primary transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95"
+        [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
+        title="Toggle Language / تغيير اللغة"
+      >
+        <span class="text-sm">🌐</span>
+        <span>{{ langService.isArabic() ? 'English' : 'عربي' }}</span>
+      </button>
+
+      <!-- Theme Switcher (Light / Dark) -->
+      <button
+        type="button"
+        (click)="toggleTheme()"
+        class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-sm text-text-primary transition-all duration-200 shadow-sm active:scale-95 flex items-center justify-center w-9 h-9"
+        [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
+        [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      >
+        @if (themeService.isDark()) {
+          <span class="text-amber-400 transform hover:rotate-45 transition-transform duration-300">☀️</span>
+        } @else {
+          <span class="text-brand-primary transform hover:-rotate-12 transition-transform duration-300">🌙</span>
+        }
+      </button>
+
+      <!-- User Auth State -->
+      @if (authService.isAuthenticated()) {
+        <div class="flex items-center gap-2 sm:gap-2.5 pl-1 rtl:pr-1 rtl:pl-0">
+          
+          <!-- Monospace Student HAxxxx Code -->
+          @if (authService.currentUser()?.student_ha_code; as haCode) {
+            <span class="ha-code-badge hidden md:inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-xs font-bold text-brand-secondary font-numeric">
+              {{ haCode }}
+            </span>
+          }
+
+          <!-- Glowing XP Pill -->
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
+            <span class="text-brand-accent animate-spark-twinkle">✦</span>
+            <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
+          </span>
+
+          <!-- User Name Pill -->
+          <span class="hidden sm:inline-block text-xs font-bold px-2.5 py-1 rounded-lg bg-surface-card border border-surface-border text-text-primary max-w-[130px] truncate">
+            {{ authService.currentUser()?.full_name }}
+          </span>
+
+          <!-- Logout Button -->
+          <button
+            type="button"
+            (click)="logout()"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors"
+          >
+            {{ 'NAV.LOGOUT' | transloco }}
+          </button>
+        </div>
+      } @else {
+        <!-- Get Started Primary CTA with Gradient -->
+        <a
+          routerLink="/"
+          class="px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+        >
+          {{ 'NAV.GET_STARTED' | transloco }}
+        </a>
+      }
+    </div>
+  </div>
+</header>

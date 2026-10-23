@@ -1,98 +1,21 @@
-<div class="min-h-screen flex flex-col bg-surface-bg text-text-primary selection:bg-brand-secondary selection:text-white transition-colors duration-200">
-  <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-50 glass-panel border-b border-surface-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- Brand Logo & Teacher Name -->
-      <a routerLink="/" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-brand-secondary rounded-lg p-1">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center text-white font-black text-xl shadow-glow-primary group-hover:scale-105 transition-transform duration-200">
-          🕷️
-        </div>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-1.5">
-            <span class="font-extrabold text-lg sm:text-xl tracking-tight text-brand-primary dark:text-blue-400">
-              Spider
-            </span>
-            <span class="font-bold text-lg sm:text-xl text-brand-accent">
-              Math
-            </span>
-          </div>
-          <span class="text-xs text-text-muted font-medium -mt-1 hidden sm:block">
-            {{ 'BRAND.TEACHER' | transloco }}
-          </span>
-        </div>
-      </a>
-
-      <!-- Quick Actions (Theme Switcher, Lang Switcher, Portal Link) -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        
-        <!-- Language Switcher -->
-        <button
-          type="button"
-          (click)="toggleLanguage()"
-          class="px-2.5 py-1.5 rounded-lg border border-surface-border bg-surface-card hover:border-brand-secondary text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1"
-          [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
-          title="Toggle Language / تغيير اللغة"
-        >
-          <span class="text-base">🌐</span>
-          <span>{{ langService.isArabic() ? 'English' : 'عربي' }}</span>
-        </button>
-
-        <!-- Dark/Light Theme Switcher -->
-        <button
-          type="button"
-          (click)="toggleTheme()"
-          class="p-2 rounded-lg border border-surface-border bg-surface-card hover:border-brand-secondary text-sm transition-colors"
-          [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
-          [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-        >
-          @if (themeService.isDark()) {
-            <span>☀️</span>
-          } @else {
-            <span>🌙</span>
-          }
-        </button>
-
-        <!-- Dynamic User Status -->
-        @if (authService.isAuthenticated()) {
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold px-2 py-1 rounded bg-brand-primary/10 text-brand-primary dark:text-blue-400">
-              {{ authService.currentUser()?.full_name }}
-            </span>
-            <button
-              type="button"
-              (click)="authService.clearSession()"
-              class="px-3 py-1.5 text-xs font-bold text-brand-accent hover:bg-brand-accent/10 rounded-lg transition-colors"
-            >
-              {{ 'NAV.LOGOUT' | transloco }}
-            </button>
-          </div>
-        } @else {
-          <a
-            routerLink="/"
-            class="px-3.5 py-1.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-brand-primary to-brand-secondary rounded-lg shadow hover:opacity-95 transition-opacity"
-          >
-            {{ 'NAV.GET_STARTED' | transloco }}
-          </a>
-        }
-      </div>
-    </div>
-  </header>
+<div class="min-h-screen flex flex-col bg-spider-coordinate-grid text-text-primary selection:bg-brand-secondary selection:text-white transition-colors duration-200">
+  <!-- Unified Global Brand Header -->
+  <app-brand-header></app-brand-header>
 
   <!-- Main View Container -->
-  <main class="flex-1 flex flex-col">
+  <main class="flex-1 flex flex-col z-layer-content">
     <router-outlet></router-outlet>
   </main>
 
   <!-- Platform Footer -->
-  <footer class="border-t border-surface-border bg-surface-card/50 py-8 px-4 sm:px-6 lg:px-8 text-center text-xs text-text-muted">
+  <footer class="border-t border-surface-border bg-surface-secondary/70 backdrop-blur-md py-8 px-4 sm:px-6 lg:px-8 text-center text-xs text-text-secondary z-layer-content">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2">
-        <span class="font-bold text-brand-primary dark:text-blue-400">Spider Math Platform</span>
+        <span class="font-extrabold text-brand-primary dark:text-brand-accent">Spider Math Platform</span>
         <span>•</span>
         <span>{{ 'BRAND.TEACHER' | transloco }}</span>
       </div>
-      <p>© 2026 Spider Math Educational Platform. All rights reserved.</p>
+      <p class="font-numeric">© 2026 Spider Math Educational Platform. All rights reserved.</p>
     </div>
   </footer>
 </div>

@@ -50,6 +50,7 @@ export interface ICurriculumNode {
   readonly descriptionAr: string;
   readonly descriptionEn: string;
   readonly iconName: string;
+  readonly mathWatermarkSymbol: 'π' | 'Σ' | '∞' | '✦';
   readonly accentColorHex: string;
   readonly badgeTextAr: string;
   readonly badgeTextEn: string;
@@ -86,7 +87,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     descriptionAr: 'تغطية شاملة ومبسطة لمادة الرياضيات للمرحلتين الإعدادية والثانوية العامة بأحدث طرق التدريس وحل نماذج الامتحانات الوزارية والتجريبية.',
     descriptionEn: 'Comprehensive and structured mathematics curriculum for Preparatory and Secondary stages with intensive Thanaweya Amma exam workouts.',
     iconName: 'pyramid',
-    accentColorHex: '#1e3a8a',
+    mathWatermarkSymbol: 'π',
+    accentColorHex: '#6D28D9',
     badgeTextAr: 'الأكثر طلباً',
     badgeTextEn: 'Most Popular',
     terms: CANONICAL_ACADEMIC_TERMS,
@@ -158,7 +160,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     descriptionAr: 'منهج مخصص لطلاب دول الخليج العربي (السعودية، الإمارات، الكويت، قطر، عمان، البحرين) متوافق مع المعايير الوزارية والكتب المعتمدة.',
     descriptionEn: 'Custom curriculum tailored to Saudi, Emirati and GCC ministerial standards from Grade 7 through Grade 12 with continuous assessments.',
     iconName: 'landmark',
-    accentColorHex: '#0284c7',
+    mathWatermarkSymbol: 'Σ',
+    accentColorHex: '#0891B2',
     badgeTextAr: 'معتمد خليجياً',
     badgeTextEn: 'GCC Accredited',
     terms: CANONICAL_ACADEMIC_TERMS,
@@ -230,7 +233,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     descriptionAr: 'برنامج مكثف لمناهج كامبريدج وبيرسون إديكسل (Cambridge & Edexcel) يشمل شرحاً دقيقاً للمفاهيم وحل أحدث امتحانات الـ Past Papers بأسلوب مبسط.',
     descriptionEn: 'Specialized Cambridge & Edexcel past paper problem-solving strategies, topic classifications, and mark scheme masterclasses.',
     iconName: 'globe',
-    accentColorHex: '#7c3aed',
+    mathWatermarkSymbol: '∞',
+    accentColorHex: '#9333EA',
     badgeTextAr: 'معايير كامبريدج وإديكسل',
     badgeTextEn: 'Cambridge & Edexcel',
     terms: CANONICAL_ACADEMIC_TERMS,
@@ -302,7 +306,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     descriptionAr: 'كورس تأهيلي متقدم لاختبارات القبول الجامعي الأمريكية والمصرية، يركز على استراتيجيات التفكير الرياضي السريع واحتراف استخدام حاسبة ديسموس (Desmos).',
     descriptionEn: 'Advanced college readiness prep focusing on time management, mental math shortcuts, and masterclass proficiency in the Desmos Graphing Calculator.',
     iconName: 'graduation-cap',
-    accentColorHex: '#e11d48',
+    mathWatermarkSymbol: '✦',
+    accentColorHex: '#00B4D8',
     badgeTextAr: 'سكور 800 في الماث',
     badgeTextEn: 'Target 800 Math Score',
     terms: CANONICAL_ACADEMIC_TERMS,

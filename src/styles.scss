@@ -1,99 +1,372 @@
+// ==============================================================================
+// Spider Math Educational Platform — Master Design Tokens & Motion System (v2.2)
+// Direct Derivative of the Official Spider Math Logo & Age 10-16 EdTech Ergonomics
+// ==============================================================================
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+:root,
+[data-theme='light'] {
+  // Master Color Palette — Dual-Spectrum Chromatic Split (Light Mode)
+  --color-brand-primary: #6D28D9;         // Royal Violet ("Spider")
+  --color-brand-primary-hover: #5B21B6;   // Deep Violet Hover
+  --color-brand-secondary: #0891B2;       // Deep Cyan-Teal ("Math✦")
+  --color-brand-accent: #00B4D8;          // Vivid Aqua Node (●) & ✦ Spark
+  --color-brand-magenta: #9333EA;         // Left-Web Gradient Stop
+  --color-brand-cobalt: #2563EB;          // Center-Axis Gradient Bridge
 
-:root {
-  /* Dynamic Brand Palette (Light Mode) — Spider Math Logo Palette */
-  --color-brand-primary: #1e3a8a;     /* Deep Spider Cobalt */
-  --color-brand-secondary: #0284c7;   /* Cyan / Azure Electric Blue */
-  --color-brand-accent: #e11d48;      /* Spider Crimson Accent */
-  
-  --surface-bg: #f8fafc;              /* Slate 50 */
-  --surface-card: #ffffff;
-  --surface-border: #e2e8f0;
-  
-  --text-primary: #0f172a;            /* Slate 900 */
-  --text-secondary: #475569;          /* Slate 600 */
-  --text-muted: #94a3b8;              /* Slate 400 */
+  // Signature Gradients
+  --gradient-spider-math: linear-gradient(135deg, #5B21B6 0%, #2563EB 50%, #06B6D4 100%);
+  --gradient-spider-text: linear-gradient(90deg, #6D28D9 0%, #9333EA 45%, #0891B2 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(109, 40, 217, 0.35), rgba(6, 182, 212, 0.35));
 
-  --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
-  --font-english: 'Outfit', system-ui, -apple-system, sans-serif;
+  // Surfaces & Glassmorphism
+  --surface-bg-primary: #F8FAFC;          // Crisp Alabaster
+  --surface-bg-secondary: #F1F5F9;        // Soft Slate Tint
+  --surface-bg-card: #FFFFFF;             // Pure Paper White
+  --surface-bg-elevated: #FFFFFF;         // Elevated Surface
+  --surface-glass: rgba(255, 255, 255, 0.86);
+  --surface-border: rgba(109, 40, 217, 0.14);
+  --surface-border-glow: rgba(8, 145, 178, 0.45);
+  --grid-pattern-color: rgba(109, 40, 217, 0.045);
+
+  // Backward compatibility alias tokens
+  --surface-bg: var(--surface-bg-primary);
+  --surface-card: var(--surface-bg-card);
+
+  // Text Hierarchy
+  --text-primary: #0F172A;                // Deep Slate Ink
+  --text-secondary: #475569;              // Balanced Slate
+  --text-muted: #64748B;                  // Muted Slate
+
+  // Status & Feedback
+  --color-success: #059669;               // Emerald (85% Lecture Completed, Correct MCQ)
+  --color-warning: #D97706;               // Amber (Pending Review, Timer < 5m)
+  --color-danger: #DC2626;                // Crimson (HTTP 423 Lock, Timer < 2m)
+
+  // Shadows & Elevation
+  --shadow-card: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+  --shadow-brand-glow: 0 12px 28px -6px rgba(109, 40, 217, 0.18), 0 4px 14px -2px rgba(6, 182, 212, 0.14);
+
+  // Typography Families
+  --font-arabic: 'Cairo', 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-english: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-html.dark {
-  /* Dynamic Brand Palette (Dark Mode) */
-  --color-brand-primary: #3b82f6;     /* Electric Cobalt Glow */
-  --color-brand-secondary: #38bdf8;   /* Vivid Cyan */
-  --color-brand-accent: #f43f5e;      /* Spider Neon Rose / Crimson */
-  
-  --surface-bg: #0b0f19;              /* Deep Space Dark */
-  --surface-card: #111827;            /* Gray 900 */
-  --surface-border: #1f2937;          /* Gray 800 */
-  
-  --text-primary: #f8fafc;            /* Slate 50 */
-  --text-secondary: #cbd5e1;          /* Slate 300 */
-  --text-muted: #64748b;              /* Slate 500 */
+.dark,
+[data-theme='dark'] {
+  // Master Color Palette — Dual-Spectrum Chromatic Split (Obsidian Dark Mode)
+  --color-brand-primary: #8B5CF6;         // Electric Violet ("Spider")
+  --color-brand-primary-hover: #A78BFA;   // Soft Electric Violet
+  --color-brand-secondary: #06B6D4;       // Luminous Cyan ("Math✦")
+  --color-brand-accent: #00F2FE;          // Glowing Neon Aqua Node (●) & ✦ Spark
+  --color-brand-magenta: #C084FC;         // Neon Orchid
+  --color-brand-cobalt: #3B82F6;          // Electric Cobalt Bridge
+
+  // Signature Gradients
+  --gradient-spider-math: linear-gradient(135deg, #7C3AED 0%, #3B82F6 48%, #00F2FE 100%);
+  --gradient-spider-text: linear-gradient(90deg, #A855F7 0%, #38BDF8 50%, #00F2FE 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(139, 92, 246, 0.55), rgba(0, 242, 254, 0.55));
+
+  // Surfaces & Glassmorphism
+  --surface-bg-primary: #060913;          // Deep Space Obsidian
+  --surface-bg-secondary: #0B1021;        // Midnight Abyss
+  --surface-bg-card: #0F1629;             // Obsidian Navy Card
+  --surface-bg-elevated: #16203A;         // Elevated Navy Surface
+  --surface-glass: rgba(15, 22, 41, 0.82);
+  --surface-border: rgba(6, 182, 212, 0.22);
+  --surface-border-glow: rgba(0, 242, 254, 0.65);
+  --grid-pattern-color: rgba(0, 242, 254, 0.055);
+
+  // Backward compatibility alias tokens
+  --surface-bg: var(--surface-bg-primary);
+  --surface-card: var(--surface-bg-card);
+
+  // Text Hierarchy
+  --text-primary: #F8FAFC;                // Starlight White
+  --text-secondary: #94A3B8;              // Cool Silver-Blue
+  --text-muted: #64748B;                  // Dimmed Steel
+
+  // Status & Feedback
+  --color-success: #10B981;               // Neon Emerald
+  --color-warning: #F59E0B;               // Luminous Amber
+  --color-danger: #EF4444;                // Vibrant Red (HTTP 423 Lock)
+
+  // Shadows & Elevation
+  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65);
+  --shadow-brand-glow: 0 0 28px -4px rgba(124, 58, 237, 0.42), 0 0 18px -2px rgba(0, 242, 254, 0.32);
 }
 
-/* Global resets & typography */
+// ==============================================================================
+// Z-Index Layering Contract (DRM, Watermarks & Floating Modals)
+// ==============================================================================
+.z-layer-grid { z-index: 1; }
+.z-layer-content { z-index: 10; }
+.z-layer-shield { z-index: 20; }          // .yt-security-shield
+.z-layer-watermark { z-index: 25; }       // <app-anti-tamper-watermark>
+.z-layer-player-controls { z-index: 30; } // Custom video player controls
+.z-layer-header { z-index: 40; }          // Sticky Navbar & Sync Banner
+.z-layer-modal { z-index: 50; }           // Desmos Calculator & Lead Gate
+
+// ==============================================================================
+// Global Typography & Direction Resets
+// ==============================================================================
 html {
   scroll-behavior: smooth;
   font-family: var(--font-english);
-  background-color: var(--surface-bg);
+  background-color: var(--surface-bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
 }
 
 html[dir="rtl"] {
   font-family: var(--font-arabic);
+
+  // Mathematical vertical spacing guard for superscripts & fractions
+  p, span, h1, h2, h3, h4, h5, h6, label {
+    line-height: 1.7;
+  }
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--surface-bg);
+  background-color: var(--surface-bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Spider Math Glassmorphism Utilities */
+// Numerical & Formula Tabular Formatting
+.font-numeric,
+.tabular-numbers,
+code,
+.ha-code-badge {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+// ==============================================================================
+// Cartesian Coordinate Grid & Glassmorphism Utilities
+// ==============================================================================
+.bg-spider-coordinate-grid {
+  background-color: var(--surface-bg-primary);
+  background-image:
+    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
 }
 
-html.dark .glass-panel {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(31, 41, 55, 0.8);
+.glass-card {
+  background: var(--surface-bg-card);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+
+  &:hover {
+    border-color: var(--surface-border-glow);
+    box-shadow: var(--shadow-brand-glow);
+    transform: translateY(-4px) scale(1.01);
+  }
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.text-gradient-spider {
+  background: var(--gradient-spider-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--surface-bg);
+.bg-gradient-spider {
+  background: var(--gradient-spider-math);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+// ==============================================================================
+// Signature Keyframe Animations for Students Aged 10-16
+// ==============================================================================
+
+// 1. Floating Math Symbols
+@keyframes floatMathSymbol {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(6deg);
+  }
 }
 
-html.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+// 2. Cartesian Web Node Pulse Glow
+@keyframes nodePulseGlow {
+  0% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 2px var(--color-brand-accent));
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 8px var(--color-brand-accent));
+    opacity: 1;
+  }
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-brand-secondary);
+// 3. 4-Point Star Spark Twinkle (✦)
+@keyframes sparkTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 2px var(--color-brand-accent));
+  }
+  50% {
+    transform: scale(1.24) rotate(15deg);
+    filter: drop-shadow(0 0 10px var(--color-brand-accent));
+  }
+}
+
+// 4. Infinity Symbol (∞) Vector Draw Animation
+@keyframes infinityDraw {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+// 5. Dynamic Grade Pill Cascade
+@keyframes pillCascadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// 6. Gamified XP Badge Pop (85% Lecture Threshold Celebration)
+@keyframes xpBadgePop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-18px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.95);
+  }
+}
+
+// 7. Avatar XP Level Ring Pulse
+@keyframes xpRingPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 242, 254, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+  }
+}
+
+// 8. Leaderboard Podium Shimmer Sweep & Sonar Radar
+@keyframes shimmerSweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes sonarRadarPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes timerUrgencyPulse {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 rgba(239, 68, 68, 0);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.95);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+  }
+}
+
+@keyframes questionSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Animation Utility Classes
+.animate-float-math {
+  animation: floatMathSymbol 6s ease-in-out infinite;
+}
+
+.animate-spark-twinkle {
+  animation: sparkTwinkle 4s ease-in-out infinite;
+}
+
+.animate-node-glow {
+  animation: nodePulseGlow 3s ease-in-out infinite alternate;
+}
+
+.animate-sonar-pulse {
+  animation: sonarRadarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-timer-urgency {
+  animation: timerUrgencyPulse 1s ease-in-out infinite;
+}
+
+// ==============================================================================
+// Accessibility: Respect User Reduced Motion Preferences
+// ==============================================================================
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
