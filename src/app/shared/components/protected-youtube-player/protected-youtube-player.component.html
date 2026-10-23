@@ -1,0 +1,173 @@
+<div
+  #playerContainer
+  (mousemove)="onMouseMove()"
+  class="protected-player-wrapper relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-surface-border shadow-2xl select-none group"
+  appPreventContextCopy
+>
+  
+  <!-- 1. YouTube IFrame Mount Target (Rendered by YouTube IFrame API) -->
+  <div class="absolute inset-0 w-full h-full pointer-events-none">
+    <div #iframeMount class="w-full h-full"></div>
+  </div>
+
+  <!-- 2. Transparent Security Shield Overlay (z-layer-shield: 20) -->
+  <!-- Blocks context menu, title clicks, and share button from YouTube iframe -->
+  <div
+    (click)="togglePlay()"
+    class="yt-security-shield absolute inset-0 z-layer-shield cursor-pointer bg-transparent"
+    title="Spider Math DRM Security Shield"
+  ></div>
+
+  <!-- 3. Dynamic Anti-Tamper Watermark Component (z-layer-watermark: 25) -->
+  <app-anti-tamper-watermark
+    [watermarkText]="watermarkText()"
+    [intervalSeconds]="7"
+    (tamperDetected)="onTamperDetected($event)"
+  />
+
+  <!-- 4. Gamification 85% Threshold Celebration Pop-up (Animation 4.4) -->
+  @if (isCelebrationVisible()) {
+    <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
+      <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-spider text-white shadow-brand-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
+        <span class="text-xl animate-spark-twinkle">✦</span>
+        <span>+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح</span>
+      </div>
+    </div>
+  }
+
+  <!-- 5. Big Center Play Button (When Paused) -->
+  @if (!isPlaying()) {
+    <button
+      type="button"
+      (click)="togglePlay()"
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-player-controls w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-brand-primary/85 text-white flex items-center justify-center shadow-brand-glow hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white/20"
+      aria-label="Play Lecture Video"
+    >
+      <app-icon name="play" [size]="32" className="ml-1 rtl:mr-1 rtl:ml-0" />
+    </button>
+  }
+
+  <!-- 6. Custom Angular Video Controls Bar (z-layer-player-controls: 30) -->
+  <div
+    class="player-controls-bar absolute inset-x-0 bottom-0 z-layer-player-controls p-4 sm:p-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-300"
+    [ngClass]="{ 'opacity-100': showControls() || !isPlaying(), 'opacity-0 pointer-events-none': !showControls() && isPlaying() }"
+  >
+    
+    <!-- Seek Progress Bar with 85% Threshold Marker -->
+    <div
+      (click)="seek($event)"
+      class="seek-bar-track relative w-full h-2.5 rounded-full bg-white/25 hover:h-3.5 transition-all duration-150 cursor-pointer mb-3 group/seek"
+    >
+      <!-- Watched Progress Fill -->
+      <div
+        class="h-full rounded-full bg-gradient-spider transition-all duration-100 relative"
+        [style.width]="progressPercentage() + '%'"
+      >
+        <!-- Scrub Head -->
+        <div class="absolute right-0 rtl:right-auto rtl:left-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-md scale-0 group-hover/seek:scale-100 transition-transform"></div>
+      </div>
+
+      <!-- 85% Milestone Marker (Animation 4.4) -->
+      <div
+        class="milestone-marker absolute top-1/2 -translate-y-1/2 w-2 h-4 rounded-sm bg-brand-accent shadow-sm z-10"
+        [style.left]="completionThresholdPct() + '%'"
+        [title]="'Milestone: ' + completionThresholdPct() + '% for +50 XP'"
+      >
+        <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] font-black text-brand-accent whitespace-nowrap hidden group-hover/seek:inline">
+          ✦ 85% (+50 XP)
+        </span>
+      </div>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="flex items-center justify-between text-white text-xs gap-3 font-semibold">
+      
+      <!-- Left: Play/Pause, Volume, Time -->
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="togglePlay()"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors"
+          [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+        >
+          @if (isPlaying()) {
+            <span class="w-4 h-4 flex items-center justify-center font-bold">❚❚</span>
+          } @else {
+            <app-icon name="play" [size]="16" />
+          }
+        </button>
+
+        <!-- Volume Toggle & Slider -->
+        <div class="flex items-center gap-2 group/vol">
+          <button
+            type="button"
+            (click)="toggleMute()"
+            class="p-1.5 rounded-lg hover:bg-white/15 transition-colors"
+          >
+            <app-icon [name]="isMuted() || volume() === 0 ? 'lock' : 'award'" [size]="14" />
+          </button>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            [value]="isMuted() ? 0 : volume()"
+            (input)="onVolumeChange($event)"
+            class="w-16 h-1 rounded-full bg-white/30 accent-brand-accent cursor-pointer hidden sm:inline"
+          />
+        </div>
+
+        <!-- Time Label -->
+        <div class="font-numeric text-xs font-bold text-white/90 tracking-tight">
+          <span>{{ formattedCurrentTime() }}</span>
+          <span class="text-white/50 mx-1">/</span>
+          <span>{{ formattedDuration() }}</span>
+        </div>
+      </div>
+
+      <!-- Right: Watch Pct, Speed Picker, Fullscreen -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        
+        <!-- Live Watch Progress Badge -->
+        <div
+          class="px-2.5 py-1 rounded-lg text-[11px] font-black font-numeric flex items-center gap-1.5"
+          [ngClass]="{
+            'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30': watchPercentage() >= 85,
+            'bg-white/10 text-white/80 border border-white/15': watchPercentage() < 85
+          }"
+        >
+          <span class="text-brand-accent">●</span>
+          <span>{{ watchPercentage() }}% {{ 'مكتمل' }}</span>
+        </div>
+
+        <!-- Speed Selector Dropdown/Buttons -->
+        <div class="flex items-center rounded-lg bg-white/10 border border-white/15 p-0.5 text-[11px] font-bold">
+          @for (rate of [1, 1.25, 1.5, 2]; track rate) {
+            <button
+              type="button"
+              (click)="setSpeed(rate)"
+              class="px-2 py-0.5 rounded transition-colors font-numeric"
+              [ngClass]="{
+                'bg-brand-primary text-white': playbackRate() === rate,
+                'text-white/70 hover:text-white': playbackRate() !== rate
+              }"
+            >
+              {{ rate }}x
+            </button>
+          }
+        </div>
+
+        <!-- Fullscreen Button -->
+        <button
+          type="button"
+          (click)="toggleFullscreen()"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors"
+          [attr.aria-label]="isFullscreen() ? 'Exit Fullscreen' : 'Enter Fullscreen'"
+        >
+          <app-icon name="target" [size]="16" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

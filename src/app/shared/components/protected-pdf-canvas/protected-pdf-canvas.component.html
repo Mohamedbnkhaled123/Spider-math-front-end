@@ -1,0 +1,106 @@
+<div class="protected-pdf-wrapper w-full rounded-3xl border border-surface-border bg-surface-card overflow-hidden shadow-card flex flex-col">
+  
+  <!-- PDF Header Toolbar -->
+  <div class="pdf-toolbar px-4 py-3 bg-surface-bg border-b border-surface-border flex flex-wrap items-center justify-between gap-3 select-none">
+    
+    <!-- Title -->
+    <div class="flex items-center gap-2">
+      <app-icon name="file-text" [size]="18" className="text-brand-primary dark:text-brand-accent" />
+      <h3 class="text-xs sm:text-sm font-bold text-text-primary truncate max-w-xs sm:max-w-md">
+        {{ documentTitle() }}
+      </h3>
+    </div>
+
+    <!-- Page Controls & Zoom Controls -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      
+      <!-- Page Navigation -->
+      <div class="flex items-center gap-1.5 bg-surface-card border border-surface-border rounded-xl px-2 py-1 text-xs font-numeric font-bold">
+        <button
+          type="button"
+          (click)="prevPage()"
+          [disabled]="currentPage() <= 1"
+          class="p-1 rounded hover:bg-surface-bg disabled:opacity-40 transition-colors"
+          aria-label="Previous Page"
+        >
+          <app-icon name="chevron-left" [size]="14" />
+        </button>
+
+        <span class="text-text-primary px-1">
+          {{ currentPage() }} / {{ totalPages() }}
+        </span>
+
+        <button
+          type="button"
+          (click)="nextPage()"
+          [disabled]="currentPage() >= totalPages()"
+          class="p-1 rounded hover:bg-surface-bg disabled:opacity-40 transition-colors"
+          aria-label="Next Page"
+        >
+          <app-icon name="chevron-right" [size]="14" />
+        </button>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="flex items-center gap-1 bg-surface-card border border-surface-border rounded-xl px-2 py-1 text-xs font-numeric font-bold">
+        <button
+          type="button"
+          (click)="zoomOut()"
+          [disabled]="zoomScale() <= 0.75"
+          class="p-1 rounded hover:bg-surface-bg disabled:opacity-40 transition-colors"
+          title="Zoom Out"
+        >
+          -
+        </button>
+        <span class="text-text-muted px-1">{{ (zoomScale() * 100) }}%</span>
+        <button
+          type="button"
+          (click)="zoomIn()"
+          [disabled]="zoomScale() >= 2.5"
+          class="p-1 rounded hover:bg-surface-bg disabled:opacity-40 transition-colors"
+          title="Zoom In"
+        >
+          +
+        </button>
+      </div>
+
+      <!-- Print Button with Conditional Gating -->
+      <button
+        type="button"
+        (click)="printDocument()"
+        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+        [ngClass]="{
+          'bg-brand-primary text-white hover:bg-brand-primary-hover shadow-sm cursor-pointer': isPrintAllowed(),
+          'bg-surface-card border border-surface-border text-text-muted opacity-60 cursor-not-allowed': !isPrintAllowed()
+        }"
+        [title]="isPrintAllowed() ? 'طباعة المذكرة مع العلامة المائية' : 'الطباعة غير مصرح بها لهذا الملف'"
+      >
+        <app-icon [name]="isPrintAllowed() ? 'award' : 'lock'" [size]="14" />
+        <span class="hidden sm:inline">
+          {{ isPrintAllowed() ? 'طباعة مصرح بها' : 'الطباعة مقفلة' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PDF Canvas Viewport with appPreventContextCopy -->
+  <div
+    class="pdf-canvas-container relative flex-1 p-4 sm:p-8 overflow-auto flex items-center justify-center bg-surface-secondary/40 min-h-[500px]"
+    appPreventContextCopy
+  >
+    @if (isLoading()) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-card/80 backdrop-blur-sm z-10">
+        <app-icon name="refresh" [size]="32" className="animate-spin text-brand-primary" />
+        <span class="text-xs font-bold text-text-muted">
+          جاري فك تشفير وتجهيز صفحات المستند...
+        </span>
+      </div>
+    }
+
+    <!-- HTML5 Native Canvas Page -->
+    <div class="canvas-sheet shadow-2xl rounded-lg overflow-hidden border border-surface-border bg-white">
+      <canvas #pdfCanvas class="block max-w-full h-auto"></canvas>
+    </div>
+  </div>
+
+</div>

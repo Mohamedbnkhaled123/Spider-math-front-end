@@ -1,0 +1,11 @@
+.watermark-overlay {
+  contain: strict;
+}
+
+.floating-watermark-pill {
+  background: rgba(15, 22, 41, 0.38);
+  border: 1px solid rgba(0, 242, 254, 0.22);
+  backdrop-filter: blur(2px);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.04em;
+}

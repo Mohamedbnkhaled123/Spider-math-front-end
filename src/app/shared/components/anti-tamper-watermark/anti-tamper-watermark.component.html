@@ -1,0 +1,24 @@
+<div
+  class="watermark-overlay absolute inset-0 pointer-events-none select-none overflow-hidden z-layer-watermark"
+  aria-hidden="true"
+>
+  <!-- Background Static Diagonal Watermark Pattern (0.04 Opacity) -->
+  <div class="watermark-grid-pattern absolute inset-0 flex flex-wrap gap-16 items-center justify-around opacity-[0.035] dark:opacity-[0.05] pointer-events-none">
+    @for (i of [1,2,3,4,5,6]; track i) {
+      <span class="font-mono text-xs font-black tracking-widest uppercase transform -rotate-12 whitespace-nowrap text-text-primary">
+        {{ watermarkText() }}
+      </span>
+    }
+  </div>
+
+  <!-- Dynamic Randomized Floating Watermark Pill (Animation every 7s) -->
+  <div
+    #floatingPill
+    class="floating-watermark-pill absolute font-mono text-[11px] sm:text-xs font-bold text-white px-3 py-1.5 rounded-lg pointer-events-none shadow-sm transition-all duration-700 ease-in-out select-none whitespace-nowrap"
+    [style.top]="position().top"
+    [style.left]="position().left"
+    [style.transform]="'rotate(' + position().rotate + ')'"
+  >
+    {{ watermarkText() }}
+  </div>
+</div>
