@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { AppIconComponent } from '../app-icon/app-icon.component';
 import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -11,7 +12,7 @@ import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
 @Component({
   selector: 'app-brand-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoPipe],
+  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent],
   templateUrl: './brand-header.component.html',
   styleUrl: './brand-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

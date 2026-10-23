@@ -1,12 +1,13 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
 
 @Component({
   selector: 'app-inactive-student-portal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppIconComponent],
   templateUrl: './inactive-student-portal.component.html',
   styleUrl: './inactive-student-portal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

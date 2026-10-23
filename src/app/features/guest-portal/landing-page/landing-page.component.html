@@ -127,14 +127,22 @@
               >
                 {{ langService.isArabic() ? curriculum.badgeTextAr : curriculum.badgeTextEn }}
               </span>
-              <span class="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform duration-200">
+              <div class="group-hover:scale-110 transition-transform duration-200 flex items-center justify-center">
                 @switch (curriculum.code) {
-                  @case ('EGYPTIAN') { 🏛️ }
-                  @case ('GULF') { 🌴 }
-                  @case ('INTERNATIONAL') { 🌐 }
-                  @case ('AMERICAN') { 🎓 }
+                  @case ('EGYPTIAN') {
+                    <app-icon name="landmark" [size]="28" className="text-brand-primary" />
+                  }
+                  @case ('GULF') {
+                    <app-icon name="palmtree" [size]="28" className="text-brand-secondary" />
+                  }
+                  @case ('INTERNATIONAL') {
+                    <app-icon name="globe" [size]="28" className="text-brand-magenta" />
+                  }
+                  @case ('AMERICAN') {
+                    <app-icon name="graduation-cap" [size]="28" className="text-brand-accent" />
+                  }
                 }
-              </span>
+              </div>
             </div>
 
             <!-- Title & Subtitle -->

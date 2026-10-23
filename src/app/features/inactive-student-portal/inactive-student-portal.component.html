@@ -1,7 +1,7 @@
 <div class="max-w-4xl mx-auto px-4 py-12 text-center">
   <div class="rounded-3xl border border-surface-border bg-surface-card p-8 sm:p-12 shadow-glass">
-    <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-blue-400 mx-auto flex items-center justify-center text-3xl mb-6">
-      📚
+    <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-blue-400 mx-auto flex items-center justify-center mb-6">
+      <app-icon name="book-open" [size]="32" />
     </div>
     
     <h2 class="text-2xl sm:text-3xl font-black mb-3">
@@ -24,7 +24,7 @@
         (click)="openWhatsAppSubscription()"
         class="px-8 py-3.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/25 flex items-center gap-2 mx-auto"
       >
-        <span>💬</span>
+        <app-icon name="message-circle" [size]="18" />
         <span>{{ langService.isArabic() ? 'طلب تفعيل الاشتراك عبر واتساب' : 'Request Subscription via WhatsApp' }}</span>
       </button>
     </div>

@@ -32,19 +32,19 @@
     <!-- Action Bar Controls (Lang, Theme, User Auth Status) -->
     <div class="flex items-center gap-2 sm:gap-3">
       
-      <!-- Language Switcher (EN / عربي) -->
+      <!-- Language Switcher (EN / عربي) with Lucide Globe Icon -->
       <button
         type="button"
         (click)="toggleLanguage()"
-        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs sm:text-sm font-bold text-text-primary transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95"
+        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs sm:text-sm font-bold text-text-primary transition-all duration-200 flex items-center gap-2 shadow-sm active:scale-95"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
         title="Toggle Language / تغيير اللغة"
       >
-        <span class="text-sm">🌐</span>
+        <app-icon name="globe" [size]="16" className="text-brand-secondary" />
         <span>{{ langService.isArabic() ? 'English' : 'عربي' }}</span>
       </button>
 
-      <!-- Theme Switcher (Light / Dark) -->
+      <!-- Theme Switcher (Light / Dark) with Lucide Sun/Moon Icons -->
       <button
         type="button"
         (click)="toggleTheme()"
@@ -53,9 +53,9 @@
         [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
         @if (themeService.isDark()) {
-          <span class="text-amber-400 transform hover:rotate-45 transition-transform duration-300">☀️</span>
+          <app-icon name="sun" [size]="18" className="text-amber-400 hover:rotate-45 transition-transform duration-300" />
         } @else {
-          <span class="text-brand-primary transform hover:-rotate-12 transition-transform duration-300">🌙</span>
+          <app-icon name="moon" [size]="18" className="text-brand-primary hover:-rotate-12 transition-transform duration-300" />
         }
       </button>
 
@@ -71,8 +71,8 @@
           }
 
           <!-- Glowing XP Pill -->
-          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
-            <span class="text-brand-accent animate-spark-twinkle">✦</span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
+            <app-icon name="award" [size]="14" className="text-brand-accent" />
             <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
           </span>
 
@@ -85,9 +85,10 @@
           <button
             type="button"
             (click)="logout()"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1"
           >
-            {{ 'NAV.LOGOUT' | transloco }}
+            <app-icon name="log-out" [size]="14" />
+            <span>{{ 'NAV.LOGOUT' | transloco }}</span>
           </button>
         </div>
       } @else {

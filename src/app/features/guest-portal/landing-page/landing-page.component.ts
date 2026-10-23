@@ -8,13 +8,14 @@ import {
   ICurriculumNode,
   CurriculumCode
 } from '../../../core/constants/curriculum-tree.constant';
+import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoPipe],
+  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

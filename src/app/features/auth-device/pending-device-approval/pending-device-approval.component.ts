@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { DeviceFingerprintService } from '../../../core/auth/device-fingerprint.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -10,7 +11,7 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 @Component({
   selector: 'app-pending-device-approval',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe],
+  imports: [CommonModule, TranslocoPipe, AppIconComponent],
   templateUrl: './pending-device-approval.component.html',
   styleUrl: './pending-device-approval.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,7 +27,6 @@ export class PendingDeviceApprovalComponent {
 
   checkApprovalStatus(): void {
     this.isCheckingStatus.set(true);
-    // In actual implementation, calls GET /api/v1/auth/me to verify if approved_devices now includes deviceUuid
     setTimeout(() => {
       this.isCheckingStatus.set(false);
       if (!this.authService.isPendingDeviceApproval()) {
