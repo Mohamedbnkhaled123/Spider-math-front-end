@@ -59,8 +59,11 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   // Outputs
   readonly progressUpdated = output<IPlaybackProgress>();
+  readonly chunkCompleted = output<number>();
   readonly thresholdReached = output<number>();
   readonly tamperAlert = output<string>();
+
+  readonly availableSpeeds: PlaybackRate[] = [1, 1.25, 1.5, 2];
 
   // View Containers
   readonly playerContainer = viewChild<ElementRef<HTMLElement>>('playerContainer');
@@ -147,8 +150,8 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     this.currentTimeSec.set(targetSec);
   }
 
-  setSpeed(speed: PlaybackRate): void {
-    this.playbackRate.set(speed);
+  setSpeed(speed: PlaybackRate | number): void {
+    this.playbackRate.set(speed as PlaybackRate);
     if (this.ytPlayer && this.ytPlayer.setPlaybackRate) {
       this.ytPlayer.setPlaybackRate(speed);
     }
@@ -306,7 +309,10 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
       // Record 5-second chunk index
       const chunkIdx = Math.floor(currentSec / 5);
-      this.watchedChunks.add(chunkIdx);
+      if (!this.watchedChunks.has(chunkIdx)) {
+        this.watchedChunks.add(chunkIdx);
+        this.chunkCompleted.emit(chunkIdx);
+      }
 
       const pct = this.watchPercentage();
       this.progressUpdated.emit({

@@ -1,0 +1,256 @@
+<div class="assessment-runner-root max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- ========================================================================= -->
+  <!-- 1. Offline Sync Shield Status Banner (Animation 4.6)                      -->
+  <!-- ========================================================================= -->
+  @if (syncQueue.syncShieldState() !== 'IDLE') {
+    <div
+      class="mb-6 p-4 rounded-2xl border text-xs font-bold flex items-center justify-between shadow-sm transition-all animate-fade-in"
+      [class.bg-amber-500/10]="syncQueue.syncShieldState() === 'QUEUED_OFFLINE'"
+      [class.border-amber-500/30]="syncQueue.syncShieldState() === 'QUEUED_OFFLINE'"
+      [class.text-amber-600]="syncQueue.syncShieldState() === 'QUEUED_OFFLINE'"
+      [class.bg-brand-primary/10]="syncQueue.syncShieldState() === 'SYNCING'"
+      [class.border-brand-primary/30]="syncQueue.syncShieldState() === 'SYNCING'"
+      [class.text-brand-primary]="syncQueue.syncShieldState() === 'SYNCING'"
+      [class.bg-emerald-500/10]="syncQueue.syncShieldState() === 'SYNCED_ONLINE'"
+      [class.border-emerald-500/30]="syncQueue.syncShieldState() === 'SYNCED_ONLINE'"
+      [class.text-emerald-600]="syncQueue.syncShieldState() === 'SYNCED_ONLINE'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon
+          [name]="syncQueue.syncShieldState() === 'SYNCING' ? 'loader' : 'shield'"
+          [size]="18"
+          [className]="syncQueue.syncShieldState() === 'SYNCING' ? 'animate-spin' : ''"
+        />
+        <span>{{ syncQueue.syncMessage() }}</span>
+      </div>
+
+      <span class="font-numeric text-[11px] px-2.5 py-0.5 rounded-full bg-surface-card border border-surface-border">
+        Dexie.js Shield Active
+      </span>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 2. Header Bar: Exit, Monotonic Urgency Clock & Desmos Trigger            -->
+  <!-- ========================================================================= -->
+  <header class="flex items-center justify-between pb-6 mb-8 border-b border-surface-border">
+    <div class="flex items-center gap-3">
+      <a
+        [routerLink]="['/student/units', bundle().unitId]"
+        class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+      >
+        <app-icon name="arrow-right" [size]="14" />
+        <span>مغادرة التقييم</span>
+      </a>
+
+      <div>
+        <h1 class="text-base sm:text-lg font-black text-text-primary tracking-tight">
+          {{ bundle().titleAr }}
+        </h1>
+      </div>
+    </div>
+
+    <!-- Controls: Desmos & Monotonic Clock -->
+    <div class="flex items-center gap-3">
+      <!-- Desmos Trigger Button -->
+      <button
+        type="button"
+        (click)="toggleDesmos()"
+        class="px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+        [class.border-brand-accent]="isDesmosOpen()"
+        [class.bg-brand-primary/10]="isDesmosOpen()"
+        [class.text-brand-primary]="isDesmosOpen()"
+      >
+        <app-icon name="calculator" [size]="16" />
+        <span class="hidden sm:inline">آلة ديسموس البيانية</span>
+      </button>
+
+      <!-- Monotonic Countdown Badge (Animation 4.6 Urgency States) -->
+      <div
+        class="timer-badge px-3.5 py-2 rounded-xl border font-numeric font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm"
+        [class.border-surface-border]="quizCache.urgencyState() === 'CALM'"
+        [class.bg-surface-card]="quizCache.urgencyState() === 'CALM'"
+        [class.text-text-primary]="quizCache.urgencyState() === 'CALM'"
+        [class.border-amber-500]="quizCache.urgencyState() === 'WARNING'"
+        [class.bg-amber-500/10]="quizCache.urgencyState() === 'WARNING'"
+        [class.text-amber-500]="quizCache.urgencyState() === 'WARNING'"
+        [class.border-feedback-danger]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+        [class.bg-feedback-danger/10]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+        [class.text-feedback-danger]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+        [class.animate-timer-urgency]="quizCache.urgencyState() === 'CRITICAL'"
+      >
+        <app-icon name="clock" [size]="14" />
+        <span>{{ quizCache.remainingSeconds() }} ثانية</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 3. Question Progress Dots Bar                                             -->
+  <!-- ========================================================================= -->
+  @if (!isSubmissionCompleted()) {
+    <div class="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+      <span class="text-xs font-bold text-text-muted ml-2">الأسئلة:</span>
+      @for (q of bundle().questions; track q._id; let idx = $index) {
+        <button
+          type="button"
+          (click)="activeQuestionIdx.set(idx)"
+          class="w-8 h-8 rounded-xl font-numeric text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center justify-center"
+          [class.bg-brand-primary]="activeQuestionIdx() === idx"
+          [class.text-white]="activeQuestionIdx() === idx"
+          [class.border-brand-accent]="activeQuestionIdx() === idx"
+          [class.bg-surface-card]="activeQuestionIdx() !== idx"
+          [class.border-surface-border]="activeQuestionIdx() !== idx"
+        >
+          {{ idx + 1 }}
+        </button>
+      }
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. Active Question Card (MCQ or Essay Homework)                           -->
+    <!-- ========================================================================= -->
+    <div class="question-container rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-10 shadow-card">
+      
+      <!-- Question Meta Info -->
+      <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
+        <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary">
+          السؤال {{ activeQuestionIdx() + 1 }} من {{ totalQuestionsCount() }}
+        </span>
+
+        <span class="text-xs font-bold text-text-muted font-numeric">
+          {{ currentQuestion().points }} درجات
+        </span>
+      </div>
+
+      <!-- Question Text Prompt -->
+      <h3 class="text-base sm:text-xl font-bold text-text-primary leading-relaxed mb-6">
+        {{ currentQuestion().textAr }}
+      </h3>
+
+      <!-- Optional Prompt Image (from Cloudinary permanent questions folder) -->
+      @if (currentQuestion().imageUrl; as imgUrl) {
+        <div class="my-6 max-w-lg rounded-2xl overflow-hidden border border-surface-border bg-surface-bg p-2">
+          <img [src]="imgUrl" alt="شكل توضيحي للسؤال" class="w-full h-auto rounded-xl object-contain" />
+        </div>
+      }
+
+      <!-- Question Type 1: MCQ Choices Grid (Tactile Press Animation 4.6) -->
+      @if (currentQuestion().type === 'MCQ') {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+          @for (opt of currentQuestion().options; track opt.optionIndex) {
+            <div
+              (click)="selectOption(opt.optionIndex)"
+              class="mcq-option-card p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
+              [class.border-brand-accent]="isOptionSelected(opt.optionIndex)"
+              [class.bg-brand-primary/10]="isOptionSelected(opt.optionIndex)"
+              [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
+              [class.hover:border-brand-accent/50]="!isOptionSelected(opt.optionIndex)"
+            >
+              <div
+                class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+                [class.border-brand-accent]="isOptionSelected(opt.optionIndex)"
+                [class.bg-brand-accent]="isOptionSelected(opt.optionIndex)"
+                [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
+              >
+                @if (isOptionSelected(opt.optionIndex)) {
+                  <span class="w-2 h-2 rounded-full bg-white"></span>
+                }
+              </div>
+
+              <span class="text-xs sm:text-sm font-bold text-text-primary">
+                {{ opt.textAr }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Question Type 2: Essay / Homework Handwritten Upload -->
+      @if (currentQuestion().type === 'ESSAY') {
+        <div class="mt-6 p-6 rounded-2xl border border-surface-border bg-surface-bg/50">
+          <app-image-compressor-uploader
+            uploadTarget="homework"
+            (homeworkUploaded)="onHomeworkUploaded($event)"
+          />
+        </div>
+      }
+
+      <!-- Navigation & Submit Footer Actions -->
+      <div class="flex items-center justify-between pt-8 mt-10 border-t border-surface-border">
+        <button
+          type="button"
+          (click)="prevQuestion()"
+          [disabled]="activeQuestionIdx() === 0"
+          class="px-5 py-2.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all disabled:opacity-40 flex items-center gap-2 cursor-pointer"
+        >
+          <app-icon name="chevron-right" [size]="14" />
+          <span>السابق</span>
+        </button>
+
+        @if (activeQuestionIdx() < totalQuestionsCount() - 1) {
+          <button
+            type="button"
+            (click)="nextQuestion()"
+            class="px-6 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>التالي</span>
+            <app-icon name="chevron-left" [size]="14" />
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="submitAssessment()"
+            [disabled]="isSubmitting()"
+            class="px-8 py-3 rounded-xl font-black text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            @if (isSubmitting()) {
+              <app-icon name="loader" [size]="16" className="animate-spin" />
+              <span>جارِ تسليم الامتحان...</span>
+            } @else {
+              <app-icon name="check-circle" [size]="16" />
+              <span>إنهاء التقييم وتسليم الإجابات</span>
+            }
+          </button>
+        }
+      </div>
+
+    </div>
+  } @else {
+    <!-- ========================================================================= -->
+    <!-- 5. Submission Completed Success Card                                      -->
+    <!-- ========================================================================= -->
+    <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card shadow-glass text-center max-w-xl mx-auto my-10 animate-fade-in">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+        <app-icon name="check-circle" [size]="32" />
+      </div>
+
+      <h2 class="text-2xl font-black text-text-primary mb-2">
+        تم تسليم التقييم بنجاح ✦
+      </h2>
+      <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-8">
+        تم حفظ إجاباتك محلياً وتأمينها عبر درع Dexie.js وإرسالها للتصحيح واعتماد درجات الواجب من قِبل المهندسة هبة عبدالوهاب.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a
+          [routerLink]="['/student/units', bundle().unitId]"
+          class="px-6 py-3 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover shadow-sm transition-all"
+        >
+          العودة لمحاضرات الوحدة
+        </a>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 6. Embedded Desmos Graphing Calculator Modal                              -->
+  <!-- ========================================================================= -->
+  <app-graph-calculator-modal
+    [(isOpen)]="isDesmosOpen"
+    calculatorType="DESMOS"
+    (closed)="isDesmosOpen.set(false)"
+  />
+
+</div>

@@ -1,0 +1,11 @@
+.assessment-runner-root {
+  width: 100%;
+}
+
+.mcq-option-card {
+  transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
+
+  &:active {
+    transform: scale(0.985);
+  }
+}

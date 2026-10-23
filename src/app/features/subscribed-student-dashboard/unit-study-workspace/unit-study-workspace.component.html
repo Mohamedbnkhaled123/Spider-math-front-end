@@ -1,0 +1,201 @@
+<div class="unit-workspace-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+  <!-- ========================================================================= -->
+  <!-- Top Navigation & Breadcrumb                                               -->
+  <!-- ========================================================================= -->
+  <div class="flex items-center justify-between pb-4 mb-6 border-b border-surface-border">
+    <div class="flex items-center gap-3">
+      <a
+        routerLink="/student"
+        class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+      >
+        <app-icon name="arrow-right" [size]="14" />
+        <span>العودة للوحة الوحدات</span>
+      </a>
+
+      <span class="text-xs text-text-muted">|</span>
+
+      <span class="text-xs font-bold text-brand-secondary">
+        {{ workspaceData().curriculum }} • {{ workspaceData().gradeLevel }}
+      </span>
+    </div>
+
+    <!-- Active Student HA Code Badge -->
+    <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-primary dark:text-brand-accent">
+      {{ authService.currentUser()?.student_ha_code ?? 'HA4920' }}
+    </span>
+  </div>
+
+  <!-- Unit Title Headline -->
+  <div class="mb-6">
+    <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight">
+      {{ workspaceData().titleAr }}
+    </h1>
+    <p class="text-xs text-text-secondary mt-1">
+      محاضرات تفاعلية مصممة خصيصاً بنظام حلول ديسموس وحماية الملكية الفكرية.
+    </p>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- Main Workspace Layout: Player/PDF on Left, Playlist on Right              -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Theater Viewport (8 Cols) -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+      
+      <!-- Video vs PDF Tab Switcher -->
+      <div class="flex items-center justify-between p-1 rounded-2xl border border-surface-border bg-surface-card shadow-sm">
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            (click)="setTab('video')"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+            [class.bg-brand-primary]="activeTab() === 'video'"
+            [class.text-white]="activeTab() === 'video'"
+            [class.shadow-sm]="activeTab() === 'video'"
+            [class.text-text-secondary]="activeTab() !== 'video'"
+          >
+            <app-icon name="play" [size]="14" />
+            <span>فيديو المحاضرة المحمي</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="setTab('pdf')"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+            [class.bg-brand-primary]="activeTab() === 'pdf'"
+            [class.text-white]="activeTab() === 'pdf'"
+            [class.shadow-sm]="activeTab() === 'pdf'"
+            [class.text-text-secondary]="activeTab() !== 'pdf'"
+          >
+            <app-icon name="file-text" [size]="14" />
+            <span>ملزمة الشرح التفاعلية (Google Drive)</span>
+          </button>
+        </div>
+
+        <span class="text-[11px] font-bold text-text-muted px-3 hidden sm:inline">
+          {{ activeLecture().durationMinutes }} دقيقة
+        </span>
+      </div>
+
+      <!-- Content Viewer Container -->
+      <div class="theater-screen rounded-3xl border border-surface-border bg-surface-card overflow-hidden shadow-card">
+        @if (activeTab() === 'video') {
+          <!-- Protected YouTube Player Integration -->
+          <app-protected-youtube-player
+            [encryptedVideoId]="activeLecture().encryptedVideoId"
+            [videoDurationSec]="activeLecture().durationMinutes * 60"
+            [lectureId]="activeLecture()._id"
+            (chunkCompleted)="onChunkWatched($event)"
+          />
+        } @else {
+          <!-- Protected PDF Canvas Stream Integration -->
+          <div class="p-4 sm:p-6">
+            <app-protected-pdf-canvas
+              [lectureId]="activeLecture()._id"
+              [fileId]="activeLecture().googleDrivePdfFileId ?? 'mock_pdf_id'"
+              [isPrintAllowed]="activeLecture().isPrintAllowed"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Active Lecture Details & Quiz Card -->
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary">
+              المحاضرة رقم {{ activeLecture().order }}
+            </span>
+            @if (activeLecture().isCompleted) {
+              <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                <app-icon name="check-circle" [size]="13" />
+                <span>تم إنجازها واحتساب نقاط الـ XP</span>
+              </span>
+            }
+          </div>
+          <h3 class="text-base font-black text-text-primary">
+            {{ activeLecture().titleAr }}
+          </h3>
+        </div>
+
+        <!-- Start Assessment CTA -->
+        @if (activeLecture().hasAssessment && activeLecture().assessmentId; as asmId) {
+          <a
+            [routerLink]="['/student/assessments', asmId]"
+            class="px-5 py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <app-icon name="award" [size]="16" />
+            <span>بدء تقييم المحاضرة والواجب</span>
+          </a>
+        }
+      </div>
+
+    </div>
+
+    <!-- Playlist & Lessons Navigation (4 Cols) -->
+    <div class="lg:col-span-4 rounded-3xl border border-surface-border bg-surface-card p-6 shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-4">
+        <div>
+          <h3 class="text-sm font-black text-text-primary">
+            فهرس محاضرات الوحدة
+          </h3>
+          <p class="text-[11px] text-text-muted mt-0.5">
+            {{ workspaceData().lectures.length }} محاضرات متسلسلة
+          </p>
+        </div>
+
+        <span class="p-2 rounded-xl bg-brand-primary/10 text-brand-primary">
+          <app-icon name="book-open" [size]="16" />
+        </span>
+      </div>
+
+      <!-- Lessons List -->
+      <div class="space-y-3">
+        @for (lec of workspaceData().lectures; track lec._id) {
+          <div
+            (click)="selectLecture(lec._id)"
+            class="lesson-card p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col gap-2"
+            [class.border-brand-accent]="selectedLectureId() === lec._id"
+            [class.bg-brand-primary/5]="selectedLectureId() === lec._id"
+            [class.border-surface-border]="selectedLectureId() !== lec._id"
+            [class.hover:border-brand-accent/50]="selectedLectureId() !== lec._id"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-black font-numeric text-text-muted">
+                0{{ lec.order }}
+              </span>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold text-text-muted font-numeric">
+                  {{ lec.durationMinutes }} دقيقة
+                </span>
+                @if (lec.isCompleted) {
+                  <app-icon name="check-circle" [size]="14" className="text-emerald-500" />
+                }
+              </div>
+            </div>
+
+            <h4 class="text-xs font-bold text-text-primary leading-snug"
+              [class.text-brand-primary]="selectedLectureId() === lec._id"
+            >
+              {{ lec.titleAr }}
+            </h4>
+
+            <!-- Mini Progress Bar -->
+            <div class="w-full h-1.5 rounded-full bg-surface-border overflow-hidden mt-1">
+              <div
+                class="h-full bg-brand-primary transition-all duration-300"
+                [style.width.%]="lec.watchPercentage"
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

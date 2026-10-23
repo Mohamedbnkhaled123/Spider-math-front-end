@@ -48,7 +48,11 @@ export type AppIconName =
   | 'trash'
   | 'rotate-cw'
   | 'rotate-ccw'
-  | 'copy';
+  | 'copy'
+  | 'external-link'
+  | 'activity'
+  | 'user-plus'
+  | 'video';
 
 @Component({
   selector: 'app-icon',

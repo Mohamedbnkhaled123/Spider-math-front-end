@@ -303,6 +303,25 @@ code,
   }
 }
 
+// 9. Leaderboard Podium Rise (Animation 4.5)
+@keyframes podiumRise {
+  0% {
+    opacity: 0;
+    transform: translateY(35px) scale(0.95);
+  }
+  70% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-podium-rise {
+  animation: podiumRise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
 @keyframes sonarRadarPulse {
   0% {
     transform: scale(1);

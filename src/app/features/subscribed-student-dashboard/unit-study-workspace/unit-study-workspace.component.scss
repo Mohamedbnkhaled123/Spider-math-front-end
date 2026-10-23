@@ -1,0 +1,11 @@
+.unit-workspace-container {
+  width: 100%;
+}
+
+.lesson-card {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateX(-2px);
+  }
+}

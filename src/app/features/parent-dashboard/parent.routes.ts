@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { ParentDashboardComponent } from './parent-dashboard.component';
+import { ParentShellComponent } from './parent-shell/parent-shell.component';
 
 export const PARENT_ROUTES: Routes = [
   {
     path: '',
-    component: ParentDashboardComponent
+    component: ParentShellComponent
   }
 ];
