@@ -9,10 +9,11 @@ import {
   inject,
   PLATFORM_ID,
   HostListener,
-  SecurityContext
+  ViewChild,
+  ElementRef,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { CalculatorModalFactory } from './calculator-modal.factory';
 import {
@@ -23,11 +24,14 @@ import {
 
 /**
  * Spider Math Educational Platform (v2.2)
- * Phase 12: Graph Calculator Modal Component (Desmos Graphing Embed)
+ * Phase 12: Graph Calculator Modal Component (Full Desmos API Engine)
  * 
- * - Embeds official Desmos interactive graphing calculator inside a draggable/collapsible modal
- * - Supports quick calculus/algebra function shortcuts
- * - Obeying strict 'NONE' | 'DESMOS' contract (GeoGebra completely excluded)
+ * - Embeds official Desmos Graphing Calculator API with full interactivity:
+ *   * Left expressions panel (+ menu, functions, sliders, tables, f(x))
+ *   * Bottom on-screen math keypad (sin, cos, tan, log, roots, variables, digits)
+ *   * Graph settings menu (radians/degrees, grid toggle, axis bounds)
+ *   * Interactive zoom & trace tools
+ * - Strictly obeys 'NONE' | 'DESMOS' contract (GeoGebra completely excluded)
  */
 @Component({
   selector: 'app-graph-calculator-modal',
@@ -37,9 +41,8 @@ import {
   styleUrls: ['./graph-calculator-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GraphCalculatorModalComponent {
+export class GraphCalculatorModalComponent implements OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly sanitizer = inject(DomSanitizer);
 
   // Inputs & Outputs
   readonly isOpen = model<boolean>(false);
@@ -50,14 +53,29 @@ export class GraphCalculatorModalComponent {
   // State Signals
   readonly isCollapsed = signal<boolean>(false);
   readonly isMaximized = signal<boolean>(false);
-  readonly position = signal<CalculatorCoordinates>({ x: 30, y: 90 });
+  readonly position = signal<CalculatorCoordinates>({ x: 40, y: 80 });
   readonly isDragging = signal<boolean>(false);
+  readonly isEngineLoading = signal<boolean>(false);
+  readonly copiedNotification = signal<string | null>(null);
 
   // Dragging mechanics
   private dragStartX = 0;
   private dragStartY = 0;
   private initialPosX = 0;
   private initialPosY = 0;
+
+  // Desmos API Instance
+  private calculatorInstance: any = null;
+  private containerElement: HTMLDivElement | null = null;
+
+  @ViewChild('desmosContainer') set desmosContainer(
+    elementRef: ElementRef<HTMLDivElement> | undefined
+  ) {
+    if (elementRef && isPlatformBrowser(this.platformId)) {
+      this.containerElement = elementRef.nativeElement;
+      this.initDesmosEngine(elementRef.nativeElement);
+    }
+  }
 
   // Active Calculator Configuration via Factory
   readonly config = computed(() => {
@@ -66,13 +84,6 @@ export class GraphCalculatorModalComponent {
     } catch {
       return CalculatorModalFactory.resolveCalculator('NONE');
     }
-  });
-
-  // Sanitized Embed URL
-  readonly safeEmbedUrl = computed<SafeResourceUrl>(() => {
-    const rawUrl = this.config().embedUrl;
-    if (!rawUrl) return '';
-    return this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
   });
 
   // Quick Curricular Function Shortcuts for Eng. Heba's Students
@@ -84,7 +95,78 @@ export class GraphCalculatorModalComponent {
     { labelAr: 'دالة لوغاريتمية', labelEn: 'Logarithmic', latex: 'y=\\ln(x)' }
   ];
 
-  readonly copiedNotification = signal<string | null>(null);
+  ngOnDestroy(): void {
+    if (this.calculatorInstance) {
+      try {
+        this.calculatorInstance.destroy();
+      } catch {}
+      this.calculatorInstance = null;
+    }
+  }
+
+  /**
+   * Initializes genuine Desmos Graphing Calculator API with full expressions panel & keypad.
+   */
+  private initDesmosEngine(element: HTMLDivElement): void {
+    if (!isPlatformBrowser(this.platformId) || this.calculatorInstance) return;
+
+    const win = window as any;
+    if (win.Desmos && win.Desmos.GraphingCalculator) {
+      this.mountCalculator(win.Desmos, element);
+    } else {
+      this.isEngineLoading.set(true);
+      const scriptId = 'desmos-api-script';
+      let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+      if (!script) {
+        script = document.createElement('script');
+        script.id = scriptId;
+        script.src =
+          'https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6';
+        script.async = true;
+        document.head.appendChild(script);
+      }
+
+      script.onload = () => {
+        this.isEngineLoading.set(false);
+        if (win.Desmos && win.Desmos.GraphingCalculator) {
+          this.mountCalculator(win.Desmos, element);
+        }
+      };
+
+      script.onerror = () => {
+        this.isEngineLoading.set(false);
+        console.warn('Failed to load Desmos script from CDN');
+      };
+    }
+  }
+
+  private mountCalculator(desmos: any, element: HTMLDivElement): void {
+    try {
+      element.innerHTML = '';
+      this.calculatorInstance = desmos.GraphingCalculator(element, {
+        keypad: true,
+        expressions: true,
+        settingsMenu: true,
+        zoomButtons: true,
+        pointsOfInterest: true,
+        trace: true,
+        border: false,
+        fontSize: 14,
+        language: 'en'
+      });
+
+      // Plot initial expression if provided
+      if (this.initialExpression()) {
+        this.calculatorInstance.setExpression({
+          id: 'initial_expr',
+          latex: this.initialExpression()
+        });
+      }
+    } catch (err) {
+      console.error('Error mounting Desmos calculator instance:', err);
+    }
+  }
 
   /**
    * Starts modal dragging on header grip.
@@ -115,8 +197,8 @@ export class GraphCalculatorModalComponent {
     const deltaX = clientX - this.dragStartX;
     const deltaY = clientY - this.dragStartY;
 
-    const newX = Math.max(10, Math.min(window.innerWidth - 320, this.initialPosX + deltaX));
-    const newY = Math.max(70, Math.min(window.innerHeight - 150, this.initialPosY + deltaY));
+    const newX = Math.max(10, Math.min(window.innerWidth - 360, this.initialPosX + deltaX));
+    const newY = Math.max(60, Math.min(window.innerHeight - 150, this.initialPosY + deltaY));
 
     this.position.set({ x: newX, y: newY });
   }
@@ -135,6 +217,13 @@ export class GraphCalculatorModalComponent {
 
   toggleMaximize(): void {
     this.isMaximized.update(v => !v);
+    if (this.calculatorInstance) {
+      setTimeout(() => {
+        try {
+          this.calculatorInstance.resize();
+        } catch {}
+      }, 100);
+    }
   }
 
   closeModal(): void {
@@ -142,11 +231,22 @@ export class GraphCalculatorModalComponent {
     this.closed.emit();
   }
 
-  copyPreset(latex: string, label: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    navigator.clipboard?.writeText(latex).then(() => {
-      this.copiedNotification.set(`تم نسخ "${label}" للصقها في ديسموس!`);
+  /**
+   * Directly plots preset function into Desmos and shows feedback.
+   */
+  applyPreset(preset: CalculatorPreset): void {
+    if (this.calculatorInstance) {
+      this.calculatorInstance.setExpression({
+        id: `preset_${Date.now()}`,
+        latex: preset.latex
+      });
+      this.copiedNotification.set(`تم رسم "${preset.labelAr}" مباشرة!`);
       setTimeout(() => this.copiedNotification.set(null), 3000);
-    });
+    } else if (isPlatformBrowser(this.platformId)) {
+      navigator.clipboard?.writeText(preset.latex).then(() => {
+        this.copiedNotification.set(`تم نسخ "${preset.labelAr}"!`);
+        setTimeout(() => this.copiedNotification.set(null), 3000);
+      });
+    }
   }
 }

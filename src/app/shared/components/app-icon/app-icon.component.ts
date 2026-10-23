@@ -35,7 +35,20 @@ export type AppIconName =
   | 'star'
   | 'arrow-right'
   | 'arrow-left'
-  | 'calculator';
+  | 'calculator'
+  | 'grid'
+  | 'minus'
+  | 'minimize'
+  | 'maximize'
+  | 'plus'
+  | 'loader'
+  | 'camera'
+  | 'image'
+  | 'upload-cloud'
+  | 'trash'
+  | 'rotate-cw'
+  | 'rotate-ccw'
+  | 'copy';
 
 @Component({
   selector: 'app-icon',

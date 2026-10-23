@@ -27,20 +27,20 @@
               DESMOS
             </span>
             <span class="text-xs font-bold text-text-primary hidden sm:inline">
-              | آلة ديسموس البيانية
+              | آلة ديسموس البيانية الرسمية الكاملة
             </span>
           </div>
 
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
-            رسم بياني تفاعلي
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 hidden md:inline-flex">
+            لوحة المعادلات + لوحة المفاتيح
           </span>
         </div>
 
         <!-- Action Controls (Minimize, Maximize, Close) -->
         <div class="flex items-center gap-1">
-          <!-- Quick Copy Notification Toast -->
+          <!-- Quick Feedback Notification Toast -->
           @if (copiedNotification(); as toast) {
-            <span class="text-[11px] font-bold text-emerald-500 mr-2 animate-fade-in truncate max-w-[150px]">
+            <span class="text-[11px] font-bold text-emerald-500 mr-2 animate-fade-in truncate max-w-[180px]">
               {{ toast }}
             </span>
           }
@@ -82,38 +82,39 @@
         <!-- Mathematical Function Presets Bar -->
         <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex items-center gap-2 overflow-x-auto text-xs">
           <span class="text-[11px] font-bold text-text-muted whitespace-nowrap">
-            دوال سريعة:
+            رسم مباشر:
           </span>
           @for (preset of presets; track preset.latex) {
             <button
               type="button"
-              (click)="copyPreset(preset.latex, preset.labelAr)"
-              class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-[11px] font-medium text-text-primary transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 shadow-sm"
-              [title]="'نسخ ' + preset.latex"
+              (click)="applyPreset(preset)"
+              class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-[11px] font-medium text-text-primary transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5 shadow-sm cursor-pointer"
+              [title]="'رسم ' + preset.latex"
             >
-              <app-icon name="copy" [size]="11" className="text-brand-accent" />
+              <app-icon name="plus" [size]="11" className="text-brand-accent" />
               <span>{{ preset.labelAr }}</span>
             </button>
           }
         </div>
 
-        <!-- Desmos Embed IFrame -->
-        <div class="calculator-embed-container relative w-full bg-white flex-1">
-          @if (safeEmbedUrl()) {
-            <iframe
-              [src]="safeEmbedUrl()"
-              class="w-full h-full border-0"
-              title="Desmos Graphing Calculator"
-              allow="clipboard-write"
-              loading="lazy"
-            ></iframe>
+        <!-- Genuine Desmos Graphing API Container -->
+        <div class="calculator-embed-container relative w-full bg-white flex-1 overflow-hidden">
+          <div #desmosContainer class="desmos-host w-full h-full"></div>
+          
+          @if (isEngineLoading()) {
+            <div class="absolute inset-0 flex items-center justify-center bg-surface-card/90 backdrop-blur-sm z-20">
+              <div class="flex items-center gap-2.5 text-xs font-bold text-brand-primary dark:text-brand-accent p-4 rounded-2xl border border-surface-border glass-panel">
+                <app-icon name="loader" [size]="20" className="animate-spin text-brand-accent" />
+                <span>جارِ تحميل محرك ديسموس الرسمي الكامل (Equations & Keypad)...</span>
+              </div>
+            </div>
           }
         </div>
 
         <!-- Footer Hint -->
         <div class="modal-footer px-3 py-1.5 bg-surface-card/90 border-t border-surface-border/50 flex items-center justify-between text-[11px] text-text-muted">
-          <span>يمكنك تحريك الآلة الحاسبة بالسحب من الشريط العلوي</span>
-          <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Engine</span>
+          <span>اسحب النافذة بحرية من الشريط العلوي | يمكنك كتابة المعادلات في القائمة اليسرى واستخدام لوحة المفاتيح بالأسفل</span>
+          <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Official Engine</span>
         </div>
       }
     </div>

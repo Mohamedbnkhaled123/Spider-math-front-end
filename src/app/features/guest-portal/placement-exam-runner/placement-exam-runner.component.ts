@@ -14,6 +14,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LeadGateModalComponent } from '../lead-gate-modal/lead-gate-modal.component';
+import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
   IPlacementQuestion,
@@ -31,7 +32,8 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
     CommonModule,
     RouterLink,
     AppIconComponent,
-    LeadGateModalComponent
+    LeadGateModalComponent,
+    GraphCalculatorModalComponent
   ],
   templateUrl: './placement-exam-runner.component.html',
   styleUrl: './placement-exam-runner.component.scss',

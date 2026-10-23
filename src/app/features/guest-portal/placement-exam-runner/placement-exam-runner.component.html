@@ -208,37 +208,13 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- Embedded Desmos Graphing Calculator Drawer / Modal                        -->
+  <!-- Official Desmos Graphing Calculator Modal (Full Expressions & Keypad API) -->
   <!-- ========================================================================= -->
-  @if (isDesmosActive()) {
-    <div class="fixed inset-x-0 bottom-0 z-layer-modal bg-surface-card border-t border-surface-border shadow-2xl p-4 sm:p-6 transition-all duration-300">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-surface-border">
-          <div class="flex items-center gap-2 text-xs font-bold text-brand-primary dark:text-brand-accent">
-            <app-icon name="calculator" [size]="16" />
-            <span>Desmos Graphing Calculator Engine (API v1.9)</span>
-          </div>
-          <button
-            type="button"
-            (click)="toggleDesmosCalculator()"
-            class="p-1 rounded-lg hover:bg-surface-bg text-text-muted hover:text-text-primary"
-          >
-            <app-icon name="x" [size]="16" />
-          </button>
-        </div>
-
-        <!-- Desmos Iframe / Embed Viewport -->
-        <div class="w-full h-80 rounded-xl overflow-hidden border border-surface-border bg-white">
-          <iframe
-            src="https://www.desmos.com/calculator?embed"
-            class="w-full h-full border-0"
-            title="Desmos Graphing Calculator"
-            loading="lazy"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  }
+  <app-graph-calculator-modal
+    [(isOpen)]="isDesmosActive"
+    calculatorType="DESMOS"
+    (closed)="isDesmosActive.set(false)"
+  />
 
   <!-- ========================================================================= -->
   <!-- Lead Gate Modal Integration                                              -->
