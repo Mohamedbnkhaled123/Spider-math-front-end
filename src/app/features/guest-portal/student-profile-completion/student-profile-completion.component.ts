@@ -146,15 +146,32 @@ export class StudentProfileCompletionComponent implements OnInit {
         this.isSubmitting.set(false);
         this.issuedHaCode.set(res.studentHaCode);
 
-        // Update active auth session
-        this.authService.updateCurrentUser({
+        // Update or establish active student auth session
+        const studentUser = {
+          _id: res.user?._id || ('usr_' + res.studentHaCode),
           student_ha_code: res.studentHaCode,
           full_name: name,
+          email: res.user?.email || `${res.studentHaCode.toLowerCase()}@spidermath.edu`,
+          phone: stPhone,
+          role: 'STUDENT' as const,
           curriculum: this.curriculum(),
           grade_level: this.gradeLevel(),
           academic_term: this.academicTerm(),
-          governorate: this.isEgypt() ? this.governorate() : undefined
-        });
+          governorate: this.isEgypt() ? this.governorate() : undefined,
+          has_active_subscription: false,
+          total_xp: 50
+        };
+
+        if (this.authService.currentUser()) {
+          this.authService.updateCurrentUser(studentUser);
+        } else {
+          this.authService.setSession('jwt_student_' + res.studentHaCode, studentUser);
+        }
+
+        // Auto-navigate to inactive student portal after 2.5s celebratory badge display
+        setTimeout(() => {
+          this.goToInactivePortal();
+        }, 2500);
       },
       error: err => {
         this.isSubmitting.set(false);

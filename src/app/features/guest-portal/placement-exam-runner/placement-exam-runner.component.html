@@ -224,6 +224,9 @@
     [isOpen]="isLeadGateOpen()"
     [initialScore]="submissionResult()?.score ?? 0"
     [totalQuestions]="totalQuestionsCount()"
+    [curriculum]="curriculum()"
+    [gradeLevel]="gradeLevel()"
+    [academicTerm]="term()"
     (closed)="isLeadGateOpen.set(false)"
     (unlocked)="onReportUnlocked($event)"
   />

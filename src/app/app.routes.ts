@@ -46,6 +46,11 @@ export const routes: Routes = [
     title: 'Device Pending Approval | الجهاز بانتظار الاعتماد'
   },
   {
+    path: 'device-pending',
+    redirectTo: 'pending-device-approval',
+    pathMatch: 'full'
+  },
+  {
     path: 'inactive-student-portal',
     canActivate: [authGuard, deviceApprovedGuard],
     loadComponent: () =>
@@ -53,6 +58,11 @@ export const routes: Routes = [
         './features/inactive-student-portal/inactive-dashboard/inactive-dashboard.component'
       ).then(m => m.InactiveDashboardComponent),
     title: 'Inactive Student Portal | بوابة الطالب غير المشترك'
+  },
+  {
+    path: 'inactive-student',
+    redirectTo: 'inactive-student-portal',
+    pathMatch: 'full'
   },
   {
     path: 'student',

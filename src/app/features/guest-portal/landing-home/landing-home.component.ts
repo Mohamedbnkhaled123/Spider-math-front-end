@@ -44,6 +44,7 @@ export class LandingHomeComponent implements OnInit {
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
   readonly selectedGradeLevel = signal<string>('SEC_3');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
+  readonly activeUnitTab = signal<'STUDY_UNIT' | 'FINAL_REVISION'>('STUDY_UNIT');
 
   // Landing Data Signal
   readonly landingData = signal<IPublicLandingData | null>(null);
@@ -53,22 +54,26 @@ export class LandingHomeComponent implements OnInit {
   readonly mouseX = signal<number>(50);
   readonly mouseY = signal<number>(50);
 
-  // Filtered Schedules Table
+  // Filtered Schedules Table (Reacts immediately to curriculum, grade, term)
   readonly filteredSchedules = computed<IScheduleItem[]>(() => {
     const data = this.landingData();
     if (!data || !Array.isArray(data.schedules)) return [];
     const curr = this.selectedCurriculum();
-    const list = data.schedules.filter(s => s.curriculum === curr);
-    return list.length > 0 ? list : data.schedules;
+    const grade = this.selectedGradeLevel();
+    const list = data.schedules.filter(s => s.curriculum === curr && (!s.gradeLevel || s.gradeLevel === grade));
+    return list.length > 0 ? list : data.schedules.filter(s => s.curriculum === curr);
   });
 
-  // Filtered Pricing Packages
+  // Filtered Pricing Packages (Reacts immediately to curriculum and activeUnitTab)
   readonly filteredPackages = computed<IPricingPackage[]>(() => {
     const data = this.landingData();
     if (!data || !Array.isArray(data.pricingPackages)) return [];
     const curr = this.selectedCurriculum();
-    const list = data.pricingPackages.filter(p => p.curriculum === curr);
-    return list.length > 0 ? list : data.pricingPackages;
+    const tab = this.activeUnitTab();
+    const list = data.pricingPackages.filter(p => p.curriculum === curr && p.type === tab);
+    if (list.length > 0) return list;
+    const tabList = data.pricingPackages.filter(p => p.type === tab);
+    return tabList.length > 0 ? tabList : data.pricingPackages.filter(p => p.curriculum === curr);
   });
 
   ngOnInit(): void {
@@ -98,6 +103,18 @@ export class LandingHomeComponent implements OnInit {
     const y = Math.round(((event.clientY - rect.top) / rect.height) * 100);
     this.mouseX.set(x);
     this.mouseY.set(y);
+  }
+
+  setUnitTab(tab: 'STUDY_UNIT' | 'FINAL_REVISION'): void {
+    this.activeUnitTab.set(tab);
+  }
+
+  scrollToSection(sectionId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   openWhatsAppSupport(): void {

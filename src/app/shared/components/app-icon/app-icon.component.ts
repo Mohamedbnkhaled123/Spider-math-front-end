@@ -54,6 +54,8 @@ export type AppIconName =
   | 'user-plus'
   | 'video'
   | 'hash'
+  | 'bell'
+  | 'menu'
   | 'log-in';
 
 @Component({

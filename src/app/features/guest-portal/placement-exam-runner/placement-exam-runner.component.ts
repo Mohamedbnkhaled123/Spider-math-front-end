@@ -208,7 +208,16 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   onReportUnlocked(result: IUnlockPlacementResult): void {
-    // Navigate or complete registration
+    this.router.navigate(['/complete-profile'], {
+      queryParams: {
+        fullName: result.fullName,
+        phone: result.phone,
+        curriculum: this.curriculum(),
+        gradeLevel: this.gradeLevel(),
+        academicTerm: this.term(),
+        attemptId: result.attemptId
+      }
+    });
   }
 
   private startTimer(): void {

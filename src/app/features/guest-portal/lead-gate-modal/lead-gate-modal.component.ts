@@ -34,6 +34,9 @@ export class LeadGateModalComponent {
   readonly isOpen = input<boolean>(false);
   readonly initialScore = input<number>(0);
   readonly totalQuestions = input<number>(5);
+  readonly curriculum = input<string>('EGYPTIAN');
+  readonly gradeLevel = input<string>('SEC_3');
+  readonly academicTerm = input<string>('TERM_1');
 
   // Outputs
   readonly closed = output<void>();
@@ -107,7 +110,11 @@ export class LeadGateModalComponent {
     this.router.navigate(['/complete-profile'], {
       queryParams: {
         fullName: res?.fullName || this.fullName(),
-        phone: res?.phone || this.phone()
+        phone: res?.phone || this.phone(),
+        curriculum: this.curriculum(),
+        gradeLevel: this.gradeLevel(),
+        academicTerm: this.academicTerm(),
+        attemptId: this.attemptId()
       }
     });
   }

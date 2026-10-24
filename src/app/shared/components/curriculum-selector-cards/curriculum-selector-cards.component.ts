@@ -9,6 +9,7 @@ import {
   OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -29,7 +30,7 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 @Component({
   selector: 'app-curriculum-selector-cards',
   standalone: true,
-  imports: [CommonModule, AppIconComponent],
+  imports: [CommonModule, RouterLink, AppIconComponent],
   templateUrl: './curriculum-selector-cards.component.html',
   styleUrl: './curriculum-selector-cards.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -11,6 +11,19 @@ export interface ITrialLecture {
   videoThumbnailUrl?: string;
   descriptionAr: string;
   descriptionEn: string;
+  is_free_trial: boolean;
+  videoEmbedId?: string;
+}
+
+export interface IPlacementReportSummary {
+  score: number;
+  percentage: number;
+  academicLevelBadgeAr: string;
+  academicLevelBadgeEn: string;
+  strengths: string[];
+  weaknesses: string[];
+  teacherRecommendationAr: string;
+  teacherRecommendationEn: string;
 }
 
 export interface IInactiveStudentDashboardState {
@@ -19,6 +32,6 @@ export interface IInactiveStudentDashboardState {
   curriculum: CurriculumCode;
   gradeLevel: string;
   academicTerm: AcademicTermCode;
-  placementScore?: number;
+  placementReport: IPlacementReportSummary;
   trialLectures: ITrialLecture[];
 }

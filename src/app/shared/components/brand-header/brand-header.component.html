@@ -1,8 +1,12 @@
 <header class="sticky top-0 z-layer-header glass-panel border-b border-surface-border transition-colors duration-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
     
-    <!-- Brand Logo & Dual-Spectrum Wordmark -->
-    <a routerLink="/" class="flex items-center gap-3.5 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02]">
+    <!-- 1. Brand Logo & Dual-Spectrum Wordmark -->
+    <a
+      routerLink="/"
+      (click)="closeMobileMenu()"
+      class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02] shrink-0"
+    >
       <!-- Official Geometric Logo Icon -->
       <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-brand-accent transition-colors duration-200">
         <img
@@ -29,26 +33,79 @@
       </div>
     </a>
 
-    <!-- Action Bar Controls (Lang, Theme, User Auth Status) -->
+    <!-- 2. Visitor Navigation Links (Desktop) -->
+    @if (!authService.isAuthenticated()) {
+      <nav class="hidden xl:flex items-center gap-1 lg:gap-2 text-xs font-bold text-text-secondary" aria-label="Main Navigation">
+        <button
+          type="button"
+          (click)="navigateToSection('curriculum-section')"
+          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
+        >
+          {{ langService.isArabic() ? 'اختار منهجك' : 'Curriculums' }}
+        </button>
+
+        <button
+          type="button"
+          (click)="navigateToSection('pricing-packages')"
+          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
+        >
+          {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units & Revisions' }}
+        </button>
+
+        <button
+          type="button"
+          (click)="navigateToSection('schedules-table')"
+          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
+        >
+          {{ langService.isArabic() ? 'جدول المواعيد' : 'Timetable' }}
+        </button>
+
+        <a
+          routerLink="/placement-test"
+          class="px-3 py-2 rounded-xl hover:text-brand-accent hover:bg-surface-card text-brand-primary dark:text-brand-accent font-extrabold transition-all flex items-center gap-1.5"
+        >
+          <app-icon name="target" [size]="14" className="text-brand-accent" />
+          <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
+        </a>
+
+        <a
+          routerLink="/login"
+          [queryParams]="{ role: 'STUDENT' }"
+          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all"
+        >
+          {{ langService.isArabic() ? 'دخول الطلاب' : 'Student Login' }}
+        </a>
+
+        <a
+          routerLink="/login"
+          [queryParams]="{ role: 'PARENT' }"
+          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all"
+        >
+          {{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}
+        </a>
+      </nav>
+    }
+
+    <!-- 3. Global Action Bar Controls -->
     <div class="flex items-center gap-2 sm:gap-3">
       
-      <!-- Language Switcher (EN / عربي) with Lucide Globe Icon -->
+      <!-- Language Switcher (EN / عربي) -->
       <button
         type="button"
         (click)="toggleLanguage()"
-        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs sm:text-sm font-bold text-text-primary transition-all duration-200 flex items-center gap-2 shadow-sm active:scale-95"
+        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
         title="Toggle Language / تغيير اللغة"
       >
-        <app-icon name="globe" [size]="16" className="text-brand-secondary" />
+        <app-icon name="globe" [size]="15" className="text-brand-secondary" />
         <span>{{ langService.isArabic() ? 'English' : 'عربي' }}</span>
       </button>
 
-      <!-- Theme Switcher (Light / Dark) with Lucide Sun/Moon Icons -->
+      <!-- Theme Switcher (Light / Dark) -->
       <button
         type="button"
         (click)="toggleTheme()"
-        class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-sm text-text-primary transition-all duration-200 shadow-sm active:scale-95 flex items-center justify-center w-9 h-9"
+        class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-sm text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
         [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
@@ -59,78 +116,238 @@
         }
       </button>
 
-      <!-- User Auth State -->
-      @if (authService.isAuthenticated()) {
-        <div class="flex items-center gap-2 sm:gap-2.5 pl-1 rtl:pr-1 rtl:pl-0">
+      <!-- Notification Bell (Dropdown Trigger) -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleNotifications()"
+          class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 relative cursor-pointer"
+          [attr.aria-label]="langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Notifications'"
+          title="الإشعارات / Notifications"
+        >
+          <app-icon name="bell" [size]="18" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-accent animate-spark-twinkle' : 'text-text-secondary'" />
           
-          <!-- Direct Portal CTA Link -->
+          <!-- Glowing Unread Badge -->
+          @if (notificationsService.unreadCount() > 0) {
+            <span class="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 min-w-[18px] h-[18px] px-1 rounded-full bg-feedback-danger text-white text-[10px] font-black flex items-center justify-center shadow-sm font-numeric">
+              {{ notificationsService.unreadCount() }}
+            </span>
+          }
+        </button>
+
+        <!-- Dropdown Notifications Menu -->
+        @if (notificationsService.isDropdownOpen()) {
+          <div
+            class="notifications-dropdown absolute top-full right-0 rtl:right-auto rtl:left-0 mt-3 w-80 sm:w-96 rounded-2xl border border-surface-border bg-surface-card/95 backdrop-blur-xl shadow-glass z-layer-modal overflow-hidden animate-fade-in"
+          >
+            <!-- Dropdown Header -->
+            <div class="p-3.5 border-b border-surface-border flex items-center justify-between bg-surface-secondary/50">
+              <div class="flex items-center gap-2">
+                <app-icon name="bell" [size]="16" className="text-brand-accent" />
+                <h4 class="text-xs font-black text-text-primary">
+                  {{ langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Alerts & Notifications' }}
+                </h4>
+              </div>
+
+              @if (notificationsService.unreadCount() > 0) {
+                <button
+                  type="button"
+                  (click)="markAllRead()"
+                  class="text-[11px] font-bold text-brand-secondary hover:underline cursor-pointer"
+                >
+                  {{ langService.isArabic() ? 'تحديد الكل كمقروء' : 'Mark all read' }}
+                </button>
+              }
+            </div>
+
+            <!-- Notifications List -->
+            <div class="max-h-80 overflow-y-auto divide-y divide-surface-border/50">
+              @if (notificationsService.notifications().length === 0) {
+                <div class="p-6 text-center text-xs text-text-muted">
+                  <app-icon name="check-circle" [size]="24" className="mx-auto mb-2 text-text-muted/60" />
+                  <p>{{ langService.isArabic() ? 'لا توجد إشعارات حالياً' : 'No notifications found' }}</p>
+                </div>
+              } @else {
+                @for (notif of notificationsService.notifications(); track notif._id) {
+                  <div
+                    (click)="onNotificationClick(notif)"
+                    class="p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-surface-secondary/60"
+                    [ngClass]="{ 'bg-brand-primary/5': !notif.is_read }"
+                  >
+                    <!-- Read Dot -->
+                    <span
+                      class="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                      [ngClass]="notif.is_read ? 'bg-transparent' : 'bg-brand-accent animate-pulse'"
+                    ></span>
+
+                    <div class="flex-1 min-w-0">
+                      <h5 class="text-xs font-bold text-text-primary leading-tight mb-1 truncate">
+                        {{ langService.isArabic() ? notif.title_ar : notif.title_en }}
+                      </h5>
+                      <p class="text-[11px] text-text-secondary leading-relaxed line-clamp-2 mb-1.5">
+                        {{ langService.isArabic() ? notif.body_ar : notif.body_en }}
+                      </p>
+                      <span class="text-[10px] text-text-muted font-numeric block">
+                        {{ notif.created_at | date:'shortTime' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- User Auth State Controls -->
+      @if (authService.isAuthenticated()) {
+        <div class="flex items-center gap-2 pl-1 rtl:pr-1 rtl:pl-0">
+          
+          <!-- Permanent Monospace Student HAxxxx Code with Copy Action -->
+          @if (authService.currentUser()?.student_ha_code; as haCode) {
+            <button
+              type="button"
+              (click)="copyHaCode(haCode, $event)"
+              class="ha-code-badge hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-bg border border-brand-accent/40 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm hover:border-brand-accent hover:bg-brand-primary/10 transition-all cursor-pointer group"
+              title="نسخ كود الطالب / Copy HA Code"
+            >
+              <span>{{ haCode }}</span>
+              <app-icon name="copy" [size]="13" className="text-brand-accent group-hover:scale-110 transition-transform" />
+            </button>
+          }
+
+          <!-- Glowing XP Pill -->
+          <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
+            <app-icon name="award" [size]="14" className="text-brand-accent" />
+            <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
+          </span>
+
+          <!-- Direct Role-Based "لوحة التحكم" Dashboard CTA Button -->
           @if (activePortal(); as portal) {
             <a
               [routerLink]="portal.route"
-              class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 shadow-brand-glow flex items-center gap-1.5 transition-all"
+              class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-spider hover:opacity-95 shadow-brand-glow flex items-center gap-1.5 transition-all active:scale-95"
             >
               <app-icon name="sparkles" [size]="14" />
               <span>{{ portal.label }}</span>
             </a>
           }
 
-          <!-- Monospace Student HAxxxx Code -->
-          @if (authService.currentUser()?.student_ha_code; as haCode) {
-            <span class="ha-code-badge hidden md:inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-xs font-bold text-brand-secondary font-numeric">
-              {{ haCode }}
-            </span>
-          }
-
-          <!-- Glowing XP Pill -->
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
-            <app-icon name="award" [size]="14" className="text-brand-accent" />
-            <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
-          </span>
-
-          <!-- Switch Role Button -->
-          <a
-            routerLink="/login"
-            class="px-2.5 py-1 rounded-lg border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1 shadow-sm cursor-pointer"
-            title="تبديل الصلاحية / Switch Role"
-          >
-            <app-icon name="user" [size]="14" className="text-brand-accent" />
-            <span class="hidden lg:inline">تبديل الدور</span>
-          </a>
-
           <!-- Logout Button -->
           <button
             type="button"
             (click)="logout()"
-            class="px-2 py-1 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
+            class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
             title="تسجيل الخروج"
           >
-            <app-icon name="log-out" [size]="14" />
-            <span class="hidden sm:inline">{{ 'NAV.LOGOUT' | transloco }}</span>
+            <app-icon name="log-out" [size]="15" />
+            <span class="hidden lg:inline">{{ 'NAV.LOGOUT' | transloco }}</span>
           </button>
         </div>
       } @else {
-        <div class="flex items-center gap-2 sm:gap-2.5">
-          <!-- Free Placement Test Link -->
-          <a
-            routerLink="/placement-test"
-            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all shadow-sm"
-          >
-            <app-icon name="target" [size]="14" className="text-brand-accent" />
-            <span>امتحان تحديد المستوى</span>
-          </a>
-
-          <!-- Login & Role Simulator Trigger Button -->
+        <!-- Visitor CTA Login / Role Simulator Button -->
+        <div class="flex items-center gap-2">
           <a
             routerLink="/login"
             class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="sparkles" [size]="14" />
-            <span>تسجيل الدخول / تجربة الصلاحيات</span>
+            <span>{{ langService.isArabic() ? 'دخول المنصة' : 'Enter Platform' }}</span>
           </a>
         </div>
       }
+
+      <!-- Mobile Hamburger Menu Button -->
+      <button
+        type="button"
+        (click)="toggleMobileMenu()"
+        class="xl:hidden p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 cursor-pointer"
+        aria-label="Toggle Mobile Navigation"
+      >
+        <app-icon [name]="isMobileMenuOpen() ? 'x' : 'menu'" [size]="18" />
+      </button>
+
     </div>
   </div>
+
+  <!-- 4. Mobile Navigation Drawer / Dropdown -->
+  @if (isMobileMenuOpen()) {
+    <div class="xl:hidden border-t border-surface-border bg-surface-card/95 backdrop-blur-xl px-4 py-5 animate-fade-in space-y-3">
+      @if (!authService.isAuthenticated()) {
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+          <button
+            type="button"
+            (click)="navigateToSection('curriculum-section')"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'اختار منهجك' : 'Curriculums' }}
+          </button>
+
+          <button
+            type="button"
+            (click)="navigateToSection('pricing-packages')"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units' }}
+          </button>
+
+          <button
+            type="button"
+            (click)="navigateToSection('schedules-table')"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'جدول المواعيد' : 'Timetable' }}
+          </button>
+
+          <a
+            routerLink="/placement-test"
+            (click)="closeMobileMenu()"
+            class="p-2.5 rounded-xl border border-brand-accent bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-center font-extrabold"
+          >
+            {{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}
+          </a>
+        </div>
+
+        <div class="pt-2 flex flex-col gap-2">
+          <a
+            routerLink="/login"
+            [queryParams]="{ role: 'STUDENT' }"
+            (click)="closeMobileMenu()"
+            class="w-full py-2.5 rounded-xl border border-surface-border bg-surface-bg text-center text-xs font-bold text-text-primary"
+          >
+            {{ langService.isArabic() ? 'دخول الطلاب' : 'Student Login' }}
+          </a>
+          <a
+            routerLink="/login"
+            [queryParams]="{ role: 'PARENT' }"
+            (click)="closeMobileMenu()"
+            class="w-full py-2.5 rounded-xl border border-surface-border bg-surface-bg text-center text-xs font-bold text-text-primary"
+          >
+            {{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}
+          </a>
+        </div>
+      } @else {
+        <!-- Mobile User Stats & HA code -->
+        <div class="p-3 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <app-icon name="user" [size]="16" className="text-brand-accent" />
+            <span class="text-xs font-bold text-text-primary">{{ authService.currentUser()?.full_name }}</span>
+          </div>
+          @if (authService.currentUser()?.student_ha_code; as code) {
+            <span class="font-mono text-xs font-black text-brand-secondary">{{ code }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- 5. Toast Feedback for HA Code Copy -->
+  @if (isCopiedToastVisible()) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-layer-modal px-4 py-2.5 rounded-xl bg-surface-card border border-brand-accent shadow-brand-glow text-xs font-bold text-text-primary flex items-center gap-2 animate-fade-in">
+      <app-icon name="check" [size]="16" className="text-emerald-500" />
+      <span>{{ langService.isArabic() ? 'تم نسخ كود الطالب إلى الحافظة بنجاح!' : 'HA Student Code copied to clipboard!' }}</span>
+    </div>
+  }
 
   <!-- Auth & Role Simulator Modal -->
   <app-auth-role-modal [(isOpen)]="isAuthModalOpen" />

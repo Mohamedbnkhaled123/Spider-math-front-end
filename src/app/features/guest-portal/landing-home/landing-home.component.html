@@ -74,16 +74,18 @@
 
       <!-- Primary Action Buttons -->
       <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-        <a
-          href="#curriculum-section"
-          class="px-8 py-3.5 rounded-xl font-extrabold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center gap-2"
+        <button
+          type="button"
+          (click)="scrollToSection('curriculum-section')"
+          class="px-8 py-3.5 rounded-xl font-extrabold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center gap-2 cursor-pointer"
         >
           <span>{{ langService.isArabic() ? 'اختار منهجك وابدأ الآن' : 'Choose Your Curriculum & Begin' }}</span>
           <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="16" />
-        </a>
+        </button>
 
         <a
-          routerLink="/placement-test"
+          [routerLink]="['/placement-test']"
+          [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
           class="px-8 py-3.5 rounded-xl font-bold border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary hover:shadow-card active:scale-95 transition-all duration-200 flex items-center gap-2"
         >
           <app-icon name="target" [size]="18" className="text-brand-accent" />
@@ -213,7 +215,7 @@
   <!-- ========================================================================= -->
   <!-- 4. Interactive Schedules Table                                            -->
   <!-- ========================================================================= -->
-  <section class="py-16 sm:py-24 bg-surface-secondary/40 border-b border-surface-border">
+  <section id="schedules-table" class="py-16 sm:py-24 bg-surface-secondary/40 border-b border-surface-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
@@ -262,9 +264,9 @@
   <!-- ========================================================================= -->
   <!-- 5. Study Units & Final Revisions Pricing Showcase                         -->
   <!-- ========================================================================= -->
-  <section class="py-16 sm:py-24 border-b border-surface-border">
+  <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-2xl mx-auto mb-12">
+      <div class="text-center max-w-2xl mx-auto mb-10">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-bold mb-3">
           <app-icon name="award" [size]="14" />
           <span>{{ langService.isArabic() ? 'الباقات الدراسية والمراجعات' : 'Packages & Tuition Plans' }}</span>
@@ -272,6 +274,29 @@
         <h2 class="text-2xl sm:text-4xl font-black text-text-primary">
           {{ langService.isArabic() ? 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة' : 'Transparent Tuition & Revision Packages' }}
         </h2>
+      </div>
+
+      <!-- 2 Clear Tabs: STUDY_UNIT vs FINAL_REVISION -->
+      <div class="flex items-center justify-center gap-3 mb-10">
+        <button
+          type="button"
+          (click)="setUnitTab('STUDY_UNIT')"
+          class="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shadow-sm cursor-pointer"
+          [ngClass]="activeUnitTab() === 'STUDY_UNIT' ? 'bg-gradient-spider text-white shadow-brand-glow scale-105' : 'bg-surface-card border border-surface-border text-text-secondary hover:text-text-primary'"
+        >
+          <app-icon name="book-open" [size]="16" />
+          <span>{{ langService.isArabic() ? 'الوحدات الدراسية (STUDY_UNIT)' : 'Study Units (STUDY_UNIT)' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setUnitTab('FINAL_REVISION')"
+          class="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 shadow-sm cursor-pointer"
+          [ngClass]="activeUnitTab() === 'FINAL_REVISION' ? 'bg-gradient-spider text-white shadow-brand-glow scale-105' : 'bg-surface-card border border-surface-border text-text-secondary hover:text-text-primary'"
+        >
+          <app-icon name="award" [size]="16" />
+          <span>{{ langService.isArabic() ? 'المراجعات النهائية (FINAL_REVISION)' : 'Final Revisions (FINAL_REVISION)' }}</span>
+        </button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -327,13 +352,25 @@
             <button
               type="button"
               (click)="openWhatsAppSupport()"
-              class="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-brand-primary hover:bg-brand-primary-hover shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+              class="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-brand-primary hover:bg-brand-primary-hover shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
               <app-icon name="message-circle" [size]="16" />
               <span>{{ langService.isArabic() ? 'طلب الاشتراك وتفعيل الحساب' : 'Subscribe via WhatsApp' }}</span>
             </button>
           </div>
         }
+      </div>
+
+      <!-- Direct Grade-Specific Placement Exam CTA Action Bar -->
+      <div class="mt-14 text-center">
+        <a
+          [routerLink]="['/placement-test']"
+          [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
+          class="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all"
+        >
+          <app-icon name="target" [size]="18" className="text-brand-accent" />
+          <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني لهذا الصف' : 'Start Free Placement Test For This Grade' }}</span>
+        </a>
       </div>
     </div>
   </section>
