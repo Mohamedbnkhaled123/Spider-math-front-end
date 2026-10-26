@@ -200,6 +200,28 @@ export class InteractiveGradingStudioComponent implements OnInit {
     this.selectedSubmissionForReview.set(null);
   }
 
+  // Direct Teacher Approval (MCQ & General Assessments)
+  approveSubmissionDirectly(sub: AllQuizSubmissionItem): void {
+    this.http.post<{ success: boolean; message: string }>(`/api/v1/admin/submissions/${sub.id}/approve`, {}).subscribe({
+      next: () => {
+        this.toastTriggered.emit({
+          text: `تم اعتماد ونشر نتيجة الطالب "${sub.studentName}" بنجاح وإشعار ولي أمره ورصد النقاط!`,
+          type: 'success'
+        });
+        this.fetchAllSubmissions();
+        if (this.isAnswersModalOpen() && this.selectedSubmissionForReview()?.id === sub.id) {
+          this.closeAnswersInspector();
+        }
+      },
+      error: (err) => {
+        this.toastTriggered.emit({
+          text: err?.error?.message || 'تعذر اعتماد النتيجة، يُرجى المحاولة مرة أخرى.',
+          type: 'error'
+        });
+      }
+    });
+  }
+
   // Open Canvas for grading
   openGradingFromSubmission(sub: AllQuizSubmissionItem): void {
     const item: PendingEssayGrading = {

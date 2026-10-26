@@ -297,9 +297,27 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
         formData.append('signature', sigData.signature);
         formData.append('folder', sigData.folder);
 
-        const uploadResult = await firstValueFrom(
-          this.http.post<{ secure_url: string; public_id: string }>(sigData.uploadUrl, formData)
-        );
+        let uploadResult: { secure_url: string; public_id: string };
+
+        try {
+          // Use native fetch to bypass any Angular interceptors and prevent Authorization headers
+          const cdnRes = await fetch(sigData.uploadUrl, {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!cdnRes.ok) {
+            const errBody = await cdnRes.text();
+            throw new Error(`Cloudinary HTTP ${cdnRes.status}: ${errBody}`);
+          }
+
+          uploadResult = await cdnRes.json();
+        } catch (fetchErr) {
+          console.warn('Native fetch to Cloudinary failed, attempting HttpClient fallback:', fetchErr);
+          uploadResult = await firstValueFrom(
+            this.http.post<{ secure_url: string; public_id: string }>(sigData.uploadUrl, formData)
+          );
+        }
 
         item.remoteUrl = uploadResult.secure_url;
         item.uploadStatus = 'SUCCESS';

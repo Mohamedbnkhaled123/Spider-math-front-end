@@ -52,6 +52,9 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     maxScore: 20,
     scorePercentage: 0,
     gradedAt: '',
+    hasEssayQuestions: false,
+    isReviewExpired: false,
+    reviewExpiresAt: null,
     teacherFeedbackNotes: '',
     customMistakeCases: [],
     questionsReview: [],
@@ -64,6 +67,28 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   readonly isPublished = computed(
     () => this.feedback().resultVisibility === 'PUBLISHED_TO_STUDENT_AND_PARENT'
   );
+
+  readonly isReviewExpired = computed(
+    () => !!this.feedback().isReviewExpired
+  );
+
+  readonly hasEssayQuestions = computed(
+    () => !!this.feedback().hasEssayQuestions
+  );
+
+  readonly reviewTimeRemaining = computed(() => {
+    const f = this.feedback();
+    if (!f.hasEssayQuestions || !f.reviewExpiresAt || f.isReviewExpired) return null;
+    const diff = new Date(f.reviewExpiresAt).getTime() - Date.now();
+    if (diff <= 0) return 'انتهت فترة المراجعة';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    if (days > 0) {
+      return `متبقي ${days} يوم و ${remainingHours} ساعة على انتهاء فترة المراجعة`;
+    }
+    return `متبقي ${hours} ساعة على انتهاء فترة المراجعة`;
+  });
 
   readonly totalQuestionsCount = computed(() => this.feedback().questionsReview.length);
   readonly correctQuestionsCount = computed(
@@ -136,11 +161,15 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
             maxScore: data.maxScore ?? 20,
             scorePercentage: data.scorePercentage ?? 0,
             gradedAt: data.gradedAt ? new Date(data.gradedAt).toLocaleString('ar-EG') : '',
+            hasEssayQuestions: data.hasEssayQuestions ?? false,
+            isReviewExpired: data.isReviewExpired ?? false,
+            reviewExpiresAt: data.reviewExpiresAt || null,
             teacherFeedbackNotes: data.teacherFeedbackNotes || '',
             customMistakeCases: (data.customMistakeCases || []).map((m: any, idx: number) => ({
               questionId: m.questionId,
               questionOrder: m.questionOrder ?? idx + 1,
               questionPromptText: m.questionPromptText || '',
+              questionImageUrl: m.questionImageUrl || m.question_image_url || m.imageUrl || null,
               studentAnswerText: m.studentAnswerText || '',
               correctAnswerText: m.correctAnswerText || '',
               errorNote: m.errorNote || '',
@@ -151,7 +180,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
               questionOrder: q.questionOrder ?? idx + 1,
               questionType: q.questionType || 'MCQ',
               questionText: q.questionText || '',
-              questionImageUrl: q.questionImageUrl || null,
+              questionImageUrl: q.questionImageUrl || q.question_image_url || q.imageUrl || null,
               options: q.options || [],
               studentSelectedOptionIndex: q.studentSelectedOptionIndex,
               studentAnswerText: q.studentAnswerText || '',

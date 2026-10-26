@@ -2,12 +2,23 @@
   
   <!-- Upload Trigger Card / Dropzone -->
   <div class="uploader-dropzone rounded-2xl border-2 border-dashed border-surface-border hover:border-brand-accent p-6 text-center bg-surface-card/60 transition-all duration-200">
+    <!-- Standard File / Gallery Input -->
     <input
       #fileInput
       type="file"
       class="hidden"
-      accept="image/jpeg,image/png,image/webp,image/heic"
+      accept="image/*"
       [multiple]="uploadTarget() === 'homework'"
+      (change)="onFilesSelected($event)"
+    />
+
+    <!-- Dedicated Mobile Camera Direct Capture Input -->
+    <input
+      #cameraInput
+      type="file"
+      class="hidden"
+      accept="image/*"
+      capture="environment"
       (change)="onFilesSelected($event)"
     />
 
@@ -19,9 +30,9 @@
       <div>
         <h4 class="text-sm font-bold text-text-primary">
           @if (uploadTarget() === 'question') {
-            إرفاق صورة توضيحية لنص السؤال (م/ هبة)
+            إرفاق صورة توضيحية للمسألة (م/ هبة - بالكاميرا أو الجهاز)
           } @else {
-            التقاط أو إرفاق حل الواجب اليدوي (1–2 صورة)
+            التقاط أو إرفاق حل الواجب اليدوي (1–2 صورة من الكشكول)
           }
         </h4>
         <p class="text-xs text-text-secondary mt-1">
@@ -29,24 +40,36 @@
         </p>
       </div>
 
-      <!-- Action Button -->
-      <button
-        type="button"
-        (click)="fileInput.click()"
-        [disabled]="isProcessing() || isUploading()"
-        class="mt-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-      >
-        <app-icon name="upload-cloud" [size]="16" />
-        <span>
-          @if (isProcessing()) {
-            جارِ معالجة وضغط الصورة...
-          } @else if (uploadTarget() === 'homework') {
-            التقاط صورة الواجب بالكاميرا أو الملفات
-          } @else {
-            اختيار صورة المسألة
-          }
-        </span>
-      </button>
+      <!-- Action Buttons: Camera & Gallery -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
+        <!-- Direct Mobile Camera Button -->
+        <button
+          type="button"
+          (click)="cameraInput.click()"
+          [disabled]="isProcessing() || isUploading()"
+          class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+        >
+          <app-icon name="camera" [size]="16" />
+          <span>
+            @if (isProcessing()) {
+              جارِ المعالجة والضغط...
+            } @else {
+              التقاط بالكاميرا مباشرة
+            }
+          </span>
+        </button>
+
+        <!-- Gallery / File Manager Button -->
+        <button
+          type="button"
+          (click)="fileInput.click()"
+          [disabled]="isProcessing() || isUploading()"
+          class="px-4 py-2.5 rounded-xl font-bold text-xs text-text-primary bg-surface-card border border-surface-border hover:border-brand-primary hover:bg-brand-primary/5 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
+        >
+          <app-icon name="upload-cloud" [size]="16" className="text-brand-primary" />
+          <span>اختيار من المعرض أو الملفات</span>
+        </button>
+      </div>
     </div>
   </div>
 

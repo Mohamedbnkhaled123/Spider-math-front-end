@@ -7,6 +7,7 @@ export interface CustomMistakeItem {
   questionId?: string;
   questionOrder: number;
   questionPromptText: string;
+  questionImageUrl?: string | null;
   studentAnswerText: string;
   correctAnswerText?: string;
   errorNote: string; // Teacher's written note by Eng. Heba Abdel-Wahab
@@ -49,8 +50,12 @@ export interface SubmissionFeedbackData {
   maxScore: number;
   scorePercentage: number;
   gradedAt?: string;
+  hasEssayQuestions?: boolean;
+  isReviewExpired?: boolean;
+  reviewExpiresAt?: string | null;
   teacherFeedbackNotes?: string;
   customMistakeCases: CustomMistakeItem[];
   questionsReview: QuestionReviewItem[];
   essaySolutionImages: EssaySolutionImageItem[];
 }
+

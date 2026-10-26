@@ -228,8 +228,48 @@
           </div>
         }
 
-        <!-- Review Mode Tabs Switcher -->
-        <div class="flex items-center justify-center p-1.5 rounded-2xl bg-surface-bg border border-surface-border max-w-md mx-auto shadow-sm">
+        <!-- ========================================================================= -->
+        <!-- 3-Day Review Window for Essay Questions                                   -->
+        <!-- ========================================================================= -->
+        @if (isReviewExpired()) {
+          <div class="p-8 sm:p-10 rounded-3xl border border-amber-500/20 bg-amber-500/5 text-center max-w-2xl mx-auto space-y-4">
+            <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+              <app-icon name="clock" [size]="32" />
+            </div>
+            <h3 class="text-lg font-black text-text-primary">
+              انتهت المهلة المحددة لمراجعة أسئلة هذا التقييم المقالي (3 أيام)
+            </h3>
+            <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+              وفقاً لضوابط منصة Spider Math، تتاح مراجعة تفاصيل الأسئلة المقالية وإجابات الطلاب والحلول النموذجية لمدة 3 أيام فقط من تاريخ اعتماد النتيجة. درجاتك المسجلة وتقييمك الإجمالي محفوظان في لوحتك الشخصية.
+            </p>
+            <div class="pt-2">
+              <a
+                routerLink="/student"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary/90 transition-all shadow-md"
+              >
+                <app-icon name="arrow-right" [size]="14" />
+                <span>العودة للوحة درجات الطالب</span>
+              </a>
+            </div>
+          </div>
+        } @else {
+          <!-- Active 3-Day Countdown Warning Banner (if assessment contains essay questions) -->
+          @if (hasEssayQuestions() && reviewTimeRemaining(); as remaining) {
+            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3 text-amber-700 dark:text-amber-300">
+              <div class="flex items-center gap-2.5">
+                <app-icon name="clock" [size]="18" className="text-amber-600 dark:text-amber-400 shrink-0" />
+                <span class="text-xs font-black">
+                  ملاحظة هامة: مراجعة هذا التقييم المقالي متاحة لمدة 3 أيام فقط من تاريخ الاعتماد ({{ remaining }}).
+                </span>
+              </div>
+              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 shrink-0">
+                مراجعة نشطة
+              </span>
+            </div>
+          }
+
+          <!-- Review Mode Tabs Switcher -->
+          <div class="flex items-center justify-center p-1.5 rounded-2xl bg-surface-bg border border-surface-border max-w-md mx-auto shadow-sm">
           <button
             type="button"
             (click)="setReviewTab('ALL_QUESTIONS')"
@@ -467,6 +507,17 @@
                         {{ mistake.questionPromptText }}
                       </h4>
 
+                      <!-- Question Image (if any) -->
+                      @if (mistake.questionImageUrl; as mImg) {
+                        <div
+                          (click)="openImagePreview(mImg)"
+                          class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
+                        >
+                          <img [src]="mImg" alt="صورة السؤال" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
+                          <span class="text-[10px] text-text-muted mt-1 block text-center">اضغط لتكبير صورة المسألة</span>
+                        </div>
+                      }
+
                       <!-- Student vs Correct Answer -->
                       @if (mistake.studentAnswerText || mistake.correctAnswerText) {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -526,6 +577,7 @@
             }
           </div>
         }
+      }
 
       </div>
     }

@@ -8,6 +8,15 @@ import { DeviceFingerprintService } from '../auth/device-fingerprint.service';
  * and the composite X-Device-UUID header to all outgoing API requests.
  */
 export const jwtDeviceInterceptor: HttpInterceptorFn = (req, next) => {
+  // Never attach Authorization or custom device headers to external third-party services (e.g. Cloudinary, Desmos)
+  if (
+    req.url.includes('cloudinary.com') ||
+    req.url.includes('desmos.com') ||
+    (req.url.startsWith('http') && !req.url.includes('/api/'))
+  ) {
+    return next(req);
+  }
+
   const authService = inject(AuthService);
   const fingerprintService = inject(DeviceFingerprintService);
 
