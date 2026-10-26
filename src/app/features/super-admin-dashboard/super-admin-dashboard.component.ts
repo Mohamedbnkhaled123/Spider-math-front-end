@@ -163,7 +163,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     // 2. Fetch Pending Devices
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/device-requests').subscribe({
       next: (res) => {
-        if (res?.data && res.data.length > 0) {
+        if (Array.isArray(res?.data)) {
           const mappedDevices: PendingDeviceRequest[] = res.data.map((d) => ({
             id: d._id,
             studentName: d.full_name,
