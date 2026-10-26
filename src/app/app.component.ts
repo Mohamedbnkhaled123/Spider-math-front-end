@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { BrandHeaderComponent } from './shared/components/brand-header/brand-header.component';
+import { BrandFooterComponent } from './shared/components/brand-footer/brand-footer.component';
 import { LangService } from './core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 
@@ -13,8 +14,8 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
   imports: [
     CommonModule,
     RouterOutlet,
-    TranslocoPipe,
-    BrandHeaderComponent
+    BrandHeaderComponent,
+    BrandFooterComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

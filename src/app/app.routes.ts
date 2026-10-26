@@ -22,6 +22,14 @@ export const routes: Routes = [
     title: 'تسجيل الدخول ومحاكاة الأدوار | Spider Math Platform'
   },
   {
+    path: 'parent-login',
+    loadComponent: () =>
+      import('./features/auth/login-page/login-page.component').then(
+        m => m.LoginPageComponent
+      ),
+    title: 'تسجيل دخول ولي الأمر | Spider Math Platform'
+  },
+  {
     path: 'placement-test',
     loadComponent: () =>
       import(

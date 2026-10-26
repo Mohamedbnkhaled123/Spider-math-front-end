@@ -5,6 +5,7 @@ import { Observable, catchError, map, of } from 'rxjs';
 import {
   ICurriculumTreeItem,
   IPublicLandingData,
+  IScheduleItem,
   IPlacementTestResponse,
   ISubmitPlacementPayload,
   ISubmitPlacementResult,
@@ -69,13 +70,37 @@ export class PublicDiscoveryService {
         const fallback = this.getFallbackLandingData();
         if (!raw) return fallback;
 
+        const rawSchedules = (raw.schedulesTable && raw.schedulesTable.length > 0)
+          ? raw.schedulesTable
+          : (raw.schedules_table && raw.schedules_table.length > 0)
+            ? raw.schedules_table
+            : (raw.schedules && raw.schedules.length > 0)
+              ? raw.schedules
+              : fallback.schedules;
+
+        const normalizedSchedules: IScheduleItem[] = rawSchedules.map((s: any) => ({
+          curriculum: s.curriculum || 'EGYPTIAN',
+          gradeLevel: s.gradeLevel || s.grade_level || 'SEC_3',
+          term: s.term || s.academic_term || 'TERM_1',
+          dayOfWeekAr: s.dayOfWeekAr || s.days_ar || s.dayOfWeek || 'الأحد والثلاثاء',
+          dayOfWeekEn: s.dayOfWeekEn || s.days_en || 'Sun & Tue',
+          dayOfWeek: s.dayOfWeek || s.days_ar || s.dayOfWeekAr || 'الأحد والثلاثاء',
+          timeSlot: s.timeSlot || s.time_slot || '07:00 م - 09:00 م',
+          lectureTitleAr: s.lectureTitleAr || s.lectureSubject || s.lecture_subject || 'تفاضل وتكامل وحساب مثلثات',
+          lectureTitleEn: s.lectureTitleEn || 'Calculus & Trigonometry',
+          lectureSubject: s.lectureSubject || s.lecture_subject || s.lectureTitleAr || 'تفاضل وتكامل وحساب مثلثات'
+        }));
+
         return {
+          heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || fallback.heroHeadlineAr,
+          heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || fallback.heroHeadlineEn,
+          heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || fallback.heroSubheadlineAr,
+          heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || fallback.heroSubheadlineEn,
+          announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || fallback.announcementBannerText,
+          isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
+          activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
           teacherBio: fallback.teacherBio,
-          schedules: (raw.schedules && raw.schedules.length > 0)
-            ? raw.schedules
-            : (raw.schedules_table && raw.schedules_table.length > 0)
-              ? raw.schedules_table
-              : fallback.schedules,
+          schedules: normalizedSchedules,
           pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
             ? raw.pricingPackages
             : (raw.pricing_packages && raw.pricing_packages.length > 0)
@@ -86,7 +111,7 @@ export class PublicDiscoveryService {
             : (raw.testimonials_items && raw.testimonials_items.length > 0)
               ? raw.testimonials_items
               : fallback.testimonials,
-          whatsappSupportNumber: raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber
+          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber
         };
       }),
       catchError(() => of(this.getFallbackLandingData()))
@@ -106,12 +131,99 @@ export class PublicDiscoveryService {
       .set('gradeLevel', gradeLevel)
       .set('term', term);
 
-    return this.http.get<{ success: boolean; data: IPlacementTestResponse }>(
+    return this.http.get<{ success: boolean; data: any }>(
       `${this.apiBase}/public/placement-test`,
       { params }
     ).pipe(
-      map(res => res.data),
-      catchError(() => of(this.getFallbackPlacementTest(curriculum, gradeLevel, term)))
+      map(res => {
+        const d = res?.data;
+        if (!d || d.hasTest === false || !d.questions || d.questions.length === 0) {
+          return {
+            hasTest: false,
+            assessment_id: '',
+            title: d?.titleAr || d?.title || `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
+            curriculum,
+            grade_level: gradeLevel,
+            academic_term: term,
+            total_questions: 0,
+            time_limit_minutes: 15,
+            questions: []
+          };
+        }
+        return {
+          hasTest: true,
+          assessment_id: d.assessment_id || d.assessmentId || `placement_${curriculum}_${gradeLevel}`,
+          title: d.title || d.titleAr || `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
+          curriculum: d.curriculum || curriculum,
+          grade_level: d.grade_level || d.gradeLevel || gradeLevel,
+          academic_term: d.academic_term || d.academicTerm || term,
+          total_questions: d.questions.length,
+          time_limit_minutes: d.time_limit_minutes || d.timeLimitMinutes || 15,
+          questions: d.questions.map((q: any, qIdx: number) => ({
+            question_id: q.question_id || q.id || `q_${qIdx}`,
+            question_text: q.question_text || q.questionText || '',
+            question_image_url: q.question_image_url || q.questionImageUrl || null,
+            points: q.points || 5,
+            has_desmos_calculator: q.has_desmos_calculator ?? (d.graphCalculator === 'DESMOS'),
+            options: (q.options || []).map((opt: any, optIdx: number) => {
+              if (typeof opt === 'string') {
+                return { option_id: `opt_${optIdx}`, option_text: opt };
+              }
+              return {
+                option_id: opt?.option_id || `opt_${optIdx}`,
+                option_text: opt?.option_text || opt?.text || String(opt)
+              };
+            })
+          }))
+        };
+      }),
+      catchError(() => of({
+        hasTest: false,
+        assessment_id: '',
+        title: `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
+        curriculum,
+        grade_level: gradeLevel,
+        academic_term: term,
+        total_questions: 0,
+        time_limit_minutes: 15,
+        questions: []
+      }))
+    );
+  }
+
+  /**
+   * Fetches published unit packages for curriculum, grade, and term.
+   */
+  getUnitsCatalog(
+    curriculum?: string,
+    gradeLevel?: string,
+    term?: string,
+    type?: string
+  ): Observable<any[]> {
+    let params = new HttpParams();
+    if (curriculum) params = params.set('curriculum', curriculum);
+    if (gradeLevel) params = params.set('gradeLevel', gradeLevel);
+    if (term) params = params.set('term', term);
+    if (type) params = params.set('type', type);
+
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiBase}/units`,
+      { params }
+    ).pipe(
+      map(res => res?.data || []),
+      catchError(() => of([]))
+    );
+  }
+
+  /**
+   * Fetches syllabus and contents inside a unit package.
+   */
+  getUnitContents(unitId: string): Observable<any> {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiBase}/units/${unitId}/curriculum-contents`
+    ).pipe(
+      map(res => res?.data || null),
+      catchError(() => of(null))
     );
   }
 
@@ -179,33 +291,41 @@ export class PublicDiscoveryService {
    * Completes student profile with WhatsApp, parent phone, curriculum, and conditional governorate.
    */
   completeStudentProfile(payload: ICompleteProfilePayload): Observable<ICompleteProfileResult> {
-    return this.http.post<{ success: boolean; data: ICompleteProfileResult }>(
+    return this.http.post<{ success: boolean; data: any }>(
       `${this.apiBase}/auth/complete-student-profile`,
       payload
     ).pipe(
-      map(res => res.data),
-      catchError(() => {
-        const randId = Math.floor(1000 + Math.random() * 9000);
-        return of({
-          studentHaCode: `HA${randId}`,
+      map(res => {
+        const d = res.data;
+        const code = d.studentCode || d.studentHaCode || d.user?.studentCode || d.user?.student_code;
+        return {
+          studentHaCode: code,
+          token: d.token,
           user: {
-            _id: 'usr_' + randId,
-            full_name: payload.fullName,
-            email: 'student' + randId + '@spider-math.edu',
-            role: 'STUDENT',
-            student_ha_code: `HA${randId}`,
-            curriculum: payload.curriculum,
-            grade_level: payload.gradeLevel,
-            academic_term: payload.academicTerm,
-            governorate: payload.governorate || undefined
+            _id: d.user?.id || d.user?._id,
+            full_name: d.user?.fullName || d.user?.full_name || payload.fullName,
+            email: d.user?.email || `${code.toLowerCase()}@spidermath.edu`,
+            role: d.user?.role || 'STUDENT',
+            student_ha_code: code,
+            curriculum: d.user?.curriculum || payload.curriculum,
+            grade_level: d.user?.gradeLevel || d.user?.grade_level || payload.gradeLevel,
+            academic_term: d.user?.academicTerm || d.user?.academic_term || payload.academicTerm,
+            governorate: d.user?.governorate || payload.governorate || undefined
           }
-        });
+        };
       })
     );
   }
 
   private getFallbackLandingData(): IPublicLandingData {
     return {
+      heroHeadlineAr: 'تعلم الرياضيات بأعلى المعايير الهندسية مع المهندسة هبة عبد الوهاب',
+      heroHeadlineEn: 'Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab',
+      heroSubheadlineAr: 'منصة تفاعلية مخصصة للثانوية العامة والأنظمة الدولية بنظام حماية متطور واستراتيجيات ديسموس البيانية.',
+      heroSubheadlineEn: 'Interactive learning for Egyptian, Gulf, International, and American Curriculums with Desmos graphing strategies.',
+      announcementBannerText: '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦',
+      isAnnouncementActive: true,
+      activeAcademicYear: '2026 / 2027',
       teacherBio: {
         nameAr: 'المهندسة / هبة عبدالوهاب',
         nameEn: 'Eng. Heba Abdel-Wahab',
@@ -215,7 +335,7 @@ export class PublicDiscoveryService {
         bioEn: 'Over 14 years of excellence in teaching Egyptian, Gulf, IGCSE, and American Diploma Mathematics with deep interactive mastery of the Desmos Graphing Calculator.',
         yearsOfExperience: 14,
         totalStudentsTaught: 8500,
-        avatarUrl: '/assets/branding/spider-math-logo.svg',
+        avatarUrl: '/assets/branding/spider-math-logo.webp',
         qualifications: [
           'بكالوريوس هندسة — جامعة القاهرة مع مرتبة الشرف',
           'خبير معتمد ومحاضر دولي في حاسبة Desmos البيانية المتقدمة',

@@ -16,7 +16,7 @@
         </div>
 
         <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
-          لوحة المتابعة الأكاديمية اللحظية لأبنائك ✦
+          لوحة المتابعة الأكاديمية اللحظية لأبنائك
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
           رادار الحضور المباشر، نسب استكمال المحاضرات، ونتائج الواجبات والامتحانات مع الشرح العلاجي.
@@ -127,6 +127,23 @@
     <main class="active-child-workspace">
       <app-child-academic-monitor [childId]="selectedChildId()" />
     </main>
+  } @else {
+    <div class="p-12 rounded-3xl border border-surface-border bg-surface-card text-center max-w-xl mx-auto my-6">
+      <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
+        <app-icon name="user-plus" [size]="32" />
+      </div>
+      <h3 class="text-base font-bold text-text-primary mb-1">لم يتم ربط أي طالب بحساب ولي الأمر بعد</h3>
+      <p class="text-xs text-text-secondary leading-relaxed mb-4">
+        قم بربط كود الطالب الخاص بنجلك لمتابعة حضوره ومشاهدته للمحاضرات ودرجات امتحاناته أولاً بأول.
+      </p>
+      <button
+        type="button"
+        (click)="openLinkModal()"
+        class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all cursor-pointer"
+      >
+        ربط طالب الآن
+      </button>
+    </div>
   }
 
   <!-- ========================================================================= -->

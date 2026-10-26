@@ -10,6 +10,11 @@ export const deviceApprovedGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  const user = authService.currentUser();
+  if (user?.role === 'SUPER_ADMIN') {
+    return true;
+  }
+
   // If pending approval flag is active, prevent navigation to protected content
   if (authService.isPendingDeviceApproval()) {
     return router.createUrlTree(['/pending-device-approval']);

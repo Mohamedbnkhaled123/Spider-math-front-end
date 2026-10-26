@@ -10,8 +10,8 @@ export const activeStudentGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // SuperAdmins bypass subscription guard
-  if (authService.isSuperAdmin()) {
+  // SuperAdmins and registered students can access student dashboard
+  if (authService.isSuperAdmin() || authService.isStudent()) {
     return true;
   }
 

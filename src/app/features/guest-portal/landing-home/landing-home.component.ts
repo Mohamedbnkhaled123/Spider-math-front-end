@@ -18,7 +18,9 @@ import { PublicDiscoveryService } from '../../../core/services/public-discovery.
 import { IPublicLandingData, IScheduleItem, IPricingPackage } from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
+import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
 import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-landing-home',
@@ -39,6 +41,15 @@ export class LandingHomeComponent implements OnInit {
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly platformId = inject(PLATFORM_ID);
   readonly langService = inject(LangService);
+  readonly themeService = inject(ThemeService);
+  readonly authService = inject(AuthService);
+
+  // Authenticated Student State
+  readonly isStudentLoggedIn = computed(() => this.authService.isAuthenticated() && this.authService.isStudent());
+  readonly currentStudent = computed(() => this.authService.currentUser());
+  readonly studentUnits = signal<any[]>([]);
+  readonly isLoadingStudentUnits = signal<boolean>(false);
+  readonly showFullCurriculumExplorer = signal<boolean>(false);
 
   // User Selection State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
@@ -64,6 +75,39 @@ export class LandingHomeComponent implements OnInit {
     return list.length > 0 ? list : data.schedules.filter(s => s.curriculum === curr);
   });
 
+  // Dynamic CMS computed properties
+  readonly heroHeadline = computed<string>(() => {
+    const data = this.landingData();
+    if (this.langService.isArabic()) {
+      return data?.heroHeadlineAr || 'تعلم الرياضيات بأعلى المعايير الهندسية مع المهندسة هبة عبد الوهاب';
+    }
+    return data?.heroHeadlineEn || 'Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab';
+  });
+
+  readonly heroSubheadline = computed<string>(() => {
+    const data = this.landingData();
+    if (this.langService.isArabic()) {
+      return data?.heroSubheadlineAr || 'منصة تفاعلية مخصصة للثانوية العامة والأنظمة الدولية بنظام حماية متطور واستراتيجيات ديسموس البيانية.';
+    }
+    return data?.heroSubheadlineEn || 'Interactive learning for Egyptian, Gulf, International, and American Curriculums with Desmos graphing strategies.';
+  });
+
+  readonly academicYearText = computed<string>(() => {
+    const year = this.landingData()?.activeAcademicYear || '2026 / 2027';
+    if (this.langService.isArabic()) {
+      return `العام الأكاديمي ${year} متاح الآن — بإشراف م/ هبة عبدالوهاب`;
+    }
+    return `Academic Year ${year} Open — Supervised by Eng. Heba Abdel-Wahab`;
+  });
+
+  readonly announcement = computed<{ text: string; isActive: boolean }>(() => {
+    const data = this.landingData();
+    return {
+      text: data?.announcementBannerText || '',
+      isActive: !!(data?.isAnnouncementActive && data?.announcementBannerText)
+    };
+  });
+
   // Filtered Pricing Packages (Reacts immediately to curriculum and activeUnitTab)
   readonly filteredPackages = computed<IPricingPackage[]>(() => {
     const data = this.landingData();
@@ -79,6 +123,15 @@ export class LandingHomeComponent implements OnInit {
   ngOnInit(): void {
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
 
+    // Auto-bind student grade and curriculum if logged in
+    const student = this.authService.currentUser();
+    if (this.authService.isAuthenticated() && student) {
+      if (student.curriculum) this.selectedCurriculum.set(student.curriculum as CurriculumCode);
+      if (student.grade_level) this.selectedGradeLevel.set(student.grade_level);
+      if (student.academic_term) this.selectedTerm.set(student.academic_term as AcademicTermCode);
+      this.loadStudentUnits();
+    }
+
     this.discoveryService.getLandingData().subscribe({
       next: data => {
         this.landingData.set(data);
@@ -88,6 +141,28 @@ export class LandingHomeComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  loadStudentUnits(): void {
+    this.isLoadingStudentUnits.set(true);
+    this.discoveryService.getUnitsCatalog(
+      this.selectedCurriculum(),
+      this.selectedGradeLevel(),
+      this.selectedTerm()
+    ).subscribe({
+      next: units => {
+        this.studentUnits.set(units || []);
+        this.isLoadingStudentUnits.set(false);
+      },
+      error: () => {
+        this.studentUnits.set([]);
+        this.isLoadingStudentUnits.set(false);
+      }
+    });
+  }
+
+  toggleFullCurriculumExplorer(): void {
+    this.showFullCurriculumExplorer.update(v => !v);
   }
 
   onCurriculumSelectionChanged(selection: ICurriculumSelection): void {

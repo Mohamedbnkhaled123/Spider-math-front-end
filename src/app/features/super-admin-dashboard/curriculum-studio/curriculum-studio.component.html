@@ -1,0 +1,1195 @@
+<section class="space-y-6 animate-fade-in">
+  
+  <!-- 1. Section Header & 5-Level Filter Hierarchy -->
+  <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-black text-text-primary tracking-tight">
+          استوديو المناهج الخماسي وإدارة الامتحانات الآمنة
+        </h2>
+        <p class="text-xs text-text-secondary mt-0.5">
+          إدارة الوحدات، المحاضرات المشفرة، وملفات الـ PDF، ومحرر الامتحانات مع الرفع المباشر لصور الأسئلة.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
+        <button
+          type="button"
+          (click)="openGradesModal()"
+          class="px-4 py-2.5 rounded-2xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 hover:bg-brand-primary/20 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <app-icon name="check-circle" [size]="15" />
+          <span>تخصيص وإدارة الصفوف المفعلة</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="openCreateUnitModal()"
+          class="px-5 py-2.5 rounded-2xl text-xs font-bold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <app-icon name="plus" [size]="15" />
+          <span>+ إضافة وحدة دراسية جديدة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 5-Level Hierarchy Filter Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 border-t border-surface-border items-center">
+      
+      <!-- 1. Curriculum Selector (5 cols) -->
+      <div class="sm:col-span-5 flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+        <button
+          type="button"
+          (click)="selectCurriculum('EGYPTIAN')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
+          [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
+        >
+          المنهج المصري
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('GULF')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
+          [class.text-white]="selectedCurriculum() === 'GULF'"
+        >
+          المنهج الخليجي
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('INTERNATIONAL')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
+          [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
+        >
+          IGCSE / البريطانية
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('AMERICAN')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
+          [class.text-white]="selectedCurriculum() === 'AMERICAN'"
+        >
+          SAT / الأمريكية
+        </button>
+      </div>
+
+      <!-- 2. Grade Level Dropdown & Status Indicator (4 cols) -->
+      <div class="sm:col-span-4 space-y-1">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[10px] font-bold text-text-muted">الصف الدراسي:</span>
+          @if (isGradeActive(selectedGrade())) {
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+              <app-icon name="check-circle" [size]="11" />
+              <span>مفعل للتدريس</span>
+            </span>
+          } @else {
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
+              <app-icon name="clock" [size]="11" />
+              <span>قريباً بإذن الله</span>
+            </span>
+          }
+        </div>
+        <select
+          [ngModel]="selectedGrade()"
+          (ngModelChange)="selectGrade($event)"
+          class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+        >
+          @for (grade of gradeOptions(); track grade.code) {
+            <option [value]="grade.code">
+              {{ grade.titleAr }} ({{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- 3. Academic Term Switcher (3 cols) -->
+      <div class="sm:col-span-3 flex items-center p-1 rounded-xl bg-surface-bg border border-surface-border">
+        <button
+          type="button"
+          (click)="selectTerm('TERM_1')"
+          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+          [class.bg-surface-card]="selectedTerm() === 'TERM_1'"
+          [class.text-brand-primary]="selectedTerm() === 'TERM_1'"
+          [class.shadow-sm]="selectedTerm() === 'TERM_1'"
+          [class.text-text-muted]="selectedTerm() !== 'TERM_1'"
+        >
+          الترم الأول
+        </button>
+
+        <button
+          type="button"
+          (click)="selectTerm('TERM_2')"
+          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+          [class.bg-surface-card]="selectedTerm() === 'TERM_2'"
+          [class.text-brand-primary]="selectedTerm() === 'TERM_2'"
+          [class.shadow-sm]="selectedTerm() === 'TERM_2'"
+          [class.text-text-muted]="selectedTerm() !== 'TERM_2'"
+        >
+          الترم الثاني
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Quick Active Grades Management Overview Panel -->
+  <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div>
+          <h3 class="text-sm font-black text-text-primary tracking-tight">
+            خريطة وتفعيل الصفوف الدراسية لجميع المناهج (Active Grades Studio)
+          </h3>
+          <p class="text-[11px] text-text-secondary mt-0.5">
+            حددي بنقرة واحدة الصفوف المتاحة للتدريس هذا العام في جميع المناهج الأربعة.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="saveActiveGrades()"
+          [disabled]="isSavingActiveGrades()"
+          class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+        >
+          <app-icon name="check" [size]="14" />
+          <span>{{ isSavingActiveGrades() ? 'جارٍ الحفظ...' : 'حفظ واعتماد التفعيل' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="openGradesModal()"
+          class="px-3 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-brand-primary transition-all flex items-center gap-1 cursor-pointer"
+          title="الاستوديو المتقدم لإضافة صفوف جديدة أو تعديل أسمائها وأكوادها"
+        >
+          <app-icon name="edit" [size]="13" />
+          <span>إدارة متقدمة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4 Curricula Tracks Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-surface-border/60">
+      @for (track of allCurriculaTracks(); track track.code) {
+        <div class="p-3.5 rounded-2xl border border-surface-border/80 bg-surface-bg/40 space-y-2.5">
+          <div class="flex items-center justify-between border-b border-surface-border/50 pb-2">
+            <span class="text-xs font-black text-brand-primary">
+              {{ track.nameAr }}
+            </span>
+            <span class="text-[10px] font-bold text-text-muted">
+              {{ track.grades.length }} صفوف
+            </span>
+          </div>
+
+          <div class="space-y-1.5">
+            @for (grade of track.grades; track grade.code) {
+              <div
+                (click)="toggleGrade(grade.code)"
+                class="p-2 rounded-xl border transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
+                [class.border-emerald-500/40]="isGradeActive(grade.code)"
+                [class.bg-emerald-500/5]="isGradeActive(grade.code)"
+                [class.border-surface-border]="!isGradeActive(grade.code)"
+                [class.bg-surface-card]="!isGradeActive(grade.code)"
+              >
+                <div class="min-w-0">
+                  <p class="text-[11px] font-bold truncate text-text-primary" [title]="grade.titleAr">
+                    {{ grade.titleAr }}
+                  </p>
+                  <span class="text-[9px] font-mono text-text-muted">{{ grade.code }}</span>
+                </div>
+
+                <span
+                  class="px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0 transition-all"
+                  [class.bg-emerald-500/15]="isGradeActive(grade.code)"
+                  [class.text-emerald-500]="isGradeActive(grade.code)"
+                  [class.bg-surface-bg]="!isGradeActive(grade.code)"
+                  [class.text-text-muted]="!isGradeActive(grade.code)"
+                >
+                  {{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Units Catalog Cards -->
+  <div class="space-y-4">
+    @for (unit of units(); track unit.id) {
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+        
+        <!-- Unit Header & Publish Toggle -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-border">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                {{ unit.gradeLevel }} • {{ unit.term === 'TERM_1' ? 'الترم الأول' : 'الترم الثاني' }}
+              </span>
+              <span class="text-xs font-numeric font-bold text-text-muted">
+                {{ unit.priceEgp }} ج.م
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-text-primary">
+              {{ unit.titleAr }}
+            </h3>
+          </div>
+
+          <!-- Publish Switch & Action Buttons -->
+          <div class="flex items-center gap-3 shrink-0">
+            <!-- Instant Publish Switch (Controls visibility to students) -->
+            <button
+              type="button"
+              (click)="togglePublish(unit)"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer"
+              [class.bg-emerald-500/10]="unit.isPublished"
+              [class.border-emerald-500/30]="unit.isPublished"
+              [class.text-emerald-600]="unit.isPublished"
+              [class.bg-slate-500/10]="!unit.isPublished"
+              [class.border-surface-border]="!unit.isPublished"
+              [class.text-text-muted]="!unit.isPublished"
+            >
+              <span class="w-2 h-2 rounded-full" [class.bg-emerald-500]="unit.isPublished" [class.bg-slate-400]="!unit.isPublished"></span>
+              <span>{{ unit.isPublished ? 'منشورة للطلاب' : 'مسودة (مخفية)' }}</span>
+            </button>
+
+            <!-- Add Lecture -->
+            <button
+              type="button"
+              (click)="openLectureModal(unit)"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg hover:border-brand-primary text-text-primary transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <app-icon name="video" [size]="13" />
+              <span>+ محاضرة</span>
+            </button>
+
+            <!-- Delete Unit -->
+            <button
+              type="button"
+              (click)="deleteUnit(unit)"
+              class="p-2 rounded-xl text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+              title="حذف الوحدة"
+            >
+              <app-icon name="trash" [size]="14" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Lectures List in Unit -->
+        <div class="space-y-2">
+          <span class="text-[11px] font-bold text-text-muted block">
+            المحاضرات المتاحة بالوحدة ({{ unit.lectures.length }}):
+          </span>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            @for (lec of unit.lectures; track lec.id) {
+              <div class="p-3 rounded-2xl border border-surface-border bg-surface-bg flex items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2 truncate">
+                  <span class="font-mono text-brand-primary font-bold">0{{ lec.order }}</span>
+                  <span class="truncate font-bold text-text-primary">{{ lec.titleAr }}</span>
+                </div>
+                
+                <div class="flex items-center gap-2 shrink-0">
+                  <span
+                    class="px-2 py-0.5 rounded text-[10px] font-bold"
+                    [class.bg-emerald-500/10]="lec.isPrintAllowed"
+                    [class.text-emerald-500]="lec.isPrintAllowed"
+                    [class.bg-rose-500/10]="!lec.isPrintAllowed"
+                    [class.text-rose-500]="!lec.isPrintAllowed"
+                  >
+                    {{ lec.isPrintAllowed ? 'طباعة مسموحة' : 'الطباعة مقفلة' }}
+                  </span>
+
+                  <button
+                    type="button"
+                    (click)="deleteLecture(unit, lec.id)"
+                    class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                    title="حذف المحاضرة نهائياً"
+                  >
+                    <app-icon name="trash" [size]="13" />
+                  </button>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-[11px] text-text-muted italic py-1 col-span-2">
+                لا توجد محاضرات مضافة بعد. اضغط على "+ محاضرة" لإضافة روابط الشرح وملفات الـ PDF.
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Assessments List in Unit -->
+        <div class="pt-3 border-t border-surface-border space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-text-muted block">
+              الامتحانات والتقييمات المربوطة ({{ unit.assessments.length }}):
+            </span>
+
+            <button
+              type="button"
+              (click)="openCreateAssessmentModal(unit)"
+              class="px-3 py-1 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 hover:bg-brand-primary/20 transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <app-icon name="plus" [size]="12" />
+              <span>+ إضافة كويز / امتحان للوحدة</span>
+            </button>
+          </div>
+
+          @for (asm of unit.assessments; track asm.id) {
+            <div class="p-3.5 rounded-2xl border border-brand-primary/20 bg-brand-primary/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <h4 class="font-bold text-text-primary text-xs sm:text-sm">
+                  {{ asm.titleAr }}
+                </h4>
+                <div class="flex items-center gap-3 text-[11px] text-text-muted mt-1">
+                  <span>{{ asm.questions.length }} أسئلة</span>
+                  <span>•</span>
+                  <span>{{ asm.submissionsCount }} تسليمات سابقة من الطلاب</span>
+                  <span>•</span>
+                  <span class="font-bold text-brand-primary">حاسبة: {{ asm.calculatorType }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  (click)="openAssessmentEditor(asm)"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <app-icon name="file-text" [size]="14" />
+                  <span>فتح محرر الامتحان الآمن</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="deleteAssessment(unit, asm.id)"
+                  class="p-2 rounded-xl text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                  title="حذف الامتحان نهائياً"
+                >
+                  <app-icon name="trash" [size]="14" />
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="text-[11px] text-text-muted italic py-1">
+              لا توجد امتحانات مضافة بعد بالوحدة. اضغط على "+ إضافة كويز / امتحان للوحدة" لإضافة امتحان وتعيين أسئلته.
+            </div>
+          }
+        </div>
+
+      </div>
+    } @empty {
+      <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
+        <app-icon name="book-open" [size]="32" className="text-text-muted mx-auto" />
+        <h4 class="text-sm font-bold text-text-primary">لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً</h4>
+        <p class="text-xs text-text-secondary max-w-md mx-auto">
+          يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.
+        </p>
+        <button
+          type="button"
+          (click)="openCreateUnitModal()"
+          class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 cursor-pointer inline-flex items-center gap-1.5"
+        >
+          <app-icon name="plus" [size]="14" />
+          <span>+ إضافة وحدة دراسية جديدة</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: Create Unit Package                                              -->
+  <!-- ========================================================================= -->
+  @if (isUnitModalOpen()) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <h3 class="text-sm font-black text-text-primary">+ إضافة وحدة دراسية جديدة</h3>
+          <button type="button" (click)="isUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">عنوان الوحدة بالعربية</label>
+          <input
+            type="text"
+            [(ngModel)]="unitForm().titleAr"
+            placeholder="مثال: الوحدة الأولى: الهندسة الفراغية..."
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">سعر الوحدة بالجنيه المصري (EGP)</label>
+          <input
+            type="number"
+            [(ngModel)]="unitForm().priceEgp"
+            min="0"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="isUnitModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            (click)="saveUnitPackage()"
+            class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
+          >
+            حفظ وإنشاء الوحدة
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: Add Lecture Material                                             -->
+  <!-- ========================================================================= -->
+  @if (isLectureModalOpen()) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <h3 class="text-sm font-black text-text-primary">+ إضافة محاضرة جديدة للوحدة</h3>
+          <button type="button" (click)="isLectureModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">عنوان المحاضرة</label>
+          <input
+            type="text"
+            [(ngModel)]="lectureForm().titleAr"
+            placeholder="مثال: 01 اشتقاق الدوال المثلثية وتطبيقات السلسلة"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">
+            رابط فيديو الشرح غير المدرج (Unlisted YouTube URL للتشفير عبر AES-256-GCM)
+          </label>
+          <input
+            type="url"
+            [(ngModel)]="lectureForm().youtubeUrl"
+            placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">
+            معرّف ملف الـ PDF على Google Drive (Drive File ID فقط بدون روابط ويب مفتوحة)
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="lectureForm().googleDrivePdfFileId"
+            placeholder="مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-surface-bg border border-surface-border">
+          <div>
+            <span class="font-bold text-text-primary block">صلاحية طباعة الملزمة (PDF Print Permission)</span>
+            <span class="text-[11px] text-text-muted">تفعيل أو قفل إمكانية طباعة ملف الـ PDF للطالب</span>
+          </div>
+          <button
+            type="button"
+            (click)="lectureForm().isPrintAllowed = !lectureForm().isPrintAllowed"
+            class="px-3 py-1.5 rounded-xl font-bold text-xs border"
+            [class.bg-emerald-500/10]="lectureForm().isPrintAllowed"
+            [class.text-emerald-500]="lectureForm().isPrintAllowed"
+            [class.border-emerald-500/30]="lectureForm().isPrintAllowed"
+            [class.bg-rose-500/10]="!lectureForm().isPrintAllowed"
+            [class.text-rose-500]="!lectureForm().isPrintAllowed"
+            [class.border-rose-500/30]="!lectureForm().isPrintAllowed"
+          >
+            {{ lectureForm().isPrintAllowed ? 'الطباعة مسموحة' : 'الطباعة مقفلة' }}
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="isLectureModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            (click)="saveLecture()"
+            class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
+          >
+            تشفير وحفظ المحاضرة
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: Assessment Safe Editor & Direct Question Image Uploader          -->
+  <!-- ========================================================================= -->
+  @if (isAssessmentEditorOpen() && activeAssessment(); as asm) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-fade-in">
+        
+        <!-- Header -->
+        <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <app-icon name="file-text" [size]="18" className="text-brand-primary" />
+            <h3 class="text-sm font-black text-text-primary">
+              محرر الامتحان الآمن: {{ asm.titleAr }}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            (click)="isAssessmentEditorOpen.set(false)"
+            class="p-2 rounded-xl hover:bg-surface-card text-text-muted transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+          
+          <!-- Submissions Lock Warning (Architectural Requirement) -->
+          @if (asm.submissionsCount > 0) {
+            <div class="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-600 flex items-start gap-3">
+              <app-icon name="lock" [size]="18" className="shrink-0 mt-0.5" />
+              <div>
+                <span class="font-black text-xs block mb-0.5">
+                  قفل التعديل الهيكلي للامتحان (Lock on Submissions Active)
+                </span>
+                <p class="leading-relaxed">
+                  تم تسليم هذا الامتحان من قِبل {{ asm.submissionsCount }} طالباً مسبقاً. تم قفل إضافة أو حذف أي أسئلة لضمان نزاهة الدرجات وعدم اختلال موازين التقييم.
+                </p>
+              </div>
+            </div>
+          }
+
+          <!-- Auto-Regrade Alert if option changed -->
+          @if (autoRegradeWarning()) {
+            <div class="p-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 text-rose-600 flex items-start gap-3 animate-pulse">
+              <app-icon name="alert-circle" [size]="18" className="shrink-0 mt-0.5" />
+              <div>
+                <span class="font-black text-xs block mb-0.5">
+                  تنبيه إعادة التصحيح التلقائي (Auto-Regrade Alert)
+                </span>
+                <p class="leading-relaxed">
+                  تعديل الإجابة النموذجية لأحد الأسئلة سيقوم تلقائياً بإعادة تصحيح إجابات كافة الطلاب الـ {{ asm.submissionsCount }} وتحديث تقارير درجاتهم ونقاط الـ XP وإشعار أولياء أمورهم!
+                </p>
+              </div>
+            </div>
+          }
+
+          <!-- Assessment Config -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">نوع الحاسبة المسموح بها في الامتحان</label>
+              <select
+                [(ngModel)]="asm.calculatorType"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+              >
+                <option value="NONE">بدون حاسبة (ممنوعة تماماً)</option>
+                <option value="DESMOS">آلة ديسموس البيانية فقط (Desmos Graphing)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الزمن المتاح للامتحان (بالدقائق)</label>
+              <input
+                type="number"
+                [(ngModel)]="asm.durationMinutes"
+                min="5"
+                max="180"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+              />
+            </div>
+          </div>
+
+          <!-- Existing Questions List -->
+          <div class="space-y-4">
+            <span class="font-bold text-text-primary block text-sm">
+              أسئلة الامتحان الحالية ({{ asm.questions.length }}):
+            </span>
+
+            @for (q of asm.questions; track q.order) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                    سؤال رقم {{ q.order }} ({{ q.type }})
+                  </span>
+                  
+                  <div class="flex items-center gap-3">
+                    <span class="font-bold text-text-muted">{{ q.points }} درجات</span>
+                    @if (asm.submissionsCount === 0) {
+                      <button
+                        type="button"
+                        (click)="deleteQuestion(q.order)"
+                        class="text-rose-500 hover:underline text-[11px]"
+                      >
+                        حذف
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <p class="font-bold text-text-primary text-xs leading-relaxed">
+                  {{ q.textAr }}
+                </p>
+
+                @if (q.questionImageUrl) {
+                  <img [src]="q.questionImageUrl" alt="صورة السؤال" class="max-h-48 rounded-xl object-contain border border-surface-border" />
+                }
+
+                @if (q.type === 'MCQ') {
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    @for (opt of q.options; track $index) {
+                      <div
+                        class="p-2.5 rounded-xl border text-xs flex items-center justify-between"
+                        [class.border-emerald-500]="q.correctOptionIndex === $index"
+                        [class.bg-emerald-500/10]="q.correctOptionIndex === $index"
+                        [class.text-emerald-600]="q.correctOptionIndex === $index"
+                        [class.border-surface-border]="q.correctOptionIndex !== $index"
+                      >
+                        <span>{{ opt }}</span>
+                        @if (q.correctOptionIndex === $index) {
+                          <span class="text-[10px] font-bold flex items-center gap-1">
+                            <app-icon name="check" [size]="12" />
+                            <span>الإجابة الصحيحة</span>
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Add New Question Box (Disabled if submissions exist) -->
+          @if (asm.submissionsCount === 0) {
+            <div class="p-5 rounded-2xl border border-dashed border-brand-primary/30 bg-brand-primary/[0.02] space-y-4">
+              <span class="font-bold text-brand-primary block text-xs">
+                + إضافة سؤال جديد للامتحان (Direct Question Image Upload):
+              </span>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">نوع السؤال</label>
+                  <select
+                    [ngModel]="newQuestionType()"
+                    (ngModelChange)="newQuestionType.set($event)"
+                    class="w-full px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card text-xs font-bold"
+                  >
+                    <option value="MCQ">اختيار من متعدد (MCQ)</option>
+                    <option value="ESSAY">مسألة مقالية / حل يدوي (ESSAY)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">درجات السؤال</label>
+                  <input
+                    type="number"
+                    [ngModel]="newQuestionPoints()"
+                    (ngModelChange)="newQuestionPoints.set($event)"
+                    min="1"
+                    class="w-full px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card text-xs font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">نص السؤال الرياضي</label>
+                <textarea
+                  rows="2"
+                  [ngModel]="newQuestionTextAr()"
+                  (ngModelChange)="newQuestionTextAr.set($event)"
+                  placeholder="اكتب منطوق المسألة أو التحدي الرياضي هنا..."
+                  class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs"
+                ></textarea>
+              </div>
+
+              <!-- Direct Device Image Uploader Embedding -->
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">
+                  رفع صورة السؤال مباشرة من جهاز المعلمة (spider-math-questions/):
+                </label>
+                <app-image-compressor-uploader
+                  uploadTarget="question"
+                  [existingImageUrl]="newQuestionImageUrl()"
+                  (imageUploaded)="onQuestionPromptUploaded($event)"
+                />
+              </div>
+
+              <!-- Options for MCQ -->
+              @if (newQuestionType() === 'MCQ') {
+                <div class="space-y-2">
+                  <span class="font-bold text-text-secondary block">خيارات السؤال الأربعة وحدد الإجابة الصحيحة:</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    @for (opt of newQuestionOptions(); track $index) {
+                      <div class="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="correctOption"
+                          [checked]="newQuestionCorrectIndex() === $index"
+                          (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
+                        />
+                        <input
+                          type="text"
+                          [ngModel]="newQuestionOptions()[$index]"
+                          (ngModelChange)="newQuestionOptions()[$index] = $event"
+                          [placeholder]="'الخيار ' + ($index + 1)"
+                          class="flex-1 px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card text-xs"
+                        />
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <button
+                type="button"
+                (click)="addQuestionToAssessment()"
+                class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-secondary transition-all cursor-pointer"
+              >
+                تأكيد إضافة السؤال للامتحان
+              </button>
+            </div>
+          }
+
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-surface-bg border-t border-surface-border flex items-center justify-between">
+          <button
+            type="button"
+            (click)="isAssessmentEditorOpen.set(false)"
+            class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveAssessmentSettings()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <app-icon name="check-circle" [size]="16" />
+            <span>اعتماد وحفظ إعدادات الامتحان</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal 1: Active Grades Studio Modal -->
+  @if (isGradesModalOpen()) {
+    <div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-4xl rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-8 animate-scale-up">
+        
+        <!-- Header -->
+        <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-brand-primary animate-pulse"></span>
+              <h3 class="text-lg font-black text-text-primary tracking-tight flex items-center gap-2">
+                <span>مدير تفعيل الصفوف والمناهج الدراسية (Active Grades Studio)</span>
+              </h3>
+            </div>
+            <p class="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+              حددي الصفوف والمراحل الدراسية التي ستقومين بتدريسها هذا العام في كل قسم. يمكنك إضافة صف جديد، تعديل اسمه وكوده، أو حذفه من أي قسم. الصفوف غير المفعلة ستظهر تلقائياً بحالة (قريباً بإذن الله Coming Soon) للطلاب.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeGradesModal()"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="18" />
+          </button>
+        </div>
+
+        <!-- Body: 4 Curricula Tracks with Section Actions and Grade Cards -->
+        <div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
+          @for (track of allCurriculaTracks(); track track.code) {
+            <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-4">
+              
+              <!-- Section Header with Section Title & Action Buttons -->
+              <div class="flex items-center justify-between gap-3 flex-wrap border-b border-surface-border/60 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-brand-primary"></span>
+                  <span class="text-sm font-black text-brand-primary tracking-wide">
+                    {{ track.nameAr }}
+                  </span>
+                  <span class="text-[11px] font-bold text-text-muted">
+                    ({{ track.grades.length }} صفوف دراسية)
+                  </span>
+                </div>
+
+                <!-- Section Level Actions: Add Grade to this track & Confirm Section Edits -->
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="openAddGrade(track.code)"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold border border-brand-primary/30 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="إضافة صف دراسي جديد لهذا المنهج"
+                  >
+                    <app-icon name="plus" [size]="14" />
+                    <span>إضافة صف دراسي</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="confirmSectionChanges(track.code)"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="تأكيد واعتماد تعديلات هذا القسم فوراً"
+                  >
+                    <app-icon name="check" [size]="14" />
+                    <span>تأكيد تعديلات القسم</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Grade Cards Grid with Full CRUD & Toggle -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (grade of track.grades; track grade.code) {
+                  <div
+                    class="p-4 rounded-2xl border transition-all flex items-center justify-between gap-3"
+                    [class.border-brand-primary]="isGradeActive(grade.code)"
+                    [class.bg-brand-primary/5]="isGradeActive(grade.code)"
+                    [class.border-surface-border]="!isGradeActive(grade.code)"
+                    [class.bg-surface-card]="!isGradeActive(grade.code)"
+                  >
+                    <div class="space-y-1">
+                      <h4 class="text-xs font-bold text-text-primary">
+                        {{ grade.titleAr }}
+                      </h4>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-text-muted font-mono bg-surface-bg px-2 py-0.5 rounded-md border border-surface-border">
+                          {{ grade.code }}
+                        </span>
+                        @if (grade.titleEn) {
+                          <span class="text-[10px] text-text-muted">
+                            {{ grade.titleEn }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Grade Action Controls: Status Toggle + Edit Icon + Delete Icon -->
+                    <div class="shrink-0 flex items-center gap-1.5">
+                      <!-- Active / Coming Soon Toggle -->
+                      <button
+                        type="button"
+                        (click)="toggleGrade(grade.code)"
+                        class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1 cursor-pointer"
+                        [class.bg-emerald-500/10]="isGradeActive(grade.code)"
+                        [class.text-emerald-500]="isGradeActive(grade.code)"
+                        [class.border-emerald-500/20]="isGradeActive(grade.code)"
+                        [class.bg-amber-500/10]="!isGradeActive(grade.code)"
+                        [class.text-amber-500]="!isGradeActive(grade.code)"
+                        [class.border-amber-500/20]="!isGradeActive(grade.code)"
+                        title="انقري للتبديل بين مفعل للتدريس وقريباً"
+                      >
+                        @if (isGradeActive(grade.code)) {
+                          <app-icon name="check-circle" [size]="12" />
+                          <span>مفعل للتدريس</span>
+                        } @else {
+                          <app-icon name="clock" [size]="12" />
+                          <span>قريباً</span>
+                        }
+                      </button>
+
+                      <!-- Edit Grade Icon Button -->
+                      <button
+                        type="button"
+                        (click)="openEditGrade(track.code, grade)"
+                        class="p-1.5 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-brand-primary hover:border-brand-primary transition-all cursor-pointer"
+                        title="تعديل اسم أو كود هذا الصف"
+                      >
+                        <app-icon name="edit" [size]="13" />
+                      </button>
+
+                      <!-- Delete Grade Icon Button -->
+                      <button
+                        type="button"
+                        (click)="deleteGrade(track.code, grade.code)"
+                        class="p-1.5 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all cursor-pointer"
+                        title="حذف هذا الصف الدراسي نهائياً"
+                      >
+                        <app-icon name="trash" [size]="13" />
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-surface-bg border-t border-surface-border flex items-center justify-between">
+          <button
+            type="button"
+            (click)="closeGradesModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveActiveGrades()"
+            [disabled]="isSavingActiveGrades()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <app-icon name="check-circle" [size]="16" />
+            <span>{{ isSavingActiveGrades() ? 'جارٍ الحفظ...' : 'تأكيد وحفظ كل التعديلات' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Grade Add / Edit Modal -->
+  @if (gradeModal().isOpen) {
+    <div class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border shadow-2xl p-6 space-y-5 animate-scale-up">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
+            <app-icon name="sliders" [size]="16" className="text-brand-primary" />
+            <span>{{ gradeModal().mode === 'add' ? 'إضافة صف دراسي جديد' : 'تعديل بيانات الصف الدراسي' }}</span>
+          </h3>
+          <button
+            type="button"
+            (click)="closeGradeModal()"
+            class="p-1.5 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">كود الصف (Code):</label>
+            <input
+              type="text"
+              [(ngModel)]="gradeModal().code"
+              placeholder="مثال: SEC_1 أو GRADE_9"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono text-xs focus:border-brand-primary outline-none"
+            />
+            <p class="text-[10px] text-text-muted mt-1">كود فريد يُميز الصف الدراسي (حروف لاتينية وأرقام)</p>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">اسم الصف بالعربية:</label>
+            <input
+              type="text"
+              [(ngModel)]="gradeModal().titleAr"
+              placeholder="مثال: الصف الأول الثانوي"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">الاسم بالإنجليزية (اختياري):</label>
+            <input
+              type="text"
+              [(ngModel)]="gradeModal().titleEn"
+              placeholder="مثال: Secondary 1"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="closeGradeModal()"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-secondary font-bold text-xs cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveGradeModal()"
+            class="px-5 py-2 rounded-xl text-white font-bold text-xs bg-gradient-spider hover:opacity-95 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <app-icon name="check" [size]="14" />
+            <span>{{ gradeModal().mode === 'add' ? 'إضافة الصف للقسم' : 'حفظ التعديلات' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- In-App Decision Confirmation Dialog (Strictly Zero window.confirm) -->
+  @if (confirmDialog().isOpen) {
+    <div
+      class="fixed inset-0 z-[100] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 text-center animate-scale-up">
+        
+        <div
+          class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center"
+          [class.bg-rose-500/10]="confirmDialog().isDestructive"
+          [class.text-rose-500]="confirmDialog().isDestructive"
+          [class.bg-brand-primary/10]="!confirmDialog().isDestructive"
+          [class.text-brand-primary]="!confirmDialog().isDestructive"
+        >
+          <app-icon [name]="confirmDialog().isDestructive ? 'trash' : 'alert-triangle'" [size]="28" />
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-base font-black text-text-primary">
+            {{ confirmDialog().title }}
+          </h3>
+          <p class="text-xs text-text-secondary leading-relaxed">
+            {{ confirmDialog().message }}
+          </p>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirm()"
+            class="px-5 py-2.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-text-primary hover:border-text-muted transition-all cursor-pointer"
+          >
+            {{ confirmDialog().cancelLabel }}
+          </button>
+
+          <button
+            type="button"
+            (click)="proceedConfirm()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white transition-all shadow-md cursor-pointer"
+            [class.bg-rose-600]="confirmDialog().isDestructive"
+            [class.hover:bg-rose-700]="confirmDialog().isDestructive"
+            [class.bg-gradient-spider]="!confirmDialog().isDestructive"
+            [class.hover:opacity-95]="!confirmDialog().isDestructive"
+          >
+            {{ confirmDialog().confirmLabel }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal 2: Create Assessment Modal -->
+  @if (isCreateAssessmentModalOpen()) {
+    <div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-lg rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
+        
+        <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-black text-text-primary">
+              + إضافة كويز / امتحان للوحدة
+            </h3>
+            <p class="text-xs text-text-secondary mt-0.5">
+              {{ activeUnitForAssessment()?.titleAr }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="isCreateAssessmentModalOpen.set(false)"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="18" />
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="font-bold text-text-primary block mb-1">عنوان الامتحان / الكويز (بالعربية):</label>
+            <input
+              type="text"
+              [ngModel]="newAssessmentForm().titleAr"
+              (ngModelChange)="newAssessmentForm().titleAr = $event"
+              placeholder="مثال: كويز تقييمي على الدرس الأول"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-bold text-text-primary block mb-1">الزمن المتاح (بالدقائق):</label>
+              <input
+                type="number"
+                [ngModel]="newAssessmentForm().durationMinutes"
+                (ngModelChange)="newAssessmentForm().durationMinutes = $event"
+                min="5"
+                max="180"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+              />
+            </div>
+
+            <div>
+              <label class="font-bold text-text-primary block mb-1">الآلة الحاسبة:</label>
+              <select
+                [ngModel]="newAssessmentForm().calculatorType"
+                (ngModelChange)="newAssessmentForm().calculatorType = $event"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+              >
+                <option value="NONE">بدون حاسبة بيانية</option>
+                <option value="DESMOS">آلة ديسموس الهندسية (Desmos)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 bg-surface-bg border-t border-surface-border flex items-center justify-between">
+          <button
+            type="button"
+            (click)="isCreateAssessmentModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveNewAssessment()"
+            class="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <app-icon name="plus" [size]="14" />
+            <span>حفظ ونشر الامتحان</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</section>

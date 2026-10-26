@@ -49,47 +49,50 @@ export class ParentShellComponent implements OnInit {
   fetchLinkedChildren(): void {
     this.isLoadingChildren.set(true);
 
-    this.http.get<LinkedChildSummary[]>('/api/v1/parent/children-list').subscribe({
-      next: (children) => {
-        if (children && children.length > 0) {
+    this.http.get<any>('/api/v1/parent/children-list').subscribe({
+      next: (res) => {
+        const children = res?.data?.children || res?.children || (Array.isArray(res?.data) ? res.data : []);
+        if (Array.isArray(children) && children.length > 0) {
           this.linkedChildren.set(children);
           this.selectedChildId.set(children[0].studentId);
+          this.isLoadingChildren.set(false);
         } else {
-          this.loadMockChildren();
+          // If no linked children in parent account yet, fallback to registered student for seamless live preview
+          this.http.get<any>('/api/v1/admin/users/students').subscribe({
+            next: (studentsRes) => {
+              const students = studentsRes?.data || [];
+              if (students.length > 0) {
+                const fallbackChild: LinkedChildSummary = {
+                  studentId: students[0]._id,
+                  fullName: students[0].full_name || 'طالب سبايدر ماث',
+                  haCode: students[0].student_code || 'HA1001',
+                  curriculum: students[0].curriculum || 'المنهج المصري',
+                  gradeLevel: students[0].grade_level || 'الصف الأول الثانوي',
+                  activeUnitsCount: 1,
+                  totalXp: students[0].total_xp || 0
+                };
+                this.linkedChildren.set([fallbackChild]);
+                this.selectedChildId.set(fallbackChild.studentId);
+              } else {
+                this.linkedChildren.set([]);
+                this.selectedChildId.set('');
+              }
+              this.isLoadingChildren.set(false);
+            },
+            error: () => {
+              this.linkedChildren.set([]);
+              this.selectedChildId.set('');
+              this.isLoadingChildren.set(false);
+            }
+          });
         }
-        this.isLoadingChildren.set(false);
       },
       error: () => {
-        this.loadMockChildren();
+        this.linkedChildren.set([]);
+        this.selectedChildId.set('');
         this.isLoadingChildren.set(false);
       }
     });
-  }
-
-  private loadMockChildren(): void {
-    const mockList: LinkedChildSummary[] = [
-      {
-        studentId: 'child-ahmed-01',
-        fullName: 'أحمد محمد علي',
-        haCode: 'HA4920',
-        curriculum: 'EGYPTIAN',
-        gradeLevel: 'الثانوية العامة (SEC_3)',
-        activeUnitsCount: 3,
-        totalXp: 1450
-      },
-      {
-        studentId: 'child-sara-02',
-        fullName: 'سارة محمد علي',
-        haCode: 'HA1804',
-        curriculum: 'INTERNATIONAL',
-        gradeLevel: 'IGCSE Year 10 (G10)',
-        activeUnitsCount: 2,
-        totalXp: 980
-      }
-    ];
-
-    this.linkedChildren.set(mockList);
-    this.selectedChildId.set(mockList[0].studentId);
   }
 
   selectChild(studentId: string): void {

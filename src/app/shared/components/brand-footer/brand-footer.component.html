@@ -1,0 +1,148 @@
+<footer class="border-t border-surface-border bg-surface-secondary/90 backdrop-blur-lg pt-16 pb-10 text-text-secondary relative overflow-hidden z-layer-content">
+  <!-- Subtle coordinate background grid -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-surface-border/60">
+      
+      <!-- 1. Brand & Instructor Info (5 Cols) -->
+      <div class="lg:col-span-5 flex flex-col items-start">
+        <a routerLink="/" (click)="scrollToTop()" class="flex items-center gap-3 mb-4 group cursor-pointer">
+          <div class="w-12 h-12 rounded-2xl bg-surface-card border border-surface-border p-1.5 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-cyan-400 transition-colors">
+            <img
+              src="/assets/branding/spider-math-logo.webp"
+              alt="Spider Math Logo"
+              class="w-full h-full object-contain"
+            />
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center text-2xl font-black tracking-tight leading-none">
+              <span class="brand-spider">Spider</span>
+              <span class="brand-math ml-1 rtl:mr-1 rtl:ml-0">Math<span class="spark-star">✦</span></span>
+            </div>
+            <span class="text-xs text-text-muted mt-1 font-semibold">
+              {{ 'BRAND.TEACHER' | transloco }}
+            </span>
+          </div>
+        </a>
+
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-sm mb-6">
+          {{ langService.isArabic()
+            ? 'المنصة التعليمية الرائدة للرياضيات الهندسية المتقدمة بإشراف المهندسة هبة عبدالوهاب. تبسيط المفاهيم المعقدة، تدريب مكثف على اختبارات القبول الدولية، واستراتيجيات ديسموس البيانية الحديثة.'
+            : 'Engineering-grade mathematics mastery supervised by Eng. Heba Abdel-Wahab. Advanced exam prep for Egyptian, Gulf, IGCSE, and American Diploma systems with interactive Desmos graphing.' }}
+        </p>
+
+        <!-- Trust Badges -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span class="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold">
+            Desmos Partner
+          </span>
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold">
+            Cairo Time GMT+3
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Academic Curriculums (3 Cols) -->
+      <div class="lg:col-span-3">
+        <h3 class="text-sm font-extrabold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          <span>{{ langService.isArabic() ? 'المسارات الأكاديمية' : 'Curriculums' }}</span>
+        </h3>
+        <ul class="space-y-2.5 text-xs font-medium text-text-secondary">
+          <li>
+            <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-cyan-400 transition-colors text-start cursor-pointer">
+              {{ langService.isArabic() ? 'المنهج المصري (ثانوية عامة وإعدادية)' : 'Egyptian Curriculum (Thanaweya & Prep)' }}
+            </button>
+          </li>
+          <li>
+            <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-cyan-400 transition-colors text-start cursor-pointer">
+              {{ langService.isArabic() ? 'المنهج الخليجي (السعودي والإماراتي)' : 'Gulf Curriculum (Saudi & Emirati)' }}
+            </button>
+          </li>
+          <li>
+            <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-cyan-400 transition-colors text-start cursor-pointer">
+              {{ langService.isArabic() ? 'البريطاني الدولي (Cambridge & Edexcel)' : 'British Curriculum (IGCSE)' }}
+            </button>
+          </li>
+          <li>
+            <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-cyan-400 transition-colors text-start cursor-pointer">
+              {{ langService.isArabic() ? 'الدبلومة الأمريكية (Digital SAT • EST • ACT)' : 'American Diploma (SAT • EST • ACT)' }}
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 3. Quick Platform Links (2 Cols) -->
+      <div class="lg:col-span-2">
+        <h3 class="text-sm font-extrabold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+          <span>{{ langService.isArabic() ? 'روابط سريعة' : 'Quick Links' }}</span>
+        </h3>
+        <ul class="space-y-2.5 text-xs font-medium text-text-secondary">
+          <li>
+            <a routerLink="/placement-test" class="hover:text-cyan-400 transition-colors">
+              {{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}
+            </a>
+          </li>
+          <li>
+            <button type="button" (click)="scrollToSection('pricing-packages')" class="hover:text-cyan-400 transition-colors cursor-pointer">
+              {{ langService.isArabic() ? 'الباقات والاشتراكات' : 'Tuition Packages' }}
+            </button>
+          </li>
+          <li>
+            <button type="button" (click)="scrollToSection('schedules-table')" class="hover:text-cyan-400 transition-colors cursor-pointer">
+              {{ langService.isArabic() ? 'جدول المواعيد المباشرة' : 'Live Timetable' }}
+            </button>
+          </li>
+          <li>
+            <a routerLink="/login" class="hover:text-cyan-400 transition-colors">
+              {{ langService.isArabic() ? 'تسجيل الدخول' : 'Student & Parent Login' }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 4. Support & Direct Channels (2 Cols) -->
+      <div class="lg:col-span-2">
+        <h3 class="text-sm font-extrabold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>{{ langService.isArabic() ? 'الدعم الفني' : 'Direct Support' }}</span>
+        </h3>
+        <p class="text-xs text-text-muted mb-3 leading-relaxed">
+          {{ langService.isArabic()
+            ? 'فريق الدعم متاح للرد على استفسارات الطلاب وأولياء الأمور طوال أيام الأسبوع.'
+            : 'Dedicated support for student onboarding and inquiries 7 days a week.' }}
+        </p>
+        <a
+          href="https://wa.me/201000000000"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors"
+        >
+          <app-icon name="whatsapp" [size]="16" />
+          <span>WhatsApp Helpdesk</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-text-primary">Spider Math Platform</span>
+        <span>•</span>
+        <span>{{ 'BRAND.TEACHER' | transloco }}</span>
+        <span>•</span>
+        <span class="font-numeric">© {{ currentYear }} All rights reserved.</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="scrollToTop()"
+        class="flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+      >
+        <span>{{ langService.isArabic() ? 'العودة للأعلى' : 'Back to top' }}</span>
+        <app-icon name="arrow-up" [size]="14" />
+      </button>
+    </div>
+  </div>
+</footer>

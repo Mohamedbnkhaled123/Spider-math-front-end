@@ -31,6 +31,9 @@ export interface ChildSubmissionSummary {
   finalTotalScore: number;
   maxScore: number;
   gradedAt: string;
+  status?: string;
+  isPendingReview?: boolean;
+  isInProgress?: boolean;
   teacherNote?: string;
   mistakeCases: Array<{
     questionOrder: number;

@@ -58,6 +58,7 @@
     "SEARCH": "Search",
     "LIGHT_MODE": "Light Mode",
     "DARK_MODE": "Dark Mode",
-    "LANGUAGE": "Language"
+    "LANGUAGE": "Language",
+    "CLOSE": "Close"
   }
 }

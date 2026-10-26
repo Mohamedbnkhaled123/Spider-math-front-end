@@ -1,31 +1,55 @@
-<div class="student-overview-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="student-overview-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
 
   <!-- ========================================================================= -->
-  <!-- 1. Header Bar: Identity Badges, Term Switcher & Notification Bell        -->
+  <!-- 1. Header Bar: Identity Badges, Profile Edit, Term Switcher & Notifications-->
   <!-- ========================================================================= -->
-  <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-surface-border">
-    <div>
-      <div class="flex items-center gap-2 mb-2">
-        <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 flex items-center gap-1.5">
-          <app-icon name="target" [size]="14" />
-          <span>المنهج المصري • الثانوية العامة (SEC_3)</span>
-        </span>
-
-        <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
-          HA4920
+  <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-surface-border">
+    <div class="flex items-start sm:items-center gap-4">
+      <!-- Student Avatar Preview with Level Badge -->
+      <div class="relative shrink-0">
+        <img
+          [src]="authService.currentUser()?.avatar_url || presetAvatars[0].url"
+          alt="Avatar"
+          class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-brand-primary/40 object-cover bg-surface-bg shadow-brand-glow"
+        />
+        <span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary text-white shadow-sm font-numeric">
+          Lv.{{ currentLevel() }}
         </span>
       </div>
 
-      <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
-        مرحباً بك، {{ authService.currentUser()?.full_name ?? 'طالب سبايدر ماث' }} ✦
-      </h1>
-      <p class="text-xs sm:text-sm text-text-secondary mt-1">
-        تابع دراستك الهندسية واستكمل محاضرات ووحدات الفصل الدراسي بكل ثقة.
-      </p>
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-1.5">
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 flex items-center gap-1.5">
+            <app-icon name="target" [size]="14" />
+            <span>{{ authService.currentUser()?.curriculum === 'EGYPTIAN' ? 'المنهج المصري • الثانوية العامة' : 'المنهج الدولي / التجريبي' }}</span>
+          </span>
+
+          <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
+            {{ authService.currentUser()?.student_ha_code || 'HA4920' }}
+          </span>
+
+          <button
+            type="button"
+            (click)="openProfileModal()"
+            class="px-2.5 py-1 rounded-full text-xs font-bold bg-surface-card hover:bg-surface-bg border border-surface-border hover:border-brand-primary/40 text-text-primary transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            title="تعديل بيانات الحساب والصورة"
+          >
+            <app-icon name="settings" [size]="13" className="text-brand-primary dark:text-brand-accent" />
+            <span>تعديل بياناتي</span>
+          </button>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
+          مرحباً بك، {{ authService.currentUser()?.full_name ?? 'طالب سبايدر ماث' }}
+        </h1>
+        <p class="text-xs sm:text-sm text-text-secondary mt-1">
+          تابع دروسك الهندسية، واطلع على إنجاز المحاضرات ودرجات الامتحانات المعتمدة.
+        </p>
+      </div>
     </div>
 
     <!-- Actions Group: Term Switcher & Notifications -->
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 self-end lg:self-center">
       <!-- Academic Term Switcher (TERM_1 / TERM_2) -->
       <div class="term-switcher-pills flex items-center p-1 rounded-2xl border border-surface-border bg-surface-card shadow-sm">
         <button
@@ -37,7 +61,7 @@
           [class.shadow-sm]="selectedTerm() === 'TERM_1'"
           [class.text-text-secondary]="selectedTerm() !== 'TERM_1'"
         >
-          الفصل الدراسي الأول
+          الفصل الأول
         </button>
 
         <button
@@ -49,7 +73,7 @@
           [class.shadow-sm]="selectedTerm() === 'TERM_2'"
           [class.text-text-secondary]="selectedTerm() !== 'TERM_2'"
         >
-          الفصل الدراسي الثاني
+          الفصل الثاني
         </button>
       </div>
 
@@ -80,7 +104,7 @@
               <button
                 type="button"
                 (click)="markAllNotificationsAsRead()"
-                class="text-[11px] font-bold text-brand-primary dark:text-brand-accent hover:underline"
+                class="text-[11px] font-bold text-brand-primary dark:text-brand-accent hover:underline cursor-pointer"
               >
                 تحديد الكل كمقروء
               </button>
@@ -109,23 +133,24 @@
   </header>
 
   <!-- ========================================================================= -->
-  <!-- 2. Academic Summary Metrics Bar                                           -->
+  <!-- 2. Academic Summary Metrics Bar (4 Responsive Metric Cards)                -->
   <!-- ========================================================================= -->
-  <section class="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
-    <!-- Overall Completion Rate Card -->
-    <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <span class="text-xs font-bold text-text-secondary">نسبة إنجاز المحاضرات</span>
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Card 1: Overall Lecture Completion Rate -->
+    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-bold text-text-secondary">إنجاز المحاضرات</span>
         <span class="p-2 rounded-xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent">
-          <app-icon name="play" [size]="18" />
+          <app-icon name="play" [size]="16" />
         </span>
       </div>
       <div>
         <div class="flex items-baseline gap-2 mb-2">
-          <span class="text-3xl font-black font-numeric text-text-primary">
+          <span class="text-2xl sm:text-3xl font-black font-numeric text-text-primary">
             {{ overallWatchPercentage() }}%
           </span>
-          <span class="text-xs text-text-muted">مكتمل من دروس الفصل الدراسي</span>
+          <span class="text-[11px] text-text-muted">من دروس الفصل</span>
         </div>
         <div class="w-full h-2 rounded-full bg-surface-border overflow-hidden">
           <div
@@ -136,126 +161,479 @@
       </div>
     </div>
 
-    <!-- Student Total XP Pill Card -->
-    <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <span class="text-xs font-bold text-text-secondary">رصيد نقاط التميز الأكاديمي</span>
-        <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500">
-          <app-icon name="award" [size]="18" />
+    <!-- Card 2: XP Progress Ring -->
+    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between relative overflow-hidden">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-bold text-text-secondary">نقاط التميز (XP)</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20 font-numeric">
+          المستوى {{ currentLevel() }}
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative w-14 h-14 shrink-0 flex items-center justify-center">
+          <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 84 84">
+            <circle cx="42" cy="42" r="36" stroke="currentColor" stroke-width="7" fill="transparent" class="text-surface-border" />
+            <circle
+              cx="42" cy="42" r="36" stroke="url(#xpRingGradient)" stroke-width="7" stroke-linecap="round" fill="transparent"
+              stroke-dasharray="226.19" [style.stroke-dashoffset]="xpRingDashoffset()" class="transition-all duration-1000 ease-out"
+            />
+            <defs>
+              <linearGradient id="xpRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0066FF" />
+                <stop offset="50%" stop-color="#00E5FF" />
+                <stop offset="100%" stop-color="#FF007A" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span class="text-[11px] font-black font-numeric text-brand-primary dark:text-brand-accent">
+              {{ xpLevelProgressPct() }}%
+            </span>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-xl sm:text-2xl font-black font-numeric text-brand-primary dark:text-brand-accent">
+              {{ userTotalXp() | number }}
+            </span>
+            <span class="text-xs font-bold text-brand-accent">XP</span>
+          </div>
+          <p class="text-[10px] text-text-muted mt-0.5">+50 XP لكل محاضرة</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Average Quiz Score -->
+    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-bold text-text-secondary">متوسط درجات الكويزات</span>
+        <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+          <app-icon name="check-circle" [size]="16" />
         </span>
       </div>
       <div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-3xl font-black font-numeric text-brand-primary dark:text-brand-accent">
-            1,150
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-2xl sm:text-3xl font-black font-numeric text-emerald-600 dark:text-emerald-400">
+            {{ averageScorePercentage() }}%
           </span>
-          <span class="text-xs font-bold text-brand-accent">XP ✦</span>
+          <span class="text-xs font-bold text-emerald-500">ممتاز</span>
         </div>
-        <p class="text-xs text-text-muted mt-2">
-          يتم احتساب +50 XP عند إتمام كل محاضرة بنسبة 85% + درجات الاختبارات.
+        <p class="text-[11px] text-text-muted">
+          {{ completedGrades().length }} اختبارات معتمدة ومصححة
         </p>
       </div>
     </div>
 
-    <!-- Leaderboard Rank Card -->
-    <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <span class="text-xs font-bold text-text-secondary">ترتيبك في لوحة الشرف</span>
-        <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
-          <app-icon name="star" [size]="18" />
+    <!-- Card 4: Leaderboard Position -->
+    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-bold text-text-secondary">لوحة الشرف</span>
+        <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+          <app-icon name="star" [size]="16" />
         </span>
       </div>
       <div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-3xl font-black font-numeric text-emerald-600 dark:text-emerald-400">
-            المركز #7
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-2xl sm:text-3xl font-black font-numeric text-amber-500">
+            #{{ currentUserRank()?.rank ?? 1 }}
           </span>
-          <span class="text-xs text-text-muted">بين طلاب دفعة الثانوية العامة</span>
+          <span class="text-[11px] text-text-muted">بين طلاب الدفعة</span>
         </div>
-        <p class="text-xs text-text-muted mt-2">
-          يفصلك 330 XP عن دخول قائمة أفضل 3 مراكز للمنصة.
+        <p class="text-[11px] text-text-muted">
+          {{ dueQuizzes().length }} كويزات مستحقة عليك الآن
         </p>
       </div>
     </div>
+
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. Active Units & Final Revisions Grid                                    -->
+  <!-- Coming Soon Banner or Real Active Academic Tracks                         -->
   <!-- ========================================================================= -->
-  <section class="my-10">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-          الوحدات الدراسية المتاحة ({{ selectedTerm() === 'TERM_1' ? 'الفصل الأول' : 'الفصل الثاني' }})
-        </h2>
-        <p class="text-xs text-text-secondary mt-1">
-          اضغط على الوحدة لمشاهدة المحاضرات المحمية وحل التقييمات التفاعلية.
-        </p>
+  @if (!isCurrentGradeActive()) {
+    <div class="coming-soon-card p-8 sm:p-14 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-surface-card to-brand-primary/5 shadow-glass text-center max-w-3xl mx-auto my-8">
+      <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-brand-glow animate-pulse">
+        <app-icon name="sparkles" [size]="40" />
       </div>
-      
-      <span class="text-xs font-bold text-text-muted font-numeric">
-        {{ filteredUnits().length }} وحدات مفعلة
+      <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-extrabold text-xs mb-4 border border-amber-500/25">
+        <app-icon name="clock" [size]="14" />
+        <span>قريباً بإذن الله Coming Soon</span>
       </span>
+      <h2 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight mb-3">
+        محتوى هذا الصف قيد الإعداد والإطلاق الأكاديمي
+      </h2>
+      <p class="text-sm text-text-secondary leading-relaxed max-w-xl mx-auto mb-6">
+        تقوم المهندسة هبة عبد الوهاب حالياً بتجهيز المحاضرات الهندسية والشروحات التفاعلية والكويزات الخاصة بهذا الصف الدراسي وفق أحدث معايير التميز الأكاديمي.
+      </p>
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-surface-card border border-surface-border text-xs text-text-muted font-bold">
+        <app-icon name="shield" [size]="14" className="text-brand-accent" />
+        <span>سيصلك إشعار فوري على المنصة والواتساب فور فتح المحاضرات والتقييمات لهذا الصف</span>
+      </div>
     </div>
+  } @else {
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for (unit of filteredUnits(); track unit._id) {
-        <div class="unit-card rounded-3xl border border-surface-border bg-surface-card p-6 shadow-card hover:border-brand-accent transition-all duration-300 flex flex-col justify-between group">
-          <div>
-            <!-- Unit Tag -->
-            <div class="flex items-center justify-between mb-3">
-              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold"
-                [class.bg-brand-primary/10]="unit.type === 'STUDY_UNIT'"
-                [class.text-brand-primary]="unit.type === 'STUDY_UNIT'"
-                [class.bg-brand-magenta/15]="unit.type === 'FINAL_REVISION'"
-                [class.text-brand-magenta]="unit.type === 'FINAL_REVISION'"
-              >
-                {{ unit.type === 'FINAL_REVISION' ? 'مراجعة نهائية مكثفة' : 'وحدة دراسية أساسية' }}
-              </span>
+    <!-- ========================================================================= -->
+    <!-- 3. Lectures Progress Tracker (المحاضرات اللي شافها واللي لسه مشافهاش)       -->
+    <!-- ========================================================================= -->
+    <section class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card/80 shadow-sm space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-bold mb-2">
+            <app-icon name="play" [size]="14" />
+            <span>سجل المحاضرات والدروس الهندسية</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-text-primary">
+            المحاضرات المكتملة والمتبقية في الفصل الدراسي
+          </h2>
+          <p class="text-xs text-text-secondary mt-1">
+            تابع حضورك للمحاضرات بدقة؛ إتمام المشاهدة بنسبة 85% يمنحك نقاط الـ XP ويفتح لك الكويز المرتبط.
+          </p>
+        </div>
 
-              <span class="text-xs font-numeric font-bold text-brand-secondary">
-                {{ unit.completionPercentage }}% مكتمل
-              </span>
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-1 p-1 rounded-2xl bg-surface-bg border border-surface-border self-start md:self-center">
+          <button
+            type="button"
+            (click)="setLecturesFilter('ALL')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            [class.bg-brand-primary]="lecturesFilter() === 'ALL'"
+            [class.text-white]="lecturesFilter() === 'ALL'"
+            [class.text-text-secondary]="lecturesFilter() !== 'ALL'"
+          >
+            جميع المحاضرات ({{ totalLecturesCount() }})
+          </button>
+
+          <button
+            type="button"
+            (click)="setLecturesFilter('WATCHED')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            [class.bg-emerald-600]="lecturesFilter() === 'WATCHED'"
+            [class.text-white]="lecturesFilter() === 'WATCHED'"
+            [class.text-text-secondary]="lecturesFilter() !== 'WATCHED'"
+          >
+            <app-icon name="check-circle" [size]="13" />
+            <span>تمت المشاهدة ({{ watchedLecturesCount() }})</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="setLecturesFilter('UNWATCHED')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            [class.bg-amber-500]="lecturesFilter() === 'UNWATCHED'"
+            [class.text-white]="lecturesFilter() === 'UNWATCHED'"
+            [class.text-text-secondary]="lecturesFilter() !== 'UNWATCHED'"
+          >
+            <app-icon name="clock" [size]="13" />
+            <span>قيد الانتظار ({{ unwatchedLecturesCount() }})</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lectures Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (lec of filteredLectures(); track lec.id) {
+          <div class="p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between bg-surface-bg"
+            [class.border-emerald-500/30]="lec.isWatched"
+            [class.border-amber-500/30]="!lec.isWatched"
+          >
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold text-text-muted truncate max-w-[180px]">
+                  {{ lec.unitTitleAr }}
+                </span>
+
+                @if (lec.isWatched) {
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                    <app-icon name="check-circle" [size]="11" />
+                    <span>تمت المشاهدة</span>
+                  </span>
+                } @else {
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
+                    <app-icon name="clock" [size]="11" />
+                    <span>لم تُشاهد بعد</span>
+                  </span>
+                }
+              </div>
+
+              <h4 class="text-xs sm:text-sm font-bold text-text-primary leading-snug mb-3">
+                {{ lec.titleAr }}
+              </h4>
+
+              <div class="flex items-center gap-3 text-xs text-text-muted font-numeric mb-4">
+                <span class="flex items-center gap-1">
+                  <app-icon name="clock" [size]="13" />
+                  <span>{{ lec.durationMinutes }} دقيقة</span>
+                </span>
+                <span class="flex items-center gap-1 text-brand-primary dark:text-brand-accent font-bold">
+                  <app-icon name="sparkles" [size]="13" />
+                  <span>+{{ lec.xpReward }} XP</span>
+                </span>
+              </div>
             </div>
 
-            <!-- Title & Description -->
-            <h3 class="text-base font-bold text-text-primary group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors leading-snug mb-2">
-              {{ unit.titleAr }}
-            </h3>
-            <p class="text-xs text-text-secondary leading-relaxed mb-6">
-              {{ unit.descriptionAr }}
-            </p>
+            <a
+              [routerLink]="lec.actionUrl"
+              class="w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              [class.bg-surface-card]="lec.isWatched"
+              [class.border]="lec.isWatched"
+              [class.border-surface-border]="lec.isWatched"
+              [class.hover:border-brand-primary]="lec.isWatched"
+              [class.text-text-primary]="lec.isWatched"
+              [class.bg-gradient-spider]="!lec.isWatched"
+              [class.text-white]="!lec.isWatched"
+              [class.shadow-brand-glow]="!lec.isWatched"
+            >
+              @if (lec.isWatched) {
+                <app-icon name="play" [size]="14" />
+                <span>إعادة مشاهدة المحاضرة</span>
+              } @else {
+                <app-icon name="play" [size]="14" />
+                <span>مشاهدة المحاضرة الآن</span>
+              }
+            </a>
+          </div>
+        } @empty {
+          <div class="col-span-full p-8 rounded-2xl border border-surface-border bg-surface-bg text-center">
+            <app-icon name="play" [size]="32" className="text-text-muted mx-auto mb-2" />
+            <h4 class="text-xs sm:text-sm font-bold text-text-primary mb-1">لا توجد محاضرات متاحة حالياً</h4>
+            <p class="text-[11px] text-text-secondary">سيتم إتاحة المحاضرات فور نشرها من قبل المعلمة في استوديو المناهج.</p>
+          </div>
+        }
+      </div>
+    </section>
 
-            <!-- Metrics -->
-            <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-surface-bg border border-surface-border mb-6 text-xs font-numeric">
-              <div class="flex items-center gap-2">
-                <app-icon name="play" [size]="14" className="text-brand-primary" />
-                <span>{{ unit.completedLectures }} / {{ unit.totalLectures }} محاضرات</span>
+    <!-- ========================================================================= -->
+    <!-- 4. Quizzes & Grades Section (الكويزات اللي عليه ودرجاته)                    -->
+    <!-- ========================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Column A: Due Quizzes (الكويزات اللي عليه) -->
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <app-icon name="target" [size]="16" />
               </div>
-              <div class="flex items-center gap-2">
-                <app-icon name="check-circle" [size]="14" className="text-emerald-500" />
-                <span>{{ unit.completedQuizzes }} / {{ unit.totalQuizzes }} اختبارات</span>
+              <div>
+                <h3 class="text-sm sm:text-base font-extrabold text-text-primary">
+                  الكويزات والامتحانات المستحقة عليك الآن
+                </h3>
+                <p class="text-[11px] text-text-secondary">
+                  امتحانات قصيرة لقياس الفهم وتثبيت الأفكار الهندسية
+                </p>
               </div>
             </div>
+
+            <span class="px-2.5 py-1 rounded-full text-xs font-black bg-amber-500/15 text-amber-500 font-numeric">
+              {{ dueQuizzes().length }} مستحقة
+            </span>
           </div>
 
-          <!-- Action CTA -->
-          <a
-            [routerLink]="['/student/units', unit._id]"
-            class="w-full py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-sm hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            <app-icon name="book-open" [size]="16" />
-            <span>دخول استوديو المذاكرة والمحاضرات</span>
-          </a>
+          <div class="space-y-3">
+            @for (quiz of dueQuizzes(); track quiz.id) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-amber-500/40 transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[11px] font-bold text-text-muted">{{ quiz.unitTitleAr }}</span>
+                  @if (quiz.isUrgent) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                      مستعجل
+                    </span>
+                  }
+                </div>
+
+                <h4 class="text-xs sm:text-sm font-bold text-text-primary mb-2">
+                  {{ quiz.titleAr }}
+                </h4>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-numeric text-text-secondary mb-3">
+                  <span>{{ quiz.questionsCount }} أسئلة • {{ quiz.totalPoints }} درجة</span>
+                  <span class="text-amber-600 dark:text-amber-400 font-bold">{{ quiz.dueDateAr }}</span>
+                </div>
+
+                @if (quiz.canStart !== false) {
+                  <a
+                    [routerLink]="quiz.assessmentUrl"
+                    class="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <app-icon name="sparkles" [size]="14" />
+                    <span>بدء حل الكويز الآن (+{{ quiz.xpReward }} XP)</span>
+                  </a>
+                } @else {
+                  <div
+                    class="w-full py-2 px-3 rounded-xl bg-surface-border/50 text-text-muted font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none"
+                  >
+                    <app-icon name="clock" [size]="14" />
+                    <span>{{ quiz.statusNote || 'غير متاح حالياً' }}</span>
+                  </div>
+                }
+              </div>
+            } @empty {
+              <div class="p-6 rounded-2xl border border-surface-border bg-surface-bg text-center">
+                <app-icon name="check-circle" [size]="28" className="text-emerald-500 mx-auto mb-2" />
+                <h4 class="text-xs font-bold text-text-primary mb-1">لا توجد كويزات مستحقة عليك الآن</h4>
+                <p class="text-[11px] text-text-secondary">أحسنت! جميع التقييمات الحالية منجزة أو لم تُفتح بعد.</p>
+              </div>
+            }
+          </div>
         </div>
-      }
-    </div>
-  </section>
+      </div>
+
+      <!-- Column B: Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته) -->
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <app-icon name="check-circle" [size]="16" />
+              </div>
+              <div>
+                <h3 class="text-sm sm:text-base font-extrabold text-text-primary">
+                  سجل الدرجات وتصحيح المهندسة هبة
+                </h3>
+                <p class="text-[11px] text-text-secondary">
+                  الامتحانات المصححة بالماركر الرقمي وملاحظات الحل
+                </p>
+              </div>
+            </div>
+
+            <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-500 font-numeric">
+              {{ completedGrades().length }} معتمدة
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            @for (grade of completedGrades(); track grade.id) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-emerald-500/40 transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[11px] font-bold text-text-muted">{{ grade.unitTitleAr }}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    {{ grade.gradeLabelAr }}
+                  </span>
+                </div>
+
+                <div class="flex items-baseline justify-between mb-2">
+                  <h4 class="text-xs sm:text-sm font-bold text-text-primary">
+                    {{ grade.titleAr }}
+                  </h4>
+                  <div class="text-left font-numeric">
+                    <span class="text-base font-black text-emerald-600 dark:text-emerald-400">
+                      {{ grade.score }}
+                    </span>
+                    <span class="text-xs text-text-muted"> / {{ grade.maxScore }}</span>
+                  </div>
+                </div>
+
+                <div class="p-2 rounded-xl bg-surface-card border border-surface-border/60 text-[11px] text-text-secondary flex items-center justify-between mb-3">
+                  <span class="flex items-center gap-1.5 font-bold text-brand-primary dark:text-brand-accent">
+                    <app-icon name="shield" [size]="13" />
+                    <span>{{ grade.gradedBy }}</span>
+                  </span>
+                  <span class="text-text-muted">{{ grade.gradedDateAr }}</span>
+                </div>
+
+                <a
+                  [routerLink]="grade.feedbackUrl"
+                  class="w-full py-2.5 px-3 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary hover:bg-brand-primary/5 text-text-primary font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <app-icon name="book-open" [size]="14" className="text-brand-primary" />
+                  <span>عرض تقرير الدرجات وتصحيح المعلمة</span>
+                </a>
+              </div>
+            } @empty {
+              <div class="p-6 rounded-2xl border border-surface-border bg-surface-bg text-center">
+                <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto mb-2" />
+                <h4 class="text-xs font-bold text-text-primary mb-1">لا توجد اختبارات مصححة بعد</h4>
+                <p class="text-[11px] text-text-secondary">ستظهر هنا تفاصيل درجاتك فور تصحيح المهندسة هبة لحلولك.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 5. Active Units & Revisions Catalog                                       -->
+    <!-- ========================================================================= -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-black text-text-primary">
+            الوحدات الدراسية المتاحة ({{ selectedTerm() === 'TERM_1' ? 'الفصل الأول' : 'الفصل الثاني' }})
+          </h2>
+          <p class="text-xs text-text-secondary mt-1">
+            اضغط على الوحدة لمشاهدة المحاضرات المحمية وحل التقييمات التفاعلية.
+          </p>
+        </div>
+
+        <span class="text-xs font-bold text-text-muted font-numeric">
+          {{ filteredUnits().length }} وحدات مفعلة
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (unit of filteredUnits(); track unit._id) {
+          <div class="unit-card rounded-3xl border border-surface-border bg-surface-card p-6 shadow-card hover:border-brand-accent transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  [class.bg-brand-primary/10]="unit.type === 'STUDY_UNIT'"
+                  [class.text-brand-primary]="unit.type === 'STUDY_UNIT'"
+                  [class.bg-brand-magenta/15]="unit.type === 'FINAL_REVISION'"
+                  [class.text-brand-magenta]="unit.type === 'FINAL_REVISION'"
+                >
+                  {{ unit.type === 'FINAL_REVISION' ? 'مراجعة نهائية مكثفة' : 'وحدة دراسية أساسية' }}
+                </span>
+
+                <span class="text-xs font-numeric font-bold text-brand-secondary">
+                  {{ unit.completionPercentage }}% مكتمل
+                </span>
+              </div>
+
+              <h3 class="text-base font-bold text-text-primary group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors leading-snug mb-2">
+                {{ unit.titleAr }}
+              </h3>
+              <p class="text-xs text-text-secondary leading-relaxed mb-6">
+                {{ unit.descriptionAr }}
+              </p>
+
+              <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-surface-bg border border-surface-border mb-6 text-xs font-numeric">
+                <div class="flex items-center gap-2">
+                  <app-icon name="play" [size]="14" className="text-brand-primary" />
+                  <span>{{ unit.completedLectures }} / {{ unit.totalLectures }} محاضرات</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <app-icon name="check-circle" [size]="14" className="text-emerald-500" />
+                  <span>{{ unit.completedQuizzes }} / {{ unit.totalQuizzes }} اختبارات</span>
+                </div>
+              </div>
+            </div>
+
+            <a
+              [routerLink]="['/student/units', unit._id]"
+              class="w-full py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <app-icon name="book-open" [size]="16" />
+              <span>دخول الوحدة وبدء المذاكرة</span>
+            </a>
+          </div>
+        } @empty {
+          <div class="col-span-full p-8 rounded-3xl border border-surface-border bg-surface-card text-center">
+            <app-icon name="book-open" [size]="36" className="text-text-muted mx-auto mb-2" />
+            <h4 class="text-sm font-bold text-text-primary mb-1">لا توجد وحدات دراسية مضافة في هذا الفصل الدراسي</h4>
+            <p class="text-xs text-text-secondary">سيتم إضافة الوحدات والمحاضرات من قِبل المهندسة هبة عبد الوهاب قريباً.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+  }
 
   <!-- ========================================================================= -->
-  <!-- 4. Animation 4.5: Leaderboard Podiums (لوحة الشرف والأوائل)                -->
+  <!-- 6. Animation 4.5: Leaderboard Podiums (لوحة الشرف والأوائل)                -->
   <!-- ========================================================================= -->
-  <section class="my-14 p-6 sm:p-10 rounded-3xl border border-surface-border bg-surface-card/60 shadow-glass">
+  <section class="p-6 sm:p-10 rounded-3xl border border-surface-border bg-surface-card/60 shadow-glass">
     <div class="text-center max-w-xl mx-auto mb-8">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold mb-2">
         <app-icon name="award" [size]="14" />
@@ -269,75 +647,291 @@
       </p>
     </div>
 
-    <!-- 3D Podiums Visual (Animation 4.5: Ranks 2, 1, 3) -->
-    <div class="podiums-container flex items-end justify-center gap-3 sm:gap-6 max-w-2xl mx-auto pt-8 pb-4">
-      
-      <!-- Rank 2 (Silver) -->
-      <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
-        <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3">
-          🥈
-          <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800">
-            #2
-          </span>
+    @if (topThreePodium().length >= 3) {
+      <!-- 3D Podiums Visual (Animation 4.5: Ranks 2, 1, 3) -->
+      <div class="podiums-container flex items-end justify-center gap-3 sm:gap-6 max-w-2xl mx-auto pt-8 pb-4">
+        
+        <!-- Rank 2 (Silver) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
+          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3">
+            <app-icon name="award" [size]="24" className="text-slate-400" />
+            <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800">
+              #2
+            </span>
+          </div>
+          <div class="text-center mb-2">
+            <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
+              {{ topThreePodium()[1].studentName }}
+            </p>
+            <span class="text-[11px] font-numeric font-bold text-brand-secondary">
+              {{ topThreePodium()[1].totalXp }} XP
+            </span>
+          </div>
+          <div class="w-full h-28 rounded-t-2xl bg-gradient-to-t from-slate-300/40 to-slate-200/60 border border-slate-300/60 flex items-center justify-center">
+            <span class="font-numeric font-black text-lg text-slate-500">2nd</span>
+          </div>
         </div>
-        <div class="text-center mb-2">
-          <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-            {{ topThreePodium()[1].studentName }}
-          </p>
-          <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-            {{ topThreePodium()[1].totalXp }} XP
-          </span>
-        </div>
-        <div class="w-full h-28 rounded-t-2xl bg-gradient-to-t from-slate-300/40 to-slate-200/60 border border-slate-300/60 flex items-center justify-center">
-          <span class="font-numeric font-black text-lg text-slate-500">2nd</span>
-        </div>
-      </div>
 
-      <!-- Rank 1 (Gold - Center & Highest Elevation) -->
-      <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise z-10" style="animation-delay: 0s;">
-        <!-- Glowing Crown/Star -->
-        <span class="text-xl animate-spark-twinkle mb-1">👑</span>
-        <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-surface-card border-2 border-amber-400 shadow-brand-glow flex items-center justify-center font-black text-amber-500 text-base mb-3">
-          🥇
-          <span class="absolute -bottom-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-amber-950 shadow-sm">
-            #1
-          </span>
+        <!-- Rank 1 (Gold - Center & Highest Elevation) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise z-10" style="animation-delay: 0s;">
+          <app-icon name="crown" [size]="24" className="text-amber-400 mb-1" />
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-surface-card border-2 border-amber-400 shadow-brand-glow flex items-center justify-center font-black text-amber-500 text-base mb-3">
+            <app-icon name="award" [size]="28" className="text-amber-500" />
+            <span class="absolute -bottom-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-amber-950 shadow-sm">
+              #1
+            </span>
+          </div>
+          <div class="text-center mb-2">
+            <p class="text-xs font-bold text-text-primary truncate max-w-[140px]">
+              {{ topThreePodium()[0].studentName }}
+            </p>
+            <span class="text-xs font-numeric font-black text-amber-500">
+              {{ topThreePodium()[0].totalXp }} XP
+            </span>
+          </div>
+          <div class="w-full h-40 rounded-t-2xl bg-gradient-to-t from-amber-400/40 via-amber-300/50 to-amber-200/70 border border-amber-400/60 shadow-lg flex items-center justify-center">
+            <span class="font-numeric font-black text-2xl text-amber-700 dark:text-amber-300">1st</span>
+          </div>
         </div>
-        <div class="text-center mb-2">
-          <p class="text-xs font-bold text-text-primary truncate max-w-[140px]">
-            {{ topThreePodium()[0].studentName }}
-          </p>
-          <span class="text-xs font-numeric font-black text-amber-500">
-            {{ topThreePodium()[0].totalXp }} XP
-          </span>
-        </div>
-        <div class="w-full h-40 rounded-t-2xl bg-gradient-to-t from-amber-400/40 via-amber-300/50 to-amber-200/70 border border-amber-400/60 shadow-lg flex items-center justify-center">
-          <span class="font-numeric font-black text-2xl text-amber-700 dark:text-amber-300">1st</span>
-        </div>
-      </div>
 
-      <!-- Rank 3 (Bronze) -->
-      <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
-        <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3">
-          🥉
-          <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400">
-            #3
-          </span>
+        <!-- Rank 3 (Bronze) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
+          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3">
+            <app-icon name="award" [size]="24" className="text-amber-700" />
+            <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400">
+              #3
+            </span>
+          </div>
+          <div class="text-center mb-2">
+            <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
+              {{ topThreePodium()[2].studentName }}
+            </p>
+            <span class="text-[11px] font-numeric font-bold text-brand-secondary">
+              {{ topThreePodium()[2].totalXp }} XP
+            </span>
+          </div>
+          <div class="w-full h-20 rounded-t-2xl bg-gradient-to-t from-amber-700/20 to-amber-600/30 border border-amber-700/40 flex items-center justify-center">
+            <span class="font-numeric font-black text-base text-amber-800 dark:text-amber-400">3rd</span>
+          </div>
         </div>
-        <div class="text-center mb-2">
-          <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-            {{ topThreePodium()[2].studentName }}
-          </p>
-          <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-            {{ topThreePodium()[2].totalXp }} XP
-          </span>
-        </div>
-        <div class="w-full h-20 rounded-t-2xl bg-gradient-to-t from-amber-700/20 to-amber-600/30 border border-amber-700/40 flex items-center justify-center">
-          <span class="font-numeric font-black text-base text-amber-800 dark:text-amber-400">3rd</span>
-        </div>
-      </div>
 
-    </div>
+      </div>
+    } @else {
+      <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center max-w-lg mx-auto">
+        <app-icon name="award" [size]="32" className="text-amber-500 mx-auto mb-2" />
+        <h4 class="text-sm font-bold text-text-primary mb-1">لوحة الشرف قيد التحديث</h4>
+        <p class="text-xs text-text-secondary">ستظهر المنصة الثلاثية للأوائل فور تقدم طلاب الدفعة في حل الاختبارات ومشاهدة المحاضرات.</p>
+      </div>
+    }
   </section>
+
+  <!-- ========================================================================= -->
+  <!-- 7. Profile Editor Modal (تعديل بيانات الطالب والصورة)                        -->
+  <!-- ========================================================================= -->
+  @if (isProfileModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div class="w-full max-w-xl rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-surface-border">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center">
+              <app-icon name="user" [size]="20" />
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-black text-text-primary">
+                تعديل بيانات الحساب والملف الشخصي
+              </h3>
+              <p class="text-xs text-text-secondary mt-0.5">
+                تحديث الاسم، وأرقام التواصل والصورة الشخصية لحسابك
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeProfileModal()"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="18" />
+          </button>
+        </div>
+
+        <!-- Alert Banners -->
+        @if (profileErrorMessage()) {
+          <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-xs font-bold text-rose-500 flex items-center gap-2 animate-shake">
+            <app-icon name="alert-circle" [size]="16" />
+            <span>{{ profileErrorMessage() }}</span>
+          </div>
+        }
+
+        @if (profileSuccessMessage()) {
+          <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-500 flex items-center gap-2">
+            <app-icon name="check-circle" [size]="16" />
+            <span>{{ profileSuccessMessage() }}</span>
+          </div>
+        }
+
+        <!-- Avatar Selection -->
+        <div>
+          <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
+            الصورة الشخصية (اختر أفتار سبايدر ماث أو أدخل رابط صورتك):
+          </label>
+          <div class="grid grid-cols-6 gap-2 mb-3">
+            @for (av of presetAvatars; track av.id) {
+              <button
+                type="button"
+                (click)="selectAvatar(av.url)"
+                class="p-1.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col items-center"
+                [class.border-brand-primary]="editAvatarUrl() === av.url"
+                [class.bg-brand-primary/10]="editAvatarUrl() === av.url"
+                [class.border-surface-border]="editAvatarUrl() !== av.url"
+                [title]="av.label"
+              >
+                <img [src]="av.url" [alt]="av.label" class="w-10 h-10 rounded-xl object-cover" />
+                @if (editAvatarUrl() === av.url) {
+                  <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm">
+                    <app-icon name="check" [size]="10" />
+                  </span>
+                }
+              </button>
+            }
+          </div>
+
+          <div class="relative">
+            <input
+              type="url"
+              [ngModel]="editAvatarUrl()"
+              (ngModelChange)="editAvatarUrl.set($event)"
+              placeholder="أو ضع رابط صورة شخصية مخصصة (URL)"
+              dir="ltr"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
+            />
+          </div>
+        </div>
+
+        <!-- 1. Full Name -->
+        <div>
+          <label for="editFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+            الاسم ثلاثياً باللغة العربية
+          </label>
+          <input
+            id="editFullName"
+            type="text"
+            [ngModel]="editFullName()"
+            (ngModelChange)="editFullName.set($event)"
+            class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
+          />
+        </div>
+
+        <!-- 2. Country -->
+        <div>
+          <label for="editCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+            دولة الإقامة
+          </label>
+          <select
+            id="editCountry"
+            [ngModel]="editCountry()"
+            (ngModelChange)="editCountry.set($event)"
+            class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
+          >
+            <option value="EG">جمهورية مصر العربية (+20)</option>
+            <option value="SA">المملكة العربية السعودية (+966)</option>
+            <option value="AE">الإمارات العربية المتحدة (+971)</option>
+            <option value="KW">دولة الكويت (+965)</option>
+            <option value="QA">دولة قطر (+974)</option>
+            <option value="OTHER">دولة أخرى</option>
+          </select>
+        </div>
+
+        <!-- 3. Phone Numbers (Student & Parent) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="editPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+              رقم هاتف الطالب
+            </label>
+            <input
+              id="editPhone"
+              type="tel"
+              [ngModel]="editPhone()"
+              (ngModelChange)="editPhone.set($event)"
+              [placeholder]="editPhonePlaceholder()"
+              dir="ltr"
+              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
+            />
+          </div>
+
+          <div>
+            <label for="editParentPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+              رقم هاتف ولي الأمر
+            </label>
+            <input
+              id="editParentPhone"
+              type="tel"
+              [ngModel]="editParentPhone()"
+              (ngModelChange)="editParentPhone.set($event)"
+              [placeholder]="editPhonePlaceholder()"
+              dir="ltr"
+              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary outline-none transition-all placeholder:text-text-muted"
+            />
+          </div>
+        </div>
+
+        <!-- Parent Phone Warning Note -->
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
+          <app-icon name="alert-circle" [size]="15" className="text-amber-500 shrink-0 mt-0.5" />
+          <span class="leading-relaxed font-bold">
+            ملاحظة: يجب ألا يتطابق رقم ولي الأمر مع رقم الطالب لتفعيل إشعارات الرادار السوناري ومتابعة الدرجات.
+          </span>
+        </div>
+
+        <!-- 4. Governorate (if Egypt) -->
+        @if (isEditEgypt()) {
+          <div>
+            <label for="editGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+              المحافظة (داخل مصر)
+            </label>
+            <select
+              id="editGovernorate"
+              [ngModel]="editGovernorate()"
+              (ngModelChange)="editGovernorate.set($event)"
+              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
+            >
+              @for (gov of egyptGovernorates; track gov.code) {
+                <option [value]="gov.code">{{ gov.name_ar }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-border">
+          <button
+            type="button"
+            (click)="closeProfileModal()"
+            class="px-4 py-2.5 rounded-xl border border-surface-border text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveProfile()"
+            [disabled]="isSavingProfile()"
+            class="px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-extrabold shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            @if (isSavingProfile()) {
+              <app-icon name="loader" [size]="14" className="animate-spin" />
+              <span>جاري الحفظ...</span>
+            } @else {
+              <app-icon name="check-circle" [size]="14" />
+              <span>حفظ التعديلات</span>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
 
 </div>

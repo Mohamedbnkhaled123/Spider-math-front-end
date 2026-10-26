@@ -31,10 +31,12 @@ export type AppIconName =
   | 'chevron-right'
   | 'chevron-left'
   | 'chevron-down'
+  | 'chevron-up'
   | 'play'
   | 'star'
   | 'arrow-right'
   | 'arrow-left'
+  | 'arrow-up'
   | 'calculator'
   | 'grid'
   | 'minus'
@@ -56,7 +58,16 @@ export type AppIconName =
   | 'hash'
   | 'bell'
   | 'menu'
-  | 'log-in';
+  | 'whatsapp'
+  | 'mail'
+  | 'log-in'
+  | 'edit'
+  | 'alert-triangle'
+  | 'settings'
+  | 'eye'
+  | 'crown'
+  | 'sliders'
+  | 'filter';
 
 @Component({
   selector: 'app-icon',

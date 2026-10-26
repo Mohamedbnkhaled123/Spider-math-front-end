@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.brand-spider {
+  background: linear-gradient(135deg, #2A0E6F 0%, #5B1F9E 50%, #7C28C7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+
+:host-context(.dark) .brand-spider,
+:host-context([data-theme='dark']) .brand-spider {
+  background: linear-gradient(135deg, #C084FC 0%, #A855F7 50%, #8B3CE0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-math {
+  background: linear-gradient(135deg, #00BAC6 0%, #00D2DE 50%, #00F2FE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+
+.spark-star {
+  color: #00BAC6;
+}

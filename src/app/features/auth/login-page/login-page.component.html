@@ -10,14 +10,14 @@
     <div class="text-center max-w-2xl mx-auto mb-10">
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/25 text-brand-primary dark:text-brand-accent text-xs font-black mb-3 shadow-brand-glow">
         <app-icon name="sparkles" [size]="14" />
-        <span>بوابة الصلاحيات وتسجيل الدخول الموحد ✦</span>
+        <span>بوابة الصلاحيات وتسجيل الدخول الموحد</span>
       </div>
 
       <h1 class="text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
         تسجيل الدخول إلى منصة <span class="text-brand-primary dark:text-brand-accent">سبايدر ماث</span>
       </h1>
       <p class="text-xs sm:text-base text-text-secondary mt-2">
-        سجّل دخولك بكود الطالب أو بيانات ولي الأمر، أو استخدم القائمة السريعة لاختبار أي من أدوار المنصة الـ 5 بنقرة واحدة.
+        المنظومة التعليمية الهندسية لمادة الرياضيات — بإشراف المهندسة / هبة عبد الوهاب
       </p>
     </div>
 
@@ -25,7 +25,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
       <!-- ===================================================================== -->
-      <!-- COLUMN 1: Official Login Form (Tabs for Student, Parent, Admin)       -->
+      <!-- COLUMN 1: Official Authentication Card                                -->
       <!-- ===================================================================== -->
       <div class="lg:col-span-6 bg-surface-card border border-surface-border rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative">
 
@@ -41,7 +41,7 @@
             [class.text-text-secondary]="activeTab() !== 'student'"
           >
             <app-icon name="graduation-cap" [size]="16" />
-            <span>دخول الطالب</span>
+            <span>بوابة الطالب</span>
           </button>
 
           <button
@@ -71,7 +71,7 @@
           </button>
         </div>
 
-        <!-- Alert Banners -->
+        <!-- Global Alert Banner -->
         @if (errorMessage()) {
           <div class="p-3.5 mb-5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-xs sm:text-sm font-bold text-rose-500 flex items-center gap-2 animate-shake">
             <app-icon name="alert-circle" [size]="18" />
@@ -80,80 +80,458 @@
         }
 
         <!-- ------------------------------------------------------------------- -->
-        <!-- TAB 1: Student Login Form                                           -->
+        <!-- TAB 1: Student Login / Sign Up                                      -->
         <!-- ------------------------------------------------------------------- -->
         @if (activeTab() === 'student') {
-          <form (ngSubmit)="submitStudentLogin()" class="space-y-4">
-            <div>
-              <label for="studentCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                كود الطالب الفريد (HA Code)
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
-                  <app-icon name="hash" [size]="18" />
-                </div>
-                <input
-                  id="studentCodeInput"
-                  type="text"
-                  [ngModel]="studentHaCode()"
-                  (ngModelChange)="studentHaCode.set($event)"
-                  name="studentHaCode"
-                  placeholder="مثال: HA4920 أو HA1004"
-                  dir="ltr"
-                  class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
-                />
-              </div>
-              <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                الكود المخصص لك المكوّن من حرفي HA متبوعاً بأرقام اشتراكك (مثال: HA4920).
-              </p>
-            </div>
-
-            <!-- Submit Student Button -->
-            <button
-              type="submit"
-              [disabled]="isSubmitting()"
-              class="w-full py-3.5 rounded-2xl bg-gradient-spider text-white font-extrabold text-sm sm:text-base shadow-brand-glow hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              @if (isSubmitting()) {
-                <app-icon name="loader" [size]="18" className="animate-spin" />
-                <span>جاري تسجيل الدخول...</span>
-              } @else {
-                <app-icon name="log-in" [size]="18" />
-                <span>دخول بوابة الطالب</span>
-              }
-            </button>
-
-            <!-- Divider -->
-            <div class="relative my-4 flex items-center justify-center">
-              <div class="border-t border-surface-border w-full"></div>
-              <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">أو</span>
-            </div>
-
-            <!-- Google OAuth Button -->
+          <!-- Sub-Mode Toggle: Login vs Sign Up -->
+          <div class="flex items-center gap-1 p-1 rounded-xl bg-surface-bg border border-surface-border mb-5">
             <button
               type="button"
-              (click)="loginWithGoogle()"
-              class="w-full py-3 rounded-2xl border border-surface-border bg-surface-bg hover:border-brand-primary/40 text-text-primary font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm hover:shadow"
+              (click)="setStudentAuthMode('login')"
+              class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              [class.bg-brand-primary]="studentAuthMode() === 'login'"
+              [class.text-white]="studentAuthMode() === 'login'"
+              [class.shadow-brand-glow]="studentAuthMode() === 'login'"
+              [class.text-text-secondary]="studentAuthMode() !== 'login'"
             >
-              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
-                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-              </svg>
-              <span>تسجيل الدخول السريع عبر Google</span>
+              <app-icon name="log-in" [size]="14" />
+              <span>تسجيل الدخول (للمسجلين)</span>
             </button>
 
-            <!-- Free Placement Test Promotion -->
-            <div class="pt-4 border-t border-surface-border text-center">
-              <p class="text-xs text-text-secondary">
-                طالب جديد وليس لديك كود؟
-                <a routerLink="/placement-test" class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1">
-                  ابدأ امتحان تحديد المستوى المجاني ✦
-                </a>
-              </p>
+            <button
+              type="button"
+              (click)="setStudentAuthMode('signup')"
+              class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              [class.bg-brand-primary]="studentAuthMode() === 'signup'"
+              [class.text-white]="studentAuthMode() === 'signup'"
+              [class.shadow-brand-glow]="studentAuthMode() === 'signup'"
+              [class.text-text-secondary]="studentAuthMode() !== 'signup'"
+            >
+              <app-icon name="sparkles" [size]="14" />
+              <span>إنشاء حساب جديد (طالب جديد)</span>
+            </button>
+          </div>
+
+          <!-- SUB-MODE 1: Student Login -->
+          @if (studentAuthMode() === 'login') {
+            <form (ngSubmit)="submitStudentLogin()" class="space-y-4">
+
+              <!-- Google Error Banner & Unregistered Account 1-Click CTA -->
+              @if (googleAuthErrorMessage()) {
+                <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 space-y-2.5 animate-shake">
+                  <div class="flex items-center gap-2 text-xs font-bold">
+                    <app-icon name="alert-circle" [size]="16" />
+                    <span>{{ googleAuthErrorMessage() }}</span>
+                  </div>
+
+                  @if (unregisteredGoogleEmail()) {
+                    <div class="pt-2 border-t border-rose-500/20 flex flex-col gap-2">
+                      <p class="text-[11px] text-text-secondary leading-tight">
+                        لم يتم العثور على حساب مسجل بهذا البريد. هل ترغب في تسجيل حساب طالب جديد الآن؟
+                      </p>
+                      <button
+                        type="button"
+                        (click)="switchToSignUpAndTriggerGoogle()"
+                        class="w-full py-2.5 px-3 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white font-extrabold text-xs shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <app-icon name="sparkles" [size]="14" />
+                        <span>إنشاء حساب جديد كطالب عبر Google الآن</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- HA Code Input -->
+              <div>
+                <label for="studentCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
+                  كود الطالب الفريد (HA Code)
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
+                    <app-icon name="hash" [size]="18" />
+                  </div>
+                  <input
+                    id="studentCodeInput"
+                    type="text"
+                    [ngModel]="studentHaCode()"
+                    (ngModelChange)="studentHaCode.set($event)"
+                    name="studentHaCode"
+                    placeholder="مثال: HA1001"
+                    dir="ltr"
+                    class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
+                  />
+                </div>
+                <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
+                  أدخل الكود المخصص لك المكوّن من حرفي HA متبوعاً بأرقامك (مثال: HA1001).
+                </p>
+              </div>
+
+              <!-- Submit Student Button -->
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="w-full py-3.5 rounded-2xl bg-gradient-spider text-white font-extrabold text-sm sm:text-base shadow-brand-glow hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <app-icon name="loader" [size]="18" className="animate-spin" />
+                  <span>جاري التحقق من الكود...</span>
+                } @else {
+                  <app-icon name="log-in" [size]="18" />
+                  <span>دخول بوابة الطالب بالكود</span>
+                }
+              </button>
+
+              <!-- Divider -->
+              <div class="relative my-4 flex items-center justify-center">
+                <div class="border-t border-surface-border w-full"></div>
+                <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">أو</span>
+              </div>
+
+              <!-- Authentic Google Login Button (GIS Account Picker Popup) -->
+              <div>
+                <button
+                  type="button"
+                  (click)="triggerGoogleOAuth('login')"
+                  [disabled]="isGoogleAuthenticating()"
+                  class="w-full py-3 rounded-2xl border border-surface-border bg-surface-bg hover:border-brand-primary/40 text-text-primary font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
+                >
+                  @if (isGoogleAuthenticating()) {
+                    <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
+                    <span>جاري التحقق عبر حساب Google...</span>
+                  } @else {
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>تسجيل الدخول عبر Google (للطلاب المسجلين)</span>
+                  }
+                </button>
+                <p class="text-[10px] text-text-muted text-center mt-1.5">
+                  يفتح نافذة Google الرسمية لاختيار حسابك المسجل مسبقاً في المنصة.
+                </p>
+              </div>
+
+              <!-- Switch to Sign Up Prompt -->
+              <div class="pt-4 border-t border-surface-border text-center">
+                <p class="text-xs text-text-secondary">
+                  طالب جديد وترغب في التسجيل لأول مرة؟
+                  <button
+                    type="button"
+                    (click)="setStudentAuthMode('signup')"
+                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 cursor-pointer"
+                  >
+                    إنشاء حساب جديد كطالب
+                  </button>
+                </p>
+              </div>
+            </form>
+          }
+
+          <!-- SUB-MODE 2: Student Sign Up (New Account) -->
+          @if (studentAuthMode() === 'signup') {
+            <div class="space-y-5">
+
+              <!-- Optional Google Sign-Up Box -->
+              <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-1.5 text-xs font-extrabold text-text-primary">
+                    <app-icon name="sparkles" [size]="14" className="text-brand-primary dark:text-brand-accent" />
+                    <span>التسجيل السريع بحساب Google (اختياري)</span>
+                  </div>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
+                    ضغطة واحدة
+                  </span>
+                </div>
+                <p class="text-[11px] text-text-muted mb-3 leading-relaxed">
+                  يمكنك التسجيل مباشرة بحساب Google لتسهيل الدخول مستقبلاً بضغطة زر واحدة دون الحاجة لحفظ كلمات مرور.
+                </p>
+
+                @if (googleAuthErrorMessage()) {
+                  <div class="p-3 mb-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs font-bold text-rose-500 flex items-center gap-2 animate-shake">
+                    <app-icon name="alert-circle" [size]="16" />
+                    <span>{{ googleAuthErrorMessage() }}</span>
+                  </div>
+                }
+
+                <button
+                  type="button"
+                  (click)="triggerGoogleOAuth('signup')"
+                  [disabled]="isGoogleAuthenticating()"
+                  class="w-full py-2.5 px-4 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary/40 text-text-primary font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
+                >
+                  @if (isGoogleAuthenticating()) {
+                    <app-icon name="loader" [size]="16" className="animate-spin text-brand-primary" />
+                    <span>جاري فتح نافذة حسابات Google...</span>
+                  } @else {
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>التسجيل والمتابعة بحساب Google</span>
+                  }
+                </button>
+              </div>
+
+              <!-- Divider -->
+              <div class="relative my-2 flex items-center justify-center">
+                <div class="border-t border-surface-border w-full"></div>
+                <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">
+                  أو استمارة التسجيل المباشر بدون Google
+                </span>
+              </div>
+
+              <!-- Direct Registration Form -->
+              <form (ngSubmit)="submitDirectRegistration()" class="space-y-4 pt-1">
+
+                <!-- 1. Full Name -->
+                <div>
+                  <label for="regFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                    اسم الطالب ثلاثياً باللغة العربية
+                  </label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
+                      <app-icon name="user" [size]="18" />
+                    </div>
+                    <input
+                      id="regFullName"
+                      type="text"
+                      [ngModel]="regFullName()"
+                      (ngModelChange)="regFullName.set($event)"
+                      name="regFullName"
+                      placeholder="مثال: عمر خالد المنشاوي"
+                      class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
+                    />
+                  </div>
+                </div>
+
+                <!-- 2. Email (Optional) -->
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label for="regEmail" class="block text-xs sm:text-sm font-extrabold text-text-primary">
+                      البريد الإلكتروني
+                    </label>
+                    <span class="text-[10px] font-bold text-text-muted bg-surface-bg px-2 py-0.5 rounded-full border border-surface-border">
+                      اختياري
+                    </span>
+                  </div>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-text-muted">
+                      <app-icon name="mail" [size]="18" />
+                    </div>
+                    <input
+                      id="regEmail"
+                      type="email"
+                      [ngModel]="regEmail()"
+                      (ngModelChange)="regEmail.set($event)"
+                      name="regEmail"
+                      placeholder="name@example.com"
+                      dir="ltr"
+                      class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
+                    />
+                  </div>
+                </div>
+
+                <!-- 3. Country Selector -->
+                <div>
+                  <label for="regCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                    دولة الإقامة
+                  </label>
+                  <select
+                    id="regCountry"
+                    [ngModel]="regCountry()"
+                    (ngModelChange)="regCountry.set($event)"
+                    name="regCountry"
+                    class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
+                  >
+                    <option value="EG">جمهورية مصر العربية (+20)</option>
+                    <option value="SA">المملكة العربية السعودية (+966)</option>
+                    <option value="AE">الإمارات العربية المتحدة (+971)</option>
+                    <option value="KW">دولة الكويت (+965)</option>
+                    <option value="QA">دولة قطر (+974)</option>
+                    <option value="OTHER">دولة أخرى</option>
+                  </select>
+                </div>
+
+                <!-- 4. Phone Numbers (Student & Parent) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label for="regPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                      رقم هاتف الطالب (واتساب)
+                    </label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
+                        <app-icon name="phone" [size]="18" />
+                      </div>
+                      <input
+                        id="regPhone"
+                        type="tel"
+                        [ngModel]="regPhone()"
+                        (ngModelChange)="regPhone.set($event)"
+                        name="regPhone"
+                        [placeholder]="regPhonePlaceholder()"
+                        dir="ltr"
+                        class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="regParentPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                      رقم هاتف ولي الأمر
+                    </label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
+                        <app-icon name="shield" [size]="18" />
+                      </div>
+                      <input
+                        id="regParentPhone"
+                        type="tel"
+                        [ngModel]="regParentPhone()"
+                        (ngModelChange)="regParentPhone.set($event)"
+                        name="regParentPhone"
+                        [placeholder]="regPhonePlaceholder()"
+                        dir="ltr"
+                        class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 outline-none transition-all placeholder:text-text-muted"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Parent Phone Validation Constraint Notice -->
+                <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300">
+                  <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
+                  <span class="leading-relaxed font-bold">
+                    تنبيه أمني هام: رقم ولي الأمر يجب أن يكون مختلفاً تماماً عن رقم هاتف الطالب لضمان تفعيل رادار المتابعة وإرسال التنبيهات.
+                  </span>
+                </div>
+
+                <!-- 5. Curriculum Selection -->
+                <div>
+                  <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
+                    المسار والمنهج الدراسي
+                  </label>
+                  <div class="grid grid-cols-2 gap-2">
+                    @for (curr of curriculumTree; track curr.code) {
+                      <button
+                        type="button"
+                        (click)="onRegCurriculumChange(curr.code)"
+                        class="p-2.5 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer"
+                        [class.border-brand-primary]="regCurriculum() === curr.code"
+                        [class.bg-brand-primary/10]="regCurriculum() === curr.code"
+                        [class.text-brand-primary]="regCurriculum() === curr.code"
+                        [class.border-surface-border]="regCurriculum() !== curr.code"
+                        [class.text-text-secondary]="regCurriculum() !== curr.code"
+                      >
+                        {{ curr.titleAr }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- 6. Grade and Term Selection -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label for="regGradeLevel" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                      الصف الدراسي
+                    </label>
+                    <select
+                      id="regGradeLevel"
+                      [ngModel]="regGradeLevel()"
+                      (ngModelChange)="regGradeLevel.set($event)"
+                      name="regGradeLevel"
+                      class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
+                    >
+                      @for (grade of regAvailableGrades(); track grade.code) {
+                        <option [value]="grade.code">{{ grade.titleAr }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                      الفصل الدراسي
+                    </label>
+                    <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+                      <button
+                        type="button"
+                        (click)="regAcademicTerm.set('TERM_1')"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        [class.bg-brand-primary]="regAcademicTerm() === 'TERM_1'"
+                        [class.text-white]="regAcademicTerm() === 'TERM_1'"
+                        [class.text-text-secondary]="regAcademicTerm() !== 'TERM_1'"
+                      >
+                        الترم الأول
+                      </button>
+                      <button
+                        type="button"
+                        (click)="regAcademicTerm.set('TERM_2')"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        [class.bg-brand-primary]="regAcademicTerm() === 'TERM_2'"
+                        [class.text-white]="regAcademicTerm() === 'TERM_2'"
+                        [class.text-text-secondary]="regAcademicTerm() !== 'TERM_2'"
+                      >
+                        الترم الثاني
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 7. Governorate (for Egypt) -->
+                @if (isRegEgypt()) {
+                  <div>
+                    <label for="regGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                      المحافظة (داخل مصر)
+                    </label>
+                    <select
+                      id="regGovernorate"
+                      [ngModel]="regGovernorate()"
+                      (ngModelChange)="regGovernorate.set($event)"
+                      name="regGovernorate"
+                      class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
+                    >
+                      @for (gov of egyptGovernorates; track gov.code) {
+                        <option [value]="gov.code">{{ gov.name_ar }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+
+                <!-- Submit Button -->
+                <button
+                  type="submit"
+                  [disabled]="isSubmitting()"
+                  class="w-full py-3.5 rounded-2xl bg-gradient-spider text-white font-extrabold text-sm sm:text-base shadow-brand-glow hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+                >
+                  @if (isSubmitting()) {
+                    <app-icon name="loader" [size]="18" className="animate-spin" />
+                    <span>جاري إنشاء الحساب وإصدار كود HA...</span>
+                  } @else {
+                    <app-icon name="sparkles" [size]="18" />
+                    <span>إنشاء حساب الطالب وإصدار كود HA</span>
+                  }
+                </button>
+              </form>
+
+              <!-- Switch to Login Prompt -->
+              <div class="pt-4 border-t border-surface-border text-center">
+                <p class="text-xs text-text-secondary">
+                  لديك حساب بالفعل أو كود طالب سابق؟
+                  <button
+                    type="button"
+                    (click)="setStudentAuthMode('login')"
+                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 cursor-pointer"
+                  >
+                    تسجيل الدخول إلى حسابك
+                  </button>
+                </p>
+              </div>
             </div>
-          </form>
+          }
         }
 
         <!-- ------------------------------------------------------------------- -->
@@ -163,10 +541,10 @@
           <form (ngSubmit)="submitParentLogin()" class="space-y-4">
             <div>
               <label for="parentPhoneInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                رقم هاتف ولي الأمر
+                رقم هاتف ولي الأمر (المسجل لدى المنصة)
               </label>
               <div class="relative">
-                <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
+                <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
                   <app-icon name="phone" [size]="18" />
                 </div>
                 <input
@@ -175,9 +553,9 @@
                   [ngModel]="parentPhone()"
                   (ngModelChange)="parentPhone.set($event)"
                   name="parentPhone"
-                  placeholder="01012345678"
+                  placeholder="مثال: 01012345678"
                   dir="ltr"
-                  class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
+                  class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 outline-none transition-all placeholder:text-text-muted"
                 />
               </div>
             </div>
@@ -196,7 +574,7 @@
                   [ngModel]="parentStudentCode()"
                   (ngModelChange)="parentStudentCode.set($event)"
                   name="parentStudentCode"
-                  placeholder="مثال: HA4920"
+                  placeholder="مثال: HA1001"
                   dir="ltr"
                   class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 outline-none transition-all placeholder:text-text-muted"
                 />
@@ -269,86 +647,87 @@
       </div>
 
       <!-- ===================================================================== -->
-      <!-- COLUMN 2: Quick Role Simulator Presets List (5 Roles Test Drive)      -->
+      <!-- COLUMN 2: Spider Math Educational Excellence Showcase                 -->
       <!-- ===================================================================== -->
-      <div class="lg:col-span-6 bg-surface-card border border-surface-border rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative">
+      <div class="lg:col-span-6 bg-surface-card border border-surface-border rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative space-y-6">
 
-        <div class="flex items-center justify-between mb-5 pb-3 border-b border-surface-border">
-          <div>
-            <div class="inline-flex items-center gap-1.5 text-xs font-black text-brand-primary dark:text-brand-accent mb-1">
-              <app-icon name="sparkles" [size]="14" />
-              <span>محاكاة الأدوار الـ 5 فوراً</span>
-            </div>
-            <h2 class="text-lg sm:text-xl font-black text-text-primary">
-              تسريع تسجيل الدخول لتجربة المنصة
-            </h2>
+        <div class="border-b border-surface-border pb-4">
+          <div class="inline-flex items-center gap-1.5 text-xs font-black text-brand-primary dark:text-brand-accent mb-1">
+            <app-icon name="sparkles" [size]="14" />
+            <span>بيئة تعليمية هندسية رائدة</span>
           </div>
-          <span class="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-[11px] font-black text-brand-primary dark:text-brand-accent">
-            1-Click Test Drive
-          </span>
+          <h2 class="text-lg sm:text-xl font-black text-text-primary">
+            معايير منصة سبايدر ماث في التميز الرياضي
+          </h2>
+          <p class="text-xs text-text-secondary mt-1">
+            تم بناء المنصة خصيصاً لتوفير تجربة تفاعلية آمنة ومتطورة لطلاب الثانوية العامة والأنظمة الدولية.
+          </p>
         </div>
 
-        <p class="text-xs sm:text-sm text-text-secondary mb-4">
-          اضغط على أي دور أدناه للانتقال فوراً للشاشة المخصصة له واختبار كافة الميزات والتفاعلات:
-        </p>
+        <div class="space-y-4">
+          <!-- Feature 1 -->
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
+              <app-icon name="activity" [size]="20" />
+            </div>
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-text-primary">محرك ديسموس الرسومي التفاعلي (Desmos Engine)</h4>
+              <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+                تكامل حي مع حاسبة Desmos البيانية لحل المعادلات وتمثيل المنحنيات بصرياً بأعلى دقة هندسية.
+              </p>
+            </div>
+          </div>
 
-        <!-- Presets List (Matching User's Screenshot Exactly) -->
-        <div class="space-y-3">
-          @for (preset of rolePresets; track preset.id) {
-            <button
-              type="button"
-              (click)="activatePreset(preset)"
-              class="w-full text-right p-4 rounded-2xl border border-surface-border bg-surface-bg/60 hover:bg-brand-primary/[0.04] hover:border-brand-primary/50 transition-all duration-200 flex items-center justify-between gap-3 group cursor-pointer shadow-sm hover:shadow-brand-glow"
-            >
-              <!-- Icon & Titles -->
-              <div class="flex items-start gap-3.5 min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-surface-card border border-surface-border group-hover:border-brand-primary/40 flex items-center justify-center text-brand-primary dark:text-brand-accent shrink-0 transition-colors">
-                  <app-icon [name]="preset.icon" [size]="20" />
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2 mb-1 flex-wrap">
-                    <span class="text-sm font-bold text-text-primary group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
-                      {{ preset.titleAr }}
-                    </span>
-                    <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-black shrink-0"
-                      [class.bg-brand-primary/15]="preset.badgeType === 'primary'"
-                      [class.text-brand-primary]="preset.badgeType === 'primary'"
-                      [class.bg-brand-accent/15]="preset.badgeType === 'accent'"
-                      [class.text-brand-accent]="preset.badgeType === 'accent'"
-                      [class.bg-amber-500/15]="preset.badgeType === 'warning'"
-                      [class.text-amber-500]="preset.badgeType === 'warning'"
-                      [class.bg-rose-500/15]="preset.badgeType === 'danger'"
-                      [class.text-rose-500]="preset.badgeType === 'danger'"
-                    >
-                      {{ preset.badgeText }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-text-secondary font-medium leading-relaxed line-clamp-2">
-                    {{ preset.subtitleAr }}
-                  </p>
-                </div>
-              </div>
+          <!-- Feature 2 -->
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <app-icon name="shield" [size]="20" />
+            </div>
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-text-primary">الحماية الذكية والاعتماد الصارم للأجهزة</h4>
+              <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+                ربط حساب الطالب بجهازه الشخصي المعتمد لضمان حماية المحاضرات والامتحانات من المشاركة غير المصرح بها.
+              </p>
+            </div>
+          </div>
 
-              <!-- Action Indicator -->
-              <div class="shrink-0 flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-brand-accent group-hover:-translate-x-1 transition-transform">
-                <span>تجربة الآن</span>
-                <app-icon name="chevron-left" [size]="14" />
-              </div>
-            </button>
-          }
+          <!-- Feature 3 -->
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center shrink-0">
+              <app-icon name="check-circle" [size]="20" />
+            </div>
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-text-primary">تصحيح مقالي هندسي بالماركر الرقمي</h4>
+              <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+                تصحيح خطوات الحل اليدوية للطالب بدقة وتحديد مواضع الأخطاء مع ملاحظات وتوجيهات تفصيلية.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <app-icon name="graduation-cap" [size]="20" />
+            </div>
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-text-primary">رادار السونار الحي لولي الأمر</h4>
+              <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+                متابعة دورية لحظية لدرجات الطالب ونسب التفاعل ومقاطع الشرح التوضيحية الخاصة بالأخطاء.
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Guest Mode Link -->
-        <div class="mt-5 pt-4 border-t border-surface-border flex items-center justify-between">
-          <span class="text-xs text-text-muted">تريد تصفح الصفحة الرئيسية فقط؟</span>
+        <div class="pt-4 border-t border-surface-border flex items-center justify-between">
+          <span class="text-xs text-text-muted">تريد الاطلاع على المنصة كزائر؟</span>
           <button
             type="button"
             (click)="switchToGuest()"
             class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="arrow-right" [size]="14" />
-            <span>العودة كزائر (Guest Mode)</span>
+            <span>العودة للصفحة الرئيسية (Guest Mode)</span>
           </button>
         </div>
 

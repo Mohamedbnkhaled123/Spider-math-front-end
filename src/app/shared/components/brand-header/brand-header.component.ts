@@ -67,15 +67,9 @@ export class BrandHeaderComponent implements OnInit {
           label: this.langService.isArabic() ? 'لوحة التحكم (اعتماد الجهاز)' : 'Device Pending'
         };
       }
-      if (user.has_active_subscription) {
-        return {
-          route: '/student',
-          label: this.langService.isArabic() ? 'لوحة التحكم' : 'Student Dashboard'
-        };
-      }
       return {
-        route: '/inactive-student',
-        label: this.langService.isArabic() ? 'لوحة التحكم' : 'Inactive Portal'
+        route: '/student',
+        label: this.langService.isArabic() ? 'لوحة التحكم' : 'Student Dashboard'
       };
     }
 

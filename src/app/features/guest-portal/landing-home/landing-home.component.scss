@@ -1,21 +1,462 @@
-// Animation 4.1: Interactive Cursor Spotlight (Desktop)
-.hero-container {
-  --mouse-x: 50%;
-  --mouse-y: 50%;
+// ==============================================================================
+// Spider Math Educational Platform (v2.2)
+// Landing Home Component — Authentic Visual Identity Derived 1:1 from Logo
+// Clean, Crisp, High-Contrast UI — NO Hover Glow / Spotlight Flashlight
+// ==============================================================================
+
+// Exact Logo Hex Colors:
+$spider-deep: #1A0745;
+$spider-royal: #2A0E6F;
+$spider-violet: #5B1F9E;
+$spider-electric: #8B3CE0;
+$spider-lavender: #C084FC;
+
+$math-dark: #007A85;
+$math-turquoise: #00BAC6;
+$math-bright: #00D2DE;
+$math-neon: #00F2FE;
+
+$axis-cobalt: #1D4ED8;
+$axis-blue: #0284C7;
+
+:host {
+  display: block;
+  width: 100%;
 }
 
-.hero-spotlight-glow {
-  background: radial-gradient(
-    600px circle at var(--mouse-x) var(--mouse-y),
-    rgba(0, 242, 254, 0.08),
-    rgba(124, 58, 237, 0.04) 40%,
-    transparent 70%
-  );
-  transition: opacity 0.3s ease;
+.landing-home-root {
+  background-color: #080417;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(42, 14, 111, 0.45) 0%, transparent 80%),
+    radial-gradient(circle at 85% 25%, rgba(0, 186, 198, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 15% 40%, rgba(124, 40, 199, 0.1) 0%, transparent 50%),
+    linear-gradient(to right, rgba(0, 186, 198, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(42, 14, 111, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  color: #F8FAFC;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .hero-spotlight-glow {
-    display: none; // Save mobile GPU battery
+:host-context([data-theme='light']) .landing-home-root,
+:host-context(.light) .landing-home-root,
+.landing-home-root.light,
+.landing-home-root[data-theme='light'] {
+  background-color: #FAF5FF;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(42, 14, 111, 0.06) 0%, transparent 80%),
+    radial-gradient(circle at 85% 25%, rgba(0, 186, 198, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 15% 40%, rgba(124, 40, 199, 0.04) 0%, transparent 50%),
+    linear-gradient(to right, rgba(0, 186, 198, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(42, 14, 111, 0.04) 1px, transparent 1px);
+  color: #0F172A;
+}
+
+// ------------------------------------------------------------------------------
+// Announcement Banner (Jewel Ribbon)
+// ------------------------------------------------------------------------------
+.spider-announcement-ribbon {
+  background: linear-gradient(90deg, #1A0745 0%, #2A0E6F 35%, #1D4ED8 70%, #00BAC6 100%);
+  border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    animation: shimmerRibbon 7s infinite ease-in-out;
   }
 }
+
+@keyframes shimmerRibbon {
+  0% { transform: translateX(-100%); }
+  50%, 100% { transform: translateX(100%); }
+}
+
+// ------------------------------------------------------------------------------
+// Wordmark Styling (Exact Logo Match)
+// ------------------------------------------------------------------------------
+.brand-spider {
+  color: #2A0E6F;
+  background: linear-gradient(135deg, #2A0E6F 0%, #5B1F9E 50%, #7C28C7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  display: inline-block;
+}
+
+:host-context([data-theme='dark']) .brand-spider,
+:host-context(.dark) .brand-spider {
+  background: linear-gradient(135deg, #C084FC 0%, #A855F7 50%, #8B3CE0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-math {
+  color: #00BAC6;
+  background: linear-gradient(135deg, #00BAC6 0%, #00D2DE 50%, #00F2FE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  display: inline-block;
+}
+
+.spark-star {
+  color: #00BAC6;
+  display: inline-block;
+}
+
+// ------------------------------------------------------------------------------
+// Hero Section Architecture
+// ------------------------------------------------------------------------------
+.hero-title-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E9D5FF 25%, #38BDF8 65%, #00BAC6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+:host-context([data-theme='light']) .hero-title-gradient,
+:host-context(.light) .hero-title-gradient {
+  background: linear-gradient(135deg, #1A0745 0%, #2A0E6F 35%, #0284C7 70%, #007A85 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  color: #94A3B8;
+  line-height: 1.85;
+}
+
+:host-context([data-theme='light']) .hero-subtitle,
+:host-context(.light) .hero-subtitle {
+  color: #475569;
+}
+
+// ------------------------------------------------------------------------------
+// Polar Mathematical Web (Background Sacred Geometry)
+// ------------------------------------------------------------------------------
+.polar-web-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  height: 900px;
+  pointer-events: none;
+  opacity: 0.22;
+
+  circle {
+    fill: none;
+    stroke-dasharray: 4 6;
+  }
+}
+
+.polar-circle-1 { stroke: rgba(124, 40, 199, 0.45); }
+.polar-circle-2 { stroke: rgba(37, 99, 235, 0.45); }
+.polar-circle-3 { stroke: rgba(0, 186, 198, 0.45); }
+
+// ------------------------------------------------------------------------------
+// Logo Centerpiece Showcase Card (Clean Elevation — NO Glow Hover)
+// ------------------------------------------------------------------------------
+.logo-emblem-container {
+  position: relative;
+  border-radius: 2.5rem;
+  background: rgba(18, 11, 46, 0.75);
+  border: 1px solid rgba(0, 186, 198, 0.28);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 186, 198, 0.55);
+    box-shadow: 0 22px 48px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+:host-context([data-theme='light']) .logo-emblem-container,
+:host-context(.light) .logo-emblem-container {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(42, 14, 111, 0.16);
+  box-shadow: 0 14px 30px -8px rgba(42, 14, 111, 0.1);
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 186, 198, 0.4);
+    box-shadow: 0 20px 40px -8px rgba(42, 14, 111, 0.15);
+  }
+}
+
+// ------------------------------------------------------------------------------
+// Action Buttons (Clean Elevation — NO Glow Hover)
+// ------------------------------------------------------------------------------
+.btn-spider-primary {
+  background: linear-gradient(135deg, #2A0E6F 0%, #1D4ED8 48%, #00BAC6 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    opacity: 0.96;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.btn-spider-secondary {
+  background: rgba(18, 11, 46, 0.55);
+  border: 1px solid rgba(0, 186, 198, 0.35);
+  color: #F8FAFC;
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: #00BAC6;
+    background: rgba(0, 186, 198, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+:host-context([data-theme='light']) .btn-spider-secondary,
+:host-context(.light) .btn-spider-secondary {
+  background: #FFFFFF;
+  border: 1px solid rgba(42, 14, 111, 0.22);
+  color: #1A0745;
+
+  &:hover {
+    border-color: #00BAC6;
+    background: rgba(0, 186, 198, 0.04);
+    box-shadow: 0 6px 16px rgba(42, 14, 111, 0.1);
+  }
+}
+
+// ------------------------------------------------------------------------------
+// Feature Cards & Timetable (Clean Elevation — NO Glow Hover)
+// ------------------------------------------------------------------------------
+.spider-card {
+  background: rgba(18, 11, 46, 0.65);
+  border: 1px solid rgba(124, 40, 199, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    border-color: rgba(0, 186, 198, 0.45);
+    box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.45);
+    transform: translateY(-3px);
+  }
+}
+
+:host-context([data-theme='light']) .spider-card,
+:host-context(.light) .spider-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(42, 14, 111, 0.12);
+  box-shadow: 0 6px 20px -5px rgba(42, 14, 111, 0.06);
+
+  &:hover {
+    border-color: #00BAC6;
+    box-shadow: 0 10px 25px -5px rgba(42, 14, 111, 0.12);
+    transform: translateY(-3px);
+  }
+}
+
+// ------------------------------------------------------------------------------
+// Authority Pills & Badges
+// ------------------------------------------------------------------------------
+.glow-pill-authority {
+  background: rgba(42, 14, 111, 0.45);
+  border: 1px solid rgba(0, 186, 198, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+:host-context([data-theme='light']) .glow-pill-authority,
+:host-context(.light) .glow-pill-authority {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(42, 14, 111, 0.2);
+  box-shadow: 0 4px 14px rgba(42, 14, 111, 0.08);
+}
+
+// ------------------------------------------------------------------------------
+// Emblem Showcase & Floating Chips (NO Glow Hover)
+// ------------------------------------------------------------------------------
+.polar-ring-spin {
+  animation: spinSlow 40s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.emblem-floating-chip {
+  position: absolute;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(18, 11, 46, 0.9);
+  border: 1px solid rgba(0, 186, 198, 0.35);
+  color: #F8FAFC;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 10;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #00BAC6;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+  }
+}
+
+:host-context([data-theme='light']) .emblem-floating-chip,
+:host-context(.light) .emblem-floating-chip {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(42, 14, 111, 0.2);
+  color: #1A0745;
+  box-shadow: 0 6px 16px rgba(42, 14, 111, 0.08);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #00BAC6;
+    box-shadow: 0 8px 18px rgba(42, 14, 111, 0.14);
+  }
+}
+
+.chip-float-1 {
+  top: 8%;
+  right: -5%;
+  animation: floatChip1 5s ease-in-out infinite alternate;
+}
+
+.chip-float-2 {
+  bottom: 12%;
+  left: -6%;
+  animation: floatChip2 6s ease-in-out infinite alternate;
+}
+
+.chip-float-3 {
+  top: 55%;
+  right: -8%;
+  animation: floatChip3 5.5s ease-in-out infinite alternate;
+}
+
+@keyframes floatChip1 {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-6px); }
+}
+
+@keyframes floatChip2 {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(6px); }
+}
+
+@keyframes floatChip3 {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-5px); }
+}
+
+// ------------------------------------------------------------------------------
+// Conic Avatar Frame (Teacher Showcase — Clean Shadow)
+// ------------------------------------------------------------------------------
+.teacher-conic-frame {
+  position: relative;
+  border-radius: 2rem;
+  padding: 3px;
+  background: conic-gradient(from 180deg at 50% 50%, #2A0E6F 0deg, #1D4ED8 90deg, #00BAC6 180deg, #00F2FE 270deg, #2A0E6F 360deg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -5px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// ------------------------------------------------------------------------------
+// Pricing Tab Toggle (NO Glow)
+// ------------------------------------------------------------------------------
+.spider-tab-btn {
+  padding: 0.75rem 1.75rem;
+  border-radius: 1rem;
+  font-weight: 800;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: rgba(18, 11, 46, 0.55);
+  border: 1px solid rgba(124, 40, 199, 0.25);
+  color: #94A3B8;
+
+  &:hover {
+    color: #F8FAFC;
+    border-color: rgba(0, 186, 198, 0.4);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #2A0E6F 0%, #1D4ED8 48%, #00BAC6 100%);
+    color: #FFFFFF;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+:host-context([data-theme='light']) .spider-tab-btn,
+:host-context(.light) .spider-tab-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(42, 14, 111, 0.15);
+  color: #475569;
+
+  &.active {
+    background: linear-gradient(135deg, #2A0E6F 0%, #1D4ED8 48%, #00BAC6 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(42, 14, 111, 0.2);
+  }
+}
+
+// ------------------------------------------------------------------------------
+// About Avatar Card (White Box for Logo)
+// ------------------------------------------------------------------------------
+.about-avatar-card {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+:host-context([data-theme='light']) .about-avatar-card,
+:host-context(.light) .about-avatar-card,
+.landing-home-root.light .about-avatar-card,
+.landing-home-root[data-theme='light'] .about-avatar-card {
+  box-shadow: 0 12px 25px -6px rgba(42, 14, 111, 0.12);
+  border: 1px solid rgba(42, 14, 111, 0.1);
+}
+
+
+

@@ -1,36 +1,40 @@
 :host {
   display: block;
   width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .brand-spider {
-  background: linear-gradient(135deg, #4C1D95 0%, #6D28D9 50%, #9333EA 100%);
+  background: linear-gradient(135deg, #2A0E6F 0%, #5B1F9E 50%, #7C28C7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 :host-context(.dark) .brand-spider {
-  background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 50%, #C084FC 100%);
+  background: linear-gradient(135deg, #C084FC 0%, #A855F7 50%, #8B3CE0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .brand-math {
-  background: linear-gradient(135deg, #0891B2 0%, #06B6D4 50%, #00F2FE 100%);
+  background: linear-gradient(135deg, #00BAC6 0%, #00D2DE 50%, #00F2FE 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 :host-context(.dark) .brand-math {
-  background: linear-gradient(135deg, #38BDF8 0%, #06B6D4 50%, #00F2FE 100%);
+  background: linear-gradient(135deg, #00BAC6 0%, #00D2DE 50%, #00F2FE 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .spark-star {
-  filter: drop-shadow(0 0 4px var(--color-brand-accent));
+  color: #00BAC6;
 }
+

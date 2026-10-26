@@ -8,15 +8,13 @@
       class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02] shrink-0"
     >
       <!-- Official Geometric Logo Icon -->
-      <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-brand-accent transition-colors duration-200">
+      <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-cyan-400 transition-colors duration-200">
         <img
           src="/assets/branding/spider-math-logo.webp"
           alt="Spider Math Logo — المهندسة هبة عبدالوهاب"
-          class="w-full h-full object-contain p-1 filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
+          class="w-full h-full object-contain p-1 group-hover:scale-103 transition-transform duration-200"
           loading="eager"
         />
-        <!-- Node Glow Ambient Effect -->
-        <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-accent animate-node-glow"></span>
       </div>
 
       <!-- Split-Spectrum Wordmark -->
@@ -226,7 +224,7 @@
           @if (activePortal(); as portal) {
             <a
               [routerLink]="portal.route"
-              class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-spider hover:opacity-95 shadow-brand-glow flex items-center gap-1.5 transition-all active:scale-95"
+              class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-spider hover:opacity-95 shadow-sm hover:shadow-md flex items-center gap-1.5 transition-all active:scale-95"
             >
               <app-icon name="sparkles" [size]="14" />
               <span>{{ portal.label }}</span>
@@ -249,7 +247,7 @@
         <div class="flex items-center gap-2">
           <a
             routerLink="/login"
-            class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-brand-glow hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+            class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-sm hover:shadow-md hover:opacity-95 active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="sparkles" [size]="14" />
             <span>{{ langService.isArabic() ? 'دخول المنصة' : 'Enter Platform' }}</span>

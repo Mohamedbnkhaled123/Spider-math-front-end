@@ -3,18 +3,30 @@ import {
   ChangeDetectionStrategy,
   signal,
   computed,
-  inject
+  inject,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
+import {
+  validatePhoneNumber,
+  arePhoneNumbersIdentical,
+  getPhonePlaceholderByCountry
+} from '../../../core/utils/phone-validator.util';
 import {
   EnrolledUnitSummary,
   LeaderboardRankEntry,
-  StudentNotificationItem
+  StudentNotificationItem,
+  StudentLectureItem,
+  StudentDueQuizItem,
+  StudentCompletedGradeItem
 } from './student-overview.models';
 
 /**
@@ -23,96 +35,87 @@ import {
  * 
  * - Academic Term Switcher (TERM_1 / TERM_2)
  * - Enrolled units & final revisions grid with watch progress
- * - Animation 4.5: Leaderboard Podiums (Ranks 1, 2, 3 + student rank)
+ * - Dynamic XP Progress Ring (Animation 4.4)
+ * - Glowing Podium Leaderboard (GET /api/v1/gamification/leaderboard - Animation 4.5)
  * - Notification bell with unread indicator
+ * - Profile Editor Modal (Full name, student phone, parent phone, avatar, governorate)
+ * - Detailed Lecture Tracker (Watched vs. Pending / Not Watched)
+ * - Quizzes & Assessments Tracker (Due quizzes + Graded submissions with teacher feedback)
  */
 @Component({
   selector: 'app-student-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AppIconComponent],
   templateUrl: './student-overview.component.html',
   styleUrls: ['./student-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StudentOverviewComponent {
+export class StudentOverviewComponent implements OnInit {
+  private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
   // Term Switcher Signal
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
   readonly isNotificationsOpen = signal<boolean>(false);
+  readonly isLoadingLeaderboard = signal<boolean>(false);
 
-  // Active units catalog
-  readonly units = signal<EnrolledUnitSummary[]>([
-    {
-      _id: 'unit_calc_diff',
-      titleAr: 'الوحدة الأولى: التفاضل والاشتقاق وتطبيقاته الهندسية',
-      titleEn: 'Unit 1: Differential Calculus & Geometric Applications',
-      descriptionAr: 'قواعد الاشتقاق البارامتري، والمماسات، والمعدلات الزمنية المرتبطة.',
-      descriptionEn: 'Parametric differentiation, tangent lines, and related rates.',
-      type: 'STUDY_UNIT',
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_3',
-      term: 'TERM_1',
-      totalLectures: 8,
-      completedLectures: 7,
-      completionPercentage: 88,
-      totalQuizzes: 4,
-      completedQuizzes: 4,
-      isActive: true
-    },
-    {
-      _id: 'unit_calc_integ',
-      titleAr: 'الوحدة الثانية: التكامل وتطبيقات المساحات والحجوم',
-      titleEn: 'Unit 2: Integral Calculus & Volume Applications',
-      descriptionAr: 'التكامل بالتعويض والتجزيء، ومساحات المناطق المستوية، وحجوم الأجسام الدورانية.',
-      descriptionEn: 'Integration by substitution and parts, area, and solids of revolution.',
-      type: 'STUDY_UNIT',
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_3',
-      term: 'TERM_1',
-      totalLectures: 6,
-      completedLectures: 3,
-      completionPercentage: 50,
-      totalQuizzes: 3,
-      completedQuizzes: 1,
-      isActive: true
-    },
-    {
-      _id: 'unit_final_rev_1',
-      titleAr: 'المراجعة النهائية المكثفة: ليلة الامتحان وبنك الأسئلة المتوقعة',
-      titleEn: 'Intensive Final Revision: High-Yield Exam Bank & Speed Tactics',
-      descriptionAr: 'حل نماذج الامتحانات الرسمية السابقة، واستراتيجيات حل مسائل ديسموس السريعة.',
-      descriptionEn: 'Past paper walkthroughs, common trap analysis, and Desmos speed tactics.',
-      type: 'FINAL_REVISION',
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_3',
-      term: 'TERM_1',
-      totalLectures: 4,
-      completedLectures: 1,
-      completionPercentage: 25,
-      totalQuizzes: 2,
-      completedQuizzes: 0,
-      isActive: true
-    },
-    {
-      _id: 'unit_vectors_term2',
-      titleAr: 'الوحدة الثالثة: الهندسة الفراغية والمتجهات في الفضاء ثلاثي الأبعاد',
-      titleEn: 'Unit 3: 3D Analytic Geometry & Vector Analysis',
-      descriptionAr: 'معادلة الخط المستقيم والمستوى في الفضاء والضرب القياسي والاتجاهي.',
-      descriptionEn: 'Lines and planes in 3D space, scalar and cross products.',
-      type: 'STUDY_UNIT',
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_3',
-      term: 'TERM_2',
-      totalLectures: 7,
-      completedLectures: 0,
-      completionPercentage: 0,
-      totalQuizzes: 3,
-      completedQuizzes: 0,
-      isActive: true
-    }
-  ]);
+  // Filter tabs for lectures
+  readonly lecturesFilter = signal<'ALL' | 'WATCHED' | 'UNWATCHED'>('ALL');
+
+  // Egypt Governorates
+  readonly egyptGovernorates = EGYPT_GOVERNORATES;
+
+  // Preset Avatars for Student Selection
+  readonly presetAvatars = [
+    { id: 'av_1', label: 'رائد الرياضيات', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath1' },
+    { id: 'av_2', label: 'عبقري التفاضل', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath2' },
+    { id: 'av_3', label: 'مهندس الفراغية', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath3' },
+    { id: 'av_4', label: 'بطل الجبر', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath4' },
+    { id: 'av_5', label: 'محلل ديسموس', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath5' },
+    { id: 'av_6', label: 'نجم سبايدر ماث', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath6' }
+  ];
+
+  // =========================================================================
+  // Profile Editor Signals & State
+  // =========================================================================
+  readonly isProfileModalOpen = signal<boolean>(false);
+  readonly editFullName = signal<string>('');
+  readonly editPhone = signal<string>('');
+  readonly editParentPhone = signal<string>('');
+  readonly editCountry = signal<string>('EG');
+  readonly editGovernorate = signal<string>('CAIRO');
+  readonly editAvatarUrl = signal<string>('');
+  readonly isSavingProfile = signal<boolean>(false);
+  readonly profileErrorMessage = signal<string | null>(null);
+  readonly profileSuccessMessage = signal<string | null>(null);
+
+  readonly isEditEgypt = computed<boolean>(() => this.editCountry() === 'EG');
+  readonly editPhonePlaceholder = computed<string>(() =>
+    getPhonePlaceholderByCountry(this.editCountry())
+  );
+
+  // XP Progress Ring Computations (Animation 4.4)
+  readonly userTotalXp = computed(() => this.authService.currentUser()?.total_xp ?? 1150);
+  readonly currentLevel = computed(() => Math.floor(this.userTotalXp() / 500) + 1);
+  readonly xpInCurrentLevel = computed(() => this.userTotalXp() % 500);
+  readonly xpLevelProgressPct = computed(() => Math.min(100, Math.round((this.xpInCurrentLevel() / 500) * 100)));
+  readonly xpRingDashoffset = computed(() => {
+    const circumference = 226.19; // 2 * PI * 36
+    return circumference - (this.xpLevelProgressPct() / 100) * circumference;
+  });
+
+  // =========================================================================
+  // Dynamic Real Atlas Signals & Active Grades Check
+  // =========================================================================
+  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly currentUserGrade = computed(() => this.authService.currentUser()?.grade_level || 'SEC_3');
+  readonly currentUserCurriculum = computed(() => this.authService.currentUser()?.curriculum || 'EGYPTIAN');
+  readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.currentUserGrade()));
+  readonly isLoadingUnits = signal<boolean>(true);
+
+  // Active units catalog (Real from Atlas)
+  readonly units = signal<EnrolledUnitSummary[]>([]);
 
   // Filtered units by selected academic term
   readonly filteredUnits = computed(() => {
@@ -129,77 +132,311 @@ export class StudentOverviewComponent {
     return totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
   });
 
-  // Animation 4.5 Leaderboard Podiums
-  readonly leaderboard = signal<LeaderboardRankEntry[]>([
-    {
-      rank: 1,
-      studentId: 'st_1',
-      studentName: 'عمر خالد المنشاوي',
-      haCode: 'HA1082',
-      totalXp: 1850,
-      isCurrentUser: false
-    },
-    {
-      rank: 2,
-      studentId: 'st_2',
-      studentName: 'مريم أحمد عبدالفتاح',
-      haCode: 'HA2391',
-      totalXp: 1620,
-      isCurrentUser: false
-    },
-    {
-      rank: 3,
-      studentId: 'st_3',
-      studentName: 'ياسين محمود الشناوي',
-      haCode: 'HA3144',
-      totalXp: 1480,
-      isCurrentUser: false
-    },
-    {
-      rank: 7,
-      studentId: 'st_me',
-      studentName: 'أنت (طالب سبايدر ماث)',
-      haCode: 'HA4920',
-      totalXp: 1150,
-      isCurrentUser: true
-    }
-  ]);
+  // =========================================================================
+  // Detailed Lectures Progress List (المحاضرات اللي شافها واللي لسه مشافهاش - Real from Atlas)
+  // =========================================================================
+  readonly lectures = signal<StudentLectureItem[]>([]);
 
+  // Filtered lectures computed based on user tab selection
+  readonly filteredLectures = computed(() => {
+    const filter = this.lecturesFilter();
+    const all = this.lectures();
+    if (filter === 'WATCHED') {
+      return all.filter(l => l.isWatched);
+    }
+    if (filter === 'UNWATCHED') {
+      return all.filter(l => !l.isWatched);
+    }
+    return all;
+  });
+
+  readonly totalLecturesCount = computed(() => this.lectures().length);
+  readonly watchedLecturesCount = computed(() => this.lectures().filter(l => l.isWatched).length);
+  readonly unwatchedLecturesCount = computed(() => this.lectures().filter(l => !l.isWatched).length);
+
+  // =========================================================================
+  // Due Quizzes (الكويزات اللي عليه - Real from Atlas)
+  // =========================================================================
+  readonly dueQuizzes = signal<StudentDueQuizItem[]>([]);
+
+  // =========================================================================
+  // Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته - Real from Atlas)
+  // =========================================================================
+  readonly completedGrades = signal<StudentCompletedGradeItem[]>([]);
+
+  // Average Quiz Score
+  readonly averageScorePercentage = computed(() => {
+    const list = this.completedGrades();
+    if (list.length === 0) return 0;
+    const totalAchieved = list.reduce((acc, g) => acc + g.score, 0);
+    const totalPossible = list.reduce((acc, g) => acc + g.maxScore, 0);
+    return totalPossible > 0 ? Math.round((totalAchieved / totalPossible) * 100) : 0;
+  });
+
+  // Animation 4.5 Leaderboard Podiums (Real from Gamification API)
+  readonly leaderboard = signal<LeaderboardRankEntry[]>([]);
   readonly topThreePodium = computed(() => this.leaderboard().filter(e => e.rank <= 3));
   readonly currentUserRank = computed(() => this.leaderboard().find(e => e.isCurrentUser));
 
-  // Notifications List
-  readonly notifications = signal<StudentNotificationItem[]>([
-    {
-      id: 'notif_1',
-      titleAr: 'تم تصحيح واجب التفاضل من م/ هبة',
-      titleEn: 'Calculus Homework Graded by Eng. Heba',
-      messageAr: 'تم اعتماد درجة الواجب (18/20) وإضافة ملاحظات توجيهية لحل السؤال الثالث.',
-      messageEn: 'Homework score 18/20 published with specific video feedback for question 3.',
-      type: 'HOMEWORK_GRADED',
-      timestamp: 'منذ ساعتين',
-      isRead: false,
-      actionUrl: '/student/submissions/sub_calc_1/feedback'
-    },
-    {
-      id: 'notif_2',
-      titleAr: 'محاضرة جديدة متاحة الآن!',
-      titleEn: 'New Lecture Released!',
-      messageAr: 'تم رفع محاضرة "المساحات في المستوى وحاسبة ديسموس" في وحدة التكامل.',
-      messageEn: 'Lecture "Areas in Plane with Desmos Calculator" is now unlocked.',
-      type: 'NEW_LECTURE',
-      timestamp: 'أمس',
-      isRead: true,
-      actionUrl: '/student/units/unit_calc_integ'
-    }
-  ]);
-
+  // Notifications List (Real from Notifications API)
+  readonly notifications = signal<StudentNotificationItem[]>([]);
   readonly unreadNotificationsCount = computed(
     () => this.notifications().filter(n => !n.isRead).length
   );
 
+  ngOnInit(): void {
+    this.loadActiveGrades();
+    this.fetchRealStudentData();
+    this.fetchRealAssessments();
+    this.fetchLeaderboard();
+    this.fetchRealNotifications();
+  }
+
+  loadActiveGrades(): void {
+    this.http.get<{ success: boolean; data: { activeGrades: string[] } }>('/api/v1/public/active-grades').subscribe({
+      next: (res) => {
+        if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
+          this.activeGrades.set(res.data.activeGrades);
+        }
+      }
+    });
+  }
+
+  fetchRealStudentData(): void {
+    this.isLoadingUnits.set(true);
+    const curr = this.currentUserCurriculum();
+    const grade = this.currentUserGrade();
+    const term = this.selectedTerm();
+
+    this.http.get<{ success: boolean; data: any[] }>(
+      `/api/v1/units?curriculum=${curr}&gradeLevel=${grade}&term=${term}`
+    ).subscribe({
+      next: (res) => {
+        this.isLoadingUnits.set(false);
+        const apiUnits = res?.data || [];
+        if (apiUnits.length === 0) {
+          this.units.set([]);
+          this.lectures.set([]);
+          return;
+        }
+
+        const mappedUnits: EnrolledUnitSummary[] = apiUnits.map((u: any) => ({
+          _id: u._id,
+          titleAr: u.title_ar,
+          titleEn: u.title_en || '',
+          descriptionAr: u.description_ar || '',
+          descriptionEn: u.description_en || '',
+          type: u.package_type || 'STUDY_UNIT',
+          curriculum: u.curriculum,
+          gradeLevel: u.grade_level,
+          term: u.academic_term || 'TERM_1',
+          totalLectures: u.lectures_count || 0,
+          completedLectures: 0,
+          completionPercentage: 0,
+          totalQuizzes: u.quizzes_count || 0,
+          completedQuizzes: 0,
+          isActive: true
+        }));
+        this.units.set(mappedUnits);
+
+        // Hydrate lectures across all units
+        const allLectures: StudentLectureItem[] = [];
+
+        mappedUnits.forEach((u) => {
+          this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${u._id}/curriculum-contents`).subscribe({
+            next: (cRes) => {
+              if (cRes?.data) {
+                const rawLectures: any[] = cRes.data.lectures || [];
+
+                rawLectures.forEach((lec: any) => {
+                  allLectures.push({
+                    id: lec._id,
+                    unitId: u._id,
+                    unitTitleAr: u.titleAr,
+                    titleAr: lec.lecture_title_ar || lec.title_ar,
+                    durationMinutes: Math.round((lec.video_duration_sec || 2700) / 60),
+                    isWatched: !!lec.isCompleted,
+                    watchProgressPercentage: lec.watchPercentage || 0,
+                    xpReward: lec.xp_reward_on_complete || 50,
+                    actionUrl: `/student/units/${u._id}`
+                  });
+                });
+                this.lectures.set([...allLectures]);
+              }
+            }
+          });
+        });
+      },
+      error: () => {
+        this.isLoadingUnits.set(false);
+        this.units.set([]);
+        this.lectures.set([]);
+      }
+    });
+  }
+
+  fetchRealNotifications(): void {
+    this.http.get<{ success: boolean; data: any }>('/api/v1/notifications?limit=10').subscribe({
+      next: (res) => {
+        const notifs = res?.data?.notifications || res?.data || [];
+        if (Array.isArray(notifs) && notifs.length > 0) {
+          this.notifications.set(
+            notifs.map((n: any) => ({
+              id: n._id,
+              titleAr: n.title_ar,
+              titleEn: n.title_en || n.title_ar,
+              messageAr: n.message_ar,
+              messageEn: n.message_en || n.message_ar,
+              type: n.notification_type || 'SYSTEM_BROADCAST',
+              timestamp: new Date(n.createdAt).toLocaleTimeString('ar-EG'),
+              isRead: !!n.is_read,
+              actionUrl: n.action_url || '/student'
+            }))
+          );
+        } else {
+          this.notifications.set([]);
+        }
+      },
+      error: () => this.notifications.set([])
+    });
+  }
+
+  fetchRealAssessments(): void {
+    const curr = this.currentUserCurriculum();
+    const grade = this.currentUserGrade();
+    const term = this.selectedTerm();
+
+    // Strictly grade-isolated via backend session auth & filters
+    this.http.get<{ success: boolean; data: any }>(
+      `/api/v1/assessments?curriculum=${curr}&gradeLevel=${grade}&term=${term}&limit=30`
+    ).subscribe({
+      next: (res) => {
+        const rawList: any[] = Array.isArray(res?.data)
+          ? res.data
+          : (res?.data?.assessments || []);
+
+        if (Array.isArray(rawList)) {
+          const now = new Date();
+          const mapped: StudentDueQuizItem[] = rawList.map((asm: any) => {
+            let dueDateAr = asm.time_limit_minutes ? `${asm.time_limit_minutes} دقيقة` : 'متاح للحل الآن';
+            let isUrgent = false;
+            let canStart = true;
+            let statusNote: string | undefined = undefined;
+
+            if (asm.available_until) {
+              const untilDate = new Date(asm.available_until);
+              const diffMs = untilDate.getTime() - now.getTime();
+              const diffHours = diffMs / (1000 * 60 * 60);
+
+              if (diffMs < 0) {
+                dueDateAr = 'انتهى موعد التسليم';
+                canStart = false;
+                statusNote = 'انتهى الوقت المحدد لهذا الكويز';
+              } else if (diffHours <= 24) {
+                isUrgent = true;
+                const hoursLeft = Math.max(1, Math.round(diffHours));
+                dueDateAr = `ينتهي خلال ${hoursLeft} ساعة`;
+              } else {
+                dueDateAr = `متاح حتى ${untilDate.toLocaleDateString('ar-EG')}`;
+              }
+            }
+
+            if (asm.available_from) {
+              const fromDate = new Date(asm.available_from);
+              if (now < fromDate) {
+                dueDateAr = `يبدأ: ${fromDate.toLocaleDateString('ar-EG')} ${fromDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+                canStart = false;
+                statusNote = 'الكويز مجدول ولم يحن موعد فتحه بعد';
+              }
+            }
+
+            const typeLabel = (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM')
+              ? 'امتحان شامل'
+              : ((asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK')
+                ? 'واجب منزلي'
+                : 'كويز تفاعلي');
+
+            return {
+              id: asm._id,
+              titleAr: asm.title_ar,
+              unitTitleAr: typeLabel,
+              questionsCount: asm.questions?.length || 0,
+              totalPoints: asm.total_points || 20,
+              xpReward: asm.xp_reward || 50,
+              dueDateAr,
+              isUrgent,
+              canStart,
+              statusNote,
+              assessmentUrl: `/student/assessments/${asm._id}`
+            };
+          });
+
+          this.dueQuizzes.set(mapped);
+        } else {
+          this.dueQuizzes.set([]);
+        }
+      },
+      error: () => {
+        this.dueQuizzes.set([]);
+      }
+    });
+  }
+
+  fetchLeaderboard(): void {
+    const user = this.authService.currentUser();
+    const curriculum = user?.curriculum || 'EGYPTIAN';
+    const gradeLevel = user?.grade_level || 'SEC_3';
+    const currentCode = user?.student_ha_code || 'HA4920';
+
+    this.isLoadingLeaderboard.set(true);
+    this.http.get<{ success: boolean; data: { leaderboard: any[] } }>(
+      '/api/v1/gamification/leaderboard',
+      { params: { curriculum, gradeLevel } }
+    ).subscribe({
+      next: (res) => {
+        this.isLoadingLeaderboard.set(false);
+        const apiList = res?.data?.leaderboard;
+        if (apiList && apiList.length > 0) {
+          const mapped: LeaderboardRankEntry[] = apiList.map((st, idx) => ({
+            rank: st.rank || idx + 1,
+            studentId: st.studentId || st._id,
+            studentName: st.fullName,
+            haCode: st.studentCode,
+            totalXp: st.totalXp,
+            isCurrentUser: st.studentCode === currentCode
+          }));
+
+          const userInList = mapped.find(m => m.isCurrentUser);
+          if (!userInList && user) {
+            mapped.push({
+              rank: mapped.length + 1,
+              studentId: user._id,
+              studentName: user.full_name + ' (أنت)',
+              haCode: currentCode,
+              totalXp: user.total_xp ?? 0,
+              isCurrentUser: true
+            });
+          }
+
+          if (mapped.length >= 3) {
+            this.leaderboard.set(mapped);
+          }
+        }
+      },
+      error: () => {
+        this.isLoadingLeaderboard.set(false);
+      }
+    });
+  }
+
   setTerm(term: AcademicTermCode): void {
     this.selectedTerm.set(term);
+    this.fetchRealStudentData();
+    this.fetchRealAssessments();
+  }
+
+  setLecturesFilter(filter: 'ALL' | 'WATCHED' | 'UNWATCHED'): void {
+    this.lecturesFilter.set(filter);
   }
 
   toggleNotifications(): void {
@@ -209,5 +446,114 @@ export class StudentOverviewComponent {
   markAllNotificationsAsRead(): void {
     const list = this.notifications().map(n => ({ ...n, isRead: true }));
     this.notifications.set(list);
+  }
+
+  // =========================================================================
+  // Student Profile Modal Actions
+  // =========================================================================
+  openProfileModal(): void {
+    const user = this.authService.currentUser();
+    this.editFullName.set(user?.full_name || '');
+    this.editPhone.set(user?.phone || '');
+    this.editParentPhone.set(user?.parent_phone || '');
+    this.editCountry.set(user?.country || 'EG');
+    this.editGovernorate.set(user?.governorate || 'CAIRO');
+    this.editAvatarUrl.set(user?.avatar_url || this.presetAvatars[0].url);
+    this.profileErrorMessage.set(null);
+    this.profileSuccessMessage.set(null);
+    this.isProfileModalOpen.set(true);
+  }
+
+  closeProfileModal(): void {
+    this.isProfileModalOpen.set(false);
+    this.profileErrorMessage.set(null);
+    this.profileSuccessMessage.set(null);
+  }
+
+  selectAvatar(url: string): void {
+    this.editAvatarUrl.set(url);
+  }
+
+  saveProfile(): void {
+    const name = this.editFullName().trim();
+    const phone = this.editPhone().trim();
+    const parentPhone = this.editParentPhone().trim();
+    const country = this.editCountry();
+
+    if (!name || name.length < 3) {
+      this.profileErrorMessage.set('يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح');
+      return;
+    }
+
+    if (phone) {
+      const val = validatePhoneNumber(phone, country);
+      if (!val.isValid) {
+        this.profileErrorMessage.set(`رقم هاتف الطالب: ${val.messageAr}`);
+        return;
+      }
+    }
+
+    if (parentPhone) {
+      const val = validatePhoneNumber(parentPhone, country);
+      if (!val.isValid) {
+        this.profileErrorMessage.set(`رقم هاتف ولي الأمر: ${val.messageAr}`);
+        return;
+      }
+    }
+
+    if (phone && parentPhone && arePhoneNumbersIdentical(phone, parentPhone, country)) {
+      this.profileErrorMessage.set(
+        'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم مختلف لولي الأمر.'
+      );
+      return;
+    }
+
+    this.isSavingProfile.set(true);
+    this.profileErrorMessage.set(null);
+    this.profileSuccessMessage.set(null);
+
+    this.http.patch<{
+      success: boolean;
+      data: {
+        user: any;
+      };
+    }>('/api/v1/auth/profile', {
+      fullName: name,
+      phone: phone || undefined,
+      parentPhone: parentPhone || undefined,
+      country,
+      governorate: this.isEditEgypt() ? this.editGovernorate() : null,
+      avatarUrl: this.editAvatarUrl() || undefined
+    }).subscribe({
+      next: (res) => {
+        this.isSavingProfile.set(false);
+        const updated = res.data?.user;
+        if (updated) {
+          const patch: Partial<IUserDto> = {
+            full_name: updated.fullName || updated.full_name || name,
+            phone: updated.phone || phone,
+            parent_phone: updated.parentPhone || updated.parent_phone || parentPhone,
+            country: updated.country || country,
+            governorate: updated.governorate || this.editGovernorate(),
+            avatar_url: updated.avatarUrl || updated.avatar_url || this.editAvatarUrl()
+          };
+          this.authService.updateCurrentUser(patch);
+          this.profileSuccessMessage.set('تم حفظ وتحديث بيانات حسابك بنجاح');
+          setTimeout(() => {
+            if (this.isProfileModalOpen()) {
+              this.closeProfileModal();
+            }
+          }, 1200);
+        }
+      },
+      error: (err) => {
+        this.isSavingProfile.set(false);
+        this.profileErrorMessage.set(
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          'حدث خطأ أثناء حفظ التعديلات. يرجى التأكد من البيانات والمحاولة مجدداً.'
+        );
+      }
+    });
   }
 }

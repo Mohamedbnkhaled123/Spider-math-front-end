@@ -55,60 +55,18 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   // Bundle Data
   readonly bundle = signal<AssessmentAttemptBundle>({
-    assessmentId: 'asm_diff_2',
-    unitId: 'unit_calc_diff',
-    titleAr: 'تقييم المحاضرة 2: الاشتقاق الضمني والمشتقات العليا',
-    titleEn: 'Assessment 2: Implicit & Higher Derivatives',
-    durationMinutes: 20,
-    questions: [
-      {
-        _id: 'q_diff_1',
-        order: 1,
-        textAr: 'إذا كانت س² + ص² = ٢٥، فإن (د²ص / دس²) عند النقطة (٣، ٤) تساوي:',
-        textEn: 'If x² + y² = 25, then (d²y/dx²) at the point (3, 4) equals:',
-        options: [
-          { optionIndex: 0, textAr: '-٢٥ / ٦٤', textEn: '-25 / 64' },
-          { optionIndex: 1, textAr: '-٣ / ٤', textEn: '-3 / 4' },
-          { optionIndex: 2, textAr: '٢٥ / ٦٤', textEn: '25 / 64' },
-          { optionIndex: 3, textAr: 'صفر', textEn: '0' }
-        ],
-        points: 5,
-        requiresDesmos: true,
-        type: 'MCQ'
-      },
-      {
-        _id: 'q_diff_2',
-        order: 2,
-        textAr: 'أوجد معادلة المماس لمنحنى الدالة ص = س³ - ٣س عند النقطة الواقعة عليه وإحداثيها السيني س = ٢.',
-        textEn: 'Find the tangent line equation for y = x³ - 3x at the point where x = 2.',
-        imageUrl: 'https://res.cloudinary.com/spider-math/image/upload/v1729000000/spider-math-questions/sample_curve_prompt.webp',
-        options: [
-          { optionIndex: 0, textAr: 'ص = ٩س - ١٦', textEn: 'y = 9x - 16' },
-          { optionIndex: 1, textAr: 'ص = ٦س - ١٠', textEn: 'y = 6x - 10' },
-          { optionIndex: 2, textAr: 'ص = ٣س - ٤', textEn: 'y = 3x - 4' },
-          { optionIndex: 3, textAr: 'ص = ٩س + ٢', textEn: 'y = 9x + 2' }
-        ],
-        points: 5,
-        requiresDesmos: true,
-        type: 'MCQ'
-      },
-      {
-        _id: 'q_diff_3',
-        order: 3,
-        textAr: 'مسألة مقالية: أثبت بالخطوات الكاملة أن المشتقة الثانية للمنحنى ص = جتا(٢س) تحقق المعادلة التفاضلية (د²ص / دس²) + ٤ص = صفر. (التقط صورة حلك بخط اليد وأرفقها بالأسفل).',
-        textEn: 'Essay Problem: Prove step-by-step that y = cos(2x) satisfies (d²y/dx²) + 4y = 0. Capture homework photo below.',
-        options: [],
-        points: 10,
-        requiresDesmos: false,
-        type: 'ESSAY'
-      }
-    ]
+    assessmentId: '',
+    unitId: '',
+    titleAr: '',
+    titleEn: '',
+    durationMinutes: 30,
+    questions: []
   });
 
-  readonly currentQuestion = computed(() => {
+  readonly currentQuestion = computed<AssessmentQuestionItem | null>(() => {
     const list = this.bundle().questions;
     const idx = this.activeQuestionIdx();
-    return list[idx] || list[0];
+    return list[idx] || (list.length > 0 ? list[0] : null);
   });
 
   readonly totalQuestionsCount = computed(() => this.bundle().questions.length);
@@ -117,25 +75,60 @@ export class AssessmentAttemptViewComponent implements OnInit {
   readonly uploadedHomeworkPhotos = signal<string[]>([]);
 
   ngOnInit(): void {
-    // Start or resume quiz in Dexie.js cache
-    this.quizCache.startAndCache(this.bundle().assessmentId).subscribe();
+    const assessmentId = this.route.snapshot.paramMap.get('id');
+    if (assessmentId) {
+      this.quizCache.startAndCache(assessmentId).subscribe({
+        next: (record) => {
+          const mappedQuestions: AssessmentQuestionItem[] = (record.questions || []).map((q, idx) => ({
+            _id: q._id,
+            order: q.question_order ?? idx + 1,
+            textAr: q.question_text_ar,
+            textEn: q.question_text_en,
+            imageUrl: q.question_image_url,
+            options: (q.options || []).map((o: any, oIdx: number) => ({
+              optionIndex: typeof o === 'object' && o.option_index !== undefined ? o.option_index : oIdx,
+              textAr: typeof o === 'string' ? o : (o.text_ar || ''),
+              textEn: typeof o === 'string' ? o : (o.text_en || '')
+            })),
+            points: q.points || 1,
+            requiresDesmos: !!q.requires_desmos,
+            type: (q.options && q.options.length > 0) ? 'MCQ' : 'ESSAY'
+          }));
+
+          this.bundle.set({
+            assessmentId: record.assessmentId,
+            unitId: record.unitId || '',
+            titleAr: record.title || 'تقييم تدريبي',
+            titleEn: '',
+            durationMinutes: record.durationMinutes || 30,
+            questions: mappedQuestions
+          });
+        },
+        error: (err) => {
+          console.error('Failed to load assessment questions', err);
+        }
+      });
+    }
   }
 
   selectOption(optionIndex: number): void {
-    const qId = this.currentQuestion()._id;
-    this.quizCache.recordAnswer(qId, optionIndex);
+    const curr = this.currentQuestion();
+    if (!curr) return;
+    this.quizCache.recordAnswer(curr._id, optionIndex);
   }
 
   isOptionSelected(optionIndex: number): boolean {
-    const qId = this.currentQuestion()._id;
-    return this.quizCache.activeQuiz()?.selectedAnswers[qId] === optionIndex;
+    const curr = this.currentQuestion();
+    if (!curr) return false;
+    return this.quizCache.activeQuiz()?.selectedAnswers[curr._id] === optionIndex;
   }
 
   onHomeworkUploaded(urls: string[]): void {
     this.uploadedHomeworkPhotos.set(urls);
-    const qId = this.currentQuestion()._id;
+    const curr = this.currentQuestion();
+    if (!curr) return;
     const items = urls.map(url => ({
-      questionId: qId,
+      questionId: curr._id,
       imageUrl: url,
       rotation: 0,
       sizeKb: 120
@@ -191,6 +184,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
       );
 
       this.isSubmissionCompleted.set(true);
+      // Automatically route student to submission feedback viewer
+      this.router.navigate(['/student/submissions', this.bundle().assessmentId, 'feedback']);
     } finally {
       this.isSubmitting.set(false);
     }

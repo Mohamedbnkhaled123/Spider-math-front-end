@@ -165,26 +165,38 @@
                 </h4>
               </div>
 
-              <!-- Score Badge -->
+              <!-- Score or Status Badge -->
               <div class="flex items-center gap-3">
-                <div class="text-left rtl:text-right">
-                  <div class="text-[10px] text-text-muted font-bold">الدرجة النهائية</div>
-                  <div class="text-sm font-black font-mono text-text-primary">
-                    {{ sub.finalTotalScore }} / {{ sub.maxScore }}
+                @if (sub.isPendingReview) {
+                  <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1.5">
+                    <app-icon name="clock" [size]="14" />
+                    <span>تم التسليم — بانتظار تصحيح م/ هبة للمقالي</span>
+                  </span>
+                } @else if (sub.isInProgress) {
+                  <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-brand-primary animate-ping"></span>
+                    <span>قيد الحل الآن</span>
+                  </span>
+                } @else {
+                  <div class="text-left rtl:text-right">
+                    <div class="text-[10px] text-text-muted font-bold">الدرجة النهائية</div>
+                    <div class="text-sm font-black font-mono text-text-primary">
+                      {{ sub.finalTotalScore }} / {{ sub.maxScore }}
+                    </div>
                   </div>
-                </div>
 
-                <span
-                  class="px-3 py-1.5 rounded-xl text-xs font-black font-mono"
-                  [class.bg-emerald-500/10]="sub.scorePercentage >= 85"
-                  [class.text-emerald-500]="sub.scorePercentage >= 85"
-                  [class.bg-amber-500/10]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
-                  [class.text-amber-500]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
-                  [class.bg-rose-500/10]="sub.scorePercentage < 65"
-                  [class.text-rose-500]="sub.scorePercentage < 65"
-                >
-                  {{ sub.scorePercentage }}%
-                </span>
+                  <span
+                    class="px-3 py-1.5 rounded-xl text-xs font-black font-mono"
+                    [class.bg-emerald-500/10]="sub.scorePercentage >= 85"
+                    [class.text-emerald-500]="sub.scorePercentage >= 85"
+                    [class.bg-amber-500/10]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
+                    [class.text-amber-500]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
+                    [class.bg-rose-500/10]="sub.scorePercentage < 65"
+                    [class.text-rose-500]="sub.scorePercentage < 65"
+                  >
+                    {{ sub.scorePercentage }}%
+                  </span>
+                }
               </div>
             </div>
 
@@ -246,5 +258,13 @@
         }
       </div>
     </section>
+  } @else {
+    <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card text-center max-w-xl mx-auto my-6">
+      <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
+        <app-icon name="activity" [size]="32" />
+      </div>
+      <h3 class="text-base font-bold text-text-primary mb-1">لا توجد تقارير دراسية متاحة بعد لهذا الطالب</h3>
+      <p class="text-xs text-text-secondary leading-relaxed">ستظهر هنا تفاصيل الحضور ونقاط الخبرة والدرجات فور بدء الطالب في مشاهدة المحاضرات وحل الامتحانات.</p>
+    </div>
   }
 </div>

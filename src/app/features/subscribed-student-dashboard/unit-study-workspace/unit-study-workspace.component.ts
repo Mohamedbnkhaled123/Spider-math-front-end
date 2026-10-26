@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   signal,
   computed,
-  inject
+  inject,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { ProtectedYoutubePlayerComponent } from '../../../shared/components/protected-youtube-player/protected-youtube-player.component';
 import { ProtectedPdfCanvasComponent } from '../../../shared/components/protected-pdf-canvas/protected-pdf-canvas.component';
@@ -22,6 +24,7 @@ import { LessonLectureItem, UnitWorkspaceData } from './unit-study-workspace.mod
  * - ProtectedYoutubePlayerComponent with anti-tamper watermark & 85% XP celebration
  * - ProtectedPdfCanvasComponent with Google Drive stream & conditional print blocking
  * - Interactive Lecture Selector Playlist & Quiz Launchers
+ * - Connected directly to MongoDB Atlas with Zero Mock Data
  */
 @Component({
   selector: 'app-unit-study-workspace',
@@ -37,80 +40,106 @@ import { LessonLectureItem, UnitWorkspaceData } from './unit-study-workspace.mod
   styleUrls: ['./unit-study-workspace.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UnitStudyWorkspaceComponent {
+export class UnitStudyWorkspaceComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
   // Active view tab: video lecture or PDF handout
   readonly activeTab = signal<'video' | 'pdf'>('video');
+  readonly isLoading = signal<boolean>(true);
+  readonly playbackToken = signal<string>('');
 
   // Workspace Data
   readonly workspaceData = signal<UnitWorkspaceData>({
-    unitId: 'unit_calc_diff',
-    titleAr: 'الوحدة الأولى: التفاضل والاشتقاق وتطبيقاته الهندسية',
-    titleEn: 'Unit 1: Differential Calculus & Geometric Applications',
+    unitId: '',
+    titleAr: '',
+    titleEn: '',
     curriculum: 'EGYPTIAN',
     gradeLevel: 'SEC_3',
     term: 'TERM_1',
-    lectures: [
-      {
-        _id: 'lec_diff_1',
-        order: 1,
-        titleAr: 'المحاضرة 1: اشتقاق الدوال المثلثية وتطبيقات السلسلة',
-        titleEn: 'Lecture 1: Trigonometric Derivatives & Chain Rule',
-        durationMinutes: 45,
-        encryptedVideoId: 'U2FsdGVkX19mock_encrypted_yt_id_1',
-        googleDrivePdfFileId: '1mock_gdrive_file_id_calc_diff_1',
-        isPrintAllowed: true,
-        watchPercentage: 100,
-        isCompleted: true,
-        hasAssessment: true,
-        assessmentId: 'asm_diff_1'
-      },
-      {
-        _id: 'lec_diff_2',
-        order: 2,
-        titleAr: 'المحاضرة 2: الاشتقاق الضمني والبارامتري والمشتقات العليا',
-        titleEn: 'Lecture 2: Implicit & Parametric Differentiation',
-        durationMinutes: 52,
-        encryptedVideoId: 'U2FsdGVkX19mock_encrypted_yt_id_2',
-        googleDrivePdfFileId: '1mock_gdrive_file_id_calc_diff_2',
-        isPrintAllowed: false, // Strictly print-suppressed
-        watchPercentage: 86,
-        isCompleted: true,
-        hasAssessment: true,
-        assessmentId: 'asm_diff_2'
-      },
-      {
-        _id: 'lec_diff_3',
-        order: 3,
-        titleAr: 'المحاضرة 3: معادلتا المماس والعمودي وتطبيقات هندسية متقدمة',
-        titleEn: 'Lecture 3: Tangent & Normal Lines with Advanced Geometry',
-        durationMinutes: 60,
-        encryptedVideoId: 'U2FsdGVkX19mock_encrypted_yt_id_3',
-        googleDrivePdfFileId: '1mock_gdrive_file_id_calc_diff_3',
-        isPrintAllowed: true,
-        watchPercentage: 20,
-        isCompleted: false,
-        hasAssessment: true,
-        assessmentId: 'asm_diff_3'
-      }
-    ]
+    lectures: []
   });
 
   // Selected lecture ID signal
-  readonly selectedLectureId = signal<string>('lec_diff_2');
+  readonly selectedLectureId = signal<string>('');
 
   // Currently active lecture
-  readonly activeLecture = computed(() => {
+  readonly activeLecture = computed<LessonLectureItem | null>(() => {
     const list = this.workspaceData().lectures;
     const currentId = this.selectedLectureId();
-    return list.find(l => l._id === currentId) ?? list[0];
+    return list.find(l => l._id === currentId) ?? (list.length > 0 ? list[0] : null);
   });
+
+  ngOnInit(): void {
+    const unitId = this.route.snapshot.paramMap.get('id');
+    if (unitId) {
+      this.loadUnitCurriculum(unitId);
+    }
+  }
+
+  loadUnitCurriculum(unitId: string): void {
+    this.isLoading.set(true);
+    this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${unitId}/curriculum-contents`).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        const unit = res?.data?.unit;
+        const rawLectures = res?.data?.lectures || [];
+
+        const mappedLectures: LessonLectureItem[] = rawLectures.map((l: any, idx: number) => ({
+          _id: l._id,
+          order: l.order_index ?? idx + 1,
+          titleAr: l.lecture_title_ar || l.title_ar,
+          titleEn: l.lecture_title_en || l.title_en || '',
+          durationMinutes: Math.round((l.video_duration_sec || 2700) / 60),
+          encryptedVideoId: l.youtube_encrypted_id || '',
+          googleDrivePdfFileId: l.google_drive_pdf_id,
+          isPrintAllowed: !!l.is_print_allowed,
+          watchPercentage: l.watchPercentage || 0,
+          isCompleted: !!l.isCompleted,
+          hasAssessment: !!l.linked_assessment_id,
+          assessmentId: l.linked_assessment_id
+        }));
+
+        this.workspaceData.set({
+          unitId: unit?._id || unitId,
+          titleAr: unit?.title_ar || '',
+          titleEn: unit?.title_en || '',
+          curriculum: unit?.curriculum || 'EGYPTIAN',
+          gradeLevel: unit?.grade_level || 'SEC_3',
+          term: unit?.academic_term || 'TERM_1',
+          lectures: mappedLectures
+        });
+
+        if (mappedLectures.length > 0) {
+          const firstId = mappedLectures[0]._id;
+          this.selectedLectureId.set(firstId);
+          this.fetchPlaybackToken(firstId);
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
 
   selectLecture(lectureId: string): void {
     this.selectedLectureId.set(lectureId);
+    this.fetchPlaybackToken(lectureId);
+  }
+
+  fetchPlaybackToken(lectureId: string): void {
+    this.http.get<{ success: boolean; data: any }>(`/api/v1/lectures/${lectureId}/secure-playback`).subscribe({
+      next: (res) => {
+        if (res?.data?.sessionVideoToken) {
+          this.playbackToken.set(res.data.sessionVideoToken);
+        }
+      },
+      error: () => {
+        this.playbackToken.set('');
+      }
+    });
   }
 
   setTab(tab: 'video' | 'pdf'): void {

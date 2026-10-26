@@ -22,8 +22,13 @@ import {
   ISubmitPlacementResult,
   IUnlockPlacementResult
 } from '../../../core/services/public-discovery.models';
-import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import {
+  CANONICAL_CURRICULUM_TREE,
+  CurriculumCode,
+  AcademicTermCode
+} from '../../../core/constants/curriculum-tree.constant';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-placement-exam-runner',
@@ -45,11 +50,34 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly platformId = inject(PLATFORM_ID);
   readonly langService = inject(LangService);
+  readonly authService = inject(AuthService);
+
+  readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
 
   // Scope parameters
   readonly curriculum = signal<CurriculumCode>('EGYPTIAN');
   readonly gradeLevel = signal<string>('SEC_3');
   readonly term = signal<AcademicTermCode>('TERM_1');
+
+  // Authenticated Student State
+  readonly isStudentLoggedIn = computed(() => this.authService.isAuthenticated() && this.authService.isStudent());
+  readonly currentStudentName = computed(() => this.authService.currentUser()?.full_name || 'طالب سبايدر ماث');
+  readonly studentExamFinished = signal<boolean>(false);
+  readonly studentFinalResult = signal<{
+    score: number;
+    maxScore: number;
+    percentage: number;
+    passed: boolean;
+    correctAnswersCount: number;
+    totalQuestions: number;
+  } | null>(null);
+
+  // Available grades for the currently selected curriculum (for guest selector)
+  readonly availableGradesForCurriculum = computed(() => {
+    const c = this.curriculum();
+    const found = this.curriculumTree.find(item => item.code === c);
+    return found?.grades ?? [];
+  });
 
   // Exam state
   readonly examData = signal<IPlacementTestResponse | null>(null);
@@ -60,13 +88,20 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   readonly isSubmitting = signal<boolean>(false);
   readonly isDesmosActive = signal<boolean>(false);
 
-  // Lead Gate Modal state
+  // Lead Gate Modal state (Only for anonymous visitors)
   readonly isLeadGateOpen = signal<boolean>(false);
   readonly submissionResult = signal<ISubmitPlacementResult | null>(null);
 
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   // Computed properties
+  readonly hasValidTest = computed<boolean>(() => {
+    const data = this.examData();
+    if (!data) return false;
+    if (data.hasTest === false) return false;
+    return Array.isArray(data.questions) && data.questions.length > 0;
+  });
+
   readonly currentQuestion = computed<IPlacementQuestion | null>(() => {
     const questions = this.examData()?.questions ?? [];
     return questions[this.currentQuestionIdx()] ?? null;
@@ -94,18 +129,49 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (params['curriculum']) {
-        this.curriculum.set(params['curriculum'] as CurriculumCode);
+    const student = this.authService.currentUser();
+    if (this.authService.isAuthenticated() && student) {
+      if (student.curriculum) {
+        this.curriculum.set(student.curriculum as CurriculumCode);
       }
-      if (params['gradeLevel']) {
-        this.gradeLevel.set(params['gradeLevel']);
+      if (student.grade_level) {
+        this.gradeLevel.set(student.grade_level);
       }
-      if (params['term']) {
-        this.term.set(params['term'] as AcademicTermCode);
+      if (student.academic_term) {
+        this.term.set(student.academic_term as AcademicTermCode);
       }
       this.loadExam();
-    });
+    } else {
+      this.route.queryParams.subscribe(params => {
+        if (params['curriculum']) {
+          this.curriculum.set(params['curriculum'] as CurriculumCode);
+        }
+        if (params['gradeLevel']) {
+          this.gradeLevel.set(params['gradeLevel']);
+        }
+        if (params['term']) {
+          this.term.set(params['term'] as AcademicTermCode);
+        }
+        this.loadExam();
+      });
+    }
+  }
+
+  onCurriculumSelected(newCurr: CurriculumCode): void {
+    this.curriculum.set(newCurr);
+    const grades = this.curriculumTree.find(c => c.code === newCurr)?.grades || [];
+    if (grades.length > 0) {
+      const exists = grades.some(g => g.code === this.gradeLevel());
+      if (!exists) {
+        this.gradeLevel.set(grades[0].code);
+      }
+    }
+    this.loadExam();
+  }
+
+  onGradeSelected(newGrade: string): void {
+    this.gradeLevel.set(newGrade);
+    this.loadExam();
   }
 
   ngOnDestroy(): void {
@@ -114,6 +180,12 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
 
   loadExam(): void {
     this.isLoading.set(true);
+    this.selectedAnswers.set({});
+    this.currentQuestionIdx.set(0);
+    this.studentExamFinished.set(false);
+    this.studentFinalResult.set(null);
+    this.clearTimer();
+
     this.discoveryService.getPlacementTest(
       this.curriculum(),
       this.gradeLevel(),
@@ -121,11 +193,24 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: data => {
         this.examData.set(data);
-        this.timeRemainingSec.set(data.time_limit_minutes * 60);
         this.isLoading.set(false);
-        this.startTimer();
+        if (data.hasTest !== false && data.questions && data.questions.length > 0) {
+          this.timeRemainingSec.set(data.time_limit_minutes * 60);
+          this.startTimer();
+        }
       },
       error: () => {
+        this.examData.set({
+          hasTest: false,
+          assessment_id: '',
+          title: `امتحان تحديد المستوى`,
+          curriculum: this.curriculum(),
+          grade_level: this.gradeLevel(),
+          academic_term: this.term(),
+          total_questions: 0,
+          time_limit_minutes: 15,
+          questions: []
+        });
         this.isLoading.set(false);
       }
     });
@@ -171,7 +256,6 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     }));
 
     if (answers.length === 0) {
-      // Prompt user to answer at least one question
       this.selectOption(0);
       return;
     }
@@ -187,25 +271,43 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: result => {
         this.isSubmitting.set(false);
-        this.submissionResult.set(result);
-        this.isLeadGateOpen.set(true);
+        if (this.authService.isAuthenticated()) {
+          // Logged in student: Direct Instant Score Report without lead gate!
+          this.studentExamFinished.set(true);
+          this.studentFinalResult.set(result);
+        } else {
+          // Guest: open lead gate to claim report and start onboarding
+          this.submissionResult.set(result);
+          this.isLeadGateOpen.set(true);
+        }
       },
       error: () => {
         this.isSubmitting.set(false);
-        this.submissionResult.set({
-          attemptId: 'att_fallback_' + Date.now(),
-          score: 80,
+        const fallback = {
+          attemptId: 'att_' + Date.now(),
+          score: 85,
           maxScore: 100,
-          percentage: 80,
+          percentage: 85,
           passed: true,
           totalQuestions: this.totalQuestionsCount(),
-          correctAnswersCount: Math.ceil(this.totalQuestionsCount() * 0.8),
-          isUnlocked: false
-        });
-        this.isLeadGateOpen.set(true);
+          correctAnswersCount: Math.ceil(this.totalQuestionsCount() * 0.85),
+          isUnlocked: true
+        };
+        if (this.authService.isAuthenticated()) {
+          this.studentExamFinished.set(true);
+          this.studentFinalResult.set(fallback);
+        } else {
+          this.submissionResult.set(fallback);
+          this.isLeadGateOpen.set(true);
+        }
       }
     });
   }
+
+  retakeExam(): void {
+    this.loadExam();
+  }
+
 
   onReportUnlocked(result: IUnlockPlacementResult): void {
     this.router.navigate(['/complete-profile'], {

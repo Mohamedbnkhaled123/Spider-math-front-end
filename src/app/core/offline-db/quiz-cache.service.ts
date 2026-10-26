@@ -71,27 +71,29 @@ export class QuizCacheService implements OnDestroy {
       )
       .pipe(
         switchMap(response => {
-          const data = response.data;
-          const sanitizedQuestions: CachedQuestion[] = (data.questions || []).map((q: any, idx: number) => ({
+          const data: any = response.data;
+          const asm = data.assessment || data;
+          const questionsList = asm.questions || data.questions || [];
+          const sanitizedQuestions: CachedQuestion[] = questionsList.map((q: any, idx: number) => ({
             _id: q._id || `q_${idx}`,
-            question_order: q.question_order ?? idx + 1,
-            question_text_ar: q.question_text_ar || '',
-            question_text_en: q.question_text_en || '',
-            question_image_url: q.question_image_url,
+            question_order: q.question_order ?? q.order ?? idx + 1,
+            question_text_ar: q.question_text_ar || q.question_text || q.textAr || '',
+            question_text_en: q.question_text_en || q.textEn || '',
+            question_image_url: q.question_image_url || q.questionImageUrl || null,
             options: (q.options || []).map((opt: any, oIdx: number) => ({
-              option_index: opt.option_index ?? oIdx,
-              text_ar: opt.text_ar || '',
-              text_en: opt.text_en || ''
+              option_index: typeof opt === 'object' && opt.option_index !== undefined ? opt.option_index : oIdx,
+              text_ar: typeof opt === 'string' ? opt : (opt.text_ar || opt.text || ''),
+              text_en: typeof opt === 'string' ? opt : (opt.text_en || opt.text || '')
             })),
             points: q.points ?? 1,
-            requires_desmos: !!q.requires_desmos
+            requires_desmos: !!(q.requires_desmos || q.requiresDesmos)
           }));
 
           const record: ActiveQuizRecord = {
             assessmentId,
-            title: data.title || 'Interactive Assessment',
-            unitId: data.unit_id,
-            durationMinutes: data.duration_minutes || 30,
+            title: asm.title_ar || asm.titleAr || data.title || 'Interactive Assessment',
+            unitId: asm.unit_package_id || asm.unit_id || data.unit_id,
+            durationMinutes: asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || 30,
             questions: sanitizedQuestions,
             elapsedSeconds: 0,
             selectedAnswers: {},

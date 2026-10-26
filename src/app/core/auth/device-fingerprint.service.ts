@@ -20,6 +20,11 @@ export class DeviceFingerprintService {
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
+      if (!localStorage.getItem(this.STORAGE_KEY)) {
+        const entropySeed = Math.random().toString(36).substring(2, 10);
+        const initialUuid = `SM-INIT-${Date.now()}-${entropySeed}`.toUpperCase();
+        localStorage.setItem(this.STORAGE_KEY, initialUuid);
+      }
       this.fpPromise = FingerprintJS.load();
     }
   }

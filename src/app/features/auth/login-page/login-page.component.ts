@@ -1,137 +1,359 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService, IUserDto } from '../../../core/auth/auth.service';
+import { DeviceFingerprintService } from '../../../core/auth/device-fingerprint.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
-import { LoginTab, RoleSimulatorPreset } from './login-page.models';
+import {
+  CANONICAL_CURRICULUM_TREE,
+  CurriculumCode,
+  AcademicTermCode
+} from '../../../core/constants/curriculum-tree.constant';
+import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
+import {
+  validatePhoneNumber,
+  arePhoneNumbersIdentical,
+  getPhonePlaceholderByCountry
+} from '../../../core/utils/phone-validator.util';
+import { LoginTab } from './login-page.models';
+
+declare const google: any;
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, FormsModule, AppIconComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginPageComponent {
+export class LoginPageComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly fingerprintService = inject(DeviceFingerprintService);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
 
+  // Active navigation tab
   readonly activeTab = signal<LoginTab>('student');
+  readonly studentAuthMode = signal<'login' | 'signup'>('login');
+
+  // Request & Feedback States
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
-  // Form Models
-  readonly studentHaCode = signal<string>('HA4920');
-  readonly parentPhone = signal<string>('01012345678');
-  readonly parentStudentCode = signal<string>('HA4920');
+  // Real Google OAuth Signals
+  readonly isGoogleAuthenticating = signal<boolean>(false);
+  readonly googleAuthErrorMessage = signal<string | null>(null);
+  readonly unregisteredGoogleEmail = signal<string | null>(null);
+
+  // Student Code Login Models
+  readonly studentHaCode = signal<string>('');
+  readonly parentPhone = signal<string>('');
+  readonly parentStudentCode = signal<string>('');
   readonly adminPin = signal<string>('');
 
-  // 5 Role Simulator Presets
-  readonly rolePresets: readonly RoleSimulatorPreset[] = [
-    {
-      id: 'student-subscribed-01',
-      role: 'STUDENT',
-      titleAr: 'طالب مشترك نشط (HA4920 — أحمد محمد)',
-      titleEn: 'Subscribed Student (HA4920 - Ahmed Mohamed)',
-      subtitleAr: 'كامل الصلاحيات: مشاهدة المحاضرات المحمية، عارض PDF، حل الامتحانات ولوحة الشرف',
-      subtitleEn: 'Full access: Protected lectures, PDF viewer, exam engine & leaderboard',
-      badgeText: 'كامل الصلاحيات',
-      badgeType: 'accent',
-      icon: 'graduation-cap',
-      targetRoute: '/student',
-      studentHaCode: 'HA4920',
-      hasActiveSubscription: true,
-      fullName: 'أحمد محمد'
-    },
-    {
-      id: 'parent-demo-01',
-      role: 'PARENT',
-      titleAr: 'ولي أمر (محمد علي — والد أحمد وسارة)',
-      titleEn: 'Parent Portal (Mohamed Ali - Father of Ahmed & Sarah)',
-      subtitleAr: 'متابعة الأبناء: رادار السونار الحي الأخضر، تبديل الأبناء، والاطلاع على الأخطاء وفيديوهات يوتيوب',
-      subtitleEn: 'Child monitoring: Live Sonar radar, switch child, error breakdown & YouTube clips',
-      badgeText: 'متابعة الأبناء',
-      badgeType: 'primary',
-      icon: 'shield',
-      targetRoute: '/parent',
-      fullName: 'محمد علي'
-    },
-    {
-      id: 'student-inactive-01',
-      role: 'STUDENT',
-      titleAr: 'طالب غير مشترك (سارة أحمد)',
-      titleEn: 'Inactive Student (Sarah Ahmed)',
-      subtitleAr: 'بوابة الطالب غير المشترك: جدول المواعيد وتفاصيل الباقات والاشتراك عبر فودافون كاش',
-      subtitleEn: 'Inactive portal: Schedule grid, bundle tiers, and Vodafone Cash checkout',
-      badgeText: 'بانتظار الاشتراك',
-      badgeType: 'warning',
-      icon: 'clock',
-      targetRoute: '/inactive-student-portal',
-      studentHaCode: 'HA9081',
-      hasActiveSubscription: false,
-      fullName: 'سارة أحمد'
-    },
-    {
-      id: 'student-pending-device-01',
-      role: 'STUDENT',
-      titleAr: 'طالب جهازه معلق (عمر خالد)',
-      titleEn: 'Pending Device Approval (Omar Khaled)',
-      subtitleAr: 'حظر أمني مؤقت (HTTP 423): محاكاة الدخول من جهاز ثانٍ غير معتمد حتى موافقة المعلمة في لوحة الإدارة',
-      subtitleEn: 'Temporary device lock (HTTP 423) until Eng. Heba approves from Admin Studio',
-      badgeText: 'حظر أمني مؤقت',
-      badgeType: 'danger',
-      icon: 'sparkles',
-      targetRoute: '/pending-device-approval',
-      isPendingDevice: true,
-      fullName: 'عمر خالد'
-    },
-    {
-      id: 'super-admin-01',
-      role: 'SUPER_ADMIN',
-      titleAr: 'مدير النظام / م. هبة عبدالوهاب (Super Admin)',
-      titleEn: 'Super Admin / Eng. Heba Abdel-Wahab',
-      subtitleAr: 'لوحة الإدارة: اعتماد الأجهزة، تصحيح الأسئلة المقالية وإدخال درجات وملاحظات المعلمة',
-      subtitleEn: 'Admin studio: Device approvals, essay grading & student management',
-      badgeText: 'إشراف كامل',
-      badgeType: 'primary',
-      icon: 'user',
-      targetRoute: '/admin',
-      fullName: 'م. هبة عبد الوهاب'
+  // =========================================================================
+  // Direct Registration Form Signals (Non-Google Option)
+  // =========================================================================
+  readonly regFullName = signal<string>('');
+  readonly regEmail = signal<string>('');
+  readonly regCountry = signal<string>('EG');
+  readonly regPhone = signal<string>('');
+  readonly regParentPhone = signal<string>('');
+  readonly regCurriculum = signal<CurriculumCode>('EGYPTIAN');
+  readonly regGradeLevel = signal<string>('SEC_3');
+  readonly regAcademicTerm = signal<AcademicTermCode>('TERM_1');
+  readonly regGovernorate = signal<string>('CAIRO');
+
+  // Constants & Computed for Direct Registration
+  readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
+  readonly egyptGovernorates = EGYPT_GOVERNORATES;
+
+  readonly isRegEgypt = computed<boolean>(() => this.regCountry() === 'EG');
+
+  readonly regPhonePlaceholder = computed<string>(() =>
+    getPhonePlaceholderByCountry(this.regCountry())
+  );
+
+  readonly regAvailableGrades = computed(() => {
+    const curr = this.curriculumTree.find(c => c.code === this.regCurriculum());
+    return curr?.grades ?? this.curriculumTree[0].grades;
+  });
+
+  ngOnInit(): void {
+    if (this.router.url.includes('parent')) {
+      this.activeTab.set('parent');
     }
-  ];
+  }
 
   setTab(tab: LoginTab): void {
     this.activeTab.set(tab);
     this.errorMessage.set(null);
     this.successMessage.set(null);
+    this.googleAuthErrorMessage.set(null);
+    this.unregisteredGoogleEmail.set(null);
   }
 
-  activatePreset(preset: RoleSimulatorPreset): void {
-    this.authService.setPendingDeviceApproval(!!preset.isPendingDevice);
+  setStudentAuthMode(mode: 'login' | 'signup'): void {
+    this.studentAuthMode.set(mode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.googleAuthErrorMessage.set(null);
+    this.unregisteredGoogleEmail.set(null);
+  }
 
-    this.authService.setSession('mock_jwt_token_' + preset.id, {
-      _id: preset.id,
-      full_name: preset.fullName,
-      email: `${preset.id}@spidermath.com`,
-      role: preset.role,
-      student_ha_code: preset.studentHaCode,
-      total_xp: preset.hasActiveSubscription ? 1450 : 0,
-      has_active_subscription: !!preset.hasActiveSubscription,
-      curriculum: 'EGYPTIAN',
-      grade_level: 'SEC_3',
-      academic_term: 'TERM_1'
+  onRegCurriculumChange(code: CurriculumCode): void {
+    this.regCurriculum.set(code);
+    const grades = this.regAvailableGrades();
+    if (grades.length > 0) {
+      this.regGradeLevel.set(grades[0].code);
+    }
+  }
+
+  // =========================================================================
+  // Direct Student Registration (Form-based, Optional Google)
+  // =========================================================================
+  async submitDirectRegistration(): Promise<void> {
+    const name = this.regFullName().trim();
+    const stPhone = this.regPhone().trim();
+    const prPhone = this.regParentPhone().trim();
+    const country = this.regCountry();
+
+    // 1. Full name validation
+    if (!name || name.length < 3) {
+      this.errorMessage.set('يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح');
+      return;
+    }
+
+    // 2. Student phone validation
+    const stVal = validatePhoneNumber(stPhone, country);
+    if (!stVal.isValid) {
+      this.errorMessage.set(`هاتف الطالب: ${stVal.messageAr}`);
+      return;
+    }
+
+    // 3. Parent phone validation
+    const prVal = validatePhoneNumber(prPhone, country);
+    if (!prVal.isValid) {
+      this.errorMessage.set(`هاتف ولي الأمر: ${prVal.messageAr}`);
+      return;
+    }
+
+    // 4. Strict constraint: Parent phone !== Student phone
+    if (arePhoneNumbersIdentical(stPhone, prPhone, country)) {
+      this.errorMessage.set(
+        'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم مختلف لولي الأمر.'
+      );
+      return;
+    }
+
+    // 5. Governorate check for Egypt
+    if (this.isRegEgypt() && !this.regGovernorate()) {
+      this.errorMessage.set('يرجى اختيار المحافظة للطلاب المقيمين في مصر');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+
+    this.http.post<{
+      success: boolean;
+      data: {
+        studentCode: string;
+        token: string;
+        user: any;
+      };
+    }>('/api/v1/auth/register-student-direct', {
+      fullName: name,
+      email: this.regEmail().trim() || undefined,
+      phone: stPhone,
+      parentPhone: prPhone,
+      curriculum: this.regCurriculum(),
+      gradeLevel: this.regGradeLevel(),
+      academicTerm: this.regAcademicTerm(),
+      country,
+      governorate: this.isRegEgypt() ? this.regGovernorate() : null,
+      deviceUuid: deviceIdentity.deviceUuid,
+      deviceType: deviceIdentity.deviceType,
+      browserInfo: deviceIdentity.browserInfo
+    }).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        const data = res.data;
+        if (data?.token && data?.user) {
+          const userPayload: IUserDto = {
+            _id: data.user._id || data.user.id,
+            student_ha_code: data.user.student_ha_code || data.user.studentCode,
+            full_name: data.user.full_name || data.user.fullName,
+            email: data.user.email,
+            phone: data.user.phone,
+            parent_phone: data.user.parent_phone || data.user.parentPhone,
+            country: data.user.country,
+            avatar_url: data.user.avatar_url || data.user.avatarUrl,
+            role: data.user.role || 'STUDENT',
+            curriculum: data.user.curriculum,
+            grade_level: data.user.grade_level || data.user.gradeLevel,
+            academic_term: data.user.academic_term || data.user.academicTerm,
+            governorate: data.user.governorate,
+            total_xp: data.user.total_xp ?? data.user.totalXp ?? 50,
+            has_active_subscription: true
+          };
+          this.authService.setSession(data.token, userPayload);
+          this.router.navigateByUrl('/student');
+        }
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          'حدث خطأ أثناء تسجيل حساب الطالب. يرجى مراجعة البيانات والمحاولة مجدداً.'
+        );
+      }
     });
-
-    this.router.navigateByUrl(preset.targetRoute);
   }
 
-  submitStudentLogin(): void {
+  // =========================================================================
+  // Authentic Google Identity Services (GIS) OAuth Popup Flow
+  // =========================================================================
+  triggerGoogleOAuth(intent: 'login' | 'signup'): void {
+    this.errorMessage.set(null);
+    this.googleAuthErrorMessage.set(null);
+    this.unregisteredGoogleEmail.set(null);
+
+    const win = window as any;
+    if (typeof win.google === 'undefined' || !win.google?.accounts?.oauth2) {
+      this.googleAuthErrorMessage.set(
+        'جاري الاتصال بخدمات Google... يرجى الانتظار بضع ثوانٍ أو التحقق من اتصال الإنترنت ثم إعادة المحاولة.'
+      );
+      return;
+    }
+
+    try {
+      const client = win.google.accounts.oauth2.initTokenClient({
+        client_id: '157492277386-n7dudqv4devn897v381bpvf8b101bi8s.apps.googleusercontent.com',
+        scope: 'email profile openid',
+        prompt: 'select_account',
+        callback: (response: any) => {
+          if (response?.error) {
+            console.error('Google OAuth token client error:', response);
+            if (response.error !== 'popup_closed_by_user') {
+              this.googleAuthErrorMessage.set(`تعذر استكمال الاتصال بحساب Google (${response.error})`);
+            }
+            return;
+          }
+
+          if (response?.access_token) {
+            this.handleVerifiedGoogleToken(response.access_token, intent);
+          }
+        }
+      });
+
+      client.requestAccessToken({ prompt: 'select_account' });
+    } catch (err: any) {
+      console.error('Failed to trigger Google OAuth popup:', err);
+      this.googleAuthErrorMessage.set('حدث خطأ أثناء فتح نافذة اختيار حساب Google: ' + (err?.message || ''));
+    }
+  }
+
+  async handleVerifiedGoogleToken(accessToken: string, intent: 'login' | 'signup'): Promise<void> {
+    this.isGoogleAuthenticating.set(true);
+    this.googleAuthErrorMessage.set(null);
+    this.unregisteredGoogleEmail.set(null);
+
+    const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+
+    this.http.post<{
+      success: boolean;
+      data: {
+        isNewUser: boolean;
+        isProfileCompleted: boolean;
+        isPendingApproval?: boolean;
+        token: string;
+        user: any;
+      };
+    }>('/api/v1/auth/google-login', {
+      idToken: accessToken,
+      deviceUuid: deviceIdentity.deviceUuid,
+      deviceType: deviceIdentity.deviceType,
+      browserInfo: deviceIdentity.browserInfo,
+      intent
+    }).subscribe({
+      next: (res) => {
+        this.isGoogleAuthenticating.set(false);
+        const data = res.data;
+
+        if (data.isPendingApproval) {
+          this.googleAuthErrorMessage.set('هذا الجهاز غير معتمد بعد، وهو قيد المراجعة لدى م. هبة عبد الوهاب.');
+          return;
+        }
+
+        if (data.token && data.user) {
+          const userPayload: IUserDto = {
+            _id: data.user.id || data.user._id,
+            student_ha_code: data.user.studentCode || data.user.student_code,
+            full_name: data.user.fullName || data.user.full_name,
+            email: data.user.email,
+            phone: data.user.phone,
+            role: data.user.role || 'STUDENT',
+            curriculum: data.user.curriculum,
+            grade_level: data.user.gradeLevel || data.user.grade_level,
+            academic_term: data.user.academicTerm || data.user.academic_term,
+            governorate: data.user.governorate,
+            total_xp: data.user.totalXp ?? 0,
+            has_active_subscription: !!data.user.has_active_subscription
+          };
+
+          this.authService.setSession(data.token, userPayload);
+
+          // If signup intent OR profile not completed -> Redirect to Complete Profile!
+          if (intent === 'signup' || !data.isProfileCompleted) {
+            this.router.navigate(['/complete-profile'], {
+              queryParams: {
+                fullName: data.user.fullName || data.user.full_name || ''
+              }
+            });
+          } else {
+            // Already registered & profile completed
+            const target = data.user.has_active_subscription ? '/student' : '/inactive-student-portal';
+            this.router.navigateByUrl(target);
+          }
+        }
+      },
+      error: (err) => {
+        this.isGoogleAuthenticating.set(false);
+        if (err.status === 404 && intent === 'login') {
+          this.unregisteredGoogleEmail.set('unregistered');
+          this.googleAuthErrorMessage.set(
+            'هذا الحساب غير مسجل في المنصة مسبقاً. يرجى إنشاء حساب جديد كطالب أولاً.'
+          );
+        } else {
+          this.googleAuthErrorMessage.set(
+            err?.error?.message ||
+            err?.error?.error?.message ||
+            'حدث خطأ أثناء التحقق من حساب Google. يرجى إعادة المحاولة.'
+          );
+        }
+      }
+    });
+  }
+
+  switchToSignUpAndTriggerGoogle(): void {
+    this.studentAuthMode.set('signup');
+    this.googleAuthErrorMessage.set(null);
+    this.unregisteredGoogleEmail.set(null);
+    this.triggerGoogleOAuth('signup');
+  }
+
+  // =========================================================================
+  // Student HA Code Login
+  // =========================================================================
+  async submitStudentLogin(): Promise<void> {
     const code = this.studentHaCode().trim().toUpperCase();
     if (!code) {
       this.errorMessage.set('يرجى إدخال كود الطالب الخاص بك (HAxxxx)');
@@ -141,9 +363,14 @@ export class LoginPageComponent {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
+    const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+
     this.http.post<{ success: boolean; data: { token: string; user: any } }>(
       '/api/v1/auth/student-code-login',
-      { student_ha_code: code }
+      {
+        student_ha_code: code,
+        deviceUuid: deviceIdentity.deviceUuid
+      }
     ).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
@@ -152,38 +379,23 @@ export class LoginPageComponent {
           const target = res.data.user.has_active_subscription ? '/student' : '/inactive-student-portal';
           this.router.navigateByUrl(target);
         } else {
-          this.fallbackStudentLogin(code);
+          this.errorMessage.set('كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.');
         }
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        // If real student code not found in DB, fallback to demo student session gracefully
-        if (err.status === 404) {
-          this.fallbackStudentLogin(code);
-        } else {
-          this.errorMessage.set(err?.error?.message || 'تعذر تسجيل الدخول بالكود المدخل، يرجى التحقق وإعادة المحاولة.');
-        }
+        this.errorMessage.set(
+          err?.error?.message ||
+          'كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.'
+        );
       }
     });
   }
 
-  private fallbackStudentLogin(code: string): void {
-    this.authService.setSession('mock_jwt_token_student-subscribed-01', {
-      _id: 'student_' + code,
-      full_name: 'طالب سبايدر ماث (' + code + ')',
-      email: `${code.toLowerCase()}@spidermath.com`,
-      role: 'STUDENT',
-      student_ha_code: code,
-      total_xp: 680,
-      has_active_subscription: true,
-      curriculum: 'EGYPTIAN',
-      grade_level: 'SEC_3',
-      academic_term: 'TERM_1'
-    });
-    this.router.navigateByUrl('/student');
-  }
-
-  submitParentLogin(): void {
+  // =========================================================================
+  // Parent Login
+  // =========================================================================
+  async submitParentLogin(): Promise<void> {
     const phone = this.parentPhone().trim();
     const code = this.parentStudentCode().trim().toUpperCase();
 
@@ -195,12 +407,14 @@ export class LoginPageComponent {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
+    const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+
     this.http.post<{ success: boolean; data: any }>(
       '/api/v1/auth/parent-activate-login',
       {
         parentPhone: phone,
         studentCode: code,
-        deviceUuid: 'dev-parent-browser-uuid'
+        deviceUuid: deviceIdentity.deviceUuid
       }
     ).subscribe({
       next: (res) => {
@@ -214,45 +428,44 @@ export class LoginPageComponent {
           });
           this.router.navigateByUrl('/parent');
         } else {
-          this.fallbackParentLogin(phone, code);
+          this.errorMessage.set('بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق وإعادة المحاولة.');
         }
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting.set(false);
-        // Fallback demo parent session
-        this.fallbackParentLogin(phone, code);
+        this.errorMessage.set(
+          err?.error?.message ||
+          'بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق من الأرقام وإعادة المحاولة.'
+        );
       }
     });
   }
 
-  private fallbackParentLogin(phone: string, code: string): void {
-    this.authService.setSession('mock_jwt_token_parent-demo-01', {
-      _id: 'parent_demo_01',
-      full_name: 'ولي أمر الطالب (' + code + ')',
-      email: 'parent@spidermath.com',
-      phone,
-      role: 'PARENT'
-    });
-    this.router.navigateByUrl('/parent');
-  }
-
+  // =========================================================================
+  // Super Admin Login
+  // =========================================================================
   submitAdminLogin(): void {
     this.isSubmitting.set(true);
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.authService.setSession('mock_jwt_token_super-admin-01', {
-        _id: 'super-admin-01',
-        full_name: 'م. هبة عبد الوهاب',
-        email: 'admin@spidermath.com',
-        role: 'SUPER_ADMIN'
-      });
-      this.router.navigateByUrl('/admin');
-    }, 400);
-  }
+    this.errorMessage.set(null);
 
-  loginWithGoogle(): void {
-    // Demo 1-click Google sign in simulation
-    this.fallbackStudentLogin('HA4920');
+    this.http.post<{ success: boolean; data: { token: string; user: any } }>(
+      '/api/v1/auth/admin-login',
+      {}
+    ).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        if (res?.data?.token && res?.data?.user) {
+          this.authService.setSession(res.data.token, res.data.user);
+          this.router.navigateByUrl('/admin');
+        } else {
+          this.errorMessage.set('تعذر تسجيل دخول المشرف. يرجى إعادة المحاولة.');
+        }
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err?.error?.message || 'تعذر الاتصال بسيرفر الإدارة.');
+      }
+    });
   }
 
   switchToGuest(): void {

@@ -45,3 +45,43 @@ export interface StudentNotificationItem {
   isRead: boolean;
   actionUrl?: string;
 }
+
+export interface StudentLectureItem {
+  id: string;
+  unitId: string;
+  unitTitleAr: string;
+  titleAr: string;
+  durationMinutes: number;
+  isWatched: boolean;
+  watchProgressPercentage: number;
+  xpReward: number;
+  actionUrl: string;
+}
+
+export interface StudentDueQuizItem {
+  id: string;
+  titleAr: string;
+  unitTitleAr: string;
+  questionsCount: number;
+  totalPoints: number;
+  xpReward: number;
+  dueDateAr: string;
+  isUrgent?: boolean;
+  canStart?: boolean;
+  statusNote?: string;
+  assessmentUrl: string;
+}
+
+export interface StudentCompletedGradeItem {
+  id: string;
+  titleAr: string;
+  unitTitleAr: string;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  gradeLabelAr: string;
+  gradedBy: string;
+  gradedDateAr: string;
+  feedbackUrl: string;
+}
+

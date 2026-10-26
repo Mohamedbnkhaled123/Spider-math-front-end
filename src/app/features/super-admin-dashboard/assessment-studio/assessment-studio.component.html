@@ -1,0 +1,1223 @@
+<section class="space-y-6 animate-fade-in">
+
+  <!-- 1. Section Header & Grade-Scoped Filters -->
+  <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
+          <app-icon name="award" [size]="22" className="text-brand-primary" />
+          <span>قسم وبنك الامتحانات والكويزات (Assessment Studio)</span>
+        </h2>
+        <p class="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
+          إنشاء وإدارة الامتحانات والكويزات الشهرية والنهائية. يتم عزل كل كويز مخصص لصف دراسي معين بحيث لا يظهر نهائياً إلا لطلاب ذلك الصف فقط وفقاً لأعلى معايير الحماية والتصحيح الآمن.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="openCreateModal()"
+        class="px-5 py-2.5 rounded-2xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer self-start md:self-auto"
+      >
+        <app-icon name="plus" [size]="15" />
+        <span>+ إنشاء امتحان / كويز جديد</span>
+      </button>
+    </div>
+
+    <!-- 3-Tier Filter Bar: Curriculum -> Grade Level -> Academic Term -->
+    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 border-t border-surface-border items-center">
+      
+      <!-- 1. Curriculum Selector (5 cols) -->
+      <div class="sm:col-span-5 flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+        <button
+          type="button"
+          (click)="selectCurriculum('EGYPTIAN')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
+          [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
+        >
+          المنهج المصري
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('GULF')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
+          [class.text-white]="selectedCurriculum() === 'GULF'"
+        >
+          المنهج الخليجي
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('INTERNATIONAL')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
+          [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
+        >
+          IGCSE / البريطانية
+        </button>
+
+        <button
+          type="button"
+          (click)="selectCurriculum('AMERICAN')"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
+          [class.text-white]="selectedCurriculum() === 'AMERICAN'"
+        >
+          SAT / الأمريكية
+        </button>
+      </div>
+
+      <!-- 2. Grade Level Dropdown (4 cols) -->
+      <div class="sm:col-span-4 space-y-1">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[10px] font-bold text-text-muted">الصف الدراسي المستهدف:</span>
+          @if (isGradeActive(selectedGrade())) {
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+              <app-icon name="check-circle" [size]="11" />
+              <span>مفعل للتدريس</span>
+            </span>
+          } @else {
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
+              <app-icon name="clock" [size]="11" />
+              <span>قريباً بإذن الله</span>
+            </span>
+          }
+        </div>
+        <select
+          [ngModel]="selectedGrade()"
+          (ngModelChange)="selectGrade($event)"
+          class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+        >
+          @for (grade of gradeOptions(); track grade.code) {
+            <option [value]="grade.code">
+              {{ grade.titleAr }} ({{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- 3. Academic Term Switcher (3 cols) -->
+      <div class="sm:col-span-3 flex items-center p-1 rounded-xl bg-surface-bg border border-surface-border">
+        <button
+          type="button"
+          (click)="selectTerm('TERM_1')"
+          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
+          [class.text-white]="selectedTerm() === 'TERM_1'"
+        >
+          الترم الأول
+        </button>
+
+        <button
+          type="button"
+          (click)="selectTerm('TERM_2')"
+          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+          [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
+          [class.text-white]="selectedTerm() === 'TERM_2'"
+        >
+          الترم الثاني
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. Assessments Grid -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-brand-primary"></span>
+        <h3 class="text-sm font-black text-text-primary">
+          قائمة امتحانات الصف: <span class="text-brand-primary">{{ selectedGrade() }}</span>
+        </h3>
+        <span class="text-xs text-text-muted">
+          ({{ scopedAssessments().length }} امتحانات)
+        </span>
+      </div>
+
+      <span class="text-xs text-text-secondary bg-surface-card px-3 py-1 rounded-full border border-surface-border">
+        عزل كامل: لا تظهر إلا لطلاب هذا الصف فقط
+      </span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card space-y-3">
+        <app-icon name="loader" [size]="28" className="animate-spin text-brand-primary mx-auto" />
+        <p class="text-xs text-text-muted">جارٍ تحميل بنك الامتحانات المخصصة...</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (item of scopedAssessments(); track item.id) {
+          <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            
+            <div class="space-y-3">
+              <!-- Top Badges -->
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                  {{ item.gradeLevel }}
+                </span>
+
+                <div class="flex items-center gap-1.5">
+                  @if (item.calculatorType === 'DESMOS') {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" title="آلة ديسموس البيانية مفعلة">
+                      ديسموس
+                    </span>
+                  }
+                  @if (item.isPlacementTest) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" title="امتحان تحديد مستوى للزوار والطلاب الجدد">
+                      تحديد مستوى
+                    </span>
+                  }
+                  @if (item.isPublished) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                      <app-icon name="check-circle" [size]="10" />
+                      <span>منشور</span>
+                    </span>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted border border-surface-border">
+                      مسودة
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <!-- Title & Meta -->
+              <div>
+                <h4 class="text-sm font-bold text-text-primary line-clamp-2">
+                  {{ item.titleAr }}
+                </h4>
+                @if (item.titleEn) {
+                  <p class="text-xs text-text-muted mt-0.5 font-mono">
+                    {{ item.titleEn }}
+                  </p>
+                }
+              </div>
+
+              <!-- Metric Pills -->
+              <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-surface-border/60 text-center">
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                  <span class="text-[9px] text-text-muted block">الأسئلة</span>
+                  <span class="text-xs font-bold text-text-primary font-mono">{{ item.questions.length }}</span>
+                </div>
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                  <span class="text-[9px] text-text-muted block">الدرجة</span>
+                  <span class="text-xs font-bold text-emerald-500 font-mono">{{ item.totalPoints }} ن</span>
+                </div>
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                  <span class="text-[9px] text-text-muted block">الزمن</span>
+                  <span class="text-xs font-bold text-text-primary font-mono">{{ item.durationMinutes }} د</span>
+                </div>
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                  <span class="text-[9px] text-text-muted block">النجاح</span>
+                  <span class="text-xs font-bold text-brand-primary font-mono">{{ item.passPercentage }}%</span>
+                </div>
+              </div>
+
+              <!-- Attempts & Scheduling Badges -->
+              <div class="space-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border/50 text-text-secondary">
+                  <span class="font-bold">المحاولات المسموحة:</span>
+                  <span class="font-mono font-bold text-text-primary">
+                    {{ item.maxAttempts >= 90 ? 'غير محدود' : item.maxAttempts + ' محاولة' }}
+                  </span>
+                </div>
+
+                @if (item.availableFrom || item.availableUntil) {
+                  <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-0.5">
+                    <div class="flex items-center gap-1.5 font-bold text-[10px]">
+                      <app-icon name="calendar" [size]="12" />
+                      <span>جدولة التنزيل والإغلاق:</span>
+                    </div>
+                    @if (item.availableFrom) {
+                      <div class="text-[10px] flex items-center justify-between font-mono">
+                        <span>يفتح:</span>
+                        <span>{{ item.availableFrom | date:'dd/MM/yyyy, hh:mm a' }}</span>
+                      </div>
+                    }
+                    @if (item.availableUntil) {
+                      <div class="text-[10px] flex items-center justify-between font-mono">
+                        <span>يُغلق:</span>
+                        <span>{{ item.availableUntil | date:'dd/MM/yyyy, hh:mm a' }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (item.submissionsCount > 0) {
+                <div class="p-2 rounded-xl bg-brand-primary/5 border border-brand-primary/10 text-[11px] text-brand-primary flex items-center justify-between">
+                  <span>تسليمات الطلاب:</span>
+                  <span class="font-bold font-mono">{{ item.submissionsCount }} تسليم</span>
+                </div>
+              }
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-3 border-t border-surface-border flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="openEditor(item, 'SETTINGS')"
+                  class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-text-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  title="تعديل كافة إعدادات الامتحان والجدولة وعدد المحاولات"
+                >
+                  <app-icon name="settings" [size]="13" className="text-brand-primary" />
+                  <span>الإعدادات والجدولة</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="openEditor(item, 'QUESTIONS')"
+                  class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  title="إدارة وبنك أسئلة هذا الامتحان"
+                >
+                  <app-icon name="edit" [size]="13" />
+                  <span>الأسئلة ({{ item.questions.length }})</span>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  (click)="togglePublish(item)"
+                  class="flex-1 py-1.5 px-2.5 rounded-xl border border-surface-border hover:border-brand-primary text-xs font-bold text-text-secondary hover:text-text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  [title]="item.isPublished ? 'إلغاء النشر' : 'نشر للطلاب'"
+                >
+                  <app-icon [name]="item.isPublished ? 'lock' : 'check'" [size]="13" />
+                  <span>{{ item.isPublished ? 'إلغاء النشر' : 'نشر للطلاب' }}</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="deleteAssessment(item)"
+                  class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                  title="حذف الامتحان نهائياً"
+                >
+                  <app-icon name="trash" [size]="14" />
+                </button>
+              </div>
+            </div>
+
+          </div>
+        } @empty {
+          <div class="col-span-full p-12 text-center rounded-3xl border border-surface-border bg-surface-card space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-surface-bg mx-auto flex items-center justify-center text-text-muted">
+              <app-icon name="file-text" [size]="24" />
+            </div>
+            <h4 class="text-sm font-bold text-text-primary">
+              لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً
+            </h4>
+            <p class="text-xs text-text-muted max-w-sm mx-auto">
+              يمكنك الضغط على زر "+ إنشاء امتحان / كويز جديد" بالأعلى لتدشين كويز حصري لطلاب ({{ selectedGrade() }}).
+            </p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Modal 1: Create Assessment Modal -->
+  @if (isCreateModalOpen()) {
+    <div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-lg rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
+        
+        <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-black text-text-primary">
+              + إنشاء امتحان أو كويز مخصص
+            </h3>
+            <p class="text-xs text-text-secondary mt-0.5">
+              مخصص حصرياً لـ ({{ createForm().gradeLevel }}) لن يظهر لأي صف دراسي آخر
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary cursor-pointer"
+          >
+            <app-icon name="x" [size]="18" />
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">عنوان الامتحان (بالعربية):</label>
+            <input
+              type="text"
+              [(ngModel)]="createForm().titleAr"
+              placeholder="مثال: كويز التفاضل وتطبيقات القيم العظمى"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">العنوان بالإنجليزية (اختياري):</label>
+            <input
+              type="text"
+              [(ngModel)]="createForm().titleEn"
+              placeholder="مثال: Calculus Applications Quiz"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">المنهج الدراسي:</label>
+              <select
+                [ngModel]="createForm().curriculum"
+                (ngModelChange)="onCurriculumChangeInCreate($event)"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+              >
+                <option value="EGYPTIAN">المنهج المصري</option>
+                <option value="GULF">المنهج الخليجي</option>
+                <option value="INTERNATIONAL">IGCSE / البريطانية</option>
+                <option value="AMERICAN">SAT / الأمريكية</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الصف الدراسي (عزل كامل):</label>
+              <select
+                [(ngModel)]="createForm().gradeLevel"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none"
+              >
+                @for (grade of createGradeOptions(); track grade.code) {
+                  <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الترم:</label>
+              <select
+                [(ngModel)]="createForm().term"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+              >
+                <option value="TERM_1">الترم الأول</option>
+                <option value="TERM_2">الترم الثاني</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">المدة (بالدقائق):</label>
+              <input
+                type="number"
+                [(ngModel)]="createForm().durationMinutes"
+                min="5"
+                max="300"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">نسبة النجاح %:</label>
+              <input
+                type="number"
+                [(ngModel)]="createForm().passPercentage"
+                min="40"
+                max="100"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">عدد المحاولات المسموح بها للطالب:</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button
+                type="button"
+                (click)="createForm().maxAttempts = 1"
+                class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                [class.border-brand-primary]="createForm().maxAttempts === 1"
+                [class.bg-brand-primary/10]="createForm().maxAttempts === 1"
+                [class.text-brand-primary]="createForm().maxAttempts === 1"
+                [class.border-surface-border]="createForm().maxAttempts !== 1"
+              >
+                محاولة واحدة
+              </button>
+              <button
+                type="button"
+                (click)="createForm().maxAttempts = 2"
+                class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                [class.border-brand-primary]="createForm().maxAttempts === 2"
+                [class.bg-brand-primary/10]="createForm().maxAttempts === 2"
+                [class.text-brand-primary]="createForm().maxAttempts === 2"
+                [class.border-surface-border]="createForm().maxAttempts !== 2"
+              >
+                محاولتان
+              </button>
+              <button
+                type="button"
+                (click)="createForm().maxAttempts = 3"
+                class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                [class.border-brand-primary]="createForm().maxAttempts === 3"
+                [class.bg-brand-primary/10]="createForm().maxAttempts === 3"
+                [class.text-brand-primary]="createForm().maxAttempts === 3"
+                [class.border-surface-border]="createForm().maxAttempts !== 3"
+              >
+                3 محاولات
+              </button>
+              <button
+                type="button"
+                (click)="createForm().maxAttempts = 99"
+                class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                [class.border-brand-primary]="createForm().maxAttempts >= 90"
+                [class.bg-brand-primary/10]="createForm().maxAttempts >= 90"
+                [class.text-brand-primary]="createForm().maxAttempts >= 90"
+                [class.border-surface-border]="createForm().maxAttempts < 90"
+              >
+                غير محدود
+              </button>
+            </div>
+          </div>
+
+          <!-- Scheduling Controls -->
+          <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <app-icon name="calendar" [size]="16" className="text-brand-primary" />
+                <span class="font-bold text-text-primary text-xs">جدولة موعد تنزيل وإغلاق الامتحان:</span>
+              </div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="createForm().isScheduled"
+                  class="accent-brand-primary w-4 h-4 cursor-pointer"
+                />
+                <span class="text-xs font-bold text-text-secondary">تفعيل الجدولة</span>
+              </label>
+            </div>
+
+            @if (createForm().isScheduled) {
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
+                <app-schedule-alarm-picker
+                  label="موعد تنزيل / بدء الامتحان للطلاب:"
+                  placeholder="اضغطي لضبط تاريخ البدء وساعة المنبه..."
+                  [(ngModel)]="createForm().availableFrom"
+                />
+
+                <app-schedule-alarm-picker
+                  label="موعد إغلاق الامتحان (الموعد النهائي):"
+                  placeholder="اضغطي لضبط تاريخ الإغلاق وساعة المنبه..."
+                  [(ngModel)]="createForm().availableUntil"
+                />
+              </div>
+              <p class="text-[10px] text-text-muted">
+                * في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.
+              </p>
+            }
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">آلة ديسموس البيانية (Desmos Mode):</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                (click)="createForm().calculatorType = 'NONE'"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer"
+                [class.border-brand-primary]="createForm().calculatorType === 'NONE'"
+                [class.bg-brand-primary/10]="createForm().calculatorType === 'NONE'"
+                [class.text-brand-primary]="createForm().calculatorType === 'NONE'"
+                [class.border-surface-border]="createForm().calculatorType !== 'NONE'"
+              >
+                معطلة (اختبار جبري / يدوي)
+              </button>
+
+              <button
+                type="button"
+                (click)="createForm().calculatorType = 'DESMOS'"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer"
+                [class.border-cyan-500]="createForm().calculatorType === 'DESMOS'"
+                [class.bg-cyan-500/10]="createForm().calculatorType === 'DESMOS'"
+                [class.text-cyan-600]="createForm().calculatorType === 'DESMOS'"
+                [class.border-surface-border]="createForm().calculatorType !== 'DESMOS'"
+              >
+                مفعلة (ديسموس البيانية)
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">نوع الاختبار:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                (click)="createForm().isPlacementTest = false"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-brand-primary]="!createForm().isPlacementTest"
+                [class.bg-brand-primary/10]="!createForm().isPlacementTest"
+                [class.text-brand-primary]="!createForm().isPlacementTest"
+                [class.border-surface-border]="createForm().isPlacementTest"
+              >
+                كويز / امتحان منهجي عادي
+              </button>
+
+              <button
+                type="button"
+                (click)="createForm().isPlacementTest = true"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-purple-500]="createForm().isPlacementTest"
+                [class.bg-purple-500/10]="createForm().isPlacementTest"
+                [class.text-purple-600]="createForm().isPlacementTest"
+                [class.border-surface-border]="!createForm().isPlacementTest"
+              >
+                امتحان تحديد مستوى (Placement Test)
+              </button>
+            </div>
+            @if (createForm().isPlacementTest) {
+              <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
+                * سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار الرئيسية كاختبار تحديد مستوى معتمد لهذا الصف.
+              </p>
+            }
+          </div>
+
+        </div>
+
+        @if (createErrorMessage()) {
+          <div class="mx-6 mb-2 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center justify-between gap-3 animate-fade-in">
+            <div class="flex items-center gap-2">
+              <app-icon name="alert-triangle" [size]="16" className="text-rose-500 shrink-0" />
+              <span>{{ createErrorMessage() }}</span>
+            </div>
+            <button
+              type="button"
+              (click)="createErrorMessage.set(null)"
+              class="p-1 rounded-lg hover:bg-rose-500/15 text-rose-500 transition-colors cursor-pointer"
+              title="إغلاق التنبيه"
+            >
+              <app-icon name="x" [size]="14" />
+            </button>
+          </div>
+        }
+
+        <div class="px-6 py-4 bg-surface-bg border-t border-surface-border flex items-center justify-between">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card text-text-secondary cursor-pointer"
+          >
+            إلغاء
+          </button>
+
+          <button
+            type="button"
+            (click)="saveNewAssessment()"
+            [disabled]="isSaving()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <app-icon name="plus" [size]="14" />
+            <span>{{ isSaving() ? 'جارٍ الإنشاء...' : 'إنشاء وحفظ الامتحان' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal 2: Question & Settings Safe Visual Editor Modal -->
+  @if (isEditorOpen() && activeAssessment(); as asm) {
+    <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+      <div class="w-full max-w-4xl rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-6 animate-scale-up">
+        
+        <!-- Header -->
+        <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-primary text-white">
+                {{ asm.gradeLevel }}
+              </span>
+              <h3 class="text-base font-black text-text-primary">
+                تعديل وإدارة الامتحان: {{ asm.titleAr }}
+              </h3>
+            </div>
+            <p class="text-xs text-text-secondary mt-1">
+              المنهج: {{ asm.curriculum }} | الترم: {{ asm.term === 'TERM_1' ? 'الأول' : 'الثاني' }} | المدة: {{ asm.durationMinutes }} دقيقة | نسبة النجاح: {{ asm.passPercentage }}%
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeEditor()"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary cursor-pointer"
+          >
+            <app-icon name="x" [size]="18" />
+          </button>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="px-6 pt-3 pb-0 bg-surface-card border-b border-surface-border flex items-center gap-3">
+          <button
+            type="button"
+            (click)="setEditorTab('SETTINGS')"
+            class="pb-3 px-3 text-xs font-black transition-all border-b-2 cursor-pointer flex items-center gap-1.5"
+            [class.border-brand-primary]="editorActiveTab() === 'SETTINGS'"
+            [class.text-brand-primary]="editorActiveTab() === 'SETTINGS'"
+            [class.border-transparent]="editorActiveTab() !== 'SETTINGS'"
+            [class.text-text-secondary]="editorActiveTab() !== 'SETTINGS'"
+          >
+            <app-icon name="settings" [size]="14" />
+            <span>⚙️ إعدادات وجدولة الامتحان</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="setEditorTab('QUESTIONS')"
+            class="pb-3 px-3 text-xs font-black transition-all border-b-2 cursor-pointer flex items-center gap-1.5"
+            [class.border-brand-primary]="editorActiveTab() === 'QUESTIONS'"
+            [class.text-brand-primary]="editorActiveTab() === 'QUESTIONS'"
+            [class.border-transparent]="editorActiveTab() !== 'QUESTIONS'"
+            [class.text-text-secondary]="editorActiveTab() !== 'QUESTIONS'"
+          >
+            <app-icon name="file-text" [size]="14" />
+            <span>📝 بنك الأسئلة والمسائل ({{ asm.questions.length }})</span>
+          </button>
+        </div>
+
+        @if (autoRegradeWarning()) {
+          <div class="p-4 bg-amber-500/10 border-b border-amber-500/20 text-amber-600 text-xs flex items-center gap-2">
+            <app-icon name="alert-triangle" [size]="16" />
+            <span>
+              تنبيه حماية التصحيح: هناك طلاب قاموا بتسليم حلولهم بالفعل! تعديل الإجابات النموذجية سيقوم بإعادة تصحيح كافة تسليمات الطلاب وتحديث سجل درجاتهم تلقائياً فور الحفظ.
+            </span>
+          </div>
+        }
+
+        <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto text-xs">
+          
+          <!-- TAB 1: EXAM SETTINGS & SCHEDULING -->
+          @if (editorActiveTab() === 'SETTINGS') {
+            <div class="space-y-4 animate-fade-in">
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">عنوان الامتحان (بالعربية):</label>
+                <input
+                  type="text"
+                  [(ngModel)]="asm.titleAr"
+                  placeholder="مثال: كويز التفاضل وتطبيقات القيم العظمى"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">العنوان بالإنجليزية (اختياري):</label>
+                <input
+                  type="text"
+                  [(ngModel)]="asm.titleEn"
+                  placeholder="مثال: Calculus Applications Quiz"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">
+                    <span>المنهج الدراسي:</span>
+                    @if (asm.submissionsCount > 0) {
+                      <span class="text-rose-500 text-[10px] mr-1 font-normal">(مقفول لوجود تسليمات)</span>
+                    }
+                  </label>
+                  <select
+                    [ngModel]="asm.curriculum"
+                    (ngModelChange)="onCurriculumChangeInEditor($event)"
+                    [disabled]="asm.submissionsCount > 0"
+                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60"
+                  >
+                    <option value="EGYPTIAN">المنهج المصري</option>
+                    <option value="GULF">المنهج الخليجي</option>
+                    <option value="INTERNATIONAL">IGCSE / البريطانية</option>
+                    <option value="AMERICAN">SAT / الأمريكية</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">
+                    <span>الصف الدراسي (عزل كامل):</span>
+                    @if (asm.submissionsCount > 0) {
+                      <span class="text-rose-500 text-[10px] mr-1 font-normal">(مقفول لوجود تسليمات)</span>
+                    }
+                  </label>
+                  <select
+                    [(ngModel)]="asm.gradeLevel"
+                    [disabled]="asm.submissionsCount > 0"
+                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none disabled:opacity-60"
+                  >
+                    @for (grade of editorGradeOptions(); track grade.code) {
+                      <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">الترم:</label>
+                  <select
+                    [(ngModel)]="asm.term"
+                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+                  >
+                    <option value="TERM_1">الترم الأول</option>
+                    <option value="TERM_2">الترم الثاني</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">المدة (بالدقائق):</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="asm.durationMinutes"
+                    min="5"
+                    max="300"
+                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">نسبة النجاح %:</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="asm.passPercentage"
+                    min="40"
+                    max="100"
+                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">عدد المحاولات المسموح بها للطالب:</label>
+                <div class="grid grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    (click)="asm.maxAttempts = 1"
+                    class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                    [class.border-brand-primary]="asm.maxAttempts === 1"
+                    [class.bg-brand-primary/10]="asm.maxAttempts === 1"
+                    [class.text-brand-primary]="asm.maxAttempts === 1"
+                    [class.border-surface-border]="asm.maxAttempts !== 1"
+                  >
+                    محاولة واحدة
+                  </button>
+                  <button
+                    type="button"
+                    (click)="asm.maxAttempts = 2"
+                    class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                    [class.border-brand-primary]="asm.maxAttempts === 2"
+                    [class.bg-brand-primary/10]="asm.maxAttempts === 2"
+                    [class.text-brand-primary]="asm.maxAttempts === 2"
+                    [class.border-surface-border]="asm.maxAttempts !== 2"
+                  >
+                    محاولتان
+                  </button>
+                  <button
+                    type="button"
+                    (click)="asm.maxAttempts = 3"
+                    class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                    [class.border-brand-primary]="asm.maxAttempts === 3"
+                    [class.bg-brand-primary/10]="asm.maxAttempts === 3"
+                    [class.text-brand-primary]="asm.maxAttempts === 3"
+                    [class.border-surface-border]="asm.maxAttempts !== 3"
+                  >
+                    3 محاولات
+                  </button>
+                  <button
+                    type="button"
+                    (click)="asm.maxAttempts = 99"
+                    class="py-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs"
+                    [class.border-brand-primary]="asm.maxAttempts >= 90"
+                    [class.bg-brand-primary/10]="asm.maxAttempts >= 90"
+                    [class.text-brand-primary]="asm.maxAttempts >= 90"
+                    [class.border-surface-border]="asm.maxAttempts < 90"
+                  >
+                    غير محدود
+                  </button>
+                </div>
+              </div>
+
+              <!-- Scheduling Controls in Visual Editor -->
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <app-icon name="calendar" [size]="16" className="text-brand-primary" />
+                    <span class="font-bold text-text-primary text-xs">جدولة موعد تنزيل وإغلاق الامتحان:</span>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="asm.isScheduled"
+                      class="accent-brand-primary w-4 h-4 cursor-pointer"
+                    />
+                    <span class="text-xs font-bold text-text-secondary">تفعيل الجدولة</span>
+                  </label>
+                </div>
+
+                @if (asm.isScheduled) {
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
+                    <app-schedule-alarm-picker
+                      label="موعد تنزيل / بدء الامتحان للطلاب:"
+                      placeholder="اضغطي لضبط تاريخ البدء وساعة المنبه..."
+                      [(ngModel)]="asm.availableFrom"
+                    />
+
+                    <app-schedule-alarm-picker
+                      label="موعد إغلاق الامتحان (الموعد النهائي):"
+                      placeholder="اضغطي لضبط تاريخ الإغلاق وساعة المنبه..."
+                      [(ngModel)]="asm.availableUntil"
+                    />
+                  </div>
+                  <p class="text-[10px] text-text-muted">
+                    * في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">آلة ديسموس البيانية (Desmos Mode):</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="asm.calculatorType = 'NONE'"
+                    class="p-2.5 rounded-xl border text-center transition-all cursor-pointer"
+                    [class.border-brand-primary]="asm.calculatorType === 'NONE'"
+                    [class.bg-brand-primary/10]="asm.calculatorType === 'NONE'"
+                    [class.text-brand-primary]="asm.calculatorType === 'NONE'"
+                    [class.border-surface-border]="asm.calculatorType !== 'NONE'"
+                  >
+                    معطلة (اختبار جبري / يدوي)
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="asm.calculatorType = 'DESMOS'"
+                    class="p-2.5 rounded-xl border text-center transition-all cursor-pointer"
+                    [class.border-cyan-500]="asm.calculatorType === 'DESMOS'"
+                    [class.bg-cyan-500/10]="asm.calculatorType === 'DESMOS'"
+                    [class.text-cyan-600]="asm.calculatorType === 'DESMOS'"
+                    [class.border-surface-border]="asm.calculatorType !== 'DESMOS'"
+                  >
+                    مفعلة (ديسموس البيانية)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">نوع الاختبار:</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="asm.isPlacementTest = false"
+                    class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                    [class.border-brand-primary]="!asm.isPlacementTest"
+                    [class.bg-brand-primary/10]="!asm.isPlacementTest"
+                    [class.text-brand-primary]="!asm.isPlacementTest"
+                    [class.border-surface-border]="asm.isPlacementTest"
+                  >
+                    كويز / امتحان منهجي عادي
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="asm.isPlacementTest = true"
+                    class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                    [class.border-purple-500]="asm.isPlacementTest"
+                    [class.bg-purple-500/10]="asm.isPlacementTest"
+                    [class.text-purple-600]="asm.isPlacementTest"
+                    [class.border-surface-border]="!asm.isPlacementTest"
+                  >
+                    امتحان تحديد مستوى (Placement Test)
+                  </button>
+                </div>
+                @if (asm.isPlacementTest) {
+                  <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
+                    * سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار كاختبار تحديد مستوى لهذا الصف.
+                  </p>
+                }
+              </div>
+
+            </div>
+          }
+
+          <!-- TAB 2: QUESTIONS BANK -->
+          @if (editorActiveTab() === 'QUESTIONS') {
+            <div class="space-y-6 animate-fade-in">
+              <!-- Add Question Card -->
+              <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-black text-text-primary flex items-center gap-2">
+                    <app-icon name="plus" [size]="14" className="text-brand-primary" />
+                    <span>إضافة سؤال جديد للامتحان</span>
+                  </h4>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      (click)="newQuestionType.set('MCQ')"
+                      class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer"
+                      [class.bg-brand-primary]="newQuestionType() === 'MCQ'"
+                      [class.text-white]="newQuestionType() === 'MCQ'"
+                      [class.bg-surface-card]="newQuestionType() !== 'MCQ'"
+                    >
+                      اختيار من متعدد (MCQ)
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="newQuestionType.set('ESSAY')"
+                      class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer"
+                      [class.bg-brand-primary]="newQuestionType() === 'ESSAY'"
+                      [class.text-white]="newQuestionType() === 'ESSAY'"
+                      [class.bg-surface-card]="newQuestionType() !== 'ESSAY'"
+                    >
+                      مسألة بيانية / مقالية
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Question Text -->
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">نص المسألة الرياضية:</label>
+                  <textarea
+                    rows="2"
+                    [(ngModel)]="newQuestionTextAr"
+                    placeholder="اكتبي نص المسألة أو رأس السؤال هنا..."
+                    class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+                  ></textarea>
+                </div>
+
+                <!-- Question Image Uploader Component (WebP Auto-Compression) -->
+                <div>
+                  <label class="block font-bold text-text-secondary mb-1">صورة المسألة (اختياري - يتم ضغطها وتحويلها إلى WebP):</label>
+                  <app-image-compressor-uploader
+                    [uploadTarget]="'question'"
+                    [existingImageUrl]="newQuestionImageUrl()"
+                    (imageUploaded)="onQuestionImageUploaded($event)"
+                  />
+                </div>
+
+                <!-- MCQ 4 Choices Builder -->
+                @if (newQuestionType() === 'MCQ') {
+                  <div class="space-y-2 pt-2 border-t border-surface-border">
+                    <label class="block font-bold text-text-secondary">
+                      الاختيارات الأربعة (حددي الدائرة بجانب الإجابة الصحيحة):
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      @for (opt of newQuestionOptions(); track $index) {
+                        <div class="flex items-center gap-2 p-2 rounded-xl border border-surface-border bg-surface-card">
+                          <input
+                            type="radio"
+                            name="correctChoice"
+                            [checked]="newQuestionCorrectIndex() === $index"
+                            (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
+                            class="accent-brand-primary cursor-pointer w-4 h-4"
+                            title="تحديد كإجابة صحيحة"
+                          />
+                          <input
+                            type="text"
+                            [value]="opt"
+                            (input)="updateOption($index, $any($event.target).value)"
+                            [placeholder]="'الخيار (' + ($index + 1) + ')'"
+                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none"
+                          />
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <div class="flex items-center justify-between pt-2">
+                  <div class="flex items-center gap-2">
+                    <label class="font-bold text-text-secondary">درجة السؤال:</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="newQuestionPoints"
+                      min="1"
+                      max="50"
+                      class="w-16 px-2.5 py-1.5 rounded-lg border border-surface-border bg-surface-bg text-xs font-mono font-bold text-center"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    (click)="addQuestion()"
+                    class="px-5 py-2 rounded-xl text-white font-bold bg-brand-primary hover:bg-brand-secondary transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <app-icon name="plus" [size]="14" />
+                    <span>إدراج السؤال بالامتحان</span>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Existing Questions List -->
+              <div class="space-y-3">
+                <h4 class="font-black text-text-primary">
+                  الأسئلة الحالية بالامتحان ({{ asm.questions.length }} أسئلة):
+                </h4>
+
+                @for (q of asm.questions; track q.id) {
+                  <div class="p-4 rounded-2xl border border-surface-border bg-surface-card space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-surface-bg border border-surface-border flex items-center justify-center font-mono font-bold text-xs text-text-primary">
+                          {{ q.order }}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted">
+                          {{ q.type === 'MCQ' ? 'اختيار من متعدد' : 'مسألة مقالية / بيانية' }}
+                        </span>
+                        <span class="font-bold text-emerald-500 font-mono text-xs">
+                          {{ q.points }} درجات
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        (click)="deleteQuestion(q.order)"
+                        class="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
+                        title="حذف السؤال"
+                      >
+                        <app-icon name="trash" [size]="14" />
+                      </button>
+                    </div>
+
+                    <p class="text-xs text-text-primary">
+                      {{ q.textAr }}
+                    </p>
+
+                    @if (q.questionImageUrl) {
+                      <img [src]="q.questionImageUrl" alt="صورة المسألة" class="max-h-48 rounded-xl border border-surface-border object-contain" />
+                    }
+
+                    @if (q.type === 'MCQ') {
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @for (opt of q.options; track $index) {
+                          <div
+                            class="p-2.5 rounded-xl border text-xs flex items-center justify-between"
+                            [class.border-emerald-500]="q.correctOptionIndex === $index"
+                            [class.bg-emerald-500/10]="q.correctOptionIndex === $index"
+                            [class.text-emerald-600]="q.correctOptionIndex === $index"
+                            [class.border-surface-border]="q.correctOptionIndex !== $index"
+                          >
+                            <span>{{ opt }}</span>
+                            @if (q.correctOptionIndex === $index) {
+                              <span class="text-[10px] font-bold flex items-center gap-1">
+                                <app-icon name="check" [size]="12" />
+                                <span>الإجابة الصحيحة</span>
+                              </span>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                } @empty {
+                  <div class="py-8 text-center text-text-muted">
+                    لا توجد أسئلة مدرجة في هذا الامتحان بعد. أضيفي السؤال الأول بالأعلى.
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        </div>
+
+        <!-- In-Modal Prominent Error Banner -->
+        @if (editorErrorMessage()) {
+          <div class="mx-6 mb-2 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center justify-between gap-3 animate-fade-in">
+            <div class="flex items-center gap-2">
+              <app-icon name="alert-triangle" [size]="16" className="text-rose-500 shrink-0" />
+              <span>{{ editorErrorMessage() }}</span>
+            </div>
+            <button
+              type="button"
+              (click)="editorErrorMessage.set(null)"
+              class="p-1 rounded-lg hover:bg-rose-500/15 text-rose-500 transition-colors cursor-pointer"
+              title="إغلاق التنبيه"
+            >
+              <app-icon name="x" [size]="14" />
+            </button>
+          </div>
+        }
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-surface-bg border-t border-surface-border flex items-center justify-between">
+          <button
+            type="button"
+            (click)="closeEditor()"
+            class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card text-text-secondary cursor-pointer"
+          >
+            إغلاق
+          </button>
+
+          <button
+            type="button"
+            (click)="saveAssessmentEditor()"
+            [disabled]="isSaving()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <app-icon name="check-circle" [size]="16" />
+            <span>{{ isSaving() ? 'جارٍ حفظ التعديلات...' : 'حفظ واعتماد التعديلات' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- 3. In-App Decision Confirmation Dialog (Strictly Zero window.confirm) -->
+  @if (confirmDialog().isOpen) {
+    <div
+      class="fixed inset-0 z-[100] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 text-center animate-scale-up">
+        
+        <div
+          class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center"
+          [class.bg-rose-500/10]="confirmDialog().isDestructive"
+          [class.text-rose-500]="confirmDialog().isDestructive"
+          [class.bg-brand-primary/10]="!confirmDialog().isDestructive"
+          [class.text-brand-primary]="!confirmDialog().isDestructive"
+        >
+          <app-icon [name]="confirmDialog().isDestructive ? 'trash' : 'alert-triangle'" [size]="28" />
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-base font-black text-text-primary">
+            {{ confirmDialog().title }}
+          </h3>
+          <p class="text-xs text-text-secondary leading-relaxed">
+            {{ confirmDialog().message }}
+          </p>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirm()"
+            class="px-5 py-2.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-text-primary hover:border-text-muted transition-all cursor-pointer"
+          >
+            {{ confirmDialog().cancelLabel }}
+          </button>
+
+          <button
+            type="button"
+            (click)="proceedConfirm()"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white transition-all shadow-md cursor-pointer"
+            [class.bg-rose-600]="confirmDialog().isDestructive"
+            [class.hover:bg-rose-700]="confirmDialog().isDestructive"
+            [class.bg-gradient-spider]="!confirmDialog().isDestructive"
+            [class.hover:opacity-95]="!confirmDialog().isDestructive"
+          >
+            {{ confirmDialog().confirmLabel }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</section>

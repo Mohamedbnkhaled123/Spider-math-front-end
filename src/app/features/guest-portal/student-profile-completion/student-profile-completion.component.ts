@@ -8,8 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
@@ -21,6 +20,11 @@ import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constan
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import {
+  validatePhoneNumber,
+  arePhoneNumbersIdentical,
+  getPhonePlaceholderByCountry
+} from '../../../core/utils/phone-validator.util';
 
 @Component({
   selector: 'app-student-profile-completion',
@@ -58,12 +62,24 @@ export class StudentProfileCompletionComponent implements OnInit {
   // Computed Properties
   readonly isEgypt = computed<boolean>(() => this.country() === 'EG');
 
+  readonly phonePlaceholder = computed<string>(() =>
+    getPhonePlaceholderByCountry(this.country())
+  );
+
   readonly availableGrades = computed(() => {
     const curr = this.curriculumTree.find(c => c.code === this.curriculum());
     return curr?.grades ?? this.curriculumTree[0].grades;
   });
 
   ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user?.full_name && !this.fullName()) {
+      this.fullName.set(user.full_name);
+    }
+    if (user?.phone && !this.phone()) {
+      this.phone.set(user.phone);
+    }
+
     this.route.queryParams.subscribe(params => {
       if (params['fullName']) {
         this.fullName.set(params['fullName']);
@@ -92,34 +108,51 @@ export class StudentProfileCompletionComponent implements OnInit {
     const name = this.fullName().trim();
     const stPhone = this.phone().trim();
     const prPhone = this.parentPhone().trim();
+    const selectedCountry = this.country();
 
+    // 1. Full Name Validation
     if (!name || name.length < 3) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى كتابة الاسم ثلاثياً بشكل صحيح'
+          ? 'يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح'
           : 'Please enter valid student full name'
       );
       return;
     }
 
-    if (!stPhone || stPhone.length < 8) {
+    // 2. Student Phone Country Validation
+    const stVal = validatePhoneNumber(stPhone, selectedCountry);
+    if (!stVal.isValid) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى إدخال رقم هاتف الطالب الصحيح'
-          : 'Please enter valid student phone number'
+          ? `هاتف الطالب: ${stVal.messageAr}`
+          : `Student phone: ${stVal.messageEn}`
       );
       return;
     }
 
-    if (!prPhone || prPhone.length < 8) {
+    // 3. Parent Phone Country Validation
+    const prVal = validatePhoneNumber(prPhone, selectedCountry);
+    if (!prVal.isValid) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى إدخال رقم هاتف ولي الأمر لمتابعة الدرجات والتقارير'
-          : 'Please enter parent phone number for academic reporting'
+          ? `هاتف ولي الأمر: ${prVal.messageAr}`
+          : `Parent phone: ${prVal.messageEn}`
       );
       return;
     }
 
+    // 4. Strict Requirement: Parent phone CANNOT be identical to Student phone
+    if (arePhoneNumbersIdentical(stPhone, prPhone, selectedCountry)) {
+      this.errorMessage.set(
+        this.langService.isArabic()
+          ? 'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم هاتف مختلف لولي الأمر لاستلام تقارير المتابعة.'
+          : 'Parent phone number cannot be identical to student phone number. Please provide a different parent phone number.'
+      );
+      return;
+    }
+
+    // 5. Egyptian Governorate Validation
     if (this.isEgypt() && !this.governorate()) {
       this.errorMessage.set(
         this.langService.isArabic()
@@ -139,7 +172,7 @@ export class StudentProfileCompletionComponent implements OnInit {
       curriculum: this.curriculum(),
       gradeLevel: this.gradeLevel(),
       academicTerm: this.academicTerm(),
-      country: this.country(),
+      country: selectedCountry,
       governorate: this.isEgypt() ? this.governorate() : null
     }).subscribe({
       next: res => {
@@ -162,11 +195,8 @@ export class StudentProfileCompletionComponent implements OnInit {
           total_xp: 50
         };
 
-        if (this.authService.currentUser()) {
-          this.authService.updateCurrentUser(studentUser);
-        } else {
-          this.authService.setSession('jwt_student_' + res.studentHaCode, studentUser);
-        }
+        const finalToken = res.token || this.authService.currentToken() || ('jwt_student_' + res.studentHaCode);
+        this.authService.setSession(finalToken, studentUser);
 
         // Auto-navigate to inactive student portal after 2.5s celebratory badge display
         setTimeout(() => {
@@ -176,8 +206,9 @@ export class StudentProfileCompletionComponent implements OnInit {
       error: err => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
+          err?.error?.error?.message ||
           err?.error?.message ||
-          (this.langService.isArabic() ? 'تعذر حفظ البيانات. يرجى المحاولة لاحقاً.' : 'Failed to save student profile.')
+          (this.langService.isArabic() ? 'تعذر حفظ البيانات. يرجى التحقق من الأرقام والمدخلات والمحاولة مجدداً.' : 'Failed to save student profile.')
         );
       }
     });

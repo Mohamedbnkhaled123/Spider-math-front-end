@@ -34,31 +34,19 @@ export class SubmissionFeedbackViewerComponent {
   readonly langService = inject(LangService);
 
   readonly feedback = signal<SubmissionFeedbackData>({
-    submissionId: 'sub_calc_1',
-    assessmentTitleAr: 'تقييم المحاضرة 2: الاشتقاق الضمني والمشتقات العليا',
-    assessmentTitleEn: 'Assessment 2: Implicit & Higher Derivatives',
-    unitTitleAr: 'الوحدة الأولى: التفاضل والاشتقاق وتطبيقاته الهندسية',
-    resultVisibility: 'PUBLISHED_TO_STUDENT_AND_PARENT',
-    mcqAutoScore: 10,
-    essayManualScore: 8,
-    finalTotalScore: 18,
+    submissionId: '',
+    assessmentTitleAr: 'تقييم تدريبي',
+    assessmentTitleEn: 'Assessment Feedback',
+    unitTitleAr: 'الوحدة الدراسية',
+    resultVisibility: 'HIDDEN_PENDING_TEACHER',
+    mcqAutoScore: 0,
+    essayManualScore: 0,
+    finalTotalScore: 0,
     maxScore: 20,
-    scorePercentage: 90,
-    gradedAt: '24 أكتوبر 2026 - 18:30',
-    teacherFeedbackNotes:
-      'ممتاز جداً يا بطل! خطوات الاشتقاق الضمني كانت منظمة ودقيقة للغاية. انتبه فقط لإشارة الحد الأخير في مسألة المشتقة الثانية عند التعويض.',
-    customMistakeCases: [
-      {
-        questionId: 'q_diff_3',
-        questionOrder: 3,
-        questionPromptText:
-          'أثبت أن المشتقة الثانية للمنحنى ص = جتا(٢س) تحقق المعادلة التفاضلية (د²ص / دس²) + ٤ص = صفر.',
-        studentAnswerText: 'تم الاشتقاق مع خطأ في إشارة السالب عند تفاضل الجتا.',
-        errorNote:
-          'تذكر أن تفاضل جتا(٢س) هو -٢جا(٢س)، المشتقة الثانية تصبح -٤جتا(٢س). شاهد شرح هذا النمط بالضغط على زر الحل بالفيديو.',
-        youtubeSolutionUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-      }
-    ]
+    scorePercentage: 0,
+    gradedAt: '',
+    teacherFeedbackNotes: '',
+    customMistakeCases: []
   });
 
   readonly isPublished = computed(

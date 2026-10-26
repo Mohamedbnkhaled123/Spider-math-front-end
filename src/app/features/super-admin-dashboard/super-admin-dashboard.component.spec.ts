@@ -27,8 +27,10 @@ describe('SuperAdminDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should list pending devices and grading tasks', () => {
-    expect(component.pendingDevices().length).toBeGreaterThan(0);
-    expect(component.pendingGrading().length).toBeGreaterThan(0);
+  it('should initialize admin signals properly as arrays', () => {
+    expect(Array.isArray(component.pendingDevices())).toBeTrue();
+    expect(Array.isArray(component.pendingGrading())).toBeTrue();
+    expect(Array.isArray(component.unitsList())).toBeTrue();
+    expect(Array.isArray(component.leadsList())).toBeTrue();
   });
 });

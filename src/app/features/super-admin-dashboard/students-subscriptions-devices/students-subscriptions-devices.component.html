@@ -1,0 +1,353 @@
+<section class="space-y-6 animate-fade-in">
+  
+  <!-- 1. Additive Device Approval Queue ($push without evicting existing devices) -->
+  <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+      <div class="flex items-center gap-2">
+        <app-icon name="shield" [size]="18" className="text-brand-primary" />
+        <h3 class="text-sm font-black text-text-primary">
+          طابور الموافقة التراكمية على الأجهزة (Device Lock Queue - $push)
+        </h3>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">
+        {{ pendingDevices().length }} بانتظار الاعتماد
+      </span>
+    </div>
+
+    <div class="space-y-2.5">
+      @for (dev of pendingDevices(); track dev.id) {
+        <div class="p-3.5 rounded-2xl border border-amber-500/20 bg-amber-500/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-text-primary">{{ dev.studentName }}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
+                {{ dev.haCode }}
+              </span>
+              <span class="text-text-muted text-[11px]">• {{ dev.curriculum }}</span>
+            </div>
+            <p class="text-[11px] text-text-secondary mt-0.5 font-mono">
+              الجهاز الجديد: {{ dev.deviceInfo }} • IP: {{ dev.ipAddress }} • الطلب: {{ dev.requestedAt }}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              (click)="approveDevice(dev)"
+              class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-sm"
+              title="إضافة الجهاز الجديد لمصفوفة الأجهزة المعتمدة دون مساس بالجهاز السابق"
+            >
+              + اعتماد الجهاز
+            </button>
+            <button
+              type="button"
+              (click)="rejectDevice(dev)"
+              class="px-3 py-1.5 rounded-xl font-bold text-xs text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+            >
+              رفض
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
+          لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Students List & Subscriptions State Machine -->
+  <div class="space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-black text-text-primary tracking-tight">
+          إدارة حسابات الطلاب والاشتراكات ونقاط الـ XP
+        </h2>
+        <p class="text-xs text-text-secondary mt-0.5">
+          البحث الفوري بكود الطالب الفريد (HAxxxx)، تفعيل وإيقاف الاشتراكات، وإدارة لوحة الشرف التنافسية.
+        </p>
+      </div>
+
+      <!-- Instant Search Input -->
+      <div class="relative w-full sm:w-72">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="بحث بكود الطالب (HAxxxx) أو الاسم..."
+          class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+        />
+        <span class="absolute right-3.5 top-3 text-text-muted">
+          <app-icon name="target" [size]="14" />
+        </span>
+      </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="overflow-x-auto rounded-3xl border border-surface-border bg-surface-card shadow-sm">
+      <table class="w-full text-right rtl:text-right text-xs">
+        <thead class="bg-surface-bg border-b border-surface-border text-text-muted font-bold">
+          <tr>
+            <th class="p-4">اسم الطالب</th>
+            <th class="p-4">الكود الفريد</th>
+            <th class="p-4">المنهج والصف</th>
+            <th class="p-4">الاشتراك</th>
+            <th class="p-4">نقاط الـ XP</th>
+            <th class="p-4">الأجهزة</th>
+            <th class="p-4 text-center">الإجراءات والتحكم</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-border">
+          @for (student of filteredStudents(); track student.id) {
+            <tr class="hover:bg-surface-bg/50 transition-colors">
+              <td class="p-4">
+                <div class="font-bold text-text-primary text-sm">{{ student.name }}</div>
+                <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                  <span class="text-text-secondary">{{ student.email }}</span>
+                  @if (student.phone) {
+                    <span>• {{ student.phone }}</span>
+                  }
+                  @if (student.parentPhone) {
+                    <span class="text-brand-primary dark:text-brand-accent font-semibold">• ولي الأمر: {{ student.parentPhone }}</span>
+                  }
+                </div>
+                <div class="flex items-center gap-1.5 mt-1">
+                  @if (student.isProfileCompleted === false) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                      بانتظار إكمال البيانات
+                    </span>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 inline-flex items-center gap-1">
+                      <app-icon name="check" [size]="11" />
+                      <span>مكتمل البيانات</span>
+                    </span>
+                  }
+                  @if (student.isLeaderboardHidden) {
+                    <span class="text-[10px] text-rose-500 font-normal mr-1">(مخفي من لوحة الشرف)</span>
+                  }
+                </div>
+              </td>
+              
+              <td class="p-4 font-mono font-bold text-brand-primary text-sm">
+                {{ student.haCode }}
+              </td>
+
+              <td class="p-4 text-text-secondary">
+                <div>{{ student.curriculum }}</div>
+                <div class="text-[11px] text-text-muted mt-0.5">{{ student.gradeLevel }}</div>
+              </td>
+
+              <td class="p-4">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                  [class.bg-emerald-500/10]="student.subscriptionStatus === 'ACTIVE'"
+                  [class.text-emerald-500]="student.subscriptionStatus === 'ACTIVE'"
+                  [class.bg-amber-500/10]="student.subscriptionStatus === 'FROZEN'"
+                  [class.text-amber-500]="student.subscriptionStatus === 'FROZEN'"
+                  [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
+                  [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
+                >
+                  {{ student.subscriptionStatus === 'ACTIVE' ? 'اشتراك نشط' : student.subscriptionStatus === 'FROZEN' ? 'مجمّد' : 'غير مشترك' }}
+                </span>
+              </td>
+
+              <td class="p-4 font-mono font-bold text-text-primary">
+                {{ student.totalXp }} XP
+              </td>
+
+              <td class="p-4 font-mono text-text-secondary">
+                {{ student.approvedDevices }} / 2
+              </td>
+
+              <!-- Actions -->
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                  
+                  <!-- Activate Unit -->
+                  <button
+                    type="button"
+                    (click)="openActivateModal(student)"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                  >
+                    تفعيل وحدة
+                  </button>
+
+                  <!-- Toggle Freeze / Unfreeze -->
+                  @if (student.subscriptionStatus === 'ACTIVE') {
+                    <button
+                      type="button"
+                      (click)="updateStatus(student, 'FROZEN')"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-500/30 text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                    >
+                      تجميد
+                    </button>
+                  } @else if (student.subscriptionStatus === 'FROZEN') {
+                    <button
+                      type="button"
+                      (click)="updateStatus(student, 'ACTIVE')"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                    >
+                      إلغاء التجميد
+                    </button>
+                  }
+
+                  <!-- Cancel Subscription -->
+                  @if (student.subscriptionStatus !== 'CANCELLED') {
+                    <button
+                      type="button"
+                      (click)="updateStatus(student, 'CANCELLED')"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      إلغاء
+                    </button>
+                  }
+
+                  <!-- XP Bonus (+50) -->
+                  <button
+                    type="button"
+                    (click)="openXpModal(student, 50)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
+                    title="منح بونص XP"
+                  >
+                    +XP
+                  </button>
+
+                  <!-- XP Penalty (-20) -->
+                  <button
+                    type="button"
+                    (click)="openXpModal(student, -20)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                    title="خصم XP"
+                  >
+                    -XP
+                  </button>
+
+                  <!-- Toggle Leaderboard -->
+                  <button
+                    type="button"
+                    (click)="toggleLeaderboard(student)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                    [title]="student.isLeaderboardHidden ? 'إظهار في لوحة الشرف' : 'إخفاء من لوحة الشرف'"
+                  >
+                    {{ student.isLeaderboardHidden ? 'إظهار' : 'إخفاء' }}
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="p-8 text-center text-xs text-text-muted">
+                لا توجد نتائج مطابقة لبحثك.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: Manual Unit Activation                                             -->
+  <!-- ========================================================================= -->
+  @if (isActivateModalOpen() && studentToActivate(); as student) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <h3 class="text-sm font-black text-text-primary">
+            تفعيل وحدة دراسية للطالب: {{ student.name }} ({{ student.haCode }})
+          </h3>
+          <button type="button" (click)="isActivateModalOpen.set(false)" class="p-1 rounded-lg text-text-muted hover:bg-surface-bg">
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">اختر الوحدة المراد تفعيلها فورياً</label>
+          <select
+            [(ngModel)]="activationUnitId"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+          >
+            <option value="unit_calc_diff">الوحدة الأولى: التفاضل والاشتقاق وتطبيقاته الهندسية (350 ج.م)</option>
+            <option value="unit_calc_integ">الوحدة الثانية: التكامل وتطبيقات المساحات والحجوم (400 ج.م)</option>
+          </select>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="isActivateModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            (click)="confirmUnitActivation()"
+            class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
+          >
+            تأكيد التفعيل الفوري
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: XP Bonus & Penalty Adjustment                                      -->
+  <!-- ========================================================================= -->
+  @if (isXpModalOpen() && studentForXp(); as student) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <h3 class="text-sm font-black text-text-primary">
+            تعديل نقاط الـ XP للطالب: {{ student.name }} ({{ student.haCode }})
+          </h3>
+          <button type="button" (click)="isXpModalOpen.set(false)" class="p-1 rounded-lg text-text-muted hover:bg-surface-bg">
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">
+            مقدار النقاط (موجب للبونص، سالب للخصم)
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="xpDeltaAmount"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono font-black text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">
+            سبب التعديل (سيظهر في سجل الإشعارات للطالب وولي أمره)
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="xpAdjustmentReason"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="isXpModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            (click)="submitXpAdjustment()"
+            class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
+          >
+            اعتماد وحفظ النقاط
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</section>

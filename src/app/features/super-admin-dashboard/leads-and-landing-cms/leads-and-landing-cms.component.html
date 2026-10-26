@@ -1,0 +1,267 @@
+<section class="space-y-8 animate-fade-in">
+  
+  <!-- 1. Leads CRM Tracking Table -->
+  <div class="space-y-4">
+    <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm">
+      <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
+        <div>
+          <h2 class="text-xl font-black text-text-primary tracking-tight">
+            سجل متابعة العملاء المحتملين (Leads CRM)
+          </h2>
+          <p class="text-xs text-text-secondary mt-0.5">
+            الطلاب الذين أدوا امتحان تحديد المستوى أو سجلوا بياناتهم للتواصل عبر واتساب.
+          </p>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+          {{ leadsList().length }} عملاء مسجلين
+        </span>
+      </div>
+
+      <div class="overflow-x-auto rounded-2xl border border-surface-border bg-surface-bg shadow-sm">
+        <table class="w-full text-right rtl:text-right text-xs">
+          <thead class="bg-surface-card border-b border-surface-border text-text-muted font-bold">
+            <tr>
+              <th class="p-4">الاسم</th>
+              <th class="p-4">المنهج والصف</th>
+              <th class="p-4">درجة التحديد</th>
+              <th class="p-4">رقم الطالب</th>
+              <th class="p-4">رقم ولي الأمر</th>
+              <th class="p-4">الحالة</th>
+              <th class="p-4 text-center">التواصل</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-border">
+            @for (lead of leadsList(); track lead.id) {
+              <tr class="hover:bg-surface-card/50 transition-colors">
+                <td class="p-4 font-bold text-text-primary">{{ lead.fullName }}</td>
+                <td class="p-4 text-text-secondary">{{ lead.curriculum }} • {{ lead.gradeLevel }}</td>
+                <td class="p-4 font-mono font-bold text-brand-primary">{{ lead.placementScore ?? '—' }}%</td>
+                <td class="p-4 font-mono">{{ lead.studentPhone }}</td>
+                <td class="p-4 font-mono">{{ lead.parentPhone }}</td>
+                <td class="p-4">
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                    [class.bg-blue-500/10]="lead.status === 'NEW'"
+                    [class.text-blue-500]="lead.status === 'NEW'"
+                    [class.bg-amber-500/10]="lead.status === 'CONTACTED'"
+                    [class.text-amber-500]="lead.status === 'CONTACTED'"
+                    [class.bg-emerald-500/10]="lead.status === 'REGISTERED'"
+                    [class.text-emerald-500]="lead.status === 'REGISTERED'"
+                  >
+                    {{ lead.status === 'NEW' ? 'جديد' : lead.status === 'CONTACTED' ? 'تم التواصل' : 'مشترك رسمي' }}
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <button
+                      type="button"
+                      (click)="openWhatsAppLead(lead.studentPhone || lead.parentPhone)"
+                      class="px-3 py-1.5 rounded-xl font-bold text-[11px] text-white bg-emerald-600 hover:bg-emerald-700 transition-all inline-flex items-center gap-1 cursor-pointer shadow-sm"
+                    >
+                      <app-icon name="message-circle" [size]="13" />
+                      <span>واتساب</span>
+                    </button>
+                    @if (lead.status === 'NEW') {
+                      <button
+                        type="button"
+                        (click)="setLeadStatus(lead, 'CONTACTED')"
+                        class="p-1.5 rounded-lg border border-surface-border hover:bg-surface-card text-text-muted hover:text-text-primary text-[10px]"
+                        title="تحديث كـ تم التواصل"
+                      >
+                        <app-icon name="check" [size]="12" />
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="p-8 text-center text-xs text-text-muted">
+                  لا توجد طلبات Leads أو عملاء جدد مسجلين حالياً.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Pure Landing Page CMS Editor (Zero SEO fields per RULES.md) -->
+  <div class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-6">
+    <div class="pb-4 border-b border-surface-border flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-black text-text-primary">
+          محرر محتوى الصفحة الرئيسية (Landing Page CMS)
+        </h3>
+        <p class="text-xs text-text-secondary mt-0.5">
+          تعديل العناوين الرئيسية، شريط الإعلانات العاجل، رقم واتساب الدعم، وجداول الحصص الأسبوعية.
+        </p>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+        نظام تحكم نقي (خالٍ من حقول SEO المحرمة)
+      </span>
+    </div>
+
+    <div class="space-y-4 text-xs">
+      <!-- Hero Headline -->
+      <div>
+        <label class="block font-bold text-text-secondary mb-1">
+          العنوان الرئيسي لصفحة الهبوط (Hero Headline)
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="editableCms().heroHeadlineAr"
+          class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold focus:outline-none focus:border-brand-primary"
+        />
+      </div>
+
+      <!-- Hero Subheadline -->
+      <div>
+        <label class="block font-bold text-text-secondary mb-1">
+          الوصف الفرعي لصفحة الهبوط (Hero Subheadline)
+        </label>
+        <textarea
+          rows="2"
+          [(ngModel)]="editableCms().heroSubheadlineAr"
+          class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary leading-relaxed"
+        ></textarea>
+      </div>
+
+      <!-- Announcement Banner -->
+      <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="font-bold text-text-primary">شريط الإعلانات العاجل أعلى المنصة</label>
+          <button
+            type="button"
+            (click)="editableCms().isAnnouncementActive = !editableCms().isAnnouncementActive"
+            class="px-3 py-1 rounded-xl font-bold text-xs border"
+            [class.bg-emerald-500/10]="editableCms().isAnnouncementActive"
+            [class.text-emerald-500]="editableCms().isAnnouncementActive"
+            [class.border-emerald-500/30]="editableCms().isAnnouncementActive"
+            [class.bg-slate-500/10]="!editableCms().isAnnouncementActive"
+            [class.text-slate-400]="!editableCms().isAnnouncementActive"
+          >
+            {{ editableCms().isAnnouncementActive ? 'الشريط مفعّل' : 'الشريط معطّل' }}
+          </button>
+        </div>
+
+        <input
+          type="text"
+          [(ngModel)]="editableCms().announcementBannerText"
+          placeholder="نص الإعلان أو الخصم..."
+          class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
+        />
+      </div>
+
+      <!-- Support Whatsapp & Academic Year -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">رقم واتساب الدعم الفني المعتمد</label>
+          <input
+            type="text"
+            [(ngModel)]="editableCms().supportWhatsapp"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">العام الدراسي الفعّال</label>
+          <input
+            type="text"
+            [(ngModel)]="editableCms().activeAcademicYear"
+            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary"
+          />
+        </div>
+      </div>
+
+      <!-- Weekly Schedules Table Scoped by Curriculum, Grade, Term -->
+      <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-surface-border">
+          <span class="font-bold text-text-primary">
+            جدول مواعيد الحصص الأسبوعية (Schedules Table):
+          </span>
+          <span class="text-[10px] text-text-muted">مربوط بالمنهج والصف والترم</span>
+        </div>
+
+        <!-- Add Schedule Row Box -->
+        <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 bg-surface-card p-3 rounded-xl border border-surface-border">
+          <input
+            type="text"
+            [(ngModel)]="newSchedule().curriculum"
+            placeholder="المنهج (EGYPTIAN)"
+            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
+          />
+          <input
+            type="text"
+            [(ngModel)]="newSchedule().gradeLevel"
+            placeholder="الصف (SEC_3)"
+            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
+          />
+          <input
+            type="text"
+            [(ngModel)]="newSchedule().dayOfWeek"
+            placeholder="الأيام (الأحد والثلاثاء)"
+            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
+          />
+          <input
+            type="text"
+            [(ngModel)]="newSchedule().timeSlot"
+            placeholder="التوقيت (07:00 م)"
+            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
+          />
+          <input
+            type="text"
+            [(ngModel)]="newSchedule().lectureSubject"
+            placeholder="الفرع (تفاضل وتكامل)"
+            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
+          />
+          <button
+            type="button"
+            (click)="addScheduleRow()"
+            class="px-3 py-1.5 rounded-lg bg-brand-primary text-white font-bold text-[11px] cursor-pointer"
+          >
+            + إضافة موعد
+          </button>
+        </div>
+
+        <!-- Existing Schedules List -->
+        <div class="space-y-2">
+          @for (row of editableCms().schedulesTable; track $index) {
+            <div class="p-2.5 rounded-xl border border-surface-border bg-surface-card flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-3 font-bold">
+                <span class="text-brand-primary">{{ row.curriculum }} • {{ row.gradeLevel }}</span>
+                <span>{{ row.dayOfWeek }}</span>
+                <span class="font-mono text-text-muted">{{ row.timeSlot }}</span>
+                <span class="text-text-secondary">{{ row.lectureSubject }}</span>
+              </div>
+              <button
+                type="button"
+                (click)="removeScheduleRow($index)"
+                class="text-rose-500 hover:underline cursor-pointer"
+              >
+                حذف
+              </button>
+            </div>
+          } @empty {
+            <div class="text-[11px] text-text-muted italic py-1">
+              لا توجد مواعيد مضافة في جدول الحصص الأسبوعية بعد.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-4 border-t border-surface-border flex justify-end">
+        <button
+          type="button"
+          (click)="saveCms()"
+          class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all cursor-pointer"
+        >
+          حفظ ونشر التعديلات فورياً
+        </button>
+      </div>
+    </div>
+  </div>
+
+</section>

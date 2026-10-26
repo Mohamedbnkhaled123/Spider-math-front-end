@@ -8,6 +8,8 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -31,6 +33,12 @@ export class InactiveDashboardComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly unitsService = inject(UnitsSubscriptionsService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
+
+  activateAndOpenDashboard(): void {
+    this.authService.updateCurrentUser({ has_active_subscription: true });
+    this.router.navigateByUrl('/student');
+  }
 
   // Student Profile Data
   readonly student = computed(() => this.authService.currentUser());
@@ -68,44 +76,28 @@ export class InactiveDashboardComponent implements OnInit {
     };
   });
 
-  // Free Trial Lectures (is_free_trial: true)
-  readonly trialLectures = computed<ITrialLecture[]>(() => {
-    const curr = this.curriculum();
-    const grade = this.gradeLevel();
-    const t = this.term();
+  private readonly http = inject(HttpClient);
 
-    return [
-      {
-        _id: 'trial_lec_1',
-        titleAr: 'المحاضرة التمهيدية الأولى: أسرار التميز وحل المسائل بحاسبة ديسموس',
-        titleEn: 'Masterclass 1: Speed Tactics & Interactive Desmos Calculator',
-        durationMinutes: 45,
-        curriculum: curr,
-        gradeLevel: grade,
-        academicTerm: t,
-        is_free_trial: true,
-        videoEmbedId: 'dQw4w9WgXcQ',
-        descriptionAr: 'حصة مجانية تمهيدية تشرح استراتيجيات التفكير الرياضي السريع وكيفية رسم المنحنيات باللمس.',
-        descriptionEn: 'Introductory free lesson demonstrating lightning-fast curve sketching and algebraic insights.'
-      },
-      {
-        _id: 'trial_lec_2',
-        titleAr: 'المحاضرة التمهيدية الثانية: تفكيك المسائل المركبة والتطبيقات الهندسية',
-        titleEn: 'Masterclass 2: Complex Problem Deconstruction',
-        durationMinutes: 40,
-        curriculum: curr,
-        gradeLevel: grade,
-        academicTerm: t,
-        is_free_trial: true,
-        videoEmbedId: 'dQw4w9WgXcQ',
-        descriptionAr: 'شرح مجاني لنماذج أسئلة امتحانات الوزارة والربط بين قوانين الجبر والهندسة الفراغية.',
-        descriptionEn: 'Free masterclass analyzing high-yield exam questions and vector spatial foundations.'
-      }
-    ];
-  });
+  // Active Grades check
+  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.gradeLevel()));
+
+  // Free Trial Lectures (dynamically populated from real units)
+  readonly trialLectures = signal<ITrialLecture[]>([]);
 
   ngOnInit(): void {
+    this.loadActiveGrades();
     this.loadUnitPackages();
+  }
+
+  loadActiveGrades(): void {
+    this.http.get<{ success: boolean; data: { activeGrades: string[] } }>('/api/v1/public/active-grades').subscribe({
+      next: (res) => {
+        if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
+          this.activeGrades.set(res.data.activeGrades);
+        }
+      }
+    });
   }
 
   loadUnitPackages(): void {

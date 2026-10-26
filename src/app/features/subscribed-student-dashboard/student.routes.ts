@@ -26,6 +26,11 @@ export const STUDENT_ROUTES: Routes = [
     title: 'Assessment Attempt | تقييم المحاضرة التفاعلي — سبايدر ماث'
   },
   {
+    path: 'assessments/:id/attempt',
+    redirectTo: 'assessments/:id',
+    pathMatch: 'full'
+  },
+  {
     path: 'submissions/:id/feedback',
     loadComponent: () =>
       import(

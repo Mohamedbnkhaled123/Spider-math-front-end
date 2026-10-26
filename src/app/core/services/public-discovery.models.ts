@@ -39,11 +39,13 @@ export interface IScheduleItem {
   curriculum: CurriculumCode;
   gradeLevel: string;
   term: AcademicTermCode;
-  dayOfWeekAr: string;
-  dayOfWeekEn: string;
+  dayOfWeekAr?: string;
+  dayOfWeekEn?: string;
+  dayOfWeek?: string;
   timeSlot: string;
-  lectureTitleAr: string;
-  lectureTitleEn: string;
+  lectureTitleAr?: string;
+  lectureTitleEn?: string;
+  lectureSubject?: string;
 }
 
 export interface IPricingPackage {
@@ -77,6 +79,13 @@ export interface ITestimonial {
 }
 
 export interface IPublicLandingData {
+  heroHeadlineAr?: string;
+  heroHeadlineEn?: string;
+  heroSubheadlineAr?: string;
+  heroSubheadlineEn?: string;
+  announcementBannerText?: string;
+  isAnnouncementActive?: boolean;
+  activeAcademicYear?: string;
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];
   pricingPackages: IPricingPackage[];
@@ -107,6 +116,25 @@ export interface IPlacementTestResponse {
   total_questions: number;
   time_limit_minutes: number;
   questions: IPlacementQuestion[];
+  hasTest?: boolean;
+}
+
+export interface IPublicUnitSummary {
+  _id: string;
+  title_ar: string;
+  title_en?: string;
+  description_ar?: string;
+  description_en?: string;
+  curriculum: string;
+  grade_level: string;
+  academic_term: string;
+  package_type?: string;
+  price_egp?: number;
+  total_lectures_count?: number;
+  total_assessments_count?: number;
+  is_published?: boolean;
+  order_index?: number;
+  isSubscribed?: boolean;
 }
 
 export interface ISubmitPlacementPayload {
@@ -168,6 +196,7 @@ export interface ICompleteProfilePayload {
 
 export interface ICompleteProfileResult {
   studentHaCode: string;
+  token?: string;
   user: {
     _id: string;
     full_name: string;

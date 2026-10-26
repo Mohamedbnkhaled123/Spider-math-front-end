@@ -1,0 +1,229 @@
+<aside class="w-full lg:w-72 shrink-0 rounded-3xl border border-surface-border bg-surface-card p-5 shadow-sm sticky top-24">
+  
+  <!-- Studio Header Badge -->
+  <div class="pb-5 border-b border-surface-border mb-5">
+    <div class="flex items-center justify-between gap-2 mb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-brand-primary dark:text-brand-accent">
+          Spider Math Control Room
+        </span>
+      </div>
+
+      <!-- Batched Notification Bell (Consolidating every 5 submissions) -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleNotifications()"
+          class="relative p-2 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-text-primary transition-all cursor-pointer"
+          title="مركز الإشعارات التراكمية (كل 5 تسليمات)"
+        >
+          <app-icon name="bell" [size]="16" />
+          @if (batchedNotifications().length > 0) {
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-mono text-[9px] font-bold flex items-center justify-center animate-bounce">
+              {{ batchedNotifications().length }}
+            </span>
+          }
+        </button>
+
+        <!-- Flyout Panel for Batched Notifications -->
+        @if (isNotificationsOpen()) {
+          <div class="absolute left-0 top-12 z-layer-modal w-72 rounded-2xl border border-surface-border bg-surface-card shadow-2xl p-4 space-y-3 animate-fade-in text-right rtl:text-right">
+            <div class="flex items-center justify-between border-b border-surface-border pb-2">
+              <span class="text-xs font-bold text-text-primary">إشعارات التسليمات المجمعة</span>
+              <span class="text-[10px] text-text-muted">تجميع تلقائي (كل 5 حلول)</span>
+            </div>
+
+            <div class="max-h-60 overflow-y-auto space-y-2 text-xs">
+              @for (item of batchedNotifications(); track item.id) {
+                <div class="p-2.5 rounded-xl border border-surface-border bg-surface-bg space-y-1">
+                  <div class="flex items-center justify-between text-[11px] font-bold text-brand-primary dark:text-brand-accent">
+                    <span>{{ item.curriculum }} • {{ item.gradeLevel }}</span>
+                    <span class="text-[10px] text-text-muted">{{ item.timestamp }}</span>
+                  </div>
+                  <p class="text-[11px] text-text-primary">
+                    تم اكتمال دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+                  </p>
+                </div>
+              } @empty {
+                <div class="py-6 text-center text-xs text-text-muted">
+                  لا توجد تنبيهات تسليمات مجمعة جديدة.
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <h1 class="text-sm font-bold text-text-primary">
+      غرفة عمليات م/ هبة عبدالوهاب
+    </h1>
+    <p class="text-[11px] text-text-muted mt-0.5">
+      v2.2 الإشراف الأكاديمي والتحكم الكامل
+    </p>
+  </div>
+
+  <!-- Operational Nav Tabs -->
+  <nav class="space-y-1.5" aria-label="أقسام استوديو الإدارة المركزية">
+    <!-- 1. Analytics Shell -->
+    <button
+      type="button"
+      (click)="selectTab('analytics')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'analytics'"
+      [class.text-white]="activeTab() === 'analytics'"
+      [class.text-text-secondary]="activeTab() !== 'analytics'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'analytics'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="activity" [size]="16" />
+        <span>لوحة الإحصائيات المركزية</span>
+      </div>
+      <app-icon name="chevron-left" [size]="14" />
+    </button>
+
+    <!-- 2. Curriculum Studio -->
+    <button
+      type="button"
+      (click)="selectTab('curriculum')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'curriculum'"
+      [class.text-white]="activeTab() === 'curriculum'"
+      [class.text-text-secondary]="activeTab() !== 'curriculum'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'curriculum'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="book-open" [size]="16" />
+        <span>استوديو المناهج والوحدات</span>
+      </div>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
+        [class.bg-white/20]="activeTab() === 'curriculum'"
+        [class.text-white]="activeTab() === 'curriculum'"
+        [class.bg-surface-bg]="activeTab() !== 'curriculum'"
+        [class.text-text-muted]="activeTab() !== 'curriculum'"
+      >
+        {{ analytics().activeSubscriptions }}
+      </span>
+    </button>
+
+    <!-- 2b. Dedicated Assessment Studio -->
+    <button
+      type="button"
+      (click)="selectTab('assessments')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'assessments'"
+      [class.text-white]="activeTab() === 'assessments'"
+      [class.text-text-secondary]="activeTab() !== 'assessments'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'assessments'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="award" [size]="16" />
+        <span>قسم وبنك الامتحانات</span>
+      </div>
+      <app-icon name="chevron-left" [size]="14" />
+    </button>
+
+    <!-- 3. Interactive Grading Studio -->
+    <button
+      type="button"
+      (click)="selectTab('grading')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'grading'"
+      [class.text-white]="activeTab() === 'grading'"
+      [class.text-text-secondary]="activeTab() !== 'grading'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'grading'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="file-text" [size]="16" />
+        <span>تسليمات الكويزات والتصحيح</span>
+      </div>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
+        [class.bg-rose-500]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
+        [class.text-white]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
+        [class.bg-surface-bg]="activeTab() !== 'grading' && analytics().pendingGradingCount === 0"
+        [class.text-text-muted]="activeTab() !== 'grading' && analytics().pendingGradingCount === 0"
+      >
+        {{ analytics().pendingGradingCount }}
+      </span>
+    </button>
+
+    <!-- 4. Students, Devices & Subscriptions -->
+    <button
+      type="button"
+      (click)="selectTab('students')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'students'"
+      [class.text-white]="activeTab() === 'students'"
+      [class.text-text-secondary]="activeTab() !== 'students'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'students'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="user" [size]="16" />
+        <span>الطلاب والاشتراكات والأجهزة</span>
+      </div>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
+        [class.bg-white/20]="activeTab() === 'students'"
+        [class.text-white]="activeTab() === 'students'"
+        [class.bg-surface-bg]="activeTab() !== 'students'"
+        [class.text-text-muted]="activeTab() !== 'students'"
+      >
+        {{ analytics().registeredStudents }}
+      </span>
+    </button>
+
+    <!-- 5. Leads CRM & CMS Config -->
+    <button
+      type="button"
+      (click)="selectTab('leads_cms')"
+      class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+      [class.bg-brand-primary]="activeTab() === 'leads_cms'"
+      [class.text-white]="activeTab() === 'leads_cms'"
+      [class.text-text-secondary]="activeTab() !== 'leads_cms'"
+      [class.hover:bg-surface-bg]="activeTab() !== 'leads_cms'"
+    >
+      <div class="flex items-center gap-2.5">
+        <app-icon name="grid" [size]="16" />
+        <span>CMS وإدارة الـ Leads</span>
+      </div>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
+        [class.bg-white/20]="activeTab() === 'leads_cms'"
+        [class.text-white]="activeTab() === 'leads_cms'"
+        [class.bg-surface-bg]="activeTab() !== 'leads_cms'"
+        [class.text-text-muted]="activeTab() !== 'leads_cms'"
+      >
+        {{ analytics().newLeadsCount }}
+      </span>
+    </button>
+  </nav>
+
+  <!-- Quick Operational Actions & Maintenance -->
+  <div class="mt-6 pt-5 border-t border-surface-border space-y-2.5">
+    <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted block">
+      صيانة وأمان المنصة
+    </span>
+
+    <!-- 1-Click Platform Backup Button -->
+    <button
+      type="button"
+      (click)="triggerBackup()"
+      [disabled]="isExporting()"
+      class="w-full py-2.5 px-3 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+    >
+      <app-icon [name]="isExporting() ? 'loader' : 'upload-cloud'" [size]="14" [className]="isExporting() ? 'animate-spin' : 'text-brand-primary'" />
+      <span>{{ isExporting() ? 'جاري تجهيز النسخة...' : 'تحميل نسخة احتياطية (JSON)' }}</span>
+    </button>
+
+    <!-- Purge Ephemeral Homework WebP Button -->
+    <button
+      type="button"
+      (click)="triggerPurge()"
+      [disabled]="isPurging()"
+      class="w-full py-2 px-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-[11px] font-bold text-rose-500 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+    >
+      <app-icon name="trash" [size]="13" />
+      <span>{{ isPurging() ? 'جاري تفريغ السيرفر...' : 'تفريغ صور واجبات الترم المنتهي' }}</span>
+    </button>
+  </div>
+
+</aside>
