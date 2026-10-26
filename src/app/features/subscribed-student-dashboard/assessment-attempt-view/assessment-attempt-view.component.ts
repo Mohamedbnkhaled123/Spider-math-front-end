@@ -147,17 +147,48 @@ export class AssessmentAttemptViewComponent implements OnInit {
     return this.quizCache.activeQuiz()?.selectedAnswers[curr._id] === optionIndex;
   }
 
-  onHomeworkUploaded(urls: string[]): void {
-    this.uploadedHomeworkPhotos.set(urls);
+  clearOption(): void {
     const curr = this.currentQuestion();
     if (!curr) return;
+    const currentQuiz = this.quizCache.activeQuiz();
+    if (!currentQuiz) return;
+    const updated = { ...currentQuiz.selectedAnswers };
+    delete updated[curr._id];
+    currentQuiz.selectedAnswers = updated;
+    this.quizCache.activeQuiz.set({ ...currentQuiz });
+  }
+
+  isQuestionAnswered(questionId: string): boolean {
+    const active = this.quizCache.activeQuiz();
+    if (!active) return false;
+    const hasOption = active.selectedAnswers?.[questionId] !== undefined;
+    const hasImage = (active.uploadedImages || []).some(img => img.questionId === questionId);
+    return hasOption || hasImage;
+  }
+
+  getQuestionImages(questionId: string) {
+    const active = this.quizCache.activeQuiz();
+    return (active?.uploadedImages || []).filter(img => img.questionId === questionId);
+  }
+
+  onHomeworkUploaded(urls: string[]): void {
+    const curr = this.currentQuestion();
+    if (!curr) return;
+    this.onQuestionHomeworkUploaded(curr._id, urls);
+  }
+
+  onQuestionHomeworkUploaded(questionId: string, urls: string[]): void {
     const items = urls.map(url => ({
-      questionId: curr._id,
+      questionId,
       imageUrl: url,
       rotation: 0,
       sizeKb: 120
     }));
-    this.quizCache.recordHomeworkImages(items);
+    this.quizCache.recordHomeworkImages(items, questionId);
+  }
+
+  removeQuestionImage(questionId: string, imageUrl: string): void {
+    this.quizCache.removeHomeworkImage(questionId, imageUrl);
   }
 
   prevQuestion(): void {

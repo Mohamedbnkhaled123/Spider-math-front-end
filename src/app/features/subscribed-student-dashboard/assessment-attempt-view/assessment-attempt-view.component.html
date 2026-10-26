@@ -111,7 +111,7 @@
           <button
             type="button"
             (click)="activeQuestionIdx.set(idx)"
-            class="w-8 h-8 rounded-xl font-numeric text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center justify-center"
+            class="w-8 h-8 rounded-xl font-numeric text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center justify-center relative"
             [class.bg-brand-primary]="activeQuestionIdx() === idx"
             [class.text-white]="activeQuestionIdx() === idx"
             [class.border-brand-accent]="activeQuestionIdx() === idx"
@@ -119,6 +119,9 @@
             [class.border-surface-border]="activeQuestionIdx() !== idx"
           >
             {{ idx + 1 }}
+            @if (isQuestionAnswered(item._id)) {
+              <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-surface-card" title="تمت الإجابة"></span>
+            }
           </button>
         }
       </div>
@@ -180,14 +183,108 @@
               </div>
             }
           </div>
+
+          <!-- Alternative / Supplementary Handwritten Solution Upload via Camera / Gallery -->
+          <div class="mt-6 pt-5 border-t border-surface-border">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-text-secondary flex items-center gap-1.5">
+                <app-icon name="camera" [size]="15" className="text-brand-primary" />
+                <span>أو التقاط / رفع صورة الحل بالكاميرا كإجابة بديلة بدل الاختيارات:</span>
+              </span>
+
+              @if (quizCache.activeQuiz()?.selectedAnswers?.[q._id] !== undefined) {
+                <button
+                  type="button"
+                  (click)="clearOption()"
+                  class="text-[11px] font-bold text-text-muted hover:text-feedback-danger transition-colors cursor-pointer"
+                  title="إلغاء تحديد الاختيار والاكتفاء بصورة الحل فقط"
+                >
+                  إلغاء تحديد الاختيار والاكتفاء بالصورة
+                </button>
+              }
+            </div>
+
+            <!-- Uploaded Photos List for this Question -->
+            @if (getQuestionImages(q._id); as qImgs) {
+              @if (qImgs.length > 0) {
+                <div class="mb-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    @for (img of qImgs; track img.imageUrl) {
+                      <div class="relative group">
+                        <img [src]="img.imageUrl" alt="صورة إجابة الطالب" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
+                        <button
+                          type="button"
+                          (click)="removeQuestionImage(q._id, img.imageUrl)"
+                          class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
+                          title="حذف هذه الصورة"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    }
+                    <div>
+                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
+                        ✓ تم إرفاق صورة الحل كإجابة لهذا السؤال بنجاح
+                      </span>
+                      <span class="text-[10px] text-text-muted">
+                        سيتم تسليمها للمهندسة هبة عبدالوهاب لمراجعة خطوات الحل وتصحيحها.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+
+            <app-image-compressor-uploader
+              uploadTarget="homework"
+              (homeworkUploaded)="onQuestionHomeworkUploaded(q._id, $event)"
+            />
+          </div>
         }
 
         <!-- Question Type 2: Essay / Homework Handwritten Upload -->
         @if (q.type === 'ESSAY') {
           <div class="mt-6 p-6 rounded-2xl border border-surface-border bg-surface-bg/50">
+            <div class="mb-4">
+              <span class="text-xs font-bold text-text-primary flex items-center gap-2">
+                <app-icon name="edit" [size]="16" className="text-brand-primary" />
+                <span>سؤال مقالي: التقط صورة كشكول الحل من الكاميرا أو ارفعها كإجابة معتمدة:</span>
+              </span>
+            </div>
+
+            @if (getQuestionImages(q._id); as qImgs) {
+              @if (qImgs.length > 0) {
+                <div class="mb-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    @for (img of qImgs; track img.imageUrl) {
+                      <div class="relative group">
+                        <img [src]="img.imageUrl" alt="صورة إجابة الطالب" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
+                        <button
+                          type="button"
+                          (click)="removeQuestionImage(q._id, img.imageUrl)"
+                          class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
+                          title="حذف هذه الصورة"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    }
+                    <div>
+                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
+                        ✓ تم حفظ صورة حل المسألة المقالية
+                      </span>
+                      <span class="text-[10px] text-text-muted">
+                        يمكنك إضافة صورة ثانية إذا كان الحل يتكون من صفحتين.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+
             <app-image-compressor-uploader
               uploadTarget="homework"
-              (homeworkUploaded)="onHomeworkUploaded($event)"
+              (homeworkUploaded)="onQuestionHomeworkUploaded(q._id, $event)"
             />
           </div>
         }

@@ -74,7 +74,14 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
 
   readonly maxFilesAllowed = computed(() => (this.uploadTarget() === 'question' ? 1 : 2));
 
+  // Live In-App Camera Viewfinder State
+  readonly isLiveCameraOpen = signal<boolean>(false);
+  readonly isCameraStarting = signal<boolean>(false);
+  readonly cameraFacingMode = signal<'environment' | 'user'>('environment');
+  private cameraMediaStream: MediaStream | null = null;
+
   ngOnDestroy(): void {
+    this.closeLiveCamera();
     // Revoke object URLs to prevent memory leaks
     if (isPlatformBrowser(this.platformId)) {
       for (const item of this.items()) {
@@ -86,14 +93,133 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   }
 
   /**
+   * Opens live camera stream viewfinder modal via HTML5 getUserMedia API.
+   * If camera access is unsupported or rejected, falls back seamlessly to file input.
+   */
+  async openLiveCamera(fallbackInput?: HTMLInputElement): Promise<void> {
+    if (!isPlatformBrowser(this.platformId) || !navigator.mediaDevices?.getUserMedia) {
+      fallbackInput?.click();
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.isLiveCameraOpen.set(true);
+    this.isCameraStarting.set(true);
+
+    try {
+      await this.initCameraStream();
+    } catch (err: any) {
+      console.warn('getUserMedia failed, falling back to camera input picker:', err);
+      this.closeLiveCamera();
+      fallbackInput?.click();
+    } finally {
+      this.isCameraStarting.set(false);
+    }
+  }
+
+  /**
+   * Initializes or restarts the media stream with current facing mode.
+   */
+  private async initCameraStream(): Promise<void> {
+    if (this.cameraMediaStream) {
+      this.cameraMediaStream.getTracks().forEach(track => track.stop());
+      this.cameraMediaStream = null;
+    }
+
+    const constraints: MediaStreamConstraints = {
+      video: {
+        facingMode: { ideal: this.cameraFacingMode() },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
+      audio: false
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    this.cameraMediaStream = stream;
+
+    // Small delay to allow DOM modal render
+    setTimeout(() => {
+      const videoEl = document.getElementById('liveCameraVideo') as HTMLVideoElement | null;
+      if (videoEl) {
+        videoEl.srcObject = stream;
+        videoEl.play().catch(playErr => console.warn('Camera video play error:', playErr));
+      }
+    }, 100);
+  }
+
+  /**
+   * Flips camera facing mode between environment (back) and user (selfie).
+   */
+  async flipCamera(): Promise<void> {
+    this.cameraFacingMode.update(m => (m === 'environment' ? 'user' : 'environment'));
+    this.isCameraStarting.set(true);
+    try {
+      await this.initCameraStream();
+    } catch (err) {
+      console.warn('Failed to switch camera facing mode:', err);
+    } finally {
+      this.isCameraStarting.set(false);
+    }
+  }
+
+  /**
+   * Halts camera tracks and closes live camera viewfinder modal.
+   */
+  closeLiveCamera(): void {
+    if (this.cameraMediaStream) {
+      this.cameraMediaStream.getTracks().forEach(track => track.stop());
+      this.cameraMediaStream = null;
+    }
+    this.isLiveCameraOpen.set(false);
+    this.isCameraStarting.set(false);
+  }
+
+  /**
+   * Grabs a high-resolution frame from live <video> element onto Canvas and triggers compression.
+   */
+  capturePhotoFromStream(): void {
+    const videoEl = document.getElementById('liveCameraVideo') as HTMLVideoElement | null;
+    if (!videoEl || videoEl.videoWidth === 0) {
+      this.errorMessage.set('الكاميرا غير جاهزة بعد، يرجى الانتظار ثانية.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoEl.videoWidth;
+    canvas.height = videoEl.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(blob => {
+      if (blob) {
+        const file = new File([blob], `captured_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        this.closeLiveCamera();
+        this.processFiles([file]);
+      } else {
+        this.errorMessage.set('تعذر التقاط لقطة من الكاميرا، يرجى المحاولة ثانية.');
+      }
+    }, 'image/jpeg', 0.92);
+  }
+
+  /**
    * File input selection handler.
    */
   async onFilesSelected(event: Event): Promise<void> {
     const inputEl = event.target as HTMLInputElement;
     if (!inputEl.files || inputEl.files.length === 0) return;
 
-    this.errorMessage.set(null);
     const files = Array.from(inputEl.files);
+    inputEl.value = '';
+    await this.processFiles(files);
+  }
+
+  /**
+   * Core processing: compresses selected/captured files into WebP <= 150KB.
+   */
+  async processFiles(files: File[]): Promise<void> {
+    this.errorMessage.set(null);
     const maxAllowed = this.maxFilesAllowed();
 
     if (files.length > maxAllowed) {
@@ -102,7 +228,6 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
           ? 'مسموح برفع صورة واحدة فقط لنص السؤال.'
           : 'الحد الأقصى المسموح به هو صورتان فقط لحل الواجب لحماية سرعة المعالجة.'
       );
-      inputEl.value = '';
       return;
     }
 
@@ -148,7 +273,6 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
       this.errorMessage.set('فشل ضغط الصورة، يرجى اختيار ملف صورة صالح.');
     } finally {
       this.isProcessing.set(false);
-      inputEl.value = '';
     }
   }
 

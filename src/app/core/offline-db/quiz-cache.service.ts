@@ -178,14 +178,27 @@ export class QuizCacheService implements OnDestroy {
 
   /**
    * Records uploaded homework solutions locally in Dexie.js.
+   * If questionId is provided, preserves and merges images for that specific question.
    */
   async recordHomeworkImages(
-    images: Array<{ questionId?: string; imageUrl: string; rotation: number; sizeKb: number }>
+    images: Array<{ questionId?: string; imageUrl: string; rotation: number; sizeKb: number }>,
+    questionId?: string
   ): Promise<void> {
     const current = this.activeQuiz();
     if (!current) return;
 
-    current.uploadedImages = [...images];
+    const existing = current.uploadedImages || [];
+    let updated: typeof existing;
+    if (questionId) {
+      updated = [
+        ...existing.filter(img => img.questionId !== questionId),
+        ...images.map(img => ({ ...img, questionId }))
+      ];
+    } else {
+      updated = [...images];
+    }
+
+    current.uploadedImages = updated;
     current.lastSavedAt = Date.now();
     this.activeQuiz.set({ ...current });
 
@@ -197,6 +210,31 @@ export class QuizCacheService implements OnDestroy {
         });
       } catch (err) {
         console.warn('Failed to persist homework images to Dexie:', err);
+      }
+    }
+  }
+
+  /**
+   * Removes a specific attached solution photo for a question.
+   */
+  async removeHomeworkImage(questionId: string, imageUrl: string): Promise<void> {
+    const current = this.activeQuiz();
+    if (!current) return;
+
+    current.uploadedImages = (current.uploadedImages || []).filter(
+      img => !(img.questionId === questionId && img.imageUrl === imageUrl)
+    );
+    current.lastSavedAt = Date.now();
+    this.activeQuiz.set({ ...current });
+
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        await spiderMathDb.activeQuizzes.update(current.assessmentId, {
+          uploadedImages: current.uploadedImages,
+          lastSavedAt: current.lastSavedAt
+        });
+      } catch (err) {
+        console.warn('Failed to update removed image in Dexie:', err);
       }
     }
   }

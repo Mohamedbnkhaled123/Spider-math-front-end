@@ -769,18 +769,21 @@ export class AssessmentStudioComponent implements OnInit {
       available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
       available_until: asm.isScheduled && asm.availableUntil ? new Date(asm.availableUntil).toISOString() : null,
       is_placement_test: !!asm.isPlacementTest,
-      questions: asm.questions.map((q, idx) => ({
-        _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
-        order: q.order || idx + 1,
-        question_type: q.type || 'MCQ',
-        question_text: q.textAr || 'مسألة رياضية',
-        question_image_url: q.questionImageUrl || null,
-        options: (q.options || []).map((o) => o.trim()),
-        correct_option_index: Number(q.correctOptionIndex ?? 0),
-        points: Number(q.points || 1),
-        model_answer_text: q.explanationAr || '',
-        youtube_solution_url: q.youtubeSolutionUrl || null
-      }))
+      questions: asm.questions.map((q, idx) => {
+        const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
+        return {
+          _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
+          order: q.order || idx + 1,
+          question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
+          question_text: q.textAr || 'مسألة رياضية',
+          question_image_url: q.questionImageUrl || null,
+          options: isEssay ? [] : (q.options || []).map((o) => o.trim()),
+          correct_option_index: isEssay ? 0 : Number(q.correctOptionIndex ?? 0),
+          points: Number(q.points || 1),
+          model_answer_text: q.explanationAr || '',
+          youtube_solution_url: q.youtubeSolutionUrl || null
+        };
+      })
     };
 
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
