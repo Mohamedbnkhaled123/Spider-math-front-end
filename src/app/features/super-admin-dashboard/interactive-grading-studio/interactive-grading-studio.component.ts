@@ -321,6 +321,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
         const approved: PendingEssayGrading = { ...item, status: 'PUBLISHED' };
         this.gradingSubmitted.emit(approved);
         this.isGradingModalOpen.set(false);
+        this.fetchAllSubmissions();
         this.toastTriggered.emit({
           text: `تم اعتماد نتيجة الطالب ${item.studentName} ونشر التقرير وإشعار ولي أمره بنجاح!`,
           type: 'success'
@@ -331,6 +332,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
         const approved: PendingEssayGrading = { ...item, status: 'PUBLISHED' };
         this.gradingSubmitted.emit(approved);
         this.isGradingModalOpen.set(false);
+        this.fetchAllSubmissions();
         this.toastTriggered.emit({
           text: `تم اعتماد نتيجة الطالب ${item.studentName} وتحديث التقرير فورياً!`,
           type: 'success'

@@ -8,11 +8,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import { QuizCacheService } from '../../../core/offline-db/quiz-cache.service';
 import { OfflineSyncQueueService } from '../../../core/offline-db/offline-sync-queue.service';
+import { spiderMathDb } from '../../../core/offline-db/spider-math-db';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AssessmentAttemptBundle, AssessmentQuestionItem } from './assessment-attempt-view.models';
 
@@ -43,6 +46,7 @@ import { AssessmentAttemptBundle, AssessmentQuestionItem } from './assessment-at
 export class AssessmentAttemptViewComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
   readonly quizCache = inject(QuizCacheService);
   readonly syncQueue = inject(OfflineSyncQueueService);
   readonly langService = inject(LangService);
@@ -157,14 +161,17 @@ export class AssessmentAttemptViewComponent implements OnInit {
    * and queues attempt into OfflineSyncQueueService with 1s–15s jitter shield.
    */
   async submitAssessment(): Promise<void> {
+    if (this.isSubmitting()) return;
     this.isSubmitting.set(true);
 
     try {
+      const active = this.quizCache.activeQuiz();
+      const idempotencyKey = active?.idempotencyKey || this.syncQueue.generateUUIDv4();
       const record = await this.quizCache.completeQuizLocally();
       const mcqAnswers = Object.entries(record?.selectedAnswers ?? {}).map(
         ([question_id, selected_option_index]) => ({
           question_id,
-          selected_option_index
+          selected_option_index: Number(selected_option_index)
         })
       );
 
@@ -175,16 +182,47 @@ export class AssessmentAttemptViewComponent implements OnInit {
         rotation_deg: img.rotation
       }));
 
+      const payload = {
+        idempotency_key: idempotencyKey,
+        mcq_answers: mcqAnswers,
+        uploaded_solution_imgs: homeworkImgs,
+        client_started_at: record?.clientStartedAt ?? new Date().toISOString(),
+        client_submitted_at: new Date().toISOString(),
+        elapsed_time_sec: record?.elapsedSeconds ?? 120,
+        is_offline_cached: false,
+        offline_disconnect_count: 0
+      };
+
+      if (typeof navigator !== 'undefined' && navigator.onLine) {
+        try {
+          const res = await firstValueFrom(
+            this.http.post<{ success: boolean; data: any }>(
+              `/api/v1/assessments/${this.bundle().assessmentId}/sync-submission`,
+              payload
+            )
+          );
+          // Delete active quiz from Dexie so offline queue does not double-send
+          await spiderMathDb.activeQuizzes.delete(this.bundle().assessmentId);
+          this.isSubmissionCompleted.set(true);
+          const subId = res?.data?.submissionId || this.bundle().assessmentId;
+          this.router.navigate(['/student/submissions', subId, 'feedback']);
+          return;
+        } catch (onlineErr) {
+          console.warn('Direct online submission failed, falling back to sync queue:', onlineErr);
+        }
+      }
+
+      // Offline fallback: queue into Dexie with the exact same idempotencyKey
       await this.syncQueue.queueAttempt(
         this.bundle().assessmentId,
         mcqAnswers,
         homeworkImgs,
         record?.clientStartedAt ?? new Date().toISOString(),
-        record?.elapsedSeconds ?? 120
+        record?.elapsedSeconds ?? 120,
+        idempotencyKey
       );
 
       this.isSubmissionCompleted.set(true);
-      // Automatically route student to submission feedback viewer
       this.router.navigate(['/student/submissions', this.bundle().assessmentId, 'feedback']);
     } finally {
       this.isSubmitting.set(false);

@@ -8,6 +8,7 @@ export interface CustomMistakeItem {
   questionOrder: number;
   questionPromptText: string;
   studentAnswerText: string;
+  correctAnswerText?: string;
   errorNote: string; // Teacher's written note by Eng. Heba Abdel-Wahab
   youtubeSolutionUrl?: string | null; // Unprotected YouTube solution/post link
 }

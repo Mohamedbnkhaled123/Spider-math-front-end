@@ -21,6 +21,7 @@ export interface AssessmentQuestionItem {
   correctOptionIndex: number;
   points: number;
   explanationAr?: string;
+  youtubeSolutionUrl?: string | null;
 }
 
 export interface AssessmentItem {

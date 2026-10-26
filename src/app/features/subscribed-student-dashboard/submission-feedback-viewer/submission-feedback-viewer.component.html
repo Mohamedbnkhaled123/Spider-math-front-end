@@ -17,15 +17,12 @@
       <span class="text-xs font-bold text-brand-secondary">{{ feedback().unitTitleAr }}</span>
     </div>
 
-    <!-- State Simulator Toggle (for demoing pending vs published) -->
-    <button
-      type="button"
-      (click)="toggleVisibilityState()"
-      class="px-3 py-1 rounded-lg text-[10px] font-bold border border-surface-border bg-surface-bg hover:border-brand-accent text-text-muted transition-all"
-      title="تبديل حالة العرض بين قيد المراجعة ومنشور"
+    <span
+      class="px-3 py-1 rounded-lg text-xs font-bold border"
+      [ngClass]="isPublished() ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'"
     >
-      حالة العرض: {{ isPublished() ? 'معتمد ومنشور' : 'بانتظار تصحيح المعلمة' }}
-    </button>
+      {{ isPublished() ? 'النتيجة معتمدة ومنشورة' : 'بانتظار تصحيح المعلمة' }}
+    </span>
   </div>
 
   <!-- Header Title -->
@@ -39,151 +36,203 @@
     </h1>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- Case 1: Pending Teacher Review Card (HIDDEN_PENDING_TEACHER)              -->
-  <!-- ========================================================================= -->
-  @if (!isPublished()) {
-    <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card shadow-glass text-center max-w-xl mx-auto my-6 animate-fade-in">
-      <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
-        <app-icon name="clock" [size]="32" />
-      </div>
-
-      <h2 class="text-xl font-black text-text-primary mb-2">
-        الامتحان قيد التصحيح والاعتماد
-      </h2>
-      <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-        تم استلام حلولك المقالية بنجاح، وتقوم المهندسة هبة عبدالوهاب حالياً بمراجعة وتصحيح خطوات الحل اليدوي وإضافة الملاحظات التوجيهية وروابط الشرح.
-      </p>
-
-      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-muted">
-        <app-icon name="shield" [size]="14" className="text-brand-accent" />
-        <span>سيتم إرسال إشعار فوري لك ولولي الأمر فور اعتماد النتيجة</span>
-      </span>
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card animate-pulse">
+      <div class="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-bold text-text-secondary">جاري جلب تفاصيل النتيجة والتقييم...</p>
     </div>
   } @else {
+
     <!-- ========================================================================= -->
-    <!-- Case 2: Published Report (PUBLISHED_TO_STUDENT_AND_PARENT)                -->
+    <!-- Case 1: Pending Teacher Review Card (HIDDEN_PENDING_TEACHER)              -->
     <!-- ========================================================================= -->
-    <div class="space-y-8 animate-fade-in">
-      
-      <!-- Overall Score Banner -->
-      <div class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div>
-          <span class="text-xs font-bold text-text-muted">الدرجة الإجمالية النهائية</span>
-          <div class="flex items-baseline gap-3 mt-1">
-            <span class="text-4xl sm:text-5xl font-black font-numeric text-emerald-600 dark:text-emerald-400">
-              {{ feedback().finalTotalScore }}
-            </span>
-            <span class="text-lg font-bold text-text-muted font-numeric">
-              / {{ feedback().maxScore }}
-            </span>
-            <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-numeric">
-              {{ feedback().scorePercentage }}%
-            </span>
-          </div>
-          <span class="text-[11px] text-text-muted mt-2 block font-numeric">
-            تاريخ الاعتماد: {{ feedback().gradedAt }}
-          </span>
+    @if (!isPublished()) {
+      <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card shadow-glass text-center max-w-xl mx-auto my-6 animate-fade-in">
+        <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <app-icon name="clock" [size]="32" />
         </div>
 
-        <!-- Score Breakdown Cards -->
-        <div class="flex items-center gap-3">
-          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
-            <span class="text-[10px] font-bold text-text-muted block mb-1">أسئلة الاختيار (MCQ)</span>
-            <span class="text-base font-black font-numeric text-text-primary">
-              {{ feedback().mcqAutoScore }} / 10
-            </span>
-          </div>
+        <h2 class="text-xl font-black text-text-primary mb-2">
+          الامتحان قيد التصحيح والاعتماد
+        </h2>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
+          تم استلام حلولك بنجاح، وتقوم المهندسة هبة عبدالوهاب حالياً بمراجعة وتصحيح خطوات الحل اليدوي وإضافة الملاحظات التوجيهية وروابط الشرح.
+        </p>
 
-          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
-            <span class="text-[10px] font-bold text-text-muted block mb-1">المسائل المقالية (Essay)</span>
-            <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
-              {{ feedback().essayManualScore }} / 10
-            </span>
-          </div>
-        </div>
+        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-muted">
+          <app-icon name="shield" [size]="14" className="text-brand-accent" />
+          <span>سيتم إرسال إشعار فوري لك ولولي الأمر فور اعتماد النتيجة</span>
+        </span>
       </div>
+    } @else {
+      <!-- ========================================================================= -->
+      <!-- Case 2: Published Report (PUBLISHED_TO_STUDENT_AND_PARENT)                -->
+      <!-- ========================================================================= -->
+      <div class="space-y-8 animate-fade-in">
+        
+        <!-- Overall Score Banner -->
+        <div class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+            <span class="text-xs font-bold text-text-muted">الدرجة الإجمالية النهائية</span>
+            <div class="flex items-baseline gap-3 mt-1">
+              <span class="text-4xl sm:text-5xl font-black font-numeric" [ngClass]="scoreTextClass()">
+                {{ feedback().finalTotalScore }}
+              </span>
+              <span class="text-lg font-bold text-text-muted font-numeric">
+                / {{ feedback().maxScore }}
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-xs font-black font-numeric border" [ngClass]="scoreColorClass()">
+                {{ scorePercentage() }}%
+              </span>
+            </div>
+            @if (feedback().gradedAt) {
+              <span class="text-[11px] text-text-muted mt-2 block font-numeric">
+                تاريخ الاعتماد: {{ feedback().gradedAt }}
+              </span>
+            }
+          </div>
 
-      <!-- Teacher Feedback Quote Card -->
-      @if (feedback().teacherFeedbackNotes; as notes) {
-        <div class="p-6 rounded-3xl border border-brand-accent/30 bg-brand-primary/5 shadow-sm relative overflow-hidden">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
-              <app-icon name="user" [size]="20" />
+          <!-- Score Breakdown Cards -->
+          <div class="flex items-center gap-3">
+            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
+              <span class="text-[10px] font-bold text-text-muted block mb-1">أسئلة الاختيار (MCQ)</span>
+              <span class="text-base font-black font-numeric text-text-primary">
+                {{ feedback().mcqAutoScore }}
+              </span>
             </div>
 
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-black text-brand-primary dark:text-brand-accent">
-                  ملاحظات المشرف الأكاديمي: م/ هبة عبدالوهاب
-                </span>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-secondary">
-                  توجيه مباشر
-                </span>
-              </div>
-              <p class="text-xs sm:text-sm text-text-primary leading-relaxed">
-                "{{ notes }}"
-              </p>
+            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
+              <span class="text-[10px] font-bold text-text-muted block mb-1">المسائل المقالية (Essay)</span>
+              <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
+                {{ feedback().essayManualScore }}
+              </span>
             </div>
           </div>
         </div>
-      }
 
-      <!-- Detailed Mistake Review List -->
-      <div>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-black text-text-primary flex items-center gap-2">
-            <app-icon name="alert-circle" [size]="18" className="text-feedback-danger" />
-            <span>تحليل الأخطاء والحلول النموذجية بالفيديو</span>
-          </h3>
-          <span class="text-xs font-bold text-text-muted font-numeric">
-            {{ feedback().customMistakeCases.length }} ملاحظات مسجلة
-          </span>
-        </div>
+        <!-- Full Mark Congratulations (Fix 6: ONLY shown when score === maxScore and maxScore > 0) -->
+        @if (isFullMark()) {
+          <div class="p-8 rounded-3xl border border-emerald-500/30 bg-emerald-500/10 text-center shadow-sm animate-fade-in">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto mb-3">
+              <app-icon name="check-circle" [size]="36" />
+            </div>
+            <h3 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
+              إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!
+            </h3>
+            <p class="text-xs sm:text-sm text-text-secondary">
+              ما شاء الله! لقد حصلت على الدرجة النهائية كاملة في هذا الاختبار. استمر في هذا المستوى المتميز!
+            </p>
+          </div>
+        }
 
-        <div class="space-y-4">
-          @for (mistake of feedback().customMistakeCases; track mistake.questionOrder) {
-            <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm">
-              <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-feedback-danger/10 text-feedback-danger">
-                  السؤال رقم {{ mistake.questionOrder }}
-                </span>
-                <span class="text-xs font-bold text-text-muted">مراجعة تصحيح المسألة</span>
+        <!-- Teacher Feedback Quote Card -->
+        @if (feedback().teacherFeedbackNotes; as notes) {
+          <div class="p-6 rounded-3xl border border-brand-accent/30 bg-brand-primary/5 shadow-sm relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
+                <app-icon name="user" [size]="20" />
               </div>
 
-              <!-- Question Prompt Text -->
-              <h4 class="text-xs sm:text-sm font-bold text-text-primary mb-3">
-                {{ mistake.questionPromptText }}
-              </h4>
-
-              <!-- Teacher Note Box -->
-              <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border mb-4">
-                <span class="text-[11px] font-bold text-brand-secondary block mb-1">
-                  ملاحظة المعلمة التوجيهية:
-                </span>
-                <p class="text-xs text-text-secondary leading-relaxed">
-                  {{ mistake.errorNote }}
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-black text-brand-primary dark:text-brand-accent">
+                    ملاحظات المشرف الأكاديمي: م/ هبة عبدالوهاب
+                  </span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-secondary">
+                    توجيه مباشر
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm text-text-primary leading-relaxed">
+                  "{{ notes }}"
                 </p>
               </div>
+            </div>
+          </div>
+        }
 
-              <!-- YouTube Solution Video Button (Section 5.1 Zero Image Bloat Policy) -->
-              @if (mistake.youtubeSolutionUrl; as ytUrl) {
-                <button
-                  type="button"
-                  (click)="openSolutionVideo(ytUrl)"
-                  class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <app-icon name="play" [size]="14" />
-                  <span>شاهد الحل النموذجي على يوتيوب (فيديو توضيحي)</span>
-                  <app-icon name="arrow-left" [size]="12" />
-                </button>
+        <!-- Detailed Mistake Review List -->
+        @if (feedback().customMistakeCases.length > 0) {
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-black text-text-primary flex items-center gap-2">
+                <app-icon name="alert-circle" [size]="18" className="text-feedback-danger" />
+                <span>تحليل الأسئلة التي تحتاج مراجعة والحلول النموذجية</span>
+              </h3>
+              <span class="text-xs font-bold text-text-muted font-numeric">
+                {{ feedback().customMistakeCases.length }} ملاحظات
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              @for (mistake of feedback().customMistakeCases; track mistake.questionOrder) {
+                <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+                  <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-feedback-danger/10 text-feedback-danger">
+                      السؤال رقم {{ mistake.questionOrder }}
+                    </span>
+                    <span class="text-xs font-bold text-text-muted">مراجعة الحل وتصحيح الخطأ</span>
+                  </div>
+
+                  <!-- Question Prompt Text -->
+                  <h4 class="text-xs sm:text-sm font-bold text-text-primary leading-relaxed">
+                    {{ mistake.questionPromptText }}
+                  </h4>
+
+                  <!-- Student vs Correct Answer (if available) -->
+                  @if (mistake.studentAnswerText || mistake.correctAnswerText) {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      @if (mistake.studentAnswerText) {
+                        <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20">
+                          <span class="text-[10px] font-bold text-rose-500 block mb-0.5">إجابتك المسجلة:</span>
+                          <span class="text-xs font-bold text-text-primary">{{ mistake.studentAnswerText }}</span>
+                        </div>
+                      }
+                      @if (mistake.correctAnswerText) {
+                        <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+                          <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">الإجابة الصحيحة:</span>
+                          <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{{ mistake.correctAnswerText }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <!-- Teacher Note Box -->
+                  @if (mistake.errorNote) {
+                    <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border">
+                      <span class="text-[11px] font-bold text-brand-secondary block mb-1">
+                        توجيه وملاحظة المعلمة:
+                      </span>
+                      <p class="text-xs text-text-secondary leading-relaxed">
+                        {{ mistake.errorNote }}
+                      </p>
+                    </div>
+                  }
+
+                  <!-- YouTube Solution Video Button (Section 5.1 Zero Image Bloat Policy) -->
+                  @if (mistake.youtubeSolutionUrl; as ytUrl) {
+                    <button
+                      type="button"
+                      (click)="openSolutionVideo(ytUrl)"
+                      class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                    >
+                      <app-icon name="play" [size]="14" />
+                      <span>شاهد الحل النموذجي على يوتيوب (فيديو توضيحي)</span>
+                      <app-icon name="arrow-left" [size]="12" />
+                    </button>
+                  }
+                </div>
               }
             </div>
-          }
-        </div>
-      </div>
+          </div>
+        } @else if (!isFullMark()) {
+          <div class="p-6 rounded-2xl border border-surface-border bg-surface-card text-center text-xs text-text-muted">
+            تم رصد درجاتك، ولم تُسجل المعلمة ملاحظات تفصيلية إضافية على الأسئلة.
+          </div>
+        }
 
-    </div>
+      </div>
+    }
   }
 
 </div>

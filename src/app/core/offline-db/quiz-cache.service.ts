@@ -91,6 +91,7 @@ export class QuizCacheService implements OnDestroy {
 
           const record: ActiveQuizRecord = {
             assessmentId,
+            idempotencyKey: data.idempotencyKey || undefined,
             title: asm.title_ar || asm.titleAr || data.title || 'Interactive Assessment',
             unitId: asm.unit_package_id || asm.unit_id || data.unit_id,
             durationMinutes: asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || 30,

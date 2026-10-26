@@ -14,7 +14,7 @@ import { ProtectedYoutubePlayerComponent } from '../../../shared/components/prot
 import { ProtectedPdfCanvasComponent } from '../../../shared/components/protected-pdf-canvas/protected-pdf-canvas.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
-import { LessonLectureItem, UnitWorkspaceData } from './unit-study-workspace.models';
+import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -59,7 +59,8 @@ export class UnitStudyWorkspaceComponent implements OnInit {
     curriculum: 'EGYPTIAN',
     gradeLevel: 'SEC_3',
     term: 'TERM_1',
-    lectures: []
+    lectures: [],
+    assessments: []
   });
 
   // Selected lecture ID signal
@@ -86,6 +87,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         this.isLoading.set(false);
         const unit = res?.data?.unit;
         const rawLectures = res?.data?.lectures || [];
+        const rawAssessments = res?.data?.assessments || [];
 
         const mappedLectures: LessonLectureItem[] = rawLectures.map((l: any, idx: number) => ({
           _id: l._id,
@@ -102,6 +104,19 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           assessmentId: l.linked_assessment_id
         }));
 
+        const mappedAssessments: UnitAssessmentItem[] = rawAssessments.map((a: any) => ({
+          _id: a._id,
+          titleAr: a.title_ar,
+          titleEn: a.title_en || '',
+          assessmentType: a.assessment_type || 'QUIZ',
+          totalPoints: a.total_points || 0,
+          timeLimitMinutes: a.time_limit_minutes || 30,
+          maxAttempts: a.max_attempts || 1,
+          availableFrom: a.available_from,
+          availableUntil: a.available_until,
+          studentAttemptStatus: a.studentAttemptStatus
+        }));
+
         this.workspaceData.set({
           unitId: unit?._id || unitId,
           titleAr: unit?.title_ar || '',
@@ -109,7 +124,8 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           curriculum: unit?.curriculum || 'EGYPTIAN',
           gradeLevel: unit?.grade_level || 'SEC_3',
           term: unit?.academic_term || 'TERM_1',
-          lectures: mappedLectures
+          lectures: mappedLectures,
+          assessments: mappedAssessments
         });
 
         if (mappedLectures.length > 0) {

@@ -34,6 +34,18 @@ import {
  */
 import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedule-alarm-picker/schedule-alarm-picker.component';
 
+/**
+ * Timezone Drift Fix (Fix #2): Converts UTC/ISO timestamp to local input string (YYYY-MM-DDTHH:mm)
+ * preserving browser local time without UTC offset skew.
+ */
+export function toLocalDatetimeInputValue(isoDateStr?: string | null): string {
+  if (!isoDateStr) return '';
+  const d = new Date(isoDateStr);
+  if (isNaN(d.getTime())) return '';
+  const tzOffsetMs = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+}
+
 @Component({
   selector: 'app-assessment-studio',
   standalone: true,
@@ -199,6 +211,7 @@ export class AssessmentStudioComponent implements OnInit {
   readonly newQuestionOptions = signal<string[]>(['', '', '', '']);
   readonly newQuestionCorrectIndex = signal<number>(0);
   readonly newQuestionPoints = signal<number>(5);
+  readonly newQuestionYoutubeUrl = signal<string>('');
 
   ngOnInit(): void {
     this.loadTracksAndActiveGrades();
@@ -260,7 +273,8 @@ export class AssessmentStudioComponent implements OnInit {
               options: q.options || [],
               correctOptionIndex: q.correct_option_index ?? 0,
               points: q.points || 5,
-              explanationAr: q.model_answer_text || q.explanation_ar || ''
+              explanationAr: q.model_answer_text || q.explanation_ar || '',
+              youtubeSolutionUrl: q.youtube_solution_url || q.youtubeSolutionUrl || null
             }))
           };
         });
@@ -611,12 +625,15 @@ export class AssessmentStudioComponent implements OnInit {
       questionImageUrl: this.newQuestionImageUrl(),
       options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
-      points: this.newQuestionPoints()
+      points: this.newQuestionPoints(),
+      youtubeSolutionUrl: this.newQuestionYoutubeUrl().trim() || null
     };
 
+    const nextQuestions = [...asm.questions, newQ];
     const updatedAsm: AssessmentItem = {
       ...asm,
-      questions: [...asm.questions, newQ]
+      questions: nextQuestions,
+      totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
 
@@ -625,6 +642,7 @@ export class AssessmentStudioComponent implements OnInit {
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
     this.newQuestionCorrectIndex.set(0);
+    this.newQuestionYoutubeUrl.set('');
     this.toastTriggered.emit({ text: 'تمت إضافة السؤال بنجاح!', type: 'success' });
   }
 
@@ -645,7 +663,11 @@ export class AssessmentStudioComponent implements OnInit {
       `هل أنت متأكدة من حذف السؤال رقم ${order} من هذا الامتحان؟`,
       () => {
         const filtered = asm.questions.filter((q) => q.order !== order);
-        this.activeAssessment.set({ ...asm, questions: filtered });
+        this.activeAssessment.set({
+          ...asm,
+          questions: filtered,
+          totalPoints: filtered.reduce((sum, q) => sum + (q.points || 1), 0)
+        });
         this.toastTriggered.emit({ text: 'تم حذف السؤال من الامتحان!', type: 'warning' });
       },
       true,
@@ -741,9 +763,10 @@ export class AssessmentStudioComponent implements OnInit {
         question_text: q.textAr || 'مسألة رياضية',
         question_image_url: q.questionImageUrl || null,
         options: (q.options || []).map((o) => o.trim()),
-        correct_option_index: q.correctOptionIndex ?? 0,
-        points: q.points || 5,
-        model_answer_text: q.explanationAr || ''
+        correct_option_index: Number(q.correctOptionIndex ?? 0),
+        points: Number(q.points || 1),
+        model_answer_text: q.explanationAr || '',
+        youtube_solution_url: q.youtubeSolutionUrl || null
       }))
     };
 

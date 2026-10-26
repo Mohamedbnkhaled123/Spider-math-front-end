@@ -186,13 +186,16 @@
                   </div>
 
                   <span
-                    class="px-3 py-1.5 rounded-xl text-xs font-black font-mono"
+                    class="px-3 py-1.5 rounded-xl text-xs font-black font-mono border"
                     [class.bg-emerald-500/10]="sub.scorePercentage >= 85"
                     [class.text-emerald-500]="sub.scorePercentage >= 85"
-                    [class.bg-amber-500/10]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
-                    [class.text-amber-500]="sub.scorePercentage >= 65 && sub.scorePercentage < 85"
-                    [class.bg-rose-500/10]="sub.scorePercentage < 65"
-                    [class.text-rose-500]="sub.scorePercentage < 65"
+                    [class.border-emerald-500/20]="sub.scorePercentage >= 85"
+                    [class.bg-amber-500/10]="sub.scorePercentage >= 50 && sub.scorePercentage < 85"
+                    [class.text-amber-500]="sub.scorePercentage >= 50 && sub.scorePercentage < 85"
+                    [class.border-amber-500/20]="sub.scorePercentage >= 50 && sub.scorePercentage < 85"
+                    [class.bg-rose-500/10]="sub.scorePercentage < 50"
+                    [class.text-rose-500]="sub.scorePercentage < 50"
+                    [class.border-rose-500/20]="sub.scorePercentage < 50"
                   >
                     {{ sub.scorePercentage }}%
                   </span>
@@ -218,7 +221,7 @@
               <div class="mt-5 space-y-3">
                 <h5 class="text-xs font-black text-rose-500 flex items-center gap-1.5">
                   <app-icon name="alert-circle" [size]="14" />
-                  <span>الأخطاء التي تم رصدها بحاجة لمراجعة دقيقة ({{ sub.mistakeCases.length }}):</span>
+                  <span>الأسئلة التي تحتاج لمراجعة دقيقة والحل النموذجي ({{ sub.mistakeCases.length }}):</span>
                 </h5>
 
                 <div class="space-y-3">
@@ -248,10 +251,14 @@
                   }
                 </div>
               </div>
-            } @else {
+            } @else if (!sub.isPendingReview && !sub.isInProgress && sub.finalTotalScore === sub.maxScore && sub.maxScore > 0) {
               <div class="mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs font-bold text-emerald-500 flex items-center gap-2">
                 <app-icon name="check-circle" [size]="16" />
                 <span>إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!</span>
+              </div>
+            } @else if (!sub.isPendingReview && !sub.isInProgress) {
+              <div class="mt-4 p-3 rounded-xl bg-surface-bg border border-surface-border text-xs text-text-muted text-center">
+                تم رصد الدرجة، ولا توجد ملاحظات أخطاء إضافية مسجلة.
               </div>
             }
           </div>

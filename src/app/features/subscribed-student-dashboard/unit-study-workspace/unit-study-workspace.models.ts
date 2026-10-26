@@ -18,6 +18,26 @@ export interface LessonLectureItem {
   assessmentId?: string;
 }
 
+export interface UnitAssessmentItem {
+  _id: string;
+  titleAr: string;
+  titleEn: string;
+  assessmentType: 'QUIZ' | 'HOMEWORK' | 'EXAM';
+  totalPoints: number;
+  timeLimitMinutes: number;
+  maxAttempts: number;
+  availableFrom?: string | null;
+  availableUntil?: string | null;
+  studentAttemptStatus?: {
+    completedAttemptsCount: number;
+    inProgressSubmissionId: string | null;
+    latestSubmissionId: string | null;
+    resultVisibility: string | null;
+    finalTotalScore: number | null;
+    timeWindowState: 'UPCOMING' | 'EXPIRED' | 'OPEN';
+  };
+}
+
 export interface UnitWorkspaceData {
   unitId: string;
   titleAr: string;
@@ -26,4 +46,5 @@ export interface UnitWorkspaceData {
   gradeLevel: string;
   term: string;
   lectures: LessonLectureItem[];
+  assessments: UnitAssessmentItem[];
 }

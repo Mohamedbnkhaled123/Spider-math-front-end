@@ -26,6 +26,7 @@ export interface CachedQuestion {
 
 export interface ActiveQuizRecord {
   assessmentId: string;
+  idempotencyKey?: string;
   title: string;
   unitId?: string;
   durationMinutes: number;

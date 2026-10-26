@@ -79,9 +79,10 @@ export class OfflineSyncQueueService implements OnDestroy {
       rotation_deg?: number;
     }>,
     clientStartedAt: string,
-    elapsedTimeSec: number
+    elapsedTimeSec: number,
+    customIdempotencyKey?: string
   ): Promise<string> {
-    const idempotencyKey = this.generateUUIDv4();
+    const idempotencyKey = customIdempotencyKey || this.generateUUIDv4();
     const isOffline = !this.isOnline();
 
     const record: SyncQueueRecord = {

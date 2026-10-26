@@ -219,6 +219,123 @@
       </div>
 
     </div>
+
+    <!-- ========================================================================= -->
+    <!-- Unit Assessments & Quizzes Section (Fix 3: Time Window & Attempt Strictness) -->
+    <!-- ========================================================================= -->
+    @if (workspaceData().assessments.length > 0) {
+      <div class="mt-10 rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-sm">
+        <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+              <app-icon name="award" [size]="20" />
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-black text-text-primary">
+                الاختبارات والواجبات الدورية للوحدة
+              </h2>
+              <p class="text-xs text-text-muted">
+                {{ workspaceData().assessments.length }} تقييمات مخصصة لقياس فهمك الرياضي
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (asm of workspaceData().assessments; track asm._id) {
+            <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg flex flex-col justify-between gap-4 transition-all hover:border-brand-accent/40 shadow-xs">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                    {{ asm.assessmentType === 'HOMEWORK' ? 'واجب منزلي' : asm.assessmentType === 'EXAM' ? 'امتحان شامل' : 'كويز تفاعلي' }}
+                  </span>
+
+                  <!-- Time Window State Badge -->
+                  @if (asm.studentAttemptStatus?.timeWindowState === 'UPCOMING') {
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                      يبدأ قريباً
+                    </span>
+                  } @else if (asm.studentAttemptStatus?.timeWindowState === 'EXPIRED') {
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                      انتهت فترة الاختبار
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                      متاح للحل الآن
+                    </span>
+                  }
+                </div>
+
+                <h3 class="text-sm font-black text-text-primary mb-2">
+                  {{ asm.titleAr }}
+                </h3>
+
+                <div class="flex items-center gap-3 text-[11px] text-text-muted font-numeric">
+                  <span>{{ asm.totalPoints }} درجة</span>
+                  <span>•</span>
+                  <span>{{ asm.timeLimitMinutes }} دقيقة</span>
+                  <span>•</span>
+                  <span>المحاولات: {{ asm.studentAttemptStatus?.completedAttemptsCount ?? 0 }} / {{ asm.maxAttempts }}</span>
+                </div>
+              </div>
+
+              <!-- Action Button based on status -->
+              <div class="pt-3 border-t border-surface-border/60">
+                @if (asm.studentAttemptStatus?.inProgressSubmissionId; as inProgId) {
+                  <a
+                    [routerLink]="['/student/assessments', asm._id, 'attempt']"
+                    class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-amber-600 hover:bg-amber-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <app-icon name="clock" [size]="14" />
+                    <span>استئناف المحاولة الجارية</span>
+                  </a>
+                } @else if ((asm.studentAttemptStatus?.completedAttemptsCount ?? 0) >= asm.maxAttempts) {
+                  @if (asm.studentAttemptStatus?.latestSubmissionId; as subId) {
+                    @if (asm.studentAttemptStatus!.resultVisibility === 'PUBLISHED_TO_STUDENT_AND_PARENT') {
+                      <a
+                        [routerLink]="['/student/submissions', subId, 'feedback']"
+                        class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                      >
+                        <app-icon name="check-circle" [size]="14" />
+                        <span>عرض النتيجة ({{ asm.studentAttemptStatus!.finalTotalScore }} / {{ asm.totalPoints }})</span>
+                      </a>
+                    } @else {
+                      <a
+                        [routerLink]="['/student/submissions', subId, 'feedback']"
+                        class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <app-icon name="clock" [size]="14" />
+                        <span>تم التسليم — قيد المراجعة</span>
+                      </a>
+                    }
+                  } @else {
+                    <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-text-muted bg-surface-card border border-surface-border text-center block">
+                      استنفدت جميع المحاولات
+                    </span>
+                  }
+                } @else if (asm.studentAttemptStatus?.timeWindowState === 'OPEN') {
+                  <a
+                    [routerLink]="['/student/assessments', asm._id, 'attempt']"
+                    class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <app-icon name="play" [size]="14" />
+                    <span>ابدأ الاختبار الآن</span>
+                  </a>
+                } @else if (asm.studentAttemptStatus?.timeWindowState === 'UPCOMING') {
+                  <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 text-center block">
+                    يُفتح قريباً حسب الجدولة
+                  </span>
+                } @else {
+                  <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-text-muted bg-surface-card border border-surface-border text-center block">
+                    انتهت نافذة تسليم الاختبار
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
   } @else {
     <div class="p-12 rounded-3xl border border-surface-border bg-surface-card text-center max-w-xl mx-auto my-8">
       <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-4">
