@@ -13,6 +13,30 @@ export interface CustomMistakeItem {
   youtubeSolutionUrl?: string | null; // Unprotected YouTube solution/post link
 }
 
+export interface QuestionReviewItem {
+  questionId: string;
+  questionOrder: number;
+  questionType: 'MCQ' | 'ESSAY_PHOTO';
+  questionText: string;
+  questionImageUrl?: string | null;
+  options: string[];
+  studentSelectedOptionIndex?: number | null;
+  studentAnswerText: string;
+  correctOptionIndex?: number;
+  correctAnswerText?: string;
+  isCorrect?: boolean;
+  points: number;
+  awardedPoints?: number;
+  youtubeSolutionUrl?: string | null;
+  teacherNote?: string | null;
+}
+
+export interface EssaySolutionImageItem {
+  imageUrl: string;
+  rotationDeg: number;
+  sizeKb?: number;
+}
+
 export interface SubmissionFeedbackData {
   submissionId: string;
   assessmentTitleAr: string;
@@ -27,4 +51,6 @@ export interface SubmissionFeedbackData {
   gradedAt?: string;
   teacherFeedbackNotes?: string;
   customMistakeCases: CustomMistakeItem[];
+  questionsReview: QuestionReviewItem[];
+  essaySolutionImages: EssaySolutionImageItem[];
 }

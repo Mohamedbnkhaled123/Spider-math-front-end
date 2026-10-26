@@ -451,7 +451,15 @@
                   <span class="text-amber-600 dark:text-amber-400 font-bold">{{ quiz.dueDateAr }}</span>
                 </div>
 
-                @if (quiz.canStart !== false) {
+                @if (quiz.isCompleted) {
+                  <a
+                    [routerLink]="quiz.feedbackUrl"
+                    class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <app-icon name="check-circle" [size]="14" />
+                    <span>تم التسليم ({{ quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة' }}) — مراجعة إجاباتي</span>
+                  </a>
+                } @else if (quiz.canStart !== false) {
                   <a
                     [routerLink]="quiz.assessmentUrl"
                     class="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -534,10 +542,10 @@
 
                 <a
                   [routerLink]="grade.feedbackUrl"
-                  class="w-full py-2.5 px-3 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary hover:bg-brand-primary/5 text-text-primary font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  class="w-full py-2.5 px-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
-                  <app-icon name="book-open" [size]="14" className="text-brand-primary" />
-                  <span>عرض تقرير الدرجات وتصحيح المعلمة</span>
+                  <app-icon name="book-open" [size]="14" className="text-emerald-500" />
+                  <span>مراجعة الإجابات ونموذج الحل وتصحيح المعلمة</span>
                 </a>
               </div>
             } @empty {

@@ -70,16 +70,24 @@ export interface StudentDueQuizItem {
   canStart?: boolean;
   statusNote?: string;
   assessmentUrl: string;
+  isCompleted?: boolean;
+  submissionId?: string;
+  score?: number;
+  maxScore?: number;
+  feedbackUrl?: string;
 }
 
 export interface StudentCompletedGradeItem {
   id: string;
+  submissionId?: string;
+  assessmentId?: string;
   titleAr: string;
   unitTitleAr: string;
   score: number;
   maxScore: number;
   percentage: number;
   gradeLabelAr: string;
+  status?: string;
   gradedBy: string;
   gradedDateAr: string;
   feedbackUrl: string;

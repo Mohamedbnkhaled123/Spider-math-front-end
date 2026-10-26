@@ -158,6 +158,7 @@ export class StudentOverviewComponent implements OnInit {
   // Due Quizzes (الكويزات اللي عليه - Real from Atlas)
   // =========================================================================
   readonly dueQuizzes = signal<StudentDueQuizItem[]>([]);
+  private readonly rawAssessmentsList = signal<any[]>([]);
 
   // =========================================================================
   // Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته - Real from Atlas)
@@ -190,6 +191,20 @@ export class StudentOverviewComponent implements OnInit {
     this.fetchRealAssessments();
     this.fetchLeaderboard();
     this.fetchRealNotifications();
+    this.fetchCompletedGrades();
+  }
+
+  fetchCompletedGrades(): void {
+    this.http.get<{ success: boolean; data: any[] }>('/api/v1/assessments/my-submissions').subscribe({
+      next: (res) => {
+        const list = res?.data || [];
+        this.completedGrades.set(list);
+        this.processDueQuizzes();
+      },
+      error: () => {
+        this.completedGrades.set([]);
+      }
+    });
   }
 
   loadActiveGrades(): void {
@@ -315,71 +330,100 @@ export class StudentOverviewComponent implements OnInit {
           ? res.data
           : (res?.data?.assessments || []);
 
-        if (Array.isArray(rawList)) {
-          const now = new Date();
-          const mapped: StudentDueQuizItem[] = rawList.map((asm: any) => {
-            let dueDateAr = asm.time_limit_minutes ? `${asm.time_limit_minutes} دقيقة` : 'متاح للحل الآن';
-            let isUrgent = false;
-            let canStart = true;
-            let statusNote: string | undefined = undefined;
-
-            if (asm.available_until) {
-              const untilDate = new Date(asm.available_until);
-              const diffMs = untilDate.getTime() - now.getTime();
-              const diffHours = diffMs / (1000 * 60 * 60);
-
-              if (diffMs < 0) {
-                dueDateAr = 'انتهى موعد التسليم';
-                canStart = false;
-                statusNote = 'انتهى الوقت المحدد لهذا الكويز';
-              } else if (diffHours <= 24) {
-                isUrgent = true;
-                const hoursLeft = Math.max(1, Math.round(diffHours));
-                dueDateAr = `ينتهي خلال ${hoursLeft} ساعة`;
-              } else {
-                dueDateAr = `متاح حتى ${untilDate.toLocaleDateString('ar-EG')}`;
-              }
-            }
-
-            if (asm.available_from) {
-              const fromDate = new Date(asm.available_from);
-              if (now < fromDate) {
-                dueDateAr = `يبدأ: ${fromDate.toLocaleDateString('ar-EG')} ${fromDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
-                canStart = false;
-                statusNote = 'الكويز مجدول ولم يحن موعد فتحه بعد';
-              }
-            }
-
-            const typeLabel = (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM')
-              ? 'امتحان شامل'
-              : ((asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK')
-                ? 'واجب منزلي'
-                : 'كويز تفاعلي');
-
-            return {
-              id: asm._id,
-              titleAr: asm.title_ar,
-              unitTitleAr: typeLabel,
-              questionsCount: asm.questions?.length || 0,
-              totalPoints: asm.total_points || 20,
-              xpReward: asm.xp_reward || 50,
-              dueDateAr,
-              isUrgent,
-              canStart,
-              statusNote,
-              assessmentUrl: `/student/assessments/${asm._id}`
-            };
-          });
-
-          this.dueQuizzes.set(mapped);
-        } else {
-          this.dueQuizzes.set([]);
-        }
+        this.rawAssessmentsList.set(rawList);
+        this.processDueQuizzes();
       },
       error: () => {
+        this.rawAssessmentsList.set([]);
         this.dueQuizzes.set([]);
       }
     });
+  }
+
+  processDueQuizzes(): void {
+    const rawList = this.rawAssessmentsList();
+    if (!Array.isArray(rawList) || rawList.length === 0) {
+      this.dueQuizzes.set([]);
+      return;
+    }
+
+    const completed = this.completedGrades();
+    const completedMap = new Map<string, StudentCompletedGradeItem>();
+    completed.forEach((c) => {
+      if (c.assessmentId) completedMap.set(c.assessmentId, c);
+      if (c.id) completedMap.set(c.id, c);
+    });
+
+    const now = new Date();
+    const mapped: StudentDueQuizItem[] = rawList.map((asm: any) => {
+      const match = completedMap.get(asm._id);
+      let dueDateAr = asm.time_limit_minutes ? `${asm.time_limit_minutes} دقيقة` : 'متاح للحل الآن';
+      let isUrgent = false;
+      let canStart = true;
+      let statusNote: string | undefined = undefined;
+
+      if (match) {
+        canStart = false;
+        dueDateAr = 'تم التسليم بنجاح';
+        statusNote = match.status === 'PENDING_REVIEW'
+          ? 'تم التسليم — قيد مراجعة وتصحيح المعلمة'
+          : `تم التسليم — الدرجة: ${match.score} / ${match.maxScore}`;
+      } else {
+        if (asm.available_until) {
+          const untilDate = new Date(asm.available_until);
+          const diffMs = untilDate.getTime() - now.getTime();
+          const diffHours = diffMs / (1000 * 60 * 60);
+
+          if (diffMs < 0) {
+            dueDateAr = 'انتهى موعد التسليم';
+            canStart = false;
+            statusNote = 'انتهى الوقت المحدد لهذا الكويز';
+          } else if (diffHours <= 24) {
+            isUrgent = true;
+            const hoursLeft = Math.max(1, Math.round(diffHours));
+            dueDateAr = `ينتهي خلال ${hoursLeft} ساعة`;
+          } else {
+            dueDateAr = `متاح حتى ${untilDate.toLocaleDateString('ar-EG')}`;
+          }
+        }
+
+        if (asm.available_from) {
+          const fromDate = new Date(asm.available_from);
+          if (now < fromDate) {
+            dueDateAr = `يبدأ: ${fromDate.toLocaleDateString('ar-EG')} ${fromDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+            canStart = false;
+            statusNote = 'الكويز مجدول ولم يحن موعد فتحه بعد';
+          }
+        }
+      }
+
+      const typeLabel = (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM')
+        ? 'امتحان شامل'
+        : ((asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK')
+          ? 'واجب منزلي'
+          : 'كويز تفاعلي');
+
+      return {
+        id: asm._id,
+        titleAr: asm.title_ar,
+        unitTitleAr: typeLabel,
+        questionsCount: asm.questions?.length || 0,
+        totalPoints: asm.total_points || 20,
+        xpReward: asm.xp_reward || 50,
+        dueDateAr,
+        isUrgent,
+        canStart,
+        statusNote,
+        assessmentUrl: `/student/assessments/${asm._id}`,
+        isCompleted: !!match,
+        submissionId: match ? (match.submissionId || match.id) : undefined,
+        score: match ? match.score : undefined,
+        maxScore: match ? match.maxScore : undefined,
+        feedbackUrl: match ? (match.feedbackUrl || `/student/submissions/${match.submissionId || match.id}/feedback`) : undefined
+      };
+    });
+
+    this.dueQuizzes.set(mapped);
   }
 
   fetchLeaderboard(): void {

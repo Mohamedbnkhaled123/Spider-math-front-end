@@ -53,11 +53,24 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     scorePercentage: 0,
     gradedAt: '',
     teacherFeedbackNotes: '',
-    customMistakeCases: []
+    customMistakeCases: [],
+    questionsReview: [],
+    essaySolutionImages: []
   });
+
+  readonly activeReviewTab = signal<'ALL_QUESTIONS' | 'MISTAKES_ONLY'>('ALL_QUESTIONS');
+  readonly previewImageUrl = signal<string | null>(null);
 
   readonly isPublished = computed(
     () => this.feedback().resultVisibility === 'PUBLISHED_TO_STUDENT_AND_PARENT'
+  );
+
+  readonly totalQuestionsCount = computed(() => this.feedback().questionsReview.length);
+  readonly correctQuestionsCount = computed(
+    () => this.feedback().questionsReview.filter((q) => q.isCorrect === true).length
+  );
+  readonly mistakesCount = computed(
+    () => this.feedback().customMistakeCases.length || this.feedback().questionsReview.filter((q) => q.isCorrect === false).length
   );
 
   readonly scorePercentage = computed(() => {
@@ -83,6 +96,18 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     if (p >= 50) return 'text-amber-600 dark:text-amber-400';
     return 'text-rose-600 dark:text-rose-400';
   });
+
+  openImagePreview(url: string): void {
+    this.previewImageUrl.set(url);
+  }
+
+  closeImagePreview(): void {
+    this.previewImageUrl.set(null);
+  }
+
+  setReviewTab(tab: 'ALL_QUESTIONS' | 'MISTAKES_ONLY'): void {
+    this.activeReviewTab.set(tab);
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -120,6 +145,28 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
               correctAnswerText: m.correctAnswerText || '',
               errorNote: m.errorNote || '',
               youtubeSolutionUrl: m.youtubeSolutionUrl || null
+            })),
+            questionsReview: (data.questionsReview || []).map((q: any, idx: number) => ({
+              questionId: q.questionId,
+              questionOrder: q.questionOrder ?? idx + 1,
+              questionType: q.questionType || 'MCQ',
+              questionText: q.questionText || '',
+              questionImageUrl: q.questionImageUrl || null,
+              options: q.options || [],
+              studentSelectedOptionIndex: q.studentSelectedOptionIndex,
+              studentAnswerText: q.studentAnswerText || '',
+              correctOptionIndex: q.correctOptionIndex,
+              correctAnswerText: q.correctAnswerText || '',
+              isCorrect: q.isCorrect,
+              points: q.points || 1,
+              awardedPoints: q.awardedPoints,
+              youtubeSolutionUrl: q.youtubeSolutionUrl || null,
+              teacherNote: q.teacherNote || null
+            })),
+            essaySolutionImages: (data.essaySolutionImages || []).map((img: any) => ({
+              imageUrl: img.imageUrl,
+              rotationDeg: img.rotationDeg || 0,
+              sizeKb: img.sizeKb
             }))
           });
         }
