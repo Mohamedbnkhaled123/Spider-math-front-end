@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, from, map, switchMap } from 'rxjs';
+import { Observable, tap, catchError, of, from, map, switchMap, throwError } from 'rxjs';
 import { spiderMathDb } from './spider-math-db';
 import {
   ActiveQuizRecord,
@@ -112,6 +112,9 @@ export class QuizCacheService implements OnDestroy {
           this.startMonotonicClock(0, record.durationMinutes);
         }),
         catchError(err => {
+          if (err && (err.status === 403 || err.status === 400 || err.status === 404)) {
+            return throwError(() => err);
+          }
           console.warn('Network call failed, attempting fallback to Dexie cache:', err);
           return from(this.loadCachedQuiz(assessmentId)).pipe(
             map(cached => {

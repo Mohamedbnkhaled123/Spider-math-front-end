@@ -130,13 +130,24 @@
 
           <!-- Start Assessment CTA -->
           @if (lec.hasAssessment && lec.assessmentId; as asmId) {
-            <a
-              [routerLink]="['/student/assessments', asmId, 'attempt']"
-              class="px-5 py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
-            >
-              <app-icon name="award" [size]="16" />
-              <span>ابدأ الواجب / الكويز</span>
-            </a>
+            @let linkedAsm = getAssessmentForLecture(asmId);
+            @if (linkedAsm && linkedAsm.studentAttemptStatus && linkedAsm.studentAttemptStatus.completedAttemptsCount >= linkedAsm.maxAttempts) {
+              <a
+                [routerLink]="['/student/submissions', linkedAsm.studentAttemptStatus.latestSubmissionId || asmId, 'feedback']"
+                class="px-5 py-3 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <app-icon name="check-circle" [size]="16" />
+                <span>عرض نتيجة التقييم ({{ linkedAsm.studentAttemptStatus.finalTotalScore ?? 0 }} / {{ linkedAsm.totalPoints }})</span>
+              </a>
+            } @else {
+              <a
+                [routerLink]="['/student/assessments', asmId, 'attempt']"
+                class="px-5 py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <app-icon name="award" [size]="16" />
+                <span>ابدأ الواجب / الكويز</span>
+              </a>
+            }
           }
         </div>
 
@@ -201,15 +212,27 @@
 
               <!-- Lesson Action: Start Assessment / Quiz -->
               @if (item.hasAssessment) {
+                @let playlistAsm = getAssessmentForLecture(item.assessmentId);
                 <div class="mt-2 pt-2 border-t border-surface-border/60">
-                  <a
-                    [routerLink]="['/student/assessments', item.assessmentId ?? ('asm_' + item._id), 'attempt']"
-                    (click)="$event.stopPropagation()"
-                    class="w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-brand-primary dark:text-brand-accent bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                  >
-                    <app-icon name="award" [size]="13" />
-                    <span>ابدأ الواجب / الكويز</span>
-                  </a>
+                  @if (playlistAsm && playlistAsm.studentAttemptStatus && playlistAsm.studentAttemptStatus.completedAttemptsCount >= playlistAsm.maxAttempts) {
+                    <a
+                      [routerLink]="['/student/submissions', playlistAsm.studentAttemptStatus.latestSubmissionId || playlistAsm._id, 'feedback']"
+                      (click)="$event.stopPropagation()"
+                      class="w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <app-icon name="check-circle" [size]="13" />
+                      <span>عرض النتيجة ({{ playlistAsm.studentAttemptStatus.finalTotalScore ?? 0 }}/{{ playlistAsm.totalPoints }})</span>
+                    </a>
+                  } @else {
+                    <a
+                      [routerLink]="['/student/assessments', item.assessmentId ?? ('asm_' + item._id), 'attempt']"
+                      (click)="$event.stopPropagation()"
+                      class="w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-brand-primary dark:text-brand-accent bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <app-icon name="award" [size]="13" />
+                      <span>ابدأ الواجب / الكويز</span>
+                    </a>
+                  }
                 </div>
               }
             </div>

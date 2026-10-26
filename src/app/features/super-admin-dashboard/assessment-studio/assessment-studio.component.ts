@@ -470,6 +470,14 @@ export class AssessmentStudioComponent implements OnInit {
     const nextState = !item.isPublished;
     const actionText = nextState ? 'نشر وتفعيل' : 'إلغاء نشر';
 
+    if (nextState && (!item.questions || item.questions.length === 0)) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: لا يمكن تفعيل ونشر كويز فارغ! يرجى إضافة الأسئلة أولاً قبل النشر.',
+        type: 'error'
+      });
+      return;
+    }
+
     this.openConfirm(
       `تأكيد ${actionText} الامتحان`,
       `هل تودين ${actionText} امتحان "${item.titleAr}"؟ ${nextState ? 'سيصبح متاحاً للحل فوراً لطلاب ' + item.gradeLevel : 'سيتم إخفاؤه عن الطلاب وتحويله لمسودة'}.`,
@@ -705,6 +713,11 @@ export class AssessmentStudioComponent implements OnInit {
           return;
         }
       }
+    }
+
+    if (!asm.questions || asm.questions.length === 0) {
+      this.showEditorError('تنبيه: يجب إضافة سؤال واحد على الأقل قبل حفظ الكويز! يرجى إضافة الأسئلة من تبويب الأسئلة.', 'QUESTIONS');
+      return;
     }
 
     // Pre-flight validation on all questions in this assessment

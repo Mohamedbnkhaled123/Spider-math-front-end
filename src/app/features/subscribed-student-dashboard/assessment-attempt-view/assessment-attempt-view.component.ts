@@ -110,6 +110,26 @@ export class AssessmentAttemptViewComponent implements OnInit {
         },
         error: (err) => {
           console.error('Failed to load assessment questions', err);
+          const errorCode = err?.error?.error?.code;
+          const latestSubId = err?.error?.error?.details?.latestSubmissionId || assessmentId;
+
+          // If maximum attempts exceeded or attempt already completed:
+          if (errorCode === 'MAX_ATTEMPTS_EXCEEDED' || err?.status === 403) {
+            this.router.navigate(['/student/submissions', latestSubId, 'feedback']);
+            return;
+          }
+
+          if (errorCode === 'ASSESSMENT_NOT_STARTED_YET') {
+            alert('عذراً، هذا الاختبار لم يحن موعد بدئه بعد وفقاً لجدول النشر.');
+            this.router.navigate(['/student']);
+            return;
+          }
+
+          if (errorCode === 'ASSESSMENT_EXPIRED') {
+            alert('عذراً، لقد انتهى الموعد المحدد لتسليم هذا الاختبار.');
+            this.router.navigate(['/student']);
+            return;
+          }
         }
       });
     }

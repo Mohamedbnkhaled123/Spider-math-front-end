@@ -165,4 +165,9 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   onChunkWatched(chunkIndex: number): void {
     // Progress emitted from ProtectedYoutubePlayerComponent
   }
+
+  getAssessmentForLecture(assessmentId?: string): UnitAssessmentItem | undefined {
+    if (!assessmentId) return undefined;
+    return this.workspaceData().assessments.find(a => a._id === assessmentId);
+  }
 }
