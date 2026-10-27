@@ -250,7 +250,7 @@
   <!-- ========================================================================= -->
   <!-- Coming Soon Banner or Real Active Academic Tracks                         -->
   <!-- ========================================================================= -->
-  @if (!isCurrentGradeActive()) {
+  @if (!isLoadingUnits() && !isCurrentGradeActive()) {
     <div class="coming-soon-card p-8 sm:p-14 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-surface-card to-brand-primary/5 shadow-glass text-center max-w-3xl mx-auto my-8">
       <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-brand-glow animate-pulse">
         <app-icon name="sparkles" [size]="40" />

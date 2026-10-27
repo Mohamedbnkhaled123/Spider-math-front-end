@@ -42,6 +42,16 @@ import {
  * - Detailed Lecture Tracker (Watched vs. Pending / Not Watched)
  * - Quizzes & Assessments Tracker (Due quizzes + Graded submissions with teacher feedback)
  */
+interface IStudentDashboardCache {
+  units: EnrolledUnitSummary[];
+  lectures: StudentLectureItem[];
+  completedGrades: StudentCompletedGradeItem[];
+  dueQuizzes: StudentDueQuizItem[];
+  notifications: StudentNotificationItem[];
+  timestamp: number;
+}
+let memoryDashboardCache: IStudentDashboardCache | null = null;
+
 @Component({
   selector: 'app-student-overview',
   standalone: true,
@@ -105,7 +115,7 @@ export class StudentOverviewComponent implements OnInit {
   );
 
   // XP Progress Ring Computations (Animation 4.4)
-  readonly userTotalXp = computed(() => this.authService.currentUser()?.total_xp ?? 1150);
+  readonly userTotalXp = computed(() => this.authService.currentUser()?.total_xp ?? 0);
   readonly currentLevel = computed(() => Math.floor(this.userTotalXp() / 500) + 1);
   readonly xpInCurrentLevel = computed(() => this.userTotalXp() % 500);
   readonly xpLevelProgressPct = computed(() => Math.min(100, Math.round((this.xpInCurrentLevel() / 500) * 100)));
@@ -117,11 +127,11 @@ export class StudentOverviewComponent implements OnInit {
   // =========================================================================
   // Dynamic Real Atlas Signals & Active Grades Check
   // =========================================================================
-  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly activeGrades = signal<string[]>(['SEC_1', 'SEC_2', 'SEC_3']);
   readonly currentUserGrade = computed(() => this.authService.currentUser()?.grade_level || 'SEC_3');
   readonly currentUserCurriculum = computed(() => this.authService.currentUser()?.curriculum || 'EGYPTIAN');
   readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.currentUserGrade()));
-  readonly isLoadingUnits = signal<boolean>(true);
+  readonly isLoadingUnits = signal<boolean>(!memoryDashboardCache);
 
   // Active units catalog (Real from Atlas)
   readonly units = signal<EnrolledUnitSummary[]>([]);
@@ -180,7 +190,7 @@ export class StudentOverviewComponent implements OnInit {
     if (list.length === 0) return 0;
     const totalAchieved = list.reduce((acc, g) => acc + g.score, 0);
     const totalPossible = list.reduce((acc, g) => acc + g.maxScore, 0);
-    return totalPossible > 0 ? Math.round((totalAchieved / totalPossible) * 100) : 0;
+    return totalPossible > 0 ? Math.min(100, Math.round((totalAchieved / totalPossible) * 100)) : 0;
   });
 
   // Animation 4.5 Leaderboard Podiums (Real from Gamification API)
@@ -195,12 +205,32 @@ export class StudentOverviewComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    if (memoryDashboardCache && (Date.now() - memoryDashboardCache.timestamp < 180000)) {
+      this.units.set(memoryDashboardCache.units);
+      this.lectures.set(memoryDashboardCache.lectures);
+      this.completedGrades.set(memoryDashboardCache.completedGrades);
+      this.dueQuizzes.set(memoryDashboardCache.dueQuizzes);
+      this.notifications.set(memoryDashboardCache.notifications);
+      this.isLoadingUnits.set(false);
+    }
+
     this.loadActiveGrades();
     this.fetchRealStudentData();
     this.fetchRealAssessments();
     this.fetchLeaderboard();
     this.fetchRealNotifications();
     this.fetchCompletedGrades();
+  }
+
+  private syncCache(): void {
+    memoryDashboardCache = {
+      units: this.units(),
+      lectures: this.lectures(),
+      completedGrades: this.completedGrades(),
+      dueQuizzes: this.dueQuizzes(),
+      notifications: this.notifications(),
+      timestamp: Date.now()
+    };
   }
 
   fetchCompletedGrades(): void {
@@ -318,6 +348,7 @@ export class StudentOverviewComponent implements OnInit {
                 );
 
                 this.lectures.set([...allLectures]);
+                this.syncCache();
               }
             }
           });
