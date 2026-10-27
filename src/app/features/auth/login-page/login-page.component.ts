@@ -210,9 +210,10 @@ export class LoginPageComponent implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.error?.message ||
-          err?.error?.message ||
-          'حدث خطأ أثناء تسجيل حساب الطالب. يرجى مراجعة البيانات والمحاولة مجدداً.'
+          this.extractErrorMessage(
+            err,
+            'حدث خطأ أثناء تسجيل حساب الطالب. يرجى مراجعة البيانات والمحاولة مجدداً.'
+          )
         );
       }
     });
@@ -243,7 +244,13 @@ export class LoginPageComponent implements OnInit {
           if (response?.error) {
             console.error('Google OAuth token client error:', response);
             if (response.error !== 'popup_closed_by_user') {
-              this.googleAuthErrorMessage.set(`تعذر استكمال الاتصال بحساب Google (${response.error})`);
+              if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
+                this.googleAuthErrorMessage.set(
+                  'تم حظر تسجيل الدخول بواسطة Google (origin_mismatch). يجب تشغيل المنصة على المنفذ 4200 المصرح به أو إضافة المنفذ الحالي في Google Cloud Console.'
+                );
+              } else {
+                this.googleAuthErrorMessage.set(`تعذر استكمال الاتصال بحساب Google (${response.error})`);
+              }
             }
             return;
           }
@@ -334,9 +341,7 @@ export class LoginPageComponent implements OnInit {
           );
         } else {
           this.googleAuthErrorMessage.set(
-            err?.error?.message ||
-            err?.error?.error?.message ||
-            'حدث خطأ أثناء التحقق من حساب Google. يرجى إعادة المحاولة.'
+            this.extractErrorMessage(err, 'حدث خطأ أثناء التحقق من حساب Google. يرجى إعادة المحاولة.')
           );
         }
       }
@@ -385,8 +390,10 @@ export class LoginPageComponent implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.message ||
-          'كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.'
+          this.extractErrorMessage(
+            err,
+            'كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.'
+          )
         );
       }
     });
@@ -434,8 +441,10 @@ export class LoginPageComponent implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.message ||
-          'بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق من الأرقام وإعادة المحاولة.'
+          this.extractErrorMessage(
+            err,
+            'بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق من الأرقام وإعادة المحاولة.'
+          )
         );
       }
     });
@@ -463,7 +472,7 @@ export class LoginPageComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(err?.error?.message || 'تعذر الاتصال بسيرفر الإدارة.');
+        this.errorMessage.set(this.extractErrorMessage(err, 'تعذر الاتصال بسيرفر الإدارة.'));
       }
     });
   }
@@ -471,5 +480,31 @@ export class LoginPageComponent implements OnInit {
   switchToGuest(): void {
     this.authService.clearSession('/');
     this.router.navigateByUrl('/');
+  }
+
+  /**
+   * Extracts clean, human-friendly Arabic error messages from HTTP error responses
+   * and prevents exposing raw syntax parser tokens or HTML doctype leaks.
+   */
+  private extractErrorMessage(err: any, fallback: string): string {
+    const rawMsg = err?.error?.error?.message || err?.error?.message;
+    if (typeof rawMsg === 'string') {
+      if (
+        rawMsg.includes('Unexpected token') ||
+        rawMsg.includes('DOCTYPE') ||
+        rawMsg.includes('JSON') ||
+        rawMsg.includes('is not valid')
+      ) {
+        return 'تعذر الاتصال بخادم المنصة بشكل صحيح (استجابة غير صالحة من السيرفر). يرجى التأكد من تشغيل السيرفر الخلفي.';
+      }
+      return rawMsg;
+    }
+    if (err?.status === 0) {
+      return 'تعذر الاتصال بالسيرفر. يرجى التأكد من تشغيل الباك إند واتصالك بالإنترنت.';
+    }
+    if (err?.status === 502 || err?.status === 503) {
+      return 'خادم المنصة الخلفي (API) غير متاح حالياً. يرجى التأكد من تشغيل السيرفر على المنفذ 5000.';
+    }
+    return fallback;
   }
 }
