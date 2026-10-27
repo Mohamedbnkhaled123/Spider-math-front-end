@@ -177,12 +177,14 @@ export class CurriculumStudioComponent implements OnInit {
     googleDrivePdfFileId: string;
     isPrintAllowed: boolean;
     durationMinutes: number;
+    isFreeTrial: boolean;
   }>({
     titleAr: '',
     youtubeUrl: '',
     googleDrivePdfFileId: '',
     isPrintAllowed: true,
-    durationMinutes: 45
+    durationMinutes: 45,
+    isFreeTrial: false
   });
 
   // Create Assessment Modal State
@@ -587,7 +589,8 @@ export class CurriculumStudioComponent implements OnInit {
       youtubeUrl: '',
       googleDrivePdfFileId: '',
       isPrintAllowed: true,
-      durationMinutes: 45
+      durationMinutes: 45,
+      isFreeTrial: false
     });
     this.isLectureModalOpen.set(true);
   }
@@ -621,7 +624,8 @@ export class CurriculumStudioComponent implements OnInit {
       youtubeUrl: form.youtubeUrl.trim(),
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
-      durationMinutes: form.durationMinutes
+      durationMinutes: form.durationMinutes,
+      isFreeTrial: !!form.isFreeTrial
     };
 
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/lectures', payload).subscribe({
@@ -635,7 +639,8 @@ export class CurriculumStudioComponent implements OnInit {
           encryptedVideoId: createdLec?.youtube_encrypted_id || ('U2FsdGVkX1_' + btoa(form.youtubeUrl.trim() || 'demo')),
           googleDrivePdfFileId: sanitizedDriveId,
           isPrintAllowed: form.isPrintAllowed,
-          durationMinutes: form.durationMinutes
+          durationMinutes: form.durationMinutes,
+          isFreeTrial: !!form.isFreeTrial
         };
 
         const updatedUnit: UnitPackageAdminItem = {

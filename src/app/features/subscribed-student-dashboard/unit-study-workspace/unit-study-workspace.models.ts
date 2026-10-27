@@ -16,6 +16,8 @@ export interface LessonLectureItem {
   isCompleted: boolean;
   hasAssessment: boolean;
   assessmentId?: string;
+  isAccessible?: boolean;
+  isFreeTrial?: boolean;
 }
 
 export interface UnitAssessmentItem {
@@ -45,6 +47,7 @@ export interface UnitWorkspaceData {
   curriculum: string;
   gradeLevel: string;
   term: string;
+  isSubscribed?: boolean;
   lectures: LessonLectureItem[];
   assessments: UnitAssessmentItem[];
 }

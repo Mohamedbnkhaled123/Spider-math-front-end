@@ -87,7 +87,38 @@
 
         <!-- Content Viewer Container -->
         <div class="theater-screen rounded-3xl border border-surface-border bg-surface-card overflow-hidden shadow-card">
-          @if (activeTab() === 'video') {
+          @if (isLectureLocked()) {
+            <!-- Locked State for Non-Subscribed Students -->
+            <div class="relative w-full aspect-video min-h-[380px] bg-slate-950 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-t from-brand-primary/10 to-transparent pointer-events-none"></div>
+
+              <div class="w-16 h-16 rounded-3xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary mb-4 shadow-brand-glow">
+                <app-icon name="lock" [size]="30" />
+              </div>
+
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
+                محتوى مخصص للطلاب المشتركين فقط
+              </span>
+
+              <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
+                {{ lec.titleAr }}
+              </h3>
+
+              <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
+                هذه المحاضرة وملزمة الشرح التفاعلية والاختبارات التابعة لها متاحة فقط لطلاب الوحدة المشتركين. اشترك الآن في الوحدة لفتح المحاضرة وكافة تدريبات ديسموس.
+              </p>
+
+              <div class="flex items-center gap-3">
+                <a
+                  routerLink="/student"
+                  class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <app-icon name="award" [size]="16" />
+                  <span>العودة والاشتراك في الوحدة</span>
+                </a>
+              </div>
+            </div>
+          } @else if (activeTab() === 'video') {
             <!-- Protected YouTube Player Integration -->
             <app-protected-youtube-player
               [encryptedVideoId]="playbackToken() || lec.encryptedVideoId"
@@ -187,6 +218,16 @@
                 </span>
 
                 <div class="flex items-center gap-1.5">
+                  @if (item.isFreeTrial) {
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      مجانية
+                    </span>
+                  } @else if (item.isAccessible === false) {
+                    <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-surface-bg text-text-muted border border-surface-border flex items-center gap-1">
+                      <app-icon name="lock" [size]="10" />
+                      <span>مشتركين</span>
+                    </span>
+                  }
                   <span class="text-[10px] font-bold text-text-muted font-numeric">
                     {{ item.durationMinutes }} دقيقة
                   </span>

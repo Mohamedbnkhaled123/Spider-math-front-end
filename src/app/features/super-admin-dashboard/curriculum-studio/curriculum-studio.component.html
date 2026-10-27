@@ -536,6 +536,46 @@
           </button>
         </div>
 
+        <!-- Access Level: Free Trial vs Subscribers Only -->
+        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-surface-bg border border-surface-border">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-text-primary block">نوع إتاحة المحاضرة (Access Level)</span>
+              @if (lectureForm().isFreeTrial) {
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  مجانية للجميع
+                </span>
+              } @else {
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                  للمشتركين فقط
+                </span>
+              }
+            </div>
+            <span class="text-[11px] text-text-muted mt-0.5 block">
+              {{ lectureForm().isFreeTrial ? 'متاحة لجميع الطلاب مجاناً حتى بدون اشتراك بالوحدة (تجربة تمهيدية)' : 'مقفلة وتتطلب اشتراكاً نشطاً في الوحدة لمشاهدة الفيديو والملزمة' }}
+            </span>
+          </div>
+          <button
+            type="button"
+            (click)="lectureForm().isFreeTrial = !lectureForm().isFreeTrial"
+            class="px-3.5 py-1.5 rounded-xl font-bold text-xs border transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+            [class.bg-emerald-500/10]="lectureForm().isFreeTrial"
+            [class.text-emerald-500]="lectureForm().isFreeTrial"
+            [class.border-emerald-500/30]="lectureForm().isFreeTrial"
+            [class.bg-brand-primary/10]="!lectureForm().isFreeTrial"
+            [class.text-brand-primary]="!lectureForm().isFreeTrial"
+            [class.border-brand-primary/30]="!lectureForm().isFreeTrial"
+          >
+            @if (lectureForm().isFreeTrial) {
+              <app-icon name="unlock" [size]="14" />
+              <span>مجانية (Free Trial)</span>
+            } @else {
+              <app-icon name="lock" [size]="14" />
+              <span>للمشتركين فقط</span>
+            }
+          </button>
+        </div>
+
         <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
           <button
             type="button"

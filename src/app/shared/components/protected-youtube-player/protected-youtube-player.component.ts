@@ -10,7 +10,8 @@ import {
   OnInit,
   OnDestroy,
   PLATFORM_ID,
-  viewChild
+  viewChild,
+  effect
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -51,7 +52,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   // Inputs
   readonly lectureId = input.required<string>();
-  readonly encryptedVideoId = input<string>('dQw4w9WgXcQ'); // default demo video
+  readonly encryptedVideoId = input<string>(''); // Session video token or direct ID
   readonly videoDurationSec = input<number>(1800); // 30 minutes default
   readonly resumePositionSec = input<number>(0);
   readonly completionThresholdPct = input<number>(85);
@@ -111,6 +112,17 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly formattedDuration = computed<string>(() => {
     return this.formatTime(this.duration());
   });
+
+  constructor() {
+    effect(() => {
+      const token = this.encryptedVideoId();
+      if (!isPlatformBrowser(this.platformId) || !this.ytPlayer) return;
+      const newVideoId = this.resolveVideoId(token);
+      if (newVideoId && this.ytPlayer.cueVideoById) {
+        this.ytPlayer.cueVideoById(newVideoId);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.duration.set(this.videoDurationSec());
@@ -247,7 +259,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   private mountPlayer(mountEl: HTMLElement): void {
     // Decrypt or extract raw video id
-    const videoId = this.resolveVideoId(this.encryptedVideoId());
+    const videoId = this.resolveVideoId(this.encryptedVideoId()) || 'M7lc1UVf-VE';
 
     this.ytPlayer = new window.YT.Player(mountEl, {
       videoId,
@@ -265,6 +277,10 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
       },
       events: {
         onReady: (e: any) => {
+          const currentVideo = this.resolveVideoId(this.encryptedVideoId());
+          if (currentVideo && currentVideo !== videoId) {
+            e.target.cueVideoById(currentVideo);
+          }
           if (this.resumePositionSec() > 0) {
             e.target.seekTo(this.resumePositionSec(), true);
           }
@@ -288,7 +304,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   private resolveVideoId(token: string): string {
-    if (!token) return 'dQw4w9WgXcQ';
+    if (!token) return '';
     const clean = token.trim();
     if (clean.length === 11 && !clean.includes('/') && !clean.includes('?') && !clean.includes('.') && !clean.includes(':')) {
       return clean;
@@ -297,8 +313,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     if (match && match[1]) {
       return match[1];
     }
-    // Clean fallback to standard lecture placeholder
-    return 'dQw4w9WgXcQ';
+    return '';
   }
 
   // =========================================================================

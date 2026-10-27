@@ -50,6 +50,7 @@ export interface LectureAdminItem {
   googleDrivePdfFileId: string;
   isPrintAllowed: boolean;
   durationMinutes: number;
+  isFreeTrial?: boolean;
 }
 
 export interface UnitPackageAdminItem {

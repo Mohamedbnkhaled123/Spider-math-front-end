@@ -50,6 +50,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly activeTab = signal<'video' | 'pdf'>('video');
   readonly isLoading = signal<boolean>(true);
   readonly playbackToken = signal<string>('');
+  readonly isLectureLocked = signal<boolean>(false);
 
   // Workspace Data
   readonly workspaceData = signal<UnitWorkspaceData>({
@@ -86,6 +87,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
       next: (res) => {
         this.isLoading.set(false);
         const unit = res?.data?.unit;
+        const isSubscribed = !!res?.data?.isSubscribed;
         const rawLectures = res?.data?.lectures || [];
         const rawAssessments = res?.data?.assessments || [];
 
@@ -101,7 +103,9 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           watchPercentage: l.watchPercentage || 0,
           isCompleted: !!l.isCompleted,
           hasAssessment: !!l.linked_assessment_id,
-          assessmentId: l.linked_assessment_id
+          assessmentId: l.linked_assessment_id,
+          isAccessible: l.isAccessible !== undefined ? !!l.isAccessible : (isSubscribed || !!l.is_free_trial),
+          isFreeTrial: !!l.is_free_trial
         }));
 
         const mappedAssessments: UnitAssessmentItem[] = rawAssessments.map((a: any) => ({
@@ -124,6 +128,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           curriculum: unit?.curriculum || 'EGYPTIAN',
           gradeLevel: unit?.grade_level || 'SEC_3',
           term: unit?.academic_term || 'TERM_1',
+          isSubscribed,
           lectures: mappedLectures,
           assessments: mappedAssessments
         });
@@ -131,7 +136,11 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         if (mappedLectures.length > 0) {
           const firstId = mappedLectures[0]._id;
           this.selectedLectureId.set(firstId);
-          this.fetchPlaybackToken(firstId);
+          if (mappedLectures[0].isAccessible !== false) {
+            this.fetchPlaybackToken(firstId);
+          } else {
+            this.isLectureLocked.set(true);
+          }
         }
       },
       error: () => {
@@ -142,20 +151,31 @@ export class UnitStudyWorkspaceComponent implements OnInit {
 
   selectLecture(lectureId: string): void {
     this.selectedLectureId.set(lectureId);
+    const targetLecture = this.workspaceData().lectures.find(l => l._id === lectureId);
+    if (targetLecture && targetLecture.isAccessible === false) {
+      this.isLectureLocked.set(true);
+      this.playbackToken.set('');
+      return;
+    }
+    this.isLectureLocked.set(false);
     this.fetchPlaybackToken(lectureId);
   }
 
   fetchPlaybackToken(lectureId: string): void {
     this.http.get<{ success: boolean; data: any }>(`/api/v1/lectures/${lectureId}/secure-playback`).subscribe({
       next: (res) => {
+        this.isLectureLocked.set(false);
         if (res?.data?.videoId) {
           this.playbackToken.set(res.data.videoId);
         } else if (res?.data?.sessionVideoToken) {
           this.playbackToken.set(res.data.sessionVideoToken);
         }
       },
-      error: () => {
+      error: (err) => {
         this.playbackToken.set('');
+        if (err?.status === 403) {
+          this.isLectureLocked.set(true);
+        }
       }
     });
   }
