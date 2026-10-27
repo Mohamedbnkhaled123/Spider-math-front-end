@@ -284,6 +284,7 @@ export class StudentOverviewComponent implements OnInit {
                     unitTitleAr: u.titleAr,
                     titleAr: lec.lecture_title_ar || lec.title_ar,
                     durationMinutes: durMinutes,
+                    videoDurationSec: lec.video_duration_sec || (durMinutes * 60),
                     isWatched: !!lec.isCompleted,
                     watchProgressPercentage: lec.watchPercentage || 0,
                     xpReward: lec.xp_reward_on_complete || 50,
@@ -639,5 +640,15 @@ export class StudentOverviewComponent implements OnInit {
         );
       }
     });
+  }
+
+  formatDuration(seconds?: number): string {
+    const totalSec = Math.max(0, Math.round(seconds || 0));
+    if (totalSec <= 0) return '00:00';
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    if (mins === 0) return `${secs} ثانية`;
+    if (secs === 0) return `${mins} دقيقة`;
+    return `${mins} د و ${secs} ث`;
   }
 }

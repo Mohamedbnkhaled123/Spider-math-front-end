@@ -360,7 +360,7 @@
                               <a [routerLink]="lec.actionUrl" class="font-bold text-text-primary hover:text-brand-accent transition-colors block truncate">
                                 {{ lec.titleAr }}
                               </a>
-                              <span class="text-[10px] text-text-muted font-numeric">{{ lec.durationMinutes }} دقيقة</span>
+                              <span class="text-[10px] text-text-muted font-numeric">{{ formatDuration(lec.videoDurationSec) }}</span>
                             </div>
                           </div>
 
@@ -485,7 +485,7 @@
               <div class="flex items-center gap-3 text-xs text-text-muted font-numeric mb-4">
                 <span class="flex items-center gap-1">
                   <app-icon name="clock" [size]="13" />
-                  <span>{{ lec.durationMinutes }} دقيقة</span>
+                  <span>{{ formatDuration(lec.videoDurationSec) }}</span>
                 </span>
                 <span class="flex items-center gap-1 text-brand-primary dark:text-brand-accent font-bold">
                   <app-icon name="sparkles" [size]="13" />

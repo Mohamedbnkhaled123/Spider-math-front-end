@@ -80,8 +80,8 @@
             </button>
           </div>
 
-          <span class="text-[11px] font-bold text-text-muted px-3 hidden sm:inline">
-            {{ lec.durationMinutes }} دقيقة
+          <span class="text-[11px] font-bold text-text-muted px-3 hidden sm:inline font-numeric">
+            {{ formatDuration(lec.videoDurationSec) }}
           </span>
         </div>
 
@@ -123,10 +123,11 @@
             @if (playbackToken() || lec.encryptedVideoId) {
               <app-protected-youtube-player
                 [encryptedVideoId]="playbackToken() || lec.encryptedVideoId"
-                [videoDurationSec]="lec.durationMinutes * 60"
+                [videoDurationSec]="lec.videoDurationSec || (lec.durationMinutes * 60)"
                 [lectureId]="lec._id"
                 [watermarkText]="'Spider Math | ' + (authService.currentUser()?.student_ha_code ?? 'HA4920')"
                 (chunkCompleted)="onChunkWatched($event)"
+                (progressUpdated)="onProgressUpdated($event)"
               />
             } @else {
               <div class="relative w-full aspect-video min-h-[380px] bg-black flex flex-col items-center justify-center gap-3 text-text-muted">
@@ -236,7 +237,7 @@
                     </span>
                   }
                   <span class="text-[10px] font-bold text-text-muted font-numeric">
-                    {{ item.durationMinutes }} دقيقة
+                    {{ formatDuration(item.videoDurationSec) }}
                   </span>
                   @if (item.isCompleted) {
                     <app-icon name="check-circle" [size]="14" className="text-emerald-500" />

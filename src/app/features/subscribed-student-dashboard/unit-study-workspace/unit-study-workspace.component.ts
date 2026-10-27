@@ -15,6 +15,7 @@ import { ProtectedPdfCanvasComponent } from '../../../shared/components/protecte
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
+import { IPlaybackProgress } from '../../../shared/components/protected-youtube-player/protected-youtube-player.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -97,6 +98,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           titleAr: l.lecture_title_ar || l.title_ar,
           titleEn: l.lecture_title_en || l.title_en || '',
           durationMinutes: l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 5),
+          videoDurationSec: l.video_duration_sec || (l.duration_minutes ? l.duration_minutes * 60 : 105),
           encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
           googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_materials?.[0]?.storage_file_id || l.pdf_materials?.[0]?._id?.toString() || '',
           isPrintAllowed: l.is_print_allowed !== undefined ? !!l.is_print_allowed : !!l.pdf_materials?.[0]?.is_print_allowed,
@@ -192,6 +194,42 @@ export class UnitStudyWorkspaceComponent implements OnInit {
 
   onChunkWatched(chunkIndex: number): void {
     // Progress emitted from ProtectedYoutubePlayerComponent
+  }
+
+  onProgressUpdated(progress: IPlaybackProgress): void {
+    const activeId = this.selectedLectureId();
+    if (!activeId) return;
+
+    this.workspaceData.update(data => {
+      const updatedLectures = data.lectures.map(lec => {
+        if (lec._id === activeId) {
+          return {
+            ...lec,
+            watchPercentage: progress.watchPercentage,
+            isCompleted: progress.isCompleted || lec.isCompleted
+          };
+        }
+        return lec;
+      });
+      return {
+        ...data,
+        lectures: updatedLectures
+      };
+    });
+  }
+
+  formatDuration(seconds?: number): string {
+    const totalSec = Math.max(0, Math.round(seconds || 0));
+    if (totalSec <= 0) return '00:00';
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    if (mins === 0) {
+      return `${secs} ثانية`;
+    }
+    if (secs === 0) {
+      return `${mins} دقيقة`;
+    }
+    return `${mins} د و ${secs} ث`;
   }
 
   getAssessmentForLecture(assessmentId?: string): UnitAssessmentItem | undefined {

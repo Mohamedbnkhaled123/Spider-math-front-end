@@ -84,7 +84,7 @@ app.use('/**', (req, res, next) => {
  * Start the server if this module is the main entry point.
  * Defaults to port 4200 to align with Google OAuth authorized origin.
  */
-if (isMainModule(import.meta.url)) {
+if (process.argv[1]?.includes('server.mjs')) {
   const port = process.env['PORT'] || 4200;
   app.listen(port, () => {
     console.log(`Spider Math Express SSR server listening on http://localhost:${port}`);

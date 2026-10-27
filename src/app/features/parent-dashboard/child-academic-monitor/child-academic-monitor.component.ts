@@ -84,7 +84,8 @@ export class ChildAcademicMonitorComponent {
             order: lec.order || 1,
             titleAr: lec.titleAr || lec.lecture_title_ar || 'محاضرة',
             titleEn: lec.titleEn || lec.lecture_title_en || '',
-            durationMinutes: lec.durationMinutes || 45,
+            durationMinutes: lec.video_duration_sec ? Math.max(1, Math.round(lec.video_duration_sec / 60)) : (lec.durationMinutes || 5),
+            videoDurationSec: lec.video_duration_sec || (lec.durationMinutes ? lec.durationMinutes * 60 : 105),
             isCompleted: !!lec.isCompleted,
             watchPercentage: lec.watchPercentage ?? 0
           })) : []
@@ -130,5 +131,15 @@ export class ChildAcademicMonitorComponent {
   openYoutubeSolution(url?: string | null): void {
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  formatDuration(seconds?: number): string {
+    const totalSec = Math.max(0, Math.round(seconds || 0));
+    if (totalSec <= 0) return '00:00';
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    if (mins === 0) return `${secs} ثانية`;
+    if (secs === 0) return `${mins} دقيقة`;
+    return `${mins} د و ${secs} ث`;
   }
 }

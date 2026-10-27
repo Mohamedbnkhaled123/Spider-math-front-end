@@ -9,6 +9,7 @@ export interface LessonLectureItem {
   titleAr: string;
   titleEn: string;
   durationMinutes: number;
+  videoDurationSec?: number;
   encryptedVideoId: string;
   googleDrivePdfFileId?: string;
   isPrintAllowed: boolean;

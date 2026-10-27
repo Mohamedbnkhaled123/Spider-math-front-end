@@ -26,6 +26,7 @@ export interface ChildUnitWatchMetric {
     titleAr: string;
     titleEn: string;
     durationMinutes: number;
+    videoDurationSec?: number;
     isCompleted: boolean;
     watchPercentage: number;
   }>;

@@ -115,6 +115,16 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(() => {
+      const id = this.lectureId();
+      this.watchedChunks.clear();
+      this.xpAwarded.set(false);
+      this.currentTimeSec.set(this.resumePositionSec());
+      if (this.videoDurationSec() > 0) {
+        this.duration.set(this.videoDurationSec());
+      }
+    });
+
+    effect(() => {
       const token = this.encryptedVideoId();
       if (!isPlatformBrowser(this.platformId)) return;
       const newVideoId = this.resolveVideoId(token);
@@ -324,6 +334,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           } else {
             this.isPlaying.set(false);
             this.stopTracking();
+            this.dispatchHeartbeat();
           }
         }
       }
@@ -332,17 +343,8 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   private syncRealDuration(durationSec: number): void {
     if (!this.lectureId() || durationSec <= 0) return;
-    this.http.post(
-      `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
-      {
-        currentPlaybackSec: this.currentTimeSec(),
-        chunkIndex: Math.floor(this.currentTimeSec() / 5),
-        actualDurationSec: durationSec
-      }
-    ).subscribe({
-      next: () => {},
-      error: () => {}
-    });
+    this.duration.set(durationSec);
+    this.dispatchHeartbeat();
   }
 
   private resolveVideoId(token: string): string {
@@ -400,31 +402,51 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   private startHeartbeatCycle(): void {
-    // Dispatch genuine watch progress heartbeat to backend every 30 seconds
+    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+    // Dispatch genuine watch progress heartbeat to backend every 5 seconds while playing
     this.heartbeatInterval = setInterval(() => {
-      if (!this.isPlaying()) return;
+      if (this.isPlaying()) {
+        this.dispatchHeartbeat();
+      }
+    }, 5000);
+  }
 
-      const currentPlaybackSec = this.currentTimeSec();
-      const chunkIndex = Math.floor(currentPlaybackSec / 5);
+  public dispatchHeartbeat(): void {
+    if (!this.lectureId() || !isPlatformBrowser(this.platformId)) return;
 
-      this.http.post<{ success: boolean; data: IPlaybackHeartbeatResponse }>(
-        `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
-        {
-          currentPlaybackSec,
-          chunkIndex,
-          actualDurationSec: this.duration()
-        }
-      ).subscribe({
-        next: res => {
-          if (res.data?.xpAwarded && !this.xpAwarded()) {
+    const currentPlaybackSec = this.currentTimeSec();
+    const chunkIndex = Math.floor(currentPlaybackSec / 5);
+    const chunksArray = Array.from(this.watchedChunks);
+
+    this.http.post<{ success: boolean; data: IPlaybackHeartbeatResponse }>(
+      `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
+      {
+        currentPlaybackSec,
+        chunkIndex,
+        watchedChunks: chunksArray,
+        actualDurationSec: this.duration()
+      }
+    ).subscribe({
+      next: res => {
+        if (res.data) {
+          if (res.data.watchPercentage !== undefined) {
+            this.progressUpdated.emit({
+              currentPositionSec: currentPlaybackSec,
+              videoDurationSec: this.duration(),
+              watchPercentage: res.data.watchPercentage,
+              watchedChunksCount: chunksArray.length,
+              isCompleted: res.data.isCompleted || res.data.watchPercentage >= this.completionThresholdPct()
+            });
+          }
+          if (res.data.xpAwarded && !this.xpAwarded()) {
             this.triggerXpCelebration();
           }
-        },
-        error: () => {
-          // Gracefully continue offline tracking
         }
-      });
-    }, 30000);
+      },
+      error: () => {
+        // Gracefully continue offline tracking
+      }
+    });
   }
 
   private triggerXpCelebration(): void {

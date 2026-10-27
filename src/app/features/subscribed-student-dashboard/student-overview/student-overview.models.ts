@@ -29,6 +29,7 @@ export interface EnrolledUnitSummary {
     order: number;
     titleAr: string;
     durationMinutes: number;
+    videoDurationSec?: number;
     isWatched: boolean;
     watchProgressPercentage: number;
     actionUrl: string;
@@ -63,6 +64,7 @@ export interface StudentLectureItem {
   unitTitleAr: string;
   titleAr: string;
   durationMinutes: number;
+  videoDurationSec?: number;
   isWatched: boolean;
   watchProgressPercentage: number;
   xpReward: number;
