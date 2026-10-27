@@ -116,10 +116,21 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       const token = this.encryptedVideoId();
-      if (!isPlatformBrowser(this.platformId) || !this.ytPlayer) return;
+      if (!isPlatformBrowser(this.platformId)) return;
       const newVideoId = this.resolveVideoId(token);
-      if (newVideoId && this.ytPlayer.cueVideoById) {
-        this.ytPlayer.cueVideoById(newVideoId);
+      if (!newVideoId) return;
+
+      const mountEl = this.iframeMount()?.nativeElement;
+      if (!this.ytPlayer && mountEl) {
+        if (window.YT && window.YT.Player) {
+          this.mountPlayer(mountEl);
+        } else {
+          this.initYouTubeIframe();
+        }
+      } else if (this.ytPlayer) {
+        if (this.ytPlayer.cueVideoById) {
+          this.ytPlayer.cueVideoById(newVideoId);
+        }
       }
     });
   }
@@ -260,8 +271,14 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   private mountPlayer(mountEl: HTMLElement): void {
     const videoId = this.resolveVideoId(this.encryptedVideoId());
     if (!videoId) {
-      // Do not mount any dummy videos. The constructor effect will mount once the real videoId arrives.
       return;
+    }
+
+    if (this.ytPlayer) {
+      try {
+        this.ytPlayer.destroy?.();
+      } catch {}
+      this.ytPlayer = null;
     }
 
     this.ytPlayer = new window.YT.Player(mountEl, {
