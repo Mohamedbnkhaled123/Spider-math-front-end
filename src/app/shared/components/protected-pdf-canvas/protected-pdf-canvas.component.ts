@@ -9,7 +9,8 @@ import {
   OnInit,
   OnDestroy,
   PLATFORM_ID,
-  viewChild
+  viewChild,
+  effect
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -59,6 +60,15 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
 
   private pdfDoc: any = null;
   private currentRenderingTask: any = null;
+
+  constructor() {
+    effect(() => {
+      const lecId = this.lectureId();
+      const fId = this.fileId();
+      if (!isPlatformBrowser(this.platformId) || !lecId) return;
+      this.loadPdfJsAndDocument();
+    });
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -117,6 +127,10 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
     }
   }
 
+  retryLoad(): void {
+    this.loadPdfJsAndDocument();
+  }
+
   private loadPdfJsAndDocument(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
@@ -136,15 +150,17 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
         onPdfJsReady();
       };
       script.onerror = () => {
-        // Fallback demo mock canvas when external CDN is offline
-        this.renderDemoCanvas();
+        this.isLoading.set(false);
+        this.errorMessage.set('تعذر تحميل مكتبة معالجة الـ PDF. يرجى التحقق من اتصالك بالإنترنت.');
       };
       document.head.appendChild(script);
     }
   }
 
   private fetchBinaryPdfStream(): void {
-    const url = `/api/v1/lectures/${this.lectureId()}/pdf/${this.fileId()}/stream`;
+    const rawFileId = this.fileId() ? this.fileId().trim() : '';
+    const filePart = rawFileId ? `/${rawFileId}` : '';
+    const url = `/api/v1/lectures/${this.lectureId()}/pdf${filePart}/stream`;
 
     this.http.get(url, { responseType: 'arraybuffer' }).subscribe({
       next: buffer => {
@@ -154,16 +170,19 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
             this.pdfDoc = doc;
             this.totalPages.set(doc.numPages);
             this.isLoading.set(false);
+            this.errorMessage.set(null);
+            this.currentPage.set(1);
             this.renderCurrentPage();
           },
-          () => {
-            this.renderDemoCanvas();
+          (err: any) => {
+            this.isLoading.set(false);
+            this.errorMessage.set('تعذر معالجة وعرض صفحات الـ PDF. قد يكون الملف غير صالح.');
           }
         );
       },
-      error: () => {
-        // Fallback for local demonstration without backend Google Drive credentials
-        this.renderDemoCanvas();
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set('تعذر جلب ملف الـ PDF من Google Drive. يرجى التأكد من معرّف الملف وصلاحيات الوصول.');
       }
     });
   }
@@ -216,43 +235,5 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
       }
     }
     ctx.restore();
-  }
-
-  private renderDemoCanvas(): void {
-    this.isLoading.set(false);
-    this.totalPages.set(12);
-
-    const canvas = this.pdfCanvas()?.nativeElement;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = 800;
-    canvas.height = 1100;
-
-    // Background sheet
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Header banner
-    ctx.fillStyle = '#6D28D9';
-    ctx.fillRect(40, 40, canvas.width - 80, 70);
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 22px "Cairo", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('منصة سبايدر ماث — مذكرة التفاضل والتكامل التفاعلية', canvas.width / 2, 82);
-
-    // Decorative equations
-    ctx.fillStyle = '#0F172A';
-    ctx.font = '16px "JetBrains Mono", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('1. معدل التغير وميل المماس دص/دس = نها [ د(س + هـ) - د(س) ] / هـ', 60, 180);
-    ctx.fillText('2. قاعدة السلسلة: دص/دس = (دص/دع) × (دع/دس)', 60, 220);
-    ctx.fillText('3. تكامل الدوال الأسية: ∫ هـ^(أس) دس = (١ / أ) هـ^(أس) + ث', 60, 260);
-
-    // Stamp security watermark
-    this.stampCanvasWatermark(ctx, canvas.width, canvas.height);
   }
 }

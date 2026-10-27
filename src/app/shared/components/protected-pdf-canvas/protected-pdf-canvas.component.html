@@ -95,10 +95,25 @@
           جاري فك تشفير وتجهيز صفحات المستند...
         </span>
       </div>
+    } @else if (errorMessage()) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-card p-6 text-center z-10">
+        <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center mb-1">
+          <app-icon name="alert-circle" [size]="24" />
+        </div>
+        <p class="text-xs sm:text-sm font-bold text-text-primary max-w-md">{{ errorMessage() }}</p>
+        <button
+          type="button"
+          (click)="retryLoad()"
+          class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-sm transition-all cursor-pointer flex items-center gap-2 mt-2"
+        >
+          <app-icon name="refresh" [size]="14" />
+          <span>إعادة المحاولة</span>
+        </button>
+      </div>
     }
 
     <!-- HTML5 Native Canvas Page -->
-    <div class="canvas-sheet shadow-2xl rounded-lg overflow-hidden border border-surface-border bg-white">
+    <div class="canvas-sheet shadow-2xl rounded-lg overflow-hidden border border-surface-border bg-white" [class.hidden]="errorMessage()">
       <canvas #pdfCanvas class="block max-w-full h-auto"></canvas>
     </div>
   </div>
