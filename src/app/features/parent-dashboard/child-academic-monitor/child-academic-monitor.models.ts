@@ -20,6 +20,15 @@ export interface ChildUnitWatchMetric {
   totalLectures: number;
   subscriptionExpiresAt: string;
   isExpired: boolean;
+  lectures?: Array<{
+    lectureId: string;
+    order: number;
+    titleAr: string;
+    titleEn: string;
+    durationMinutes: number;
+    isCompleted: boolean;
+    watchPercentage: number;
+  }>;
 }
 
 export interface ChildSubmissionSummary {

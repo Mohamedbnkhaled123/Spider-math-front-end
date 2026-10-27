@@ -74,11 +74,20 @@ export class ChildAcademicMonitorComponent {
           unitId: u.unitPackageId || u.unitId || '',
           unitTitleAr: u.unitTitleAr || 'الوحدة الدراسية',
           unitTitleEn: u.unitTitleEn || '',
-          watchPercentage: u.watchPercentage ?? 100,
-          completedLectures: u.completedLectures ?? 1,
-          totalLectures: u.totalLectures ?? 1,
-          subscriptionExpiresAt: u.expiresAt || u.subscriptionExpiresAt || '',
-          isExpired: u.isExpired ?? false
+          watchPercentage: u.watchPercentage ?? 0,
+          completedLectures: u.completedLectures ?? 0,
+          totalLectures: u.totalLectures ?? 0,
+          subscriptionExpiresAt: u.expiresAt ? new Date(u.expiresAt).toLocaleDateString('ar-EG') : (u.subscriptionExpiresAt || 'ساري'),
+          isExpired: u.isExpired ?? (u.daysRemaining !== undefined ? u.daysRemaining <= 0 : false),
+          lectures: Array.isArray(u.lectures) ? u.lectures.map((lec: any) => ({
+            lectureId: lec.lectureId || lec._id,
+            order: lec.order || 1,
+            titleAr: lec.titleAr || lec.lecture_title_ar || 'محاضرة',
+            titleEn: lec.titleEn || lec.lecture_title_en || '',
+            durationMinutes: lec.durationMinutes || 45,
+            isCompleted: !!lec.isCompleted,
+            watchPercentage: lec.watchPercentage ?? 0
+          })) : []
         }));
 
         const mappedReport: ChildAcademicReport = {
@@ -106,6 +115,16 @@ export class ChildAcademicMonitorComponent {
         this.isLoading.set(false);
       }
     });
+  }
+
+  readonly expandedUnitId = signal<string | null>(null);
+
+  toggleUnitLectures(unitId: string): void {
+    if (this.expandedUnitId() === unitId) {
+      this.expandedUnitId.set(null);
+    } else {
+      this.expandedUnitId.set(unitId);
+    }
   }
 
   openYoutubeSolution(url?: string | null): void {

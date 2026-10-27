@@ -233,6 +233,7 @@
           <app-students-subscriptions-devices
             [studentsList]="studentsList()"
             [pendingDevices]="pendingDevices()"
+            [availableUnits]="unitsList()"
             (studentUpdated)="onStudentUpdated($event)"
             (deviceApproved)="onDeviceApproved($event)"
             (deviceRejected)="onDeviceRejected($event)"

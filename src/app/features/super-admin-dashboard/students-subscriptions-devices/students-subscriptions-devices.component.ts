@@ -5,7 +5,8 @@ import {
   output,
   signal,
   computed,
-  inject
+  inject,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,12 +32,13 @@ import {
   styleUrl: './students-subscriptions-devices.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StudentsSubscriptionsDevicesComponent {
+export class StudentsSubscriptionsDevicesComponent implements OnInit {
   private readonly http = inject(HttpClient);
 
   // Inputs
   readonly studentsList = input.required<StudentAdminSummary[]>();
   readonly pendingDevices = input.required<PendingDeviceRequest[]>();
+  readonly availableUnits = input<any[]>([]);
 
   // Outputs
   readonly studentUpdated = output<StudentAdminSummary>();
@@ -46,6 +48,14 @@ export class StudentsSubscriptionsDevicesComponent {
 
   // Search Signal
   readonly searchQuery = signal<string>('');
+
+  // Real Units from Database
+  readonly realUnits = signal<any[]>([]);
+  readonly allAvailableUnits = computed(() => {
+    const fromInput = this.availableUnits();
+    if (fromInput && fromInput.length > 0) return fromInput;
+    return this.realUnits();
+  });
 
   // Filtered Students Computed
   readonly filteredStudents = computed(() => {
@@ -59,8 +69,39 @@ export class StudentsSubscriptionsDevicesComponent {
 
   // Unit Activation Modal
   readonly isActivateModalOpen = signal<boolean>(false);
+  readonly isActivatingUnit = signal<boolean>(false);
   readonly studentToActivate = signal<StudentAdminSummary | null>(null);
-  readonly activationUnitId = signal<string>('unit_calc_diff');
+  readonly activationUnitId = signal<string>('');
+
+  ngOnInit(): void {
+    this.fetchDatabaseUnits();
+  }
+
+  fetchDatabaseUnits(): void {
+    this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/units').subscribe({
+      next: (res) => {
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          this.realUnits.set(res.data);
+          if (!this.activationUnitId()) {
+            this.activationUnitId.set(res.data[0].id || res.data[0]._id);
+          }
+        }
+      },
+      error: () => {
+        // Fallback to public catalog if admin endpoint not reachable
+        this.http.get<{ success: boolean; data: any[] }>('/api/v1/units').subscribe({
+          next: (res) => {
+            if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+              this.realUnits.set(res.data);
+              if (!this.activationUnitId()) {
+                this.activationUnitId.set(res.data[0].id || res.data[0]._id);
+              }
+            }
+          }
+        });
+      }
+    });
+  }
 
   // XP Bonus/Penalty Modal
   readonly isXpModalOpen = signal<boolean>(false);
@@ -114,18 +155,34 @@ export class StudentsSubscriptionsDevicesComponent {
   // =========================================================================
   openActivateModal(student: StudentAdminSummary): void {
     this.studentToActivate.set(student);
+    const units = this.allAvailableUnits();
+    if (units && units.length > 0) {
+      this.activationUnitId.set(units[0].id || units[0]._id);
+    } else {
+      this.activationUnitId.set('');
+    }
     this.isActivateModalOpen.set(true);
   }
 
   confirmUnitActivation(): void {
     const student = this.studentToActivate();
+    const unitId = this.activationUnitId();
     if (!student) return;
+    if (!unitId) {
+      this.toastTriggered.emit({
+        text: 'يرجى اختيار وحدة دراسية صالحة من قاعدة البيانات',
+        type: 'warning'
+      });
+      return;
+    }
 
-    this.http.post('/api/v1/admin/subscriptions/activate', {
+    this.isActivatingUnit.set(true);
+    this.http.post<{ success: boolean; data?: any; error?: any }>('/api/v1/admin/subscriptions/activate', {
       student_id: student.id,
-      unit_id: this.activationUnitId()
+      unit_id: unitId
     }).subscribe({
       next: () => {
+        this.isActivatingUnit.set(false);
         const updated: StudentAdminSummary = {
           ...student,
           hasActiveSubscription: true,
@@ -134,21 +191,16 @@ export class StudentsSubscriptionsDevicesComponent {
         this.studentUpdated.emit(updated);
         this.isActivateModalOpen.set(false);
         this.toastTriggered.emit({
-          text: `تم تفعيل الوحدة للطالب ${student.name} بنجاح!`,
+          text: `تم تفعيل اشتراك الوحدة للطالب ${student.name} بنجاح!`,
           type: 'success'
         });
       },
-      error: () => {
-        const updated: StudentAdminSummary = {
-          ...student,
-          hasActiveSubscription: true,
-          subscriptionStatus: 'ACTIVE'
-        };
-        this.studentUpdated.emit(updated);
-        this.isActivateModalOpen.set(false);
+      error: (err) => {
+        this.isActivatingUnit.set(false);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'فشل تفعيل الوحدة. تأكد من صحة بيانات الوحدة والطالب.';
         this.toastTriggered.emit({
-          text: `تم تفعيل الوحدة للطالب ${student.name} فورياً!`,
-          type: 'success'
+          text: errMsg,
+          type: 'error'
         });
       }
     });
