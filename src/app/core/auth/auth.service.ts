@@ -101,9 +101,8 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
+      this.router.navigateByUrl(redirectUrl);
     }
-
-    this.router.navigateByUrl(redirectUrl);
   }
 
   /**
