@@ -258,8 +258,11 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   private mountPlayer(mountEl: HTMLElement): void {
-    // Decrypt or extract raw video id
-    const videoId = this.resolveVideoId(this.encryptedVideoId()) || 'M7lc1UVf-VE';
+    const videoId = this.resolveVideoId(this.encryptedVideoId());
+    if (!videoId) {
+      // Do not mount any dummy videos. The constructor effect will mount once the real videoId arrives.
+      return;
+    }
 
     this.ytPlayer = new window.YT.Player(mountEl, {
       videoId,
