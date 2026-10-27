@@ -524,9 +524,17 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
+    const titleEn = form.titleEn?.trim() || 'Unit Package';
+    const cleanSlug = titleEn
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'unit';
+    const slug = `${cleanSlug}-${Date.now().toString(36)}`;
+
     const payload = {
       title_ar: form.titleAr.trim(),
-      title_en: form.titleEn.trim() || 'Unit Package',
+      title_en: titleEn,
+      slug,
       curriculum: this.selectedCurriculum(),
       grade_level: this.selectedGrade(),
       academic_term: this.selectedTerm(),
@@ -537,16 +545,17 @@ export class CurriculumStudioComponent implements OnInit {
 
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/units', payload).subscribe({
       next: (res) => {
+        const created = res?.data;
         const newUnit: UnitPackageAdminItem = {
-          id: res?.data?._id || `unit_${Date.now()}`,
-          titleAr: form.titleAr.trim(),
-          titleEn: form.titleEn.trim() || 'Unit Package',
-          curriculum: this.selectedCurriculum(),
-          gradeLevel: this.selectedGrade(),
-          term: this.selectedTerm(),
-          type: form.type,
-          isPublished: true,
-          priceEgp: form.priceEgp,
+          id: created?._id || created?.id,
+          titleAr: created?.title_ar || form.titleAr.trim(),
+          titleEn: created?.title_en || titleEn,
+          curriculum: created?.curriculum || this.selectedCurriculum(),
+          gradeLevel: created?.grade_level || this.selectedGrade(),
+          term: created?.academic_term || this.selectedTerm(),
+          type: created?.package_type || form.type,
+          isPublished: created?.is_published ?? true,
+          priceEgp: created?.price_egp ?? form.priceEgp,
           lectures: [],
           assessments: []
         };
@@ -554,23 +563,9 @@ export class CurriculumStudioComponent implements OnInit {
         this.isUnitModalOpen.set(false);
         this.toastTriggered.emit({ text: 'تم إنشاء الوحدة الدراسية ونشرها بنجاح!', type: 'success' });
       },
-      error: () => {
-        const newUnit: UnitPackageAdminItem = {
-          id: `unit_${Date.now()}`,
-          titleAr: form.titleAr.trim(),
-          titleEn: form.titleEn.trim() || 'Unit Package',
-          curriculum: this.selectedCurriculum(),
-          gradeLevel: this.selectedGrade(),
-          term: this.selectedTerm(),
-          type: form.type,
-          isPublished: true,
-          priceEgp: form.priceEgp,
-          lectures: [],
-          assessments: []
-        };
-        this.unitCreated.emit(newUnit);
-        this.isUnitModalOpen.set(false);
-        this.toastTriggered.emit({ text: 'تمت إضافة الوحدة ونشرها فورياً!', type: 'success' });
+      error: (err) => {
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إنشاء الوحدة الدراسية، يرجى مراجعة البيانات المدخلة.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
   }
@@ -579,6 +574,13 @@ export class CurriculumStudioComponent implements OnInit {
   // Lecture Material CRUD (YouTube Encrypted + Google Drive PDF ID ONLY)
   // =========================================================================
   openLectureModal(unit: UnitPackageAdminItem): void {
+    if (!unit.id || unit.id.startsWith('unit_')) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات بشكل سليم. يرجى إنشاء وحدة جديدة أولاً لإضافة محاضرات إليها.',
+        type: 'error'
+      });
+      return;
+    }
     this.activeUnitForLecture.set(unit);
     this.lectureForm.set({
       titleAr: '',
@@ -594,6 +596,14 @@ export class CurriculumStudioComponent implements OnInit {
     const unit = this.activeUnitForLecture();
     const form = this.lectureForm();
     if (!unit || !form.titleAr.trim()) return;
+
+    if (!unit.id || unit.id.startsWith('unit_')) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة محاضرات إليها.',
+        type: 'error'
+      });
+      return;
+    }
 
     // Validate that Google Drive PDF is strictly a File ID, not an open public web link
     let sanitizedDriveId = form.googleDrivePdfFileId.trim();
@@ -618,7 +628,7 @@ export class CurriculumStudioComponent implements OnInit {
       next: (res) => {
         const createdLec = res?.data;
         const newLec: LectureAdminItem = {
-          id: createdLec?._id || `lec_${Date.now()}`,
+          id: createdLec?._id || createdLec?.id,
           order: createdLec?.order_index || unit.lectures.length + 1,
           titleAr: form.titleAr.trim(),
           youtubeUrl: form.youtubeUrl.trim(),
@@ -639,28 +649,9 @@ export class CurriculumStudioComponent implements OnInit {
           type: 'success'
         });
       },
-      error: () => {
-        const newLec: LectureAdminItem = {
-          id: `lec_${Date.now()}`,
-          order: unit.lectures.length + 1,
-          titleAr: form.titleAr.trim(),
-          youtubeUrl: form.youtubeUrl.trim(),
-          encryptedVideoId: 'U2FsdGVkX1_' + btoa(form.youtubeUrl.trim() || 'demo'),
-          googleDrivePdfFileId: sanitizedDriveId,
-          isPrintAllowed: form.isPrintAllowed,
-          durationMinutes: form.durationMinutes
-        };
-
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          lectures: [...unit.lectures, newLec]
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.isLectureModalOpen.set(false);
-        this.toastTriggered.emit({
-          text: 'تمت إضافة المحاضرة محلياً!',
-          type: 'success'
-        });
+      error: (err) => {
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة المحاضرة للوحدة الدراسية.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
   }
@@ -704,6 +695,14 @@ export class CurriculumStudioComponent implements OnInit {
     const form = this.newAssessmentForm();
     if (!unit || !form.titleAr.trim()) return;
 
+    if (!unit.id || unit.id.startsWith('unit_')) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات إليها.',
+        type: 'error'
+      });
+      return;
+    }
+
     const payload = {
       unit_package_id: unit.id,
       curriculum: unit.curriculum,
@@ -733,7 +732,7 @@ export class CurriculumStudioComponent implements OnInit {
       next: (res) => {
         const created = res?.data;
         const newAsm: AssessmentAdminItem = {
-          id: created?._id || `asm_${Date.now()}`,
+          id: created?._id || created?.id,
           unitId: unit.id,
           titleAr: form.titleAr.trim(),
           calculatorType: form.calculatorType,
@@ -758,23 +757,9 @@ export class CurriculumStudioComponent implements OnInit {
         this.isCreateAssessmentModalOpen.set(false);
         this.toastTriggered.emit({ text: 'تم إنشاء الامتحان ونشره بالوحدة بنجاح!', type: 'success' });
       },
-      error: () => {
-        const newAsm: AssessmentAdminItem = {
-          id: `asm_${Date.now()}`,
-          unitId: unit.id,
-          titleAr: form.titleAr.trim(),
-          calculatorType: form.calculatorType,
-          durationMinutes: form.durationMinutes,
-          submissionsCount: 0,
-          questions: []
-        };
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          assessments: [...unit.assessments, newAsm]
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.isCreateAssessmentModalOpen.set(false);
-        this.toastTriggered.emit({ text: 'تمت إضافة الامتحان للوحدة!', type: 'success' });
+      error: (err) => {
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة الامتحان للوحدة.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
   }
