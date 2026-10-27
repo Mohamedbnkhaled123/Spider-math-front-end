@@ -120,13 +120,20 @@
             </div>
           } @else if (activeTab() === 'video') {
             <!-- Protected YouTube Player Integration -->
-            <app-protected-youtube-player
-              [encryptedVideoId]="playbackToken() || lec.encryptedVideoId"
-              [videoDurationSec]="lec.durationMinutes * 60"
-              [lectureId]="lec._id"
-              [watermarkText]="'Spider Math | ' + (authService.currentUser()?.student_ha_code ?? 'HA4920')"
-              (chunkCompleted)="onChunkWatched($event)"
-            />
+            @if (playbackToken() || lec.encryptedVideoId) {
+              <app-protected-youtube-player
+                [encryptedVideoId]="playbackToken() || lec.encryptedVideoId"
+                [videoDurationSec]="lec.durationMinutes * 60"
+                [lectureId]="lec._id"
+                [watermarkText]="'Spider Math | ' + (authService.currentUser()?.student_ha_code ?? 'HA4920')"
+                (chunkCompleted)="onChunkWatched($event)"
+              />
+            } @else {
+              <div class="relative w-full aspect-video min-h-[380px] bg-black flex flex-col items-center justify-center gap-3 text-text-muted">
+                <app-icon name="loader" [size]="36" className="text-brand-primary animate-spin" />
+                <span class="text-xs font-bold">جارِ تحميل مشغل الفيديو...</span>
+              </div>
+            }
           } @else {
             <!-- Protected PDF Canvas Stream Integration -->
             <div class="p-4 sm:p-6">

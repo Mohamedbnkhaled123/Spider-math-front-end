@@ -97,7 +97,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           titleAr: l.lecture_title_ar || l.title_ar,
           titleEn: l.lecture_title_en || l.title_en || '',
           durationMinutes: Math.round((l.video_duration_sec || 2700) / 60),
-          encryptedVideoId: l.youtube_encrypted_id || '',
+          encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
           googleDrivePdfFileId: l.google_drive_pdf_id,
           isPrintAllowed: !!l.is_print_allowed,
           watchPercentage: l.watchPercentage || 0,
@@ -134,10 +134,13 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         });
 
         if (mappedLectures.length > 0) {
-          const firstId = mappedLectures[0]._id;
-          this.selectedLectureId.set(firstId);
-          if (mappedLectures[0].isAccessible !== false) {
-            this.fetchPlaybackToken(firstId);
+          const first = mappedLectures[0];
+          this.selectedLectureId.set(first._id);
+          if (first.isAccessible !== false) {
+            if (first.encryptedVideoId) {
+              this.playbackToken.set(first.encryptedVideoId);
+            }
+            this.fetchPlaybackToken(first._id);
           } else {
             this.isLectureLocked.set(true);
           }
@@ -158,6 +161,9 @@ export class UnitStudyWorkspaceComponent implements OnInit {
       return;
     }
     this.isLectureLocked.set(false);
+    if (targetLecture?.encryptedVideoId) {
+      this.playbackToken.set(targetLecture.encryptedVideoId);
+    }
     this.fetchPlaybackToken(lectureId);
   }
 
