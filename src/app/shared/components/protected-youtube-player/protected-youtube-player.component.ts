@@ -306,12 +306,19 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           }
           const dur = e.target.getDuration();
           if (dur > 0) {
-            this.duration.set(Math.round(dur));
+            const rounded = Math.round(dur);
+            this.duration.set(rounded);
+            this.syncRealDuration(rounded);
           }
         },
         onStateChange: (e: any) => {
           // YT.PlayerState.PLAYING = 1, PAUSED = 2, ENDED = 0
           if (e.data === 1) {
+            const dur = Math.round(e.target?.getDuration?.() || 0);
+            if (dur > 0 && Math.abs(this.duration() - dur) > 2) {
+              this.duration.set(dur);
+              this.syncRealDuration(dur);
+            }
             this.isPlaying.set(true);
             this.startTracking();
           } else {
@@ -320,6 +327,21 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           }
         }
       }
+    });
+  }
+
+  private syncRealDuration(durationSec: number): void {
+    if (!this.lectureId() || durationSec <= 0) return;
+    this.http.post(
+      `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
+      {
+        currentPlaybackSec: this.currentTimeSec(),
+        chunkIndex: Math.floor(this.currentTimeSec() / 5),
+        actualDurationSec: durationSec
+      }
+    ).subscribe({
+      next: () => {},
+      error: () => {}
     });
   }
 
@@ -387,7 +409,11 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
       this.http.post<{ success: boolean; data: IPlaybackHeartbeatResponse }>(
         `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
-        { currentPlaybackSec, chunkIndex }
+        {
+          currentPlaybackSec,
+          chunkIndex,
+          actualDurationSec: this.duration()
+        }
       ).subscribe({
         next: res => {
           if (res.data?.xpAwarded && !this.xpAwarded()) {

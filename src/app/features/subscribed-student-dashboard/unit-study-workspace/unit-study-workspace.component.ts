@@ -96,7 +96,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           order: l.order_index ?? idx + 1,
           titleAr: l.lecture_title_ar || l.title_ar,
           titleEn: l.lecture_title_en || l.title_en || '',
-          durationMinutes: Math.round((l.video_duration_sec || 2700) / 60),
+          durationMinutes: l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 5),
           encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
           googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_materials?.[0]?.storage_file_id || l.pdf_materials?.[0]?._id?.toString() || '',
           isPrintAllowed: l.is_print_allowed !== undefined ? !!l.is_print_allowed : !!l.pdf_materials?.[0]?.is_print_allowed,

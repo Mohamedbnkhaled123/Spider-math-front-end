@@ -22,6 +22,17 @@ export interface EnrolledUnitSummary {
   completedQuizzes: number;
   thumbnailUrl?: string;
   isActive: boolean;
+  subscriptionExpiresAt?: string;
+  isExpired?: boolean;
+  lectures?: Array<{
+    id: string;
+    order: number;
+    titleAr: string;
+    durationMinutes: number;
+    isWatched: boolean;
+    watchProgressPercentage: number;
+    actionUrl: string;
+  }>;
 }
 
 export interface LeaderboardRankEntry {

@@ -59,6 +59,15 @@ export class StudentOverviewComponent implements OnInit {
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
   readonly isNotificationsOpen = signal<boolean>(false);
   readonly isLoadingLeaderboard = signal<boolean>(false);
+  readonly expandedUnitId = signal<string | null>(null);
+
+  toggleUnitLectures(unitId: string): void {
+    if (this.expandedUnitId() === unitId) {
+      this.expandedUnitId.set(null);
+    } else {
+      this.expandedUnitId.set(unitId);
+    }
+  }
 
   // Filter tabs for lectures
   readonly lecturesFilter = signal<'ALL' | 'WATCHED' | 'UNWATCHED'>('ALL');
@@ -263,19 +272,50 @@ export class StudentOverviewComponent implements OnInit {
               if (cRes?.data) {
                 const rawLectures: any[] = cRes.data.lectures || [];
 
-                rawLectures.forEach((lec: any) => {
-                  allLectures.push({
+                const unitLectures = rawLectures.map((lec: any, idx: number) => {
+                  const durMinutes = lec.video_duration_sec
+                    ? Math.max(1, Math.round(lec.video_duration_sec / 60))
+                    : 5;
+
+                  const item = {
                     id: lec._id,
+                    order: lec.order_index ?? idx + 1,
                     unitId: u._id,
                     unitTitleAr: u.titleAr,
                     titleAr: lec.lecture_title_ar || lec.title_ar,
-                    durationMinutes: Math.round((lec.video_duration_sec || 2700) / 60),
+                    durationMinutes: durMinutes,
                     isWatched: !!lec.isCompleted,
                     watchProgressPercentage: lec.watchPercentage || 0,
                     xpReward: lec.xp_reward_on_complete || 50,
                     actionUrl: `/student/units/${u._id}`
-                  });
+                  };
+                  allLectures.push(item);
+                  return item;
                 });
+
+                const completedCount = unitLectures.filter(l => l.isWatched).length;
+                const totalCount = unitLectures.length;
+                const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+                this.units.update(prevUnits =>
+                  prevUnits.map(unitItem =>
+                    unitItem._id === u._id
+                      ? {
+                          ...unitItem,
+                          totalLectures: totalCount,
+                          completedLectures: completedCount,
+                          completionPercentage: pct,
+                          isActive: !!cRes.data.isSubscribed,
+                          subscriptionExpiresAt: cRes.data.subscriptionExpiresAt
+                            ? new Date(cRes.data.subscriptionExpiresAt).toLocaleDateString('ar-EG')
+                            : (cRes.data.isSubscribed ? 'ساري' : 'غير مفعل'),
+                          isExpired: cRes.data.isExpired ?? false,
+                          lectures: unitLectures
+                        }
+                      : unitItem
+                  )
+                );
+
                 this.lectures.set([...allLectures]);
               }
             }
