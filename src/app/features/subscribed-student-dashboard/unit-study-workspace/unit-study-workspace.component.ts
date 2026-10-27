@@ -148,7 +148,9 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   fetchPlaybackToken(lectureId: string): void {
     this.http.get<{ success: boolean; data: any }>(`/api/v1/lectures/${lectureId}/secure-playback`).subscribe({
       next: (res) => {
-        if (res?.data?.sessionVideoToken) {
+        if (res?.data?.videoId) {
+          this.playbackToken.set(res.data.videoId);
+        } else if (res?.data?.sessionVideoToken) {
           this.playbackToken.set(res.data.sessionVideoToken);
         }
       },

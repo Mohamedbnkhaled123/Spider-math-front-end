@@ -288,9 +288,14 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   private resolveVideoId(token: string): string {
-    // In dev/demo, if token contains standard 11-char ID or is cipher format
-    if (token.length === 11 && !token.includes(':')) {
-      return token;
+    if (!token) return 'dQw4w9WgXcQ';
+    const clean = token.trim();
+    if (clean.length === 11 && !clean.includes('/') && !clean.includes('?') && !clean.includes('.') && !clean.includes(':')) {
+      return clean;
+    }
+    const match = clean.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (match && match[1]) {
+      return match[1];
     }
     // Clean fallback to standard lecture placeholder
     return 'dQw4w9WgXcQ';
