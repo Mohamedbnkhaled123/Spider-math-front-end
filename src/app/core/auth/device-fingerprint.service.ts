@@ -1,6 +1,5 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export interface IDeviceIdentity {
   readonly deviceUuid: string;
@@ -16,7 +15,6 @@ export class DeviceFingerprintService {
   private readonly STORAGE_KEY = 'spider_math_device_uuid';
   
   private cachedDeviceIdentity: IDeviceIdentity | null = null;
-  private fpPromise: ReturnType<typeof FingerprintJS.load> | null = null;
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -25,12 +23,13 @@ export class DeviceFingerprintService {
         const initialUuid = `SM-INIT-${Date.now()}-${entropySeed}`.toUpperCase();
         localStorage.setItem(this.STORAGE_KEY, initialUuid);
       }
-      this.fpPromise = FingerprintJS.load();
     }
   }
 
   /**
    * Generates or retrieves the persistent composite X-Device-UUID.
+   * Lazily loads @fingerprintjs/fingerprintjs only when explicitly requested (e.g. login/device approval)
+   * to keep the public landing page completely free of CPU overhead.
    */
   async getOrCreateDeviceIdentity(): Promise<IDeviceIdentity> {
     if (this.cachedDeviceIdentity) {
@@ -49,9 +48,10 @@ export class DeviceFingerprintService {
     // 1. Check LocalStorage for existing verified UUID
     let storedUuid = localStorage.getItem(this.STORAGE_KEY);
 
-    if (!storedUuid) {
+    if (!storedUuid || storedUuid.startsWith('SM-INIT-')) {
       try {
-        const fp = await (this.fpPromise ?? FingerprintJS.load());
+        const FingerprintJS = (await import('@fingerprintjs/fingerprintjs')).default;
+        const fp = await FingerprintJS.load();
         const result = await fp.get();
         // Create composite UUID combining visitorId and high-entropy seed
         const entropySeed = Math.random().toString(36).substring(2, 10);
@@ -60,7 +60,7 @@ export class DeviceFingerprintService {
       } catch (err) {
         console.warn('[DeviceFingerprintService] Fingerprint generation fallback:', err);
         // Resilient fallback UUID
-        storedUuid = `SM-FALLBACK-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`.toUpperCase();
+        storedUuid = storedUuid || `SM-FALLBACK-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`.toUpperCase();
         localStorage.setItem(this.STORAGE_KEY, storedUuid);
       }
     }
