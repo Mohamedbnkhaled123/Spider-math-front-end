@@ -92,6 +92,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly cmsConfig = signal<CmsConfigAdminItem>({
     heroHeadlineAr: 'تعلم الرياضيات بأعلى المعايير الهندسية مع المهندسة هبة عبد الوهاب',
     heroSubheadlineAr: 'منصة تفاعلية مخصصة للثانوية العامة والأنظمة الدولية بنظام حماية متطور واستراتيجيات ديسموس البيانية.',
+    heroVideoUrl: '',
     announcementBannerText: 'خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة',
     isAnnouncementActive: true,
     supportWhatsapp: '01012345678',
@@ -331,6 +332,7 @@ export class SuperAdminDashboardComponent implements OnInit {
           this.cmsConfig.set({
             heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || this.cmsConfig().heroHeadlineAr,
             heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || this.cmsConfig().heroSubheadlineAr,
+            heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || this.cmsConfig().heroVideoUrl || '',
             announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || this.cmsConfig().announcementBannerText,
             isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? true,
             supportWhatsapp: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || '01012345678',

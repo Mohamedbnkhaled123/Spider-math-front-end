@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -41,6 +42,7 @@ export class LandingHomeComponent implements OnInit {
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
@@ -61,6 +63,47 @@ export class LandingHomeComponent implements OnInit {
   // Landing Data Signal
   readonly landingData = signal<IPublicLandingData | null>(null);
   readonly isLoading = signal<boolean>(true);
+
+  // Hero Video State (Unprotected Public Video controlled by Super Admin via CMS)
+  readonly heroRawVideoUrl = computed<string>(() => {
+    return this.landingData()?.heroVideoUrl || 'https://www.youtube.com/watch?v=0e3GPea1Tyg';
+  });
+
+  readonly isHeroYouTube = computed<boolean>(() => {
+    const url = this.heroRawVideoUrl();
+    return !!(url && (url.includes('youtube.com') || url.includes('youtu.be')));
+  });
+
+  readonly heroEmbedUrl = computed<SafeResourceUrl | null>(() => {
+    const raw = this.heroRawVideoUrl()?.trim();
+    if (!raw) return null;
+
+    if (this.isHeroYouTube()) {
+      const videoId = this.extractYouTubeId(raw);
+      if (videoId) {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(
+          `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`
+        );
+      }
+    }
+
+    return this.sanitizer.bypassSecurityTrustResourceUrl(raw);
+  });
+
+  private extractYouTubeId(url: string): string | null {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/,
+      /^([\w-]{11})$/
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  }
 
   // Mouse coordinates for interactive Cartesian Spotlight (Animation 4.1)
   readonly mouseX = signal<number>(50);

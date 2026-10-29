@@ -30,6 +30,7 @@ export interface ScheduleRow {
 export interface CmsConfigAdminItem {
   heroHeadlineAr: string;
   heroSubheadlineAr: string;
+  heroVideoUrl: string;
   announcementBannerText: string;
   isAnnouncementActive: boolean;
   supportWhatsapp: string;

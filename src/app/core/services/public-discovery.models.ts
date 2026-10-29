@@ -83,6 +83,7 @@ export interface IPublicLandingData {
   heroHeadlineEn?: string;
   heroSubheadlineAr?: string;
   heroSubheadlineEn?: string;
+  heroVideoUrl?: string;
   announcementBannerText?: string;
   isAnnouncementActive?: boolean;
   activeAcademicYear?: string;

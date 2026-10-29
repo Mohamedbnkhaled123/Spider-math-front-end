@@ -50,6 +50,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly editableCms = signal<CmsConfigAdminItem>({
     heroHeadlineAr: '',
     heroSubheadlineAr: '',
+    heroVideoUrl: '',
     announcementBannerText: '',
     isAnnouncementActive: true,
     supportWhatsapp: '01012345678',

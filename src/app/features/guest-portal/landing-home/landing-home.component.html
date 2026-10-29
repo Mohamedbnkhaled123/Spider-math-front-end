@@ -148,33 +148,62 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- Right Column: Official Spider Math Emblem Centerpiece (5 Cols)      -->
+        <!-- Right Column: Official Spider Math Video Showcase (5 Cols)          -->
         <!-- =================================================================== -->
-        <div class="lg:col-span-5 flex justify-center">
-          <div class="relative w-full max-w-md">
+        <div class="lg:col-span-5 flex justify-center w-full">
+          <div class="relative w-full max-w-lg lg:max-w-none">
 
-            <!-- Main Showcase Emblem Card -->
-            <div class="logo-emblem-container p-8 sm:p-10 flex flex-col items-center justify-center text-center">
+            <!-- Futuristic Ambient Glow Behind Video -->
+            <div class="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-brand-secondary/40 via-brand-primary/30 to-brand-cyan/40 blur-xl opacity-60 pointer-events-none"></div>
+
+            <!-- Video Player Card Container -->
+            <div class="relative rounded-3xl border border-white/10 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/80 backdrop-blur-xl p-3 sm:p-4 shadow-2xl overflow-hidden flex flex-col gap-3">
               
-              <!-- Subtle Spinning Polar Coordinate Outer Ring -->
-              <svg class="absolute inset-0 w-full h-full pointer-events-none polar-ring-spin opacity-20" viewBox="0 0 400 400">
-                <circle cx="200" cy="200" r="170" fill="none" stroke="#00BAC6" stroke-width="1.5" stroke-dasharray="6 8" />
-                <circle cx="200" cy="200" r="140" fill="none" stroke="#7C28C7" stroke-width="1" stroke-dasharray="4 6" />
-                <circle cx="200" cy="30" r="3.5" fill="#00BAC6" />
-                <circle cx="370" cy="200" r="3.5" fill="#00BAC6" />
-                <circle cx="200" cy="370" r="3.5" fill="#7C28C7" />
-                <circle cx="30" cy="200" r="3.5" fill="#2A0E6F" />
-              </svg>
+              <!-- Responsive 16:9 Video Shell (Standard Unshielded Player) -->
+              <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/95 shadow-inner border border-white/10 flex items-center justify-center group">
+                @if (heroEmbedUrl(); as embedUrl) {
+                  @if (isHeroYouTube()) {
+                    <iframe
+                      [src]="embedUrl"
+                      title="Spider Math Introductory Video"
+                      class="w-full h-full border-0 rounded-2xl"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    ></iframe>
+                  } @else {
+                    <video
+                      [src]="embedUrl"
+                      controls
+                      playsinline
+                      preload="metadata"
+                      class="w-full h-full object-cover rounded-2xl"
+                    ></video>
+                  }
+                } @else {
+                  <div class="flex flex-col items-center justify-center p-6 text-center text-text-secondary gap-2">
+                    <svg class="w-12 h-12 text-brand-primary opacity-60 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm font-semibold">{{ langService.isArabic() ? 'جاري تحميل الفيديو التعريفي...' : 'Loading introductory video...' }}</span>
+                  </div>
+                }
+              </div>
 
-              <!-- Authentic High-Resolution Logo WebP -->
-              <div class="relative z-10 w-64 h-72 sm:w-72 sm:h-80 flex items-center justify-center">
-                <img
-                  src="/assets/branding/spider-math-logo.webp"
-                  alt="Spider Math Official Logo"
-                  width="300"
-                  height="340"
-                  class="w-full h-full object-contain transition-transform duration-300 hover:scale-102"
-                />
+              <!-- Video Footer Info Bar -->
+              <div class="px-2 pt-1 pb-0.5 flex items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span class="font-bold text-text-primary text-[11px] sm:text-xs">
+                    {{ langService.isArabic() ? 'فيديو تعريفي بطريقة الشرح والمنصة' : 'Spider Math Platform Overview Video' }}
+                  </span>
+                </div>
+                <span class="text-[10px] sm:text-[11px] font-extrabold text-brand-cyan px-2.5 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
+                  {{ langService.isArabic() ? 'م/ هبة عبدالوهاب' : 'Eng. Heba Abdel-Wahab' }}
+                </span>
               </div>
 
             </div>
