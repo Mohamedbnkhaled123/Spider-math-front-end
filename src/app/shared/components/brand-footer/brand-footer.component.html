@@ -1,4 +1,4 @@
-<footer class="border-t border-surface-border bg-surface-secondary/90 backdrop-blur-lg pt-16 pb-10 text-text-secondary relative overflow-hidden z-layer-content">
+<footer class="border-t border-surface-border bg-surface-secondary/90 backdrop-blur-lg pt-16 pb-10 text-text-secondary relative overflow-hidden z-layer-content content-auto">
   <!-- Subtle coordinate background grid -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-surface-border/60">
@@ -22,7 +22,7 @@
               <span class="brand-spider">Spider</span>
               <span class="brand-math ml-1 rtl:mr-1 rtl:ml-0">Math<span class="spark-star">✦</span></span>
             </div>
-            <span class="text-xs text-text-muted mt-1 font-semibold">
+            <span class="text-xs text-slate-600 dark:text-slate-400 mt-1 font-semibold">
               {{ 'BRAND.TEACHER' | transloco }}
             </span>
           </div>
@@ -111,7 +111,7 @@
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           <span>{{ langService.isArabic() ? 'الدعم الفني' : 'Direct Support' }}</span>
         </h3>
-        <p class="text-xs text-text-muted mb-3 leading-relaxed">
+        <p class="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
           {{ langService.isArabic()
             ? 'فريق الدعم متاح للرد على استفسارات الطلاب وأولياء الأمور طوال أيام الأسبوع.'
             : 'Dedicated support for student onboarding and inquiries 7 days a week.' }}
@@ -130,7 +130,7 @@
     </div>
 
     <!-- Bottom Bar -->
-    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600 dark:text-slate-400">
       <div class="flex items-center gap-2">
         <span class="font-bold text-text-primary">Spider Math Platform</span>
         <span>•</span>

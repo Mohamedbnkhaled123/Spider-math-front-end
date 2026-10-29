@@ -111,6 +111,11 @@ $axis-blue: #0284C7;
   display: inline-block;
 }
 
+:host-context([data-theme='light']) .spark-star,
+:host-context(.light) .spark-star {
+  color: #0284C7;
+}
+
 // ------------------------------------------------------------------------------
 // Hero Section Architecture
 // ------------------------------------------------------------------------------
@@ -136,7 +141,7 @@ $axis-blue: #0284C7;
 
 :host-context([data-theme='light']) .hero-subtitle,
 :host-context(.light) .hero-subtitle {
-  color: #475569;
+  color: #334155;
 }
 
 // ------------------------------------------------------------------------------
@@ -461,7 +466,11 @@ $axis-blue: #0284C7;
 // ------------------------------------------------------------------------------
 // Layout Containment & Compositing Isolation (Lighthouse CPU Reflow Guard)
 // ------------------------------------------------------------------------------
-.polar-web-bg,
+.polar-web-bg {
+  contain: strict;
+  will-change: transform;
+}
+
 .logo-emblem-container,
 .hero-video-shell {
   contain: layout paint;

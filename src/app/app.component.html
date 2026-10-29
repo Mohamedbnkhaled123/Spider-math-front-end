@@ -7,6 +7,10 @@
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Unified Global Brand Footer -->
-  <app-brand-footer></app-brand-footer>
+  <!-- Unified Global Brand Footer (Deferred on Viewport) -->
+  @defer (on viewport; prefetch on idle) {
+    <app-brand-footer></app-brand-footer>
+  } @placeholder {
+    <div class="min-h-[350px] border-t border-surface-border bg-surface-secondary/40"></div>
+  }
 </div>

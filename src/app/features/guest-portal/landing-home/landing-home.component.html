@@ -51,8 +51,8 @@
       </svg>
     </div>
 
-    <!-- Orbiting Floating Mathematical Glyphs -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden select-none z-layer-grid" aria-hidden="true">
+    <!-- Orbiting Floating Mathematical Glyphs (Desktop only for peak CPU efficiency on mobile) -->
+    <div class="hidden md:block absolute inset-0 pointer-events-none overflow-hidden select-none z-layer-grid" aria-hidden="true">
       <span class="absolute top-12 left-[8%] text-3xl sm:text-5xl font-black text-purple-400/25 animate-float-math" style="animation-delay: 0s;">π</span>
       <span class="absolute top-20 right-[10%] text-4xl sm:text-6xl font-black text-cyan-400/25 animate-float-math" style="animation-delay: 1.6s;">Σ</span>
       <span class="absolute bottom-14 left-[12%] text-4xl sm:text-6xl font-black text-cyan-300/30 animate-float-math" style="animation-delay: 3.2s;">∞</span>
@@ -486,7 +486,7 @@
   <!-- ========================================================================= -->
   <!-- 4. Interactive Schedules Table                                            -->
   <!-- ========================================================================= -->
-  <section id="schedules-table" class="py-16 sm:py-24 border-b border-surface-border relative">
+  <section id="schedules-table" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
@@ -499,47 +499,54 @@
           </h2>
         </div>
 
-        <span class="text-xs font-bold text-text-muted">
+        <span class="text-xs font-bold text-slate-600 dark:text-slate-400">
           {{ langService.isArabic() ? 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة' : 'Times shown in Cairo Local Time (GMT+3)' }}
         </span>
       </div>
 
-      <!-- Schedule Cards / Table -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (sched of filteredSchedules(); track sched.lectureTitleAr) {
-          <div class="p-5 spider-card flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border/50">
-              <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-purple-500/15 text-purple-900 dark:text-cyan-300 font-numeric">
-                {{ sched.curriculum }} • {{ sched.gradeLevel }}
-              </span>
-              <span class="text-xs font-semibold text-text-muted flex items-center gap-1.5 font-numeric">
-                <app-icon name="clock" [size]="14" />
-                <span>{{ sched.timeSlot }}</span>
-              </span>
-            </div>
+      <!-- Schedule Cards / Table (Deferred on Viewport) -->
+      @defer (on viewport; prefetch on idle) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          @for (sched of filteredSchedules(); track sched.lectureTitleAr) {
+            <div class="p-5 spider-card flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border/50">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-purple-500/15 text-purple-900 dark:text-cyan-300 font-numeric">
+                  {{ sched.curriculum }} • {{ sched.gradeLevel }}
+                </span>
+                <span class="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-numeric">
+                  <app-icon name="clock" [size]="14" />
+                  <span>{{ sched.timeSlot }}</span>
+                </span>
+              </div>
 
-            <div>
-              <h3 class="text-base font-bold text-text-primary mb-1">
-                {{ sched.lectureSubject || (langService.isArabic() ? sched.lectureTitleAr : sched.lectureTitleEn) }}
-              </h3>
-              <p class="text-xs text-text-secondary">
-                {{ sched.dayOfWeek || (langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn) }}
-              </p>
+              <div>
+                <h3 class="text-base font-bold text-text-primary mb-1">
+                  {{ sched.lectureSubject || (langService.isArabic() ? sched.lectureTitleAr : sched.lectureTitleEn) }}
+                </h3>
+                <p class="text-xs text-text-secondary">
+                  {{ sched.dayOfWeek || (langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn) }}
+                </p>
+              </div>
             </div>
-          </div>
-        } @empty {
-          <div class="col-span-full p-8 rounded-2xl border border-dashed border-surface-border spider-card text-center text-xs text-text-muted">
-            {{ langService.isArabic() ? 'لا توجد مواعيد معلنة حالياً لهذا المنهج والصف الدراسي.' : 'No active schedule slots for this curriculum and grade yet.' }}
-          </div>
-        }
-      </div>
+          } @empty {
+            <div class="col-span-full p-8 rounded-2xl border border-dashed border-surface-border spider-card text-center text-xs text-slate-600 dark:text-slate-400">
+              {{ langService.isArabic() ? 'لا توجد مواعيد معلنة حالياً لهذا المنهج والصف الدراسي.' : 'No active schedule slots for this curriculum and grade yet.' }}
+            </div>
+          }
+        </div>
+      } @placeholder {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[160px]">
+          <div class="p-5 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-28"></div>
+          <div class="p-5 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-28"></div>
+        </div>
+      }
     </div>
   </section>
 
   <!-- ========================================================================= -->
   <!-- 5. Study Units & Final Revisions Pricing Showcase                         -->
   <!-- ========================================================================= -->
-  <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative">
+  <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-10">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
@@ -551,102 +558,110 @@
         </h2>
       </div>
 
-      <!-- 2 Clear Tabs: STUDY_UNIT vs FINAL_REVISION -->
-      <div class="flex items-center justify-center gap-4 mb-10">
-        <button
-          type="button"
-          (click)="setUnitTab('STUDY_UNIT')"
-          class="spider-tab-btn"
-          [class.active]="activeUnitTab() === 'STUDY_UNIT'"
-        >
-          <app-icon name="book-open" [size]="18" />
-          <span>{{ langService.isArabic() ? 'الوحدات الدراسية' : 'Study Units' }}</span>
-        </button>
+      <!-- Pricing Content (Deferred on Viewport) -->
+      @defer (on viewport; prefetch on idle) {
+        <!-- 2 Clear Tabs: STUDY_UNIT vs FINAL_REVISION -->
+        <div class="flex items-center justify-center gap-4 mb-10">
+          <button
+            type="button"
+            (click)="setUnitTab('STUDY_UNIT')"
+            class="spider-tab-btn"
+            [class.active]="activeUnitTab() === 'STUDY_UNIT'"
+          >
+            <app-icon name="book-open" [size]="18" />
+            <span>{{ langService.isArabic() ? 'الوحدات الدراسية' : 'Study Units' }}</span>
+          </button>
 
-        <button
-          type="button"
-          (click)="setUnitTab('FINAL_REVISION')"
-          class="spider-tab-btn"
-          [class.active]="activeUnitTab() === 'FINAL_REVISION'"
-        >
-          <app-icon name="award" [size]="18" />
-          <span>{{ langService.isArabic() ? 'المراجعات النهائية' : 'Final Revisions' }}</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            (click)="setUnitTab('FINAL_REVISION')"
+            class="spider-tab-btn"
+            [class.active]="activeUnitTab() === 'FINAL_REVISION'"
+          >
+            <app-icon name="award" [size]="18" />
+            <span>{{ langService.isArabic() ? 'المراجعات النهائية' : 'Final Revisions' }}</span>
+          </button>
+        </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        @for (pkg of filteredPackages(); track pkg._id) {
-          <div class="p-8 spider-card flex flex-col justify-between relative overflow-hidden group">
-            @if (pkg.isPopular) {
-              <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 px-4 py-1.5 bg-gradient-to-r from-purple-700 to-cyan-500 text-white text-[11px] font-black rounded-bl-2xl rtl:rounded-bl-none rtl:rounded-br-2xl shadow-sm">
-                {{ langService.isArabic() ? 'الأعلى تقييماً' : 'Most Popular' }}
-              </div>
-            }
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          @for (pkg of filteredPackages(); track pkg._id) {
+            <div class="p-8 spider-card flex flex-col justify-between relative overflow-hidden group">
+              @if (pkg.isPopular) {
+                <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 px-4 py-1.5 bg-gradient-to-r from-purple-700 to-cyan-500 text-white text-[11px] font-black rounded-bl-2xl rtl:rounded-bl-none rtl:rounded-br-2xl shadow-sm">
+                  {{ langService.isArabic() ? 'الأعلى تقييماً' : 'Most Popular' }}
+                </div>
+              }
 
-            <div>
-              <div class="mb-4">
-                <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
-                  {{ pkg.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Final Revision') : (langService.isArabic() ? 'حزمة وحدة دراسية' : 'Study Unit') }}
-                </span>
-              </div>
-
-              <h3 class="text-xl font-black text-text-primary mb-2">
-                {{ langService.isArabic() ? pkg.titleAr : pkg.titleEn }}
-              </h3>
-              <p class="text-xs text-text-secondary leading-relaxed mb-6">
-                {{ langService.isArabic() ? pkg.descriptionAr : pkg.descriptionEn }}
-              </p>
-
-              <!-- Price Box -->
-              <div class="flex items-baseline gap-2 mb-6 font-numeric">
-                <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
-                  {{ pkg.priceEgp }}
-                </span>
-                <span class="text-sm font-bold text-text-muted">
-                  {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
-                </span>
-                @if (pkg.originalPriceEgp) {
-                  <span class="text-xs text-text-muted line-through mr-2">
-                    {{ pkg.originalPriceEgp }} EGP
+              <div>
+                <div class="mb-4">
+                  <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
+                    {{ pkg.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Final Revision') : (langService.isArabic() ? 'حزمة وحدة دراسية' : 'Study Unit') }}
                   </span>
-                }
+                </div>
+
+                <h3 class="text-xl font-black text-text-primary mb-2">
+                  {{ langService.isArabic() ? pkg.titleAr : pkg.titleEn }}
+                </h3>
+                <p class="text-xs text-text-secondary leading-relaxed mb-6">
+                  {{ langService.isArabic() ? pkg.descriptionAr : pkg.descriptionEn }}
+                </p>
+
+                <!-- Price Box -->
+                <div class="flex items-baseline gap-2 mb-6 font-numeric">
+                  <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
+                    {{ pkg.priceEgp }}
+                  </span>
+                  <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
+                    {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
+                  </span>
+                  @if (pkg.originalPriceEgp) {
+                    <span class="text-xs text-slate-500 dark:text-slate-400 line-through mr-2">
+                      {{ pkg.originalPriceEgp }} EGP
+                    </span>
+                  }
+                </div>
+
+                <!-- Features Checklist -->
+                <div class="space-y-2.5 mb-8">
+                  @for (feat of (langService.isArabic() ? pkg.featuresAr : pkg.featuresEn); track feat) {
+                    <div class="flex items-start gap-2 text-xs font-medium text-text-secondary">
+                      <app-icon name="check" [size]="14" className="text-cyan-700 dark:text-cyan-400 mt-0.5 shrink-0" />
+                      <span>{{ feat }}</span>
+                    </div>
+                  }
+                </div>
               </div>
 
-              <!-- Features Checklist -->
-              <div class="space-y-2.5 mb-8">
-                @for (feat of (langService.isArabic() ? pkg.featuresAr : pkg.featuresEn); track feat) {
-                  <div class="flex items-start gap-2 text-xs font-medium text-text-secondary">
-                    <app-icon name="check" [size]="14" className="text-cyan-700 dark:text-cyan-400 mt-0.5 shrink-0" />
-                    <span>{{ feat }}</span>
-                  </div>
-                }
-              </div>
+              <!-- CTA Button -->
+              <button
+                type="button"
+                (click)="openWhatsAppSupport()"
+                class="btn-spider-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <app-icon name="message-circle" [size]="18" />
+                <span>{{ langService.isArabic() ? 'طلب الاشتراك وتفعيل الحساب' : 'Subscribe via WhatsApp' }}</span>
+              </button>
             </div>
+          }
+        </div>
 
-            <!-- CTA Button -->
-            <button
-              type="button"
-              (click)="openWhatsAppSupport()"
-              class="btn-spider-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <app-icon name="message-circle" [size]="18" />
-              <span>{{ langService.isArabic() ? 'طلب الاشتراك وتفعيل الحساب' : 'Subscribe via WhatsApp' }}</span>
-            </button>
-          </div>
-        }
-      </div>
-
-      <!-- Direct Grade-Specific Placement Exam CTA Action Bar -->
-      <div class="mt-14 text-center">
-        <a
-          [routerLink]="['/placement-test']"
-          [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
-          class="btn-spider-primary inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-sm"
-        >
-          <app-icon name="target" [size]="18" className="text-cyan-300" />
-          <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني لهذا الصف' : 'Start Free Placement Test For This Grade' }}</span>
-        </a>
-      </div>
+        <!-- Direct Grade-Specific Placement Exam CTA Action Bar -->
+        <div class="mt-14 text-center">
+          <a
+            [routerLink]="['/placement-test']"
+            [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
+            class="btn-spider-primary inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-sm"
+          >
+            <app-icon name="target" [size]="18" className="text-white" />
+            <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني لهذا الصف' : 'Start Free Placement Test For This Grade' }}</span>
+          </a>
+        </div>
+      } @placeholder {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto min-h-[360px]">
+          <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
+          <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
+        </div>
+      }
     </div>
   </section>
 
@@ -654,7 +669,7 @@
   <!-- 6. Approved Student Testimonials                                          -->
   <!-- ========================================================================= -->
   @if (landingData(); as cms) {
-    <section class="py-16 sm:py-24 border-b border-surface-border relative">
+    <section class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-12">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
@@ -666,46 +681,54 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          @for (test of cms.testimonials; track test._id) {
-            <div class="p-6 spider-card flex flex-col justify-between">
-              <div>
-                <!-- Score Pill -->
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-xs font-black font-numeric mb-4">
-                  <app-icon name="award" [size]="14" />
-                  <span>{{ test.score }}</span>
-                </div>
-
-                <p class="text-xs sm:text-sm text-text-secondary leading-relaxed italic mb-6">
-                  "{{ langService.isArabic() ? test.quoteAr : test.quoteEn }}"
-                </p>
-              </div>
-
-              <div class="pt-4 border-t border-surface-border/60 flex items-center justify-between">
+        @defer (on viewport; prefetch on idle) {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @for (test of cms.testimonials; track test._id) {
+              <div class="p-6 spider-card flex flex-col justify-between">
                 <div>
-                  <h3 class="text-sm font-bold text-text-primary">
-                    {{ langService.isArabic() ? test.studentNameAr : test.studentNameEn }}
-                  </h3>
-                  <span class="text-xs text-text-muted">
-                    {{ test.gradeLevel }} • {{ test.academicYear }}
-                  </span>
+                  <!-- Score Pill -->
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-950 dark:text-cyan-300 text-xs font-black font-numeric mb-4">
+                    <app-icon name="award" [size]="14" />
+                    <span>{{ test.score }}</span>
+                  </div>
+
+                  <p class="text-xs sm:text-sm text-text-secondary leading-relaxed italic mb-6">
+                    "{{ langService.isArabic() ? test.quoteAr : test.quoteEn }}"
+                  </p>
                 </div>
-                <!-- Official Logo Thumbnail for Student Review -->
-                <div class="w-9 h-9 rounded-full overflow-hidden bg-surface-card border border-surface-border p-1 flex items-center justify-center shrink-0">
-                  <img
-                    src="/assets/branding/spider-math-logo-sm.webp"
-                    alt="Spider Math Student"
-                    width="36"
-                    height="36"
-                    loading="lazy"
-                    decoding="async"
-                    class="w-full h-full object-contain"
-                  />
+
+                <div class="pt-4 border-t border-surface-border/60 flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-bold text-text-primary">
+                      {{ langService.isArabic() ? test.studentNameAr : test.studentNameEn }}
+                    </h3>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">
+                      {{ test.gradeLevel }} • {{ test.academicYear }}
+                    </span>
+                  </div>
+                  <!-- Official Logo Thumbnail for Student Review -->
+                  <div class="w-9 h-9 rounded-full overflow-hidden bg-surface-card border border-surface-border p-1 flex items-center justify-center shrink-0">
+                    <img
+                      src="/assets/branding/spider-math-logo-sm.webp"
+                      alt="Spider Math Student"
+                      width="36"
+                      height="36"
+                      loading="lazy"
+                      decoding="async"
+                      class="w-full h-full object-contain"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        } @placeholder {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[180px]">
+            <div class="p-6 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-40"></div>
+            <div class="p-6 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-40"></div>
+            <div class="p-6 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-40"></div>
+          </div>
+        }
       </div>
     </section>
   }
