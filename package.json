@@ -4,10 +4,12 @@
   "description": "Spider Math Educational Platform — Angular 21+ Hybrid SSR & Signals Frontend",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4200",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "serve:prod": "node dist/spider-math-frontend/server/server.mjs",
     "serve:ssr:spider-math-frontend": "node dist/spider-math-frontend/server/server.mjs"
   },
   "private": true,

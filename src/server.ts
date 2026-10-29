@@ -85,9 +85,9 @@ app.use('/**', (req, res, next) => {
  * Defaults to port 4200 to align with Google OAuth authorized origin.
  */
 if (process.argv[1]?.includes('server.mjs')) {
-  const port = process.env['PORT'] || 4200;
+  const port = process.env['PORT'] || 4000;
   app.listen(port, () => {
-    console.log(`Spider Math Express SSR server listening on http://localhost:${port}`);
+    console.log(`Spider Math Express SSR Production server listening on http://localhost:${port}`);
   });
 }
 
