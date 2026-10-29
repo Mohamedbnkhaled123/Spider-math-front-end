@@ -125,10 +125,10 @@
 
       <!-- Grade Level Cascade Section -->
       <div class="mt-6 relative z-10">
-        <h4 class="text-xs font-extrabold uppercase tracking-wider text-text-muted mb-4 flex items-center gap-2">
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-text-muted mb-4 flex items-center gap-2">
           <span class="text-brand-accent animate-spark-twinkle">✦</span>
           <span>{{ langService.isArabic() ? 'اختر الصف الدراسي المطلوب للاطلاع على الوحدات والامتحانات:' : 'Select Grade Level to Inspect Curriculum & Placement Exams:' }}</span>
-        </h4>
+        </h3>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           @for (grade of active.availableGrades; track grade.code; let idx = $index) {
@@ -183,9 +183,9 @@
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-              <h4 class="text-sm font-extrabold text-text-primary">
+              <h3 class="text-sm font-extrabold text-text-primary">
                 {{ langService.isArabic() ? 'الوحدات الدراسية المتاحة لهذا الصف:' : 'Available Study Units for This Grade:' }}
-              </h4>
+              </h3>
             </div>
 
             <span class="text-xs font-bold text-text-muted font-numeric">
@@ -220,9 +220,9 @@
                       }
                     </div>
 
-                    <h5 class="text-base font-bold text-text-primary mb-1.5 group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
+                    <h4 class="text-base font-bold text-text-primary mb-1.5 group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
                       {{ unit.title_ar }}
-                    </h5>
+                    </h4>
                     @if (unit.description_ar) {
                       <p class="text-xs text-text-secondary leading-relaxed line-clamp-2 mb-4">
                         {{ unit.description_ar }}
@@ -273,9 +273,9 @@
               <div class="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-500 mx-auto flex items-center justify-center mb-3">
                 <app-icon name="clock" [size]="24" />
               </div>
-              <h5 class="text-sm font-black text-text-primary mb-1">
+              <h4 class="text-sm font-black text-text-primary mb-1">
                 {{ langService.isArabic() ? 'محتوى هذا الصف قريباً — Coming Soon' : 'Coming Soon' }}
-              </h5>
+              </h4>
               <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
                 {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب لم تقم بنشر وحدات لهذا الصف حتى الآن. سيتم إضافة الحصص وشروحات ديسموس قريباً.' : 'Eng. Heba Abdel-Wahab is currently preparing units and lectures for this grade level.' }}
               </p>
@@ -363,9 +363,9 @@
                     {{ idx + 1 }}
                   </span>
                   <div>
-                    <h5 class="text-xs font-bold text-text-primary">
+                    <h4 class="text-xs font-bold text-text-primary">
                       {{ lec.title_ar || ('المحاضرة ' + (idx + 1)) }}
-                    </h5>
+                    </h4>
                     @if (lec.duration_minutes) {
                       <span class="text-[10px] text-text-muted font-numeric">
                         {{ lec.duration_minutes }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}

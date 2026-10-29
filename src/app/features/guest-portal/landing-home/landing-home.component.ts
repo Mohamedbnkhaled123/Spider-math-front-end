@@ -64,7 +64,9 @@ export class LandingHomeComponent implements OnInit {
   readonly landingData = signal<IPublicLandingData | null>(null);
   readonly isLoading = signal<boolean>(true);
 
-  // Hero Video State (Unprotected Public Video controlled by Super Admin via CMS)
+  // Hero Video State (Lite YouTube Facade: Unprotected Public Video controlled by Super Admin via CMS)
+  readonly isHeroVideoPlaying = signal<boolean>(false);
+
   readonly heroRawVideoUrl = computed<string>(() => {
     return this.landingData()?.heroVideoUrl || 'https://www.youtube.com/watch?v=0e3GPea1Tyg';
   });
@@ -74,15 +76,26 @@ export class LandingHomeComponent implements OnInit {
     return !!(url && (url.includes('youtube.com') || url.includes('youtu.be')));
   });
 
-  readonly heroEmbedUrl = computed<SafeResourceUrl | null>(() => {
+  readonly heroYoutubeVideoId = computed<string | null>(() => {
+    const raw = this.heroRawVideoUrl()?.trim();
+    if (!raw) return null;
+    return this.extractYouTubeId(raw);
+  });
+
+  readonly heroVideoThumbnailUrl = computed<string | null>(() => {
+    const id = this.heroYoutubeVideoId();
+    return id ? `https://i.ytimg.com/vi_webp/${id}/hqdefault.webp` : null;
+  });
+
+  readonly heroVideoSafeEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const raw = this.heroRawVideoUrl()?.trim();
     if (!raw) return null;
 
     if (this.isHeroYouTube()) {
-      const videoId = this.extractYouTubeId(raw);
+      const videoId = this.heroYoutubeVideoId();
       if (videoId) {
         return this.sanitizer.bypassSecurityTrustResourceUrl(
-          `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`
+          `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
         );
       }
     }
@@ -90,14 +103,22 @@ export class LandingHomeComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustResourceUrl(raw);
   });
 
+  playHeroPromoVideo(): void {
+    this.isHeroVideoPlaying.set(true);
+  }
+
   private extractYouTubeId(url: string): string | null {
     if (!url) return null;
+    const clean = url.trim();
+    if (/^[\w-]{11}$/.test(clean)) {
+      return clean;
+    }
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/,
-      /^([\w-]{11})$/
+      /(?:youtube-nocookie\.com\/(?:embed\/|v\/|shorts\/|watch\?v=))([\w-]{11})/
     ];
     for (const pattern of patterns) {
-      const match = url.match(pattern);
+      const match = clean.match(pattern);
       if (match && match[1]) {
         return match[1];
       }
@@ -183,8 +204,6 @@ export class LandingHomeComponent implements OnInit {
         return;
       }
     }
-
-    this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
 
     // Auto-bind student grade and curriculum if logged in
     const student = this.authService.currentUser();

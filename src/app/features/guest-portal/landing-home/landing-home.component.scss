@@ -458,5 +458,12 @@ $axis-blue: #0284C7;
   border: 1px solid rgba(42, 14, 111, 0.1);
 }
 
-
-
+// ------------------------------------------------------------------------------
+// Layout Containment & Compositing Isolation (Lighthouse CPU Reflow Guard)
+// ------------------------------------------------------------------------------
+.polar-web-bg,
+.logo-emblem-container,
+.hero-video-shell {
+  contain: layout paint;
+  will-change: transform;
+}

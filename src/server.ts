@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import compression from 'compression';
 import http from 'node:http';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,36 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
+
+// 1. Enable Gzip / Deflate response compression for HTML, JS, CSS, and JSON
+app.use(compression({ threshold: 1024 }));
+
+// 2. High-Grade Security Headers (HSTS, COOP, CSP, X-Frame-Options, NoSniff, Referrer-Policy)
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  const cspDirectives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://s.ytimg.com https://www.desmos.com https://accounts.google.com https://apis.google.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com https://res.cloudinary.com https://lh3.googleusercontent.com",
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://www.desmos.com",
+    "connect-src 'self' http://localhost:5000 http://localhost:4000 http://localhost:4200 https://accounts.google.com https://www.googleapis.com https://api.cloudinary.com https://res.cloudinary.com https://www.desmos.com",
+    "media-src 'self' blob: https://res.cloudinary.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'self'"
+  ].join('; ');
+
+  res.setHeader('Content-Security-Policy', cspDirectives);
+  next();
+});
+
 const angularApp = new AngularNodeAppEngine({
   allowedHosts: ['localhost', '127.0.0.1', 'localhost:4000', 'localhost:4200', '*']
 });

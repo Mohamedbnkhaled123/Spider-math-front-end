@@ -40,10 +40,12 @@
       <!-- Official Geometric Logo Icon -->
       <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-cyan-400 transition-colors duration-200">
         <img
-          src="/assets/branding/spider-math-logo.webp"
+          src="/assets/branding/spider-math-logo-sm.webp"
           alt="Spider Math Logo — المهندسة هبة عبدالوهاب"
+          width="48"
+          height="48"
+          decoding="async"
           class="w-full h-full object-contain p-1 group-hover:scale-103 transition-transform duration-200"
-          loading="eager"
         />
       </div>
 
@@ -172,9 +174,9 @@
             <div class="p-3.5 border-b border-surface-border flex items-center justify-between bg-surface-secondary/50">
               <div class="flex items-center gap-2">
                 <app-icon name="bell" [size]="16" className="text-brand-accent" />
-                <h4 class="text-xs font-black text-text-primary">
+                <span class="text-xs font-black text-text-primary">
                   {{ langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Alerts & Notifications' }}
-                </h4>
+                </span>
               </div>
 
               @if (notificationsService.unreadCount() > 0) {
@@ -257,9 +259,9 @@
                     ></span>
 
                     <div class="flex-1 min-w-0">
-                      <h5 class="text-xs font-bold text-text-primary leading-tight mb-1 truncate">
+                      <p class="text-xs font-bold text-text-primary leading-tight mb-1 truncate">
                         {{ langService.isArabic() ? notif.title_ar : notif.title_en }}
-                      </h5>
+                      </p>
                       <p class="text-[11px] text-text-secondary leading-relaxed line-clamp-2 mb-1.5">
                         {{ langService.isArabic() ? notif.body_ar : notif.body_en }}
                       </p>
@@ -425,6 +427,10 @@
     </div>
   }
 
-  <!-- Auth & Role Simulator Modal -->
-  <app-auth-role-modal [(isOpen)]="isAuthModalOpen" />
+  <!-- Auth & Role Simulator Modal (Deferred until triggered) -->
+  @if (isAuthModalOpen()) {
+    @defer (when isAuthModalOpen()) {
+      <app-auth-role-modal [(isOpen)]="isAuthModalOpen" />
+    }
+  }
 </header>

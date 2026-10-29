@@ -13,17 +13,7 @@ export class TranslocoHttpLoader implements TranslocoLoader {
   private readonly platformId = inject(PLATFORM_ID);
 
   getTranslation(lang: string): Observable<Translation> {
-    // In Node.js SSR environment, serve bundled JSON directly to prevent relative URL fetch failures
-    if (!isPlatformBrowser(this.platformId)) {
-      const fallback = lang === 'ar' ? (arTranslations as Translation) : (enTranslations as Translation);
-      return of(fallback);
-    }
-
-    return this.http.get<Translation>(`/assets/i18n/${lang}.json`).pipe(
-      catchError(() => {
-        const fallback = lang === 'ar' ? (arTranslations as Translation) : (enTranslations as Translation);
-        return of(fallback);
-      })
-    );
+    const dictionary = lang === 'ar' ? (arTranslations as Translation) : (enTranslations as Translation);
+    return of(dictionary);
   }
 }
