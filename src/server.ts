@@ -20,8 +20,11 @@ app.use(compression({ threshold: 1024 }));
 
 // 2. High-Grade Security Headers (HSTS, COOP, CSP, X-Frame-Options, NoSniff, Referrer-Policy)
 app.use((req, res, next) => {
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  if (isHttps) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  }
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
