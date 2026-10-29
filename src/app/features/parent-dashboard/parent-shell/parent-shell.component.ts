@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -22,6 +22,7 @@ import { LinkedChildSummary, LinkChildRequestPayload } from './parent-shell.mode
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ParentShellComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
@@ -43,6 +44,9 @@ export class ParentShellComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.fetchLinkedChildren();
   }
 

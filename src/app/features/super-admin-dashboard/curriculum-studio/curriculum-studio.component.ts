@@ -156,7 +156,21 @@ export class CurriculumStudioComponent implements OnInit {
 
   // Modals State
   readonly isUnitModalOpen = signal<boolean>(false);
+  readonly isEditUnitModalOpen = signal<boolean>(false);
+  readonly editingUnitId = signal<string>('');
   readonly unitForm = signal<{
+    titleAr: string;
+    titleEn: string;
+    priceEgp: number;
+    type: 'STUDY_UNIT' | 'REVISION_PACKAGE';
+  }>({
+    titleAr: '',
+    titleEn: '',
+    priceEgp: 300,
+    type: 'STUDY_UNIT'
+  });
+
+  readonly editUnitForm = signal<{
     titleAr: string;
     titleEn: string;
     priceEgp: number;
@@ -170,6 +184,8 @@ export class CurriculumStudioComponent implements OnInit {
 
   // Lecture Modal State
   readonly isLectureModalOpen = signal<boolean>(false);
+  readonly isEditLectureModalOpen = signal<boolean>(false);
+  readonly editingLectureId = signal<string>('');
   readonly activeUnitForLecture = signal<UnitPackageAdminItem | null>(null);
   readonly lectureForm = signal<{
     titleAr: string;
@@ -178,13 +194,33 @@ export class CurriculumStudioComponent implements OnInit {
     isPrintAllowed: boolean;
     durationMinutes: number;
     isFreeTrial: boolean;
+    xpReward: number | null;
   }>({
     titleAr: '',
     youtubeUrl: '',
     googleDrivePdfFileId: '',
     isPrintAllowed: true,
     durationMinutes: 45,
-    isFreeTrial: false
+    isFreeTrial: false,
+    xpReward: null
+  });
+
+  readonly editLectureForm = signal<{
+    titleAr: string;
+    youtubeUrl: string;
+    googleDrivePdfFileId: string;
+    isPrintAllowed: boolean;
+    durationMinutes: number;
+    isFreeTrial: boolean;
+    xpReward: number | null;
+  }>({
+    titleAr: '',
+    youtubeUrl: '',
+    googleDrivePdfFileId: '',
+    isPrintAllowed: true,
+    durationMinutes: 45,
+    isFreeTrial: false,
+    xpReward: null
   });
 
   // Create Assessment Modal State
@@ -192,12 +228,16 @@ export class CurriculumStudioComponent implements OnInit {
   readonly activeUnitForAssessment = signal<UnitPackageAdminItem | null>(null);
   readonly newAssessmentForm = signal<{
     titleAr: string;
+    type: 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
     durationMinutes: number;
     calculatorType: 'NONE' | 'DESMOS';
+    xpReward: number | null;
   }>({
     titleAr: '',
+    type: 'QUIZ',
     durationMinutes: 20,
-    calculatorType: 'NONE'
+    calculatorType: 'NONE',
+    xpReward: null
   });
 
   // Assessment Safe Editor State
@@ -572,6 +612,56 @@ export class CurriculumStudioComponent implements OnInit {
     });
   }
 
+  openEditUnitModal(unit: UnitPackageAdminItem): void {
+    this.editingUnitId.set(unit.id);
+    this.editUnitForm.set({
+      titleAr: unit.titleAr,
+      titleEn: unit.titleEn || '',
+      priceEgp: unit.priceEgp || 350,
+      type: unit.type || 'STUDY_UNIT'
+    });
+    this.isEditUnitModalOpen.set(true);
+  }
+
+  saveEditedUnit(): void {
+    const unitId = this.editingUnitId();
+    const form = this.editUnitForm();
+    if (!unitId || !form.titleAr.trim()) {
+      this.toastTriggered.emit({ text: 'برجاء كتابة عنوان الوحدة باللغة العربية!', type: 'error' });
+      return;
+    }
+
+    const payload = {
+      title_ar: form.titleAr.trim(),
+      title_en: form.titleEn?.trim() || form.titleAr.trim(),
+      package_type: form.type,
+      price_egp: form.priceEgp
+    };
+
+    this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/units/${unitId}`, payload).subscribe({
+      next: (res) => {
+        const updated = res?.data;
+        const targetUnit = this.units().find(u => u.id === unitId);
+        if (targetUnit) {
+          const updatedUnit: UnitPackageAdminItem = {
+            ...targetUnit,
+            titleAr: updated?.title_ar || form.titleAr.trim(),
+            titleEn: updated?.title_en || form.titleEn?.trim() || targetUnit.titleEn,
+            priceEgp: updated?.price_egp ?? form.priceEgp,
+            type: updated?.package_type || form.type
+          };
+          this.unitUpdated.emit(updatedUnit);
+        }
+        this.isEditUnitModalOpen.set(false);
+        this.toastTriggered.emit({ text: 'تم تعديل بيانات الوحدة الدراسية وحفظها بنجاح!', type: 'success' });
+      },
+      error: (err) => {
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ تعديل الوحدة الدراسية.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
   // =========================================================================
   // Lecture Material CRUD (YouTube Encrypted + Google Drive PDF ID ONLY)
   // =========================================================================
@@ -590,7 +680,8 @@ export class CurriculumStudioComponent implements OnInit {
       googleDrivePdfFileId: '',
       isPrintAllowed: true,
       durationMinutes: 45,
-      isFreeTrial: false
+      isFreeTrial: false,
+      xpReward: null
     });
     this.isLectureModalOpen.set(true);
   }
@@ -599,6 +690,14 @@ export class CurriculumStudioComponent implements OnInit {
     const unit = this.activeUnitForLecture();
     const form = this.lectureForm();
     if (!unit || !form.titleAr.trim()) return;
+
+    if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
+      this.toastTriggered.emit({
+        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب لهذه المحاضرة.',
+        type: 'warning'
+      });
+      return;
+    }
 
     if (!unit.id || unit.id.startsWith('unit_')) {
       this.toastTriggered.emit({
@@ -617,6 +716,15 @@ export class CurriculumStudioComponent implements OnInit {
       }
     }
 
+    // Strict validation: Reject non-PDF file extensions
+    if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
+      this.toastTriggered.emit({
+        text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+        type: 'error'
+      });
+      return;
+    }
+
     const payload = {
       unitId: unit.id,
       titleAr: form.titleAr.trim(),
@@ -625,7 +733,8 @@ export class CurriculumStudioComponent implements OnInit {
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
       durationMinutes: form.durationMinutes,
-      isFreeTrial: !!form.isFreeTrial
+      isFreeTrial: !!form.isFreeTrial,
+      xpReward: form.xpReward
     };
 
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/lectures', payload).subscribe({
@@ -640,7 +749,8 @@ export class CurriculumStudioComponent implements OnInit {
           googleDrivePdfFileId: sanitizedDriveId,
           isPrintAllowed: form.isPrintAllowed,
           durationMinutes: form.durationMinutes,
-          isFreeTrial: !!form.isFreeTrial
+          isFreeTrial: !!form.isFreeTrial,
+          xpReward: form.xpReward
         };
 
         const updatedUnit: UnitPackageAdminItem = {
@@ -656,6 +766,101 @@ export class CurriculumStudioComponent implements OnInit {
       },
       error: (err) => {
         const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة المحاضرة للوحدة الدراسية.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
+  openEditLectureModal(unit: UnitPackageAdminItem, lec: LectureAdminItem): void {
+    this.activeUnitForLecture.set(unit);
+    this.editingLectureId.set(lec.id);
+    this.editLectureForm.set({
+      titleAr: lec.titleAr,
+      youtubeUrl: lec.youtubeUrl || '',
+      googleDrivePdfFileId: lec.googleDrivePdfFileId || '',
+      isPrintAllowed: lec.isPrintAllowed ?? true,
+      durationMinutes: lec.durationMinutes || 45,
+      isFreeTrial: !!lec.isFreeTrial,
+      xpReward: lec.xpReward !== undefined ? lec.xpReward : null
+    });
+    this.isEditLectureModalOpen.set(true);
+  }
+
+  saveEditedLecture(): void {
+    const unit = this.activeUnitForLecture();
+    const lectureId = this.editingLectureId();
+    const form = this.editLectureForm();
+    if (!unit || !lectureId || !form.titleAr.trim()) return;
+
+    if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
+      this.toastTriggered.emit({
+        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب لهذه المحاضرة.',
+        type: 'warning'
+      });
+      return;
+    }
+
+    let sanitizedDriveId = form.googleDrivePdfFileId.trim();
+    if (sanitizedDriveId.includes('drive.google.com')) {
+      const match = sanitizedDriveId.match(/[-\w]{25,}/);
+      if (match) {
+        sanitizedDriveId = match[0];
+      }
+    }
+
+    // Strict validation: Reject non-PDF file extensions
+    if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
+      this.toastTriggered.emit({
+        text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+        type: 'error'
+      });
+      return;
+    }
+
+    const payload = {
+      titleAr: form.titleAr.trim(),
+      titleEn: form.titleAr.trim(),
+      youtubeUrl: form.youtubeUrl.trim(),
+      googleDrivePdfFileId: sanitizedDriveId,
+      isPrintAllowed: form.isPrintAllowed,
+      durationMinutes: form.durationMinutes,
+      isFreeTrial: !!form.isFreeTrial,
+      xpReward: form.xpReward
+    };
+
+    this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/lectures/${lectureId}`, payload).subscribe({
+      next: (res) => {
+        const updatedLecData = res?.data;
+        const updatedLectures = unit.lectures.map(l => {
+          if (l.id === lectureId) {
+            return {
+              ...l,
+              titleAr: form.titleAr.trim(),
+              youtubeUrl: form.youtubeUrl.trim(),
+              googleDrivePdfFileId: sanitizedDriveId,
+              isPrintAllowed: form.isPrintAllowed,
+              durationMinutes: form.durationMinutes,
+              isFreeTrial: !!form.isFreeTrial,
+              xpReward: form.xpReward,
+              encryptedVideoId: updatedLecData?.youtube_encrypted_id || l.encryptedVideoId
+            };
+          }
+          return l;
+        });
+
+        const updatedUnit: UnitPackageAdminItem = {
+          ...unit,
+          lectures: updatedLectures
+        };
+        this.unitUpdated.emit(updatedUnit);
+        this.isEditLectureModalOpen.set(false);
+        this.toastTriggered.emit({
+          text: 'تم تعديل بيانات المحاضرة وحفظها في قاعدة البيانات بنجاح!',
+          type: 'success'
+        });
+      },
+      error: (err) => {
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ تعديلات المحاضرة.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -689,10 +894,20 @@ export class CurriculumStudioComponent implements OnInit {
     this.activeUnitForAssessment.set(unit);
     this.newAssessmentForm.set({
       titleAr: '',
+      type: 'QUIZ',
       durationMinutes: 20,
-      calculatorType: 'NONE'
+      calculatorType: 'NONE',
+      xpReward: null
     });
     this.isCreateAssessmentModalOpen.set(true);
+  }
+
+  setAssessmentType(type: 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
+    this.newAssessmentForm.update((prev) => ({
+      ...prev,
+      type,
+      durationMinutes: type === 'HOMEWORK' ? 60 : (type === 'COMPREHENSIVE_EXAM' ? 45 : 20)
+    }));
   }
 
   saveNewAssessment(): void {
@@ -702,12 +917,21 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (!unit.id || unit.id.startsWith('unit_')) {
       this.toastTriggered.emit({
-        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات إليها.',
+        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات أو واجبات إليها.',
         type: 'error'
       });
       return;
     }
 
+    if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
+      this.toastTriggered.emit({
+        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب عند إكمال التقييم/الواجب.',
+        type: 'warning'
+      });
+      return;
+    }
+
+    const isHw = form.type === 'HOMEWORK';
     const payload = {
       unit_package_id: unit.id,
       curriculum: unit.curriculum,
@@ -715,18 +939,20 @@ export class CurriculumStudioComponent implements OnInit {
       academic_term: unit.term,
       title_ar: form.titleAr.trim(),
       title_en: form.titleAr.trim(),
-      assessment_type: 'QUIZ',
-      time_limit_minutes: form.durationMinutes,
+      assessment_type: form.type,
+      time_limit_minutes: form.durationMinutes || (isHw ? 60 : 30),
       min_expected_solve_sec: 10,
-      max_attempts: 3,
+      max_attempts: isHw ? 5 : 3,
       graph_calculator: form.calculatorType,
-      xp_reward: 50,
+      xp_reward: Number(form.xpReward),
       is_published: true,
       questions: [
         {
-          question_type: 'MCQ',
-          question_text: 'مسألة رياضية أولى',
-          options: ['أ', 'ب', 'ج', 'د'],
+          question_type: isHw ? 'ESSAY_PHOTO' : 'MCQ',
+          question_text: isHw
+            ? 'المسألة الأولى (حل يدوي بالخطوات في الكشكول مع رفع الصورة):'
+            : 'مسألة رياضية أولى',
+          options: isHw ? [] : ['أ', 'ب', 'ج', 'د'],
           correct_option_index: 0,
           points: 5
         }
@@ -740,15 +966,17 @@ export class CurriculumStudioComponent implements OnInit {
           id: created?._id || created?.id,
           unitId: unit.id,
           titleAr: form.titleAr.trim(),
+          type: form.type,
           calculatorType: form.calculatorType,
           durationMinutes: form.durationMinutes,
+          xpReward: form.xpReward,
           submissionsCount: 0,
           questions: (created?.questions || []).map((q: any, idx: number) => ({
             id: q._id || `q_${idx}`,
             order: idx + 1,
-            type: q.question_type || 'MCQ',
-            textAr: q.question_text || 'مسألة رياضية',
-            options: q.options || ['أ', 'ب', 'ج', 'د'],
+            type: q.question_type || (isHw ? 'ESSAY' : 'MCQ'),
+            textAr: q.question_text || (isHw ? 'مسألة مقالية' : 'مسألة رياضية'),
+            options: q.options || (isHw ? [] : ['أ', 'ب', 'ج', 'د']),
             correctOptionIndex: q.correct_option_index ?? 0,
             points: q.points || 5
           }))
@@ -760,10 +988,11 @@ export class CurriculumStudioComponent implements OnInit {
         };
         this.unitUpdated.emit(updatedUnit);
         this.isCreateAssessmentModalOpen.set(false);
-        this.toastTriggered.emit({ text: 'تم إنشاء الامتحان ونشره بالوحدة بنجاح!', type: 'success' });
+        const successLabel = isHw ? 'تم إنشاء ونشر الواجب المنزلي بنجاح!' : 'تم إنشاء التقييم ونشره بنجاح!';
+        this.toastTriggered.emit({ text: successLabel, type: 'success' });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة الامتحان للوحدة.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة التقييم أو الواجب للوحدة.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -816,15 +1045,6 @@ export class CurriculumStudioComponent implements OnInit {
     const asm = this.activeAssessment();
     if (!asm) return;
 
-    // Critical Rule: Lock structural modifications if submissions exist
-    if (asm.submissionsCount > 0) {
-      this.toastTriggered.emit({
-        text: 'ممنوع إضافة أو حذف أسئلة: تم تسليم هذا الامتحان مسبقاً من قِبل الطلاب!',
-        type: 'error'
-      });
-      return;
-    }
-
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
       this.toastTriggered.emit({ text: 'برجاء كتابة نص السؤال أو رفع صورة السؤال أولاً!', type: 'error' });
@@ -855,14 +1075,15 @@ export class CurriculumStudioComponent implements OnInit {
       }
     }
 
+    const isMcq = this.newQuestionType() === 'MCQ';
     const newQ: QuestionAdminItem = {
       id: `q_${Date.now()}`,
       order: asm.questions.length + 1,
-      type: this.newQuestionType(),
+      type: isMcq ? 'MCQ' : 'ESSAY',
       textAr: text || 'مسألة رياضية مصورة',
       questionImageUrl: this.newQuestionImageUrl(),
-      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
-      correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
+      options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
+      correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
       points: this.newQuestionPoints()
     };
 
@@ -883,14 +1104,6 @@ export class CurriculumStudioComponent implements OnInit {
   deleteQuestion(order: number): void {
     const asm = this.activeAssessment();
     if (!asm) return;
-
-    if (asm.submissionsCount > 0) {
-      this.toastTriggered.emit({
-        text: 'ممنوع حذف الأسئلة بعد بدء تسليمات الطلاب لضمان عدم اختلال موازين التقييم!',
-        type: 'error'
-      });
-      return;
-    }
 
     this.openConfirm(
       'تأكيد حذف السؤال',
@@ -916,6 +1129,15 @@ export class CurriculumStudioComponent implements OnInit {
   saveAssessmentSettings(): void {
     const asm = this.activeAssessment();
     if (!asm) return;
+
+    // 1. Critical Requirement: Cannot save/publish an empty assessment without questions!
+    if (!asm.questions || asm.questions.length === 0) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: لا يمكن حفظ أو نشر التقييم بدون أي أسئلة! يرجى إضافة مسألة واحدة على الأقل قبل الحفظ.',
+        type: 'warning'
+      });
+      return;
+    }
 
     // Pre-flight validation on all questions in this assessment
     for (let i = 0; i < asm.questions.length; i++) {
@@ -962,17 +1184,22 @@ export class CurriculumStudioComponent implements OnInit {
 
     // Transform questions into normalized schema for backend
     const payload = {
+      title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
       calculator_mode: asm.calculatorType,
       duration_minutes: asm.durationMinutes,
-      questions: asm.questions.map((q, idx) => ({
-        order: q.order || idx + 1,
-        question_type: q.type || 'MCQ',
-        question_text: q.textAr || 'مسألة رياضية',
-        question_image_url: q.questionImageUrl || null,
-        options: (q.options || []).map((o) => o.trim()),
-        correct_option_index: q.correctOptionIndex ?? 0,
-        points: q.points || 5
-      }))
+      xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
+      questions: asm.questions.map((q, idx) => {
+        const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';
+        return {
+          order: q.order || idx + 1,
+          question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
+          question_text: q.textAr || (isEssay ? 'مسألة مقالية / حل يدوي' : 'مسألة رياضية'),
+          question_image_url: q.questionImageUrl || null,
+          options: isEssay ? [] : (q.options || []).map((o) => (o || '').trim()),
+          correct_option_index: isEssay ? undefined : Math.max(0, q.correctOptionIndex ?? 0),
+          points: q.points || 5
+        };
+      })
     };
 
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({

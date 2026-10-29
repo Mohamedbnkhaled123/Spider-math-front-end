@@ -4,9 +4,10 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
@@ -58,6 +59,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SuperAdminDashboardComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
@@ -119,6 +121,9 @@ export class SuperAdminDashboardComponent implements OnInit {
   }));
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.fetchRealAtlasData();
     this.fetchCurriculumUnits();
     this.fetchLeads();
@@ -245,25 +250,30 @@ export class SuperAdminDashboardComponent implements OnInit {
                             lectures: (cRes.data.lectures || []).map((l: any) => ({
                               id: l._id || l.id,
                               order: l.order_index || l.order || 1,
-                              titleAr: l.title_ar,
+                              titleAr: l.lecture_title_ar || l.title_ar || l.title || ('محاضرة ' + (l.order_index || l.order || 1)),
                               youtubeUrl: l.youtube_url || '',
-                              encryptedVideoId: l.encrypted_video_id || '',
-                              googleDrivePdfFileId: l.pdf_drive_file_id || '',
+                              encryptedVideoId: l.encrypted_video_id || l.youtube_video_id || '',
+                              googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_drive_file_id || '',
                               isPrintAllowed: !!l.is_print_allowed,
-                              durationMinutes: l.duration_minutes || 45
+                              durationMinutes: l.video_duration_sec ? Math.round(l.video_duration_sec / 60) : (l.duration_minutes || 45),
+                              isFreeTrial: !!l.is_free_trial,
+                              xpReward: l.xp_reward_on_complete ?? null
                             })),
                             assessments: (cRes.data.assessments || []).map((a: any) => ({
                               id: a._id || a.id,
                               unitId: unit.id,
                               titleAr: a.title_ar,
+                              type: a.assessment_type || 'QUIZ',
                               calculatorType: a.calculator_mode || a.calculatorType || 'NONE',
-                              durationMinutes: a.duration_minutes || 20,
+                              durationMinutes: a.time_limit_minutes || a.duration_minutes || 20,
+                              xpReward: a.xp_reward ?? null,
                               submissionsCount: a.submissions_count || 0,
                               questions: (a.questions || []).map((q: any, idx: number) => ({
                                 id: q._id || `q_${idx}`,
-                                order: q.order_index || idx + 1,
-                                type: q.question_type || 'MCQ',
-                                textAr: q.text_ar || '',
+                                order: q.order_index || q.order || idx + 1,
+                                type: q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' ? 'ESSAY' : 'MCQ',
+                                textAr: q.question_text || q.text_ar || q.textAr || '',
+                                questionImageUrl: q.question_image_url || q.questionImageUrl || null,
                                 options: q.options || [],
                                 correctOptionIndex: q.correct_option_index ?? 0,
                                 points: q.points || 5

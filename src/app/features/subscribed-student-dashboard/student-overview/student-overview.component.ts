@@ -4,9 +4,10 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -42,15 +43,6 @@ import {
  * - Detailed Lecture Tracker (Watched vs. Pending / Not Watched)
  * - Quizzes & Assessments Tracker (Due quizzes + Graded submissions with teacher feedback)
  */
-interface IStudentDashboardCache {
-  units: EnrolledUnitSummary[];
-  lectures: StudentLectureItem[];
-  completedGrades: StudentCompletedGradeItem[];
-  dueQuizzes: StudentDueQuizItem[];
-  notifications: StudentNotificationItem[];
-  timestamp: number;
-}
-let memoryDashboardCache: IStudentDashboardCache | null = null;
 
 @Component({
   selector: 'app-student-overview',
@@ -61,6 +53,7 @@ let memoryDashboardCache: IStudentDashboardCache | null = null;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StudentOverviewComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
@@ -127,11 +120,12 @@ export class StudentOverviewComponent implements OnInit {
   // =========================================================================
   // Dynamic Real Atlas Signals & Active Grades Check
   // =========================================================================
-  readonly activeGrades = signal<string[]>(['SEC_1', 'SEC_2', 'SEC_3']);
+  readonly isLoadingActiveGrades = signal<boolean>(true);
+  readonly activeGrades = signal<string[]>([]);
   readonly currentUserGrade = computed(() => this.authService.currentUser()?.grade_level || 'SEC_3');
   readonly currentUserCurriculum = computed(() => this.authService.currentUser()?.curriculum || 'EGYPTIAN');
   readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.currentUserGrade()));
-  readonly isLoadingUnits = signal<boolean>(!memoryDashboardCache);
+  readonly isLoadingUnits = signal<boolean>(true);
 
   // Active units catalog (Real from Atlas)
   readonly units = signal<EnrolledUnitSummary[]>([]);
@@ -205,32 +199,15 @@ export class StudentOverviewComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    if (memoryDashboardCache && (Date.now() - memoryDashboardCache.timestamp < 180000)) {
-      this.units.set(memoryDashboardCache.units);
-      this.lectures.set(memoryDashboardCache.lectures);
-      this.completedGrades.set(memoryDashboardCache.completedGrades);
-      this.dueQuizzes.set(memoryDashboardCache.dueQuizzes);
-      this.notifications.set(memoryDashboardCache.notifications);
-      this.isLoadingUnits.set(false);
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
     }
-
     this.loadActiveGrades();
     this.fetchRealStudentData();
     this.fetchRealAssessments();
     this.fetchLeaderboard();
     this.fetchRealNotifications();
     this.fetchCompletedGrades();
-  }
-
-  private syncCache(): void {
-    memoryDashboardCache = {
-      units: this.units(),
-      lectures: this.lectures(),
-      completedGrades: this.completedGrades(),
-      dueQuizzes: this.dueQuizzes(),
-      notifications: this.notifications(),
-      timestamp: Date.now()
-    };
   }
 
   fetchCompletedGrades(): void {
@@ -247,11 +224,16 @@ export class StudentOverviewComponent implements OnInit {
   }
 
   loadActiveGrades(): void {
+    this.isLoadingActiveGrades.set(true);
     this.http.get<{ success: boolean; data: { activeGrades: string[] } }>('/api/v1/public/active-grades').subscribe({
       next: (res) => {
         if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
           this.activeGrades.set(res.data.activeGrades);
         }
+        this.isLoadingActiveGrades.set(false);
+      },
+      error: () => {
+        this.isLoadingActiveGrades.set(false);
       }
     });
   }
@@ -348,7 +330,6 @@ export class StudentOverviewComponent implements OnInit {
                 );
 
                 this.lectures.set([...allLectures]);
-                this.syncCache();
               }
             }
           });

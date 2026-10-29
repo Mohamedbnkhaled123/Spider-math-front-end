@@ -123,6 +123,18 @@ export class BrandHeaderComponent implements OnInit {
     this.notificationsService.markAllAsRead().subscribe();
   }
 
+  requestPermission(): void {
+    this.notificationsService.requestNotificationPermission();
+  }
+
+  sendTestNotification(): void {
+    this.notificationsService.sendTestNotification();
+  }
+
+  dismissNotificationBanner(): void {
+    this.notificationsService.dismissPrompt();
+  }
+
   copyHaCode(code: string, event?: Event): void {
     if (event) {
       event.stopPropagation();

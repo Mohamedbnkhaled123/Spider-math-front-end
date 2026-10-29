@@ -4,6 +4,7 @@ import {
   signal,
   computed,
   inject,
+  effect,
   OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -24,10 +25,12 @@ import { AssessmentAttemptBundle, AssessmentQuestionItem } from './assessment-at
  * Phase 13: Assessment Attempt View Component
  * 
  * - Full offline-first assessment execution with Dexie.js cache
- * - Tamper-proof monotonic clock (performance.now()) with 3 urgency states (Animation 4.6)
+ * - Tamper-proof monotonic clock (performance.now()) with 4 urgency states
  * - 500-Concurrent Request Jitter Shield integration (OfflineSyncQueueService)
  * - Draggable Desmos-Only Graphing Calculator modal
  * - Dual-folder WebP image compressor & clarity preview for student homework
+ * - Auto-submission on time expiration (even with unanswered questions)
+ * - Toggleable timer visibility with hour/min/sec precision formatting
  */
 @Component({
   selector: 'app-assessment-attempt-view',
@@ -53,9 +56,24 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   // Modal & Calculator State
   readonly isDesmosOpen = signal<boolean>(false);
+  readonly isTimerVisible = signal<boolean>(true);
   readonly activeQuestionIdx = signal<number>(0);
   readonly isSubmitting = signal<boolean>(false);
   readonly isSubmissionCompleted = signal<boolean>(false);
+
+  constructor() {
+    // Auto-submit when time expires (urgencyState === 'EXPIRED') even if questions remain unanswered
+    effect(() => {
+      const urgency = this.quizCache.urgencyState();
+      const isCompleted = this.isSubmissionCompleted();
+      const submitting = this.isSubmitting();
+      const hasQuestions = this.bundle().questions.length > 0;
+
+      if (urgency === 'EXPIRED' && !isCompleted && !submitting && hasQuestions) {
+        this.submitAssessment(true);
+      }
+    });
+  }
 
   // Bundle Data
   readonly bundle = signal<AssessmentAttemptBundle>({
@@ -77,6 +95,25 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   // Homework Photos Signal
   readonly uploadedHomeworkPhotos = signal<string[]>([]);
+
+  // Unanswered Questions Tracking (Enforce 100% completion before submission)
+  readonly unansweredQuestions = computed(() => {
+    const list = this.bundle().questions;
+    const active = this.quizCache.activeQuiz();
+    if (!active || list.length === 0) return [];
+
+    return list
+      .map((q, idx) => ({
+        index: idx,
+        order: q.order || idx + 1,
+        id: q._id,
+        isAnswered: this.isQuestionAnswered(q._id)
+      }))
+      .filter((q) => !q.isAnswered);
+  });
+
+  readonly unansweredCount = computed(() => this.unansweredQuestions().length);
+  readonly submissionWarning = signal<string>('');
 
   ngOnInit(): void {
     const assessmentId = this.route.snapshot.paramMap.get('id');
@@ -138,6 +175,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
   selectOption(optionIndex: number): void {
     const curr = this.currentQuestion();
     if (!curr) return;
+    this.submissionWarning.set('');
     this.quizCache.recordAnswer(curr._id, optionIndex);
   }
 
@@ -184,6 +222,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
       rotation: 0,
       sizeKb: 120
     }));
+    this.submissionWarning.set('');
     this.quizCache.recordHomeworkImages(items, questionId);
   }
 
@@ -207,12 +246,33 @@ export class AssessmentAttemptViewComponent implements OnInit {
     this.isDesmosOpen.update(v => !v);
   }
 
+  toggleTimerVisibility(): void {
+    this.isTimerVisible.update(v => !v);
+  }
+
   /**
    * Final submission: completes quiz locally in Dexie.js (< 2ms)
    * and queues attempt into OfflineSyncQueueService with 1s–15s jitter shield.
+   * If isAutoSubmit is true (time expired), it automatically submits even if some questions are unanswered.
    */
-  async submitAssessment(): Promise<void> {
-    if (this.isSubmitting()) return;
+  async submitAssessment(isAutoSubmit: boolean = false): Promise<void> {
+    if (this.isSubmitting() || this.isSubmissionCompleted()) return;
+
+    // Normal student manual submission: cannot submit if any question is unanswered!
+    if (!isAutoSubmit) {
+      const unanswered = this.unansweredQuestions();
+      if (unanswered.length > 0) {
+        const numbersList = unanswered.map((u) => u.order).join('، ');
+        this.submissionWarning.set(
+          `تنبيه: لا يمكن تسليم التقييم لوجود أسئلة غير مجاب عنها! يرجى إجابة الأسئلة التالية أولاً: (سؤال رقم: ${numbersList})`
+        );
+        // Automatically jump to the first unanswered question!
+        this.activeQuestionIdx.set(unanswered[0].index);
+        return;
+      }
+    }
+
+    this.submissionWarning.set('');
     this.isSubmitting.set(true);
 
     try {

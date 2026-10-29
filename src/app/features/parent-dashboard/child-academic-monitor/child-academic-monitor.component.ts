@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, input, signal, effect, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, input, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -21,6 +21,7 @@ import { ChildAcademicReport } from './child-academic-monitor.models';
 export class ChildAcademicMonitorComponent {
   readonly childId = input.required<string>();
 
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   readonly langService = inject(LangService);
 
@@ -29,6 +30,9 @@ export class ChildAcademicMonitorComponent {
 
   constructor() {
     effect(() => {
+      if (!isPlatformBrowser(this.platformId)) {
+        return;
+      }
       const id = this.childId();
       if (id) {
         this.fetchAcademicReport(id);

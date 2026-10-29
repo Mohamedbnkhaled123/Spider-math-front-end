@@ -5,7 +5,7 @@
       
       <!-- 1. Brand & Instructor Info (5 Cols) -->
       <div class="lg:col-span-5 flex flex-col items-start">
-        <a routerLink="/" (click)="scrollToTop()" class="flex items-center gap-3 mb-4 group cursor-pointer">
+        <a [routerLink]="homeRoute()" (click)="scrollToTop()" class="flex items-center gap-3 mb-4 group cursor-pointer">
           <div class="w-12 h-12 rounded-2xl bg-surface-card border border-surface-border p-1.5 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-cyan-400 transition-colors">
             <img
               src="/assets/branding/spider-math-logo.webp"

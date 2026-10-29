@@ -1,9 +1,39 @@
 <header class="sticky top-0 z-layer-header glass-panel border-b border-surface-border transition-colors duration-200">
+  <!-- Real Web Notifications Permission Request Banner -->
+  @if (authService.isAuthenticated() && notificationsService.permissionStatus() === 'default' && !notificationsService.isPromptDismissed()) {
+    <div class="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary text-white px-4 py-2 text-xs flex items-center justify-between gap-3 shadow-md border-b border-brand-accent/20 animate-fade-in relative z-50">
+      <div class="flex items-center gap-2 max-w-3xl">
+        <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping shrink-0"></span>
+        <app-icon name="bell" [size]="16" className="text-brand-accent shrink-0" />
+        <span class="font-bold leading-normal">
+          تفعيل إشعارات المتصفح: هل ترغب في استقبال تنبيهات تصحيح الواجبات والامتحانات والدروس الجديدة حتى عندما تكون خارج المنصة؟
+        </span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          (click)="requestPermission()"
+          class="px-3 py-1.5 rounded-xl bg-white text-brand-primary font-black text-xs hover:bg-surface-bg shadow-sm transition-all cursor-pointer flex items-center gap-1"
+        >
+          <app-icon name="check" [size]="12" />
+          <span>السماح بالإشعارات</span>
+        </button>
+        <button
+          type="button"
+          (click)="dismissNotificationBanner()"
+          class="px-2 py-1.5 rounded-xl text-white/80 hover:text-white text-xs transition-all cursor-pointer"
+        >
+          لاحقاً
+        </button>
+      </div>
+    </div>
+  }
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
     
     <!-- 1. Brand Logo & Dual-Spectrum Wordmark -->
     <a
-      routerLink="/"
+      [routerLink]="activePortal() ? activePortal()!.route : '/'"
       (click)="closeMobileMenu()"
       class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02] shrink-0"
     >
@@ -136,7 +166,7 @@
         <!-- Dropdown Notifications Menu -->
         @if (notificationsService.isDropdownOpen()) {
           <div
-            class="notifications-dropdown absolute top-full right-0 rtl:right-auto rtl:left-0 mt-3 w-80 sm:w-96 rounded-2xl border border-surface-border bg-surface-card/95 backdrop-blur-xl shadow-glass z-layer-modal overflow-hidden animate-fade-in"
+            class="notifications-dropdown absolute top-full right-0 rtl:right-auto rtl:left-0 mt-3 w-80 sm:w-96 rounded-2xl border border-surface-border bg-surface-card shadow-2xl z-layer-modal overflow-hidden animate-fade-in"
           >
             <!-- Dropdown Header -->
             <div class="p-3.5 border-b border-surface-border flex items-center justify-between bg-surface-secondary/50">
@@ -157,6 +187,54 @@
                 </button>
               }
             </div>
+
+            <!-- Web Notifications Permission & Test Controls -->
+            @if (notificationsService.isSupported()) {
+              @if (notificationsService.permissionStatus() === 'default') {
+                <div class="p-3 bg-brand-primary/10 border-b border-brand-primary/20 flex items-start gap-2.5">
+                  <app-icon name="bell" [size]="16" className="text-brand-primary shrink-0 mt-0.5" />
+                  <div class="flex-1 text-xs">
+                    <span class="font-bold text-text-primary block">تفعيل التنبيهات الفورية للمتصفح</span>
+                    <p class="text-[11px] text-text-secondary mt-0.5 leading-relaxed">
+                      اسمح بالاشعارات ليصلك تنبيه فوري على شاشة جهازك عند تصحيح الواجب أو إضافة درس جديد حتى لو كنت تتصفح مواقع أخرى.
+                    </p>
+                    <button
+                      type="button"
+                      (click)="requestPermission()"
+                      class="mt-2 px-3 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-secondary text-white text-[11px] font-bold shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <app-icon name="check" [size]="12" />
+                      <span>السماح بالإشعارات الفورية الآن</span>
+                    </button>
+                  </div>
+                </div>
+              } @else if (notificationsService.permissionStatus() === 'granted') {
+                <div class="px-3.5 py-2 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between text-[11px]">
+                  <span class="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                    <app-icon name="check-circle" [size]="14" />
+                    <span>الإشعارات الفورية مفعلة على جهازك</span>
+                  </span>
+                  <button
+                    type="button"
+                    (click)="sendTestNotification()"
+                    class="text-brand-primary hover:underline font-bold cursor-pointer"
+                    title="تجربة إشعار حقيقي"
+                  >
+                    تجربة إشعار فوري 🔔
+                  </button>
+                </div>
+              } @else if (notificationsService.permissionStatus() === 'denied') {
+                <div class="p-3 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2 leading-relaxed">
+                  <app-icon name="alert-circle" [size]="16" className="shrink-0 mt-0.5 text-amber-600" />
+                  <div>
+                    <span class="font-bold block text-text-primary">الإشعارات محظورة في إعدادات متصفحك</span>
+                    <p class="text-[11px] mt-0.5">
+                      لتفعيلها: اضغط على علامة <strong>( ⓘ )</strong> الدائرية بجوار <strong>localhost:4200</strong> في شريط عنوان المتصفح بالأعلى، ثم غيّر «الإشعارات / Notifications» إلى <strong>سماح (Allow)</strong> ثم حدّث الصفحة.
+                    </p>
+                  </div>
+                </div>
+              }
+            }
 
             <!-- Notifications List -->
             <div class="max-h-80 overflow-y-auto divide-y divide-surface-border/50">

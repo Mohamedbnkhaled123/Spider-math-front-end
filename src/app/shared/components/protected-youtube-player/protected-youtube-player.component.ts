@@ -88,7 +88,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   private readonly watchedChunks = new Set<number>();
   private ytPlayer: any = null;
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
-  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private hideControlsTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Computed Properties
@@ -151,7 +150,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId)) {
       this.initYouTubeIframe();
-      this.startHeartbeatCycle();
     }
   }
 
@@ -401,16 +399,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startHeartbeatCycle(): void {
-    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-    // Dispatch genuine watch progress heartbeat to backend every 5 seconds while playing
-    this.heartbeatInterval = setInterval(() => {
-      if (this.isPlaying()) {
-        this.dispatchHeartbeat();
-      }
-    }, 5000);
-  }
-
   public dispatchHeartbeat(): void {
     if (!this.lectureId() || !isPlatformBrowser(this.platformId)) return;
 
@@ -452,7 +440,10 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   private triggerXpCelebration(): void {
     this.xpAwarded.set(true);
     this.isCelebrationVisible.set(true);
-    this.thresholdReached.emit(50); // 50 XP awarded
+    this.thresholdReached.emit(50); // XP awarded
+
+    // Trigger one-shot milestone completion to backend
+    this.dispatchHeartbeat();
 
     // Dismiss floating pop badge after 5 seconds
     setTimeout(() => {
@@ -468,10 +459,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   private cleanup(): void {
     this.stopTracking();
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
     if (this.hideControlsTimeout) {
       clearTimeout(this.hideControlsTimeout);
     }

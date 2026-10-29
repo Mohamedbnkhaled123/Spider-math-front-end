@@ -110,7 +110,10 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  printDocument(): void {
+  readonly isPrinting = signal<boolean>(false);
+  readonly printProgress = signal<{ current: number; total: number } | null>(null);
+
+  async printDocument(): Promise<void> {
     this.printAttempted.emit({
       isPrintAllowed: this.isPrintAllowed(),
       timestamp: Date.now()
@@ -121,9 +124,129 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (isPlatformBrowser(this.platformId)) {
-      // Watermark is already rendered on canvas bitmap, trigger standard print
-      window.print();
+    if (!isPlatformBrowser(this.platformId) || !this.pdfDoc) return;
+    if (this.isPrinting()) return;
+
+    try {
+      this.isPrinting.set(true);
+      const total = this.totalPages();
+      this.printProgress.set({ current: 0, total });
+
+      // Create hidden iframe to isolate document printing away from website layout
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document;
+      if (!iframeDoc) {
+        document.body.removeChild(iframe);
+        this.isPrinting.set(false);
+        this.printProgress.set(null);
+        return;
+      }
+
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+          <head>
+            <meta charset="utf-8">
+            <title>${this.documentTitle() || 'مذكرة الشرح والتمارين'}</title>
+            <style>
+              @page {
+                size: A4 portrait;
+                margin: 0mm;
+              }
+              html, body {
+                margin: 0;
+                padding: 0;
+                background: #ffffff;
+                width: 100%;
+              }
+              .print-page {
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-after: page;
+                break-inside: avoid;
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+              }
+              .print-page:last-child {
+                page-break-after: auto;
+                break-after: auto;
+              }
+              .print-page img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="print-container"></div>
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+
+      const container = iframeDoc.getElementById('print-container');
+      const scale = 2.0; // Sharp 300DPI equivalent for crisp, crystal-clear printing
+
+      for (let pageNum = 1; pageNum <= total; pageNum++) {
+        this.printProgress.set({ current: pageNum, total });
+        const page = await this.pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = viewport.width;
+        offscreenCanvas.height = viewport.height;
+        const ctx = offscreenCanvas.getContext('2d');
+
+        if (ctx) {
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          this.stampCanvasWatermark(ctx, offscreenCanvas.width, offscreenCanvas.height);
+
+          const pageDiv = iframeDoc.createElement('div');
+          pageDiv.className = 'print-page';
+          const img = iframeDoc.createElement('img');
+          img.src = offscreenCanvas.toDataURL('image/jpeg', 0.92);
+          pageDiv.appendChild(img);
+          container?.appendChild(pageDiv);
+        }
+      }
+
+      this.printProgress.set(null);
+      this.isPrinting.set(false);
+
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 5000);
+      }, 500);
+
+    } catch (err) {
+      console.error('Print generation failed:', err);
+      this.isPrinting.set(false);
+      this.printProgress.set(null);
     }
   }
 
@@ -182,7 +305,21 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set('تعذر جلب ملف الـ PDF من Google Drive. يرجى التأكد من معرّف الملف وصلاحيات الوصول.');
+        let msg = 'تعذر جلب ملف الـ PDF من Google Drive. يرجى التأكد من معرّف الملف وصلاحيات الوصول.';
+        if (err?.error instanceof ArrayBuffer) {
+          try {
+            const text = new TextDecoder('utf-8').decode(err.error);
+            const parsed = JSON.parse(text);
+            if (parsed?.error?.message) {
+              msg = parsed.error.message;
+            }
+          } catch {}
+        } else if (err?.error?.error?.message) {
+          msg = err.error.error.message;
+        } else if (err?.error?.message) {
+          msg = err.error.message;
+        }
+        this.errorMessage.set(msg);
       }
     });
   }

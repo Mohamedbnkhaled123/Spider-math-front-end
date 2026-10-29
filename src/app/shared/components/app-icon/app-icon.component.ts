@@ -65,6 +65,7 @@ export type AppIconName =
   | 'alert-triangle'
   | 'settings'
   | 'eye'
+  | 'eye-off'
   | 'crown'
   | 'sliders'
   | 'filter';

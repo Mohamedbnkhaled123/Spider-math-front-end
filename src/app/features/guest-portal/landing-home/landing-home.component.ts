@@ -8,7 +8,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -40,6 +40,7 @@ export class LandingHomeComponent implements OnInit {
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
@@ -121,6 +122,25 @@ export class LandingHomeComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId) && this.authService.isAuthenticated()) {
+      if (this.authService.isStudent()) {
+        if (this.authService.isPendingDeviceApproval()) {
+          this.router.navigateByUrl('/pending-device-approval');
+        } else {
+          this.router.navigateByUrl('/student');
+        }
+        return;
+      }
+      if (this.authService.isParent()) {
+        this.router.navigateByUrl('/parent');
+        return;
+      }
+      if (this.authService.isSuperAdmin()) {
+        this.router.navigateByUrl('/admin');
+        return;
+      }
+    }
+
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
 
     // Auto-bind student grade and curriculum if logged in

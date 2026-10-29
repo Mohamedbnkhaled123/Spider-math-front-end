@@ -47,14 +47,19 @@ describe('QuizCacheService', () => {
     // 10 mins remaining -> CALM (> 5 mins)
     expect(service.urgencyState()).toBe('CALM');
 
-    // Simulate elapsed 350s (250s remaining < 300s) -> WARNING
+    // Simulate elapsed 350s (250s remaining <= 300s) -> WARNING (Yellow)
     service.elapsedSeconds.set(350);
     expect(service.remainingSeconds()).toBe(250);
     expect(service.urgencyState()).toBe('WARNING');
 
-    // Simulate elapsed 500s (100s remaining < 120s) -> CRITICAL
+    // Simulate elapsed 500s (100s remaining <= 120s) -> ORANGE_WARNING (Orange)
     service.elapsedSeconds.set(500);
     expect(service.remainingSeconds()).toBe(100);
+    expect(service.urgencyState()).toBe('ORANGE_WARNING');
+
+    // Simulate elapsed 550s (50s remaining <= 60s) -> CRITICAL (Red)
+    service.elapsedSeconds.set(550);
+    expect(service.remainingSeconds()).toBe(50);
     expect(service.urgencyState()).toBe('CRITICAL');
 
     // Simulate elapsed 600s -> EXPIRED

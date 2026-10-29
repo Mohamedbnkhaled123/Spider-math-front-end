@@ -22,11 +22,19 @@ export const roleGuard = (allowedRoles: readonly UserRole[]): CanActivateFn => {
       return router.createUrlTree(['/login']);
     }
 
-    if (allowedRoles.includes(user.role)) {
+    // Super Admin has master privilege to inspect all platform portals (Admin, Parent, Student)
+    if (user.role === 'SUPER_ADMIN' || allowedRoles.includes(user.role)) {
       return true;
     }
 
-    // Redirect to default landing if role is forbidden
-    return router.createUrlTree(['/']);
+    // If role is forbidden (e.g. user is logged in as PARENT but trying to access /admin):
+    // Redirect to login with clear context instead of bouncing through root to parent
+    return router.createUrlTree(['/login'], {
+      queryParams: {
+        roleMismatch: 'true',
+        requiredRole: allowedRoles.join(','),
+        currentRole: user.role
+      }
+    });
   };
 };

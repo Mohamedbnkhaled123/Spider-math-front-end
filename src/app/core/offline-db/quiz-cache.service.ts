@@ -48,9 +48,24 @@ export class QuizCacheService implements OnDestroy {
   readonly urgencyState = computed<UrgencyState>(() => {
     const remaining = this.remainingSeconds();
     if (remaining <= 0) return 'EXPIRED';
-    if (remaining < 120) return 'CRITICAL'; // < 2 mins: red urgency pulse
-    if (remaining < 300) return 'WARNING';  // < 5 mins: warm amber pulse
-    return 'CALM';                          // > 5 mins: calm slate/cyan
+    if (remaining <= 60) return 'CRITICAL';       // <= 1 min (60s): red urgency pulse
+    if (remaining <= 120) return 'ORANGE_WARNING'; // <= 2 mins (120s): vivid orange
+    if (remaining <= 300) return 'WARNING';        // <= 5 mins (300s): warm yellow
+    return 'CALM';                                // > 5 mins: calm slate/neutral
+  });
+
+  readonly formattedRemainingTime = computed<string>(() => {
+    const sec = this.remainingSeconds();
+    const hours = Math.floor(sec / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    const secs = sec % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    if (hours > 0) {
+      return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+    }
+    return `${pad(mins)}:${pad(secs)}`;
   });
 
   ngOnDestroy(): void {

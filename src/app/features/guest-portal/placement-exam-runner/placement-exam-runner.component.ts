@@ -87,6 +87,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   readonly isLoading = signal<boolean>(true);
   readonly isSubmitting = signal<boolean>(false);
   readonly isDesmosActive = signal<boolean>(false);
+  readonly isTimerVisible = signal<boolean>(true);
 
   // Lead Gate Modal state (Only for anonymous visitors)
   readonly isLeadGateOpen = signal<boolean>(false);
@@ -123,10 +124,21 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
 
   readonly formattedTime = computed<string>(() => {
     const sec = this.timeRemainingSec();
-    const mins = Math.floor(sec / 60);
+    const hours = Math.floor(sec / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
     const remainingSec = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${remainingSec.toString().padStart(2, '0')}`;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    if (hours > 0) {
+      return `${pad(hours)}:${pad(mins)}:${pad(remainingSec)}`;
+    }
+    return `${pad(mins)}:${pad(remainingSec)}`;
   });
+
+  toggleTimerVisibility(): void {
+    this.isTimerVisible.update(v => !v);
+  }
 
   ngOnInit(): void {
     const student = this.authService.currentUser();

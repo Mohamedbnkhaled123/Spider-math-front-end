@@ -4,9 +4,10 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -42,6 +43,7 @@ import { IPlaybackProgress } from '../../../shared/components/protected-youtube-
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnitStudyWorkspaceComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
@@ -76,6 +78,9 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const unitId = this.route.snapshot.paramMap.get('id');
     if (unitId) {
       this.loadUnitCurriculum(unitId);

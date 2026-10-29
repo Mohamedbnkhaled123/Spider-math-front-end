@@ -68,17 +68,26 @@
       <button
         type="button"
         (click)="printDocument()"
+        [disabled]="isPrinting() || !isPrintAllowed()"
         class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
         [ngClass]="{
-          'bg-brand-primary text-white hover:bg-brand-primary-hover shadow-sm cursor-pointer': isPrintAllowed(),
+          'bg-brand-primary text-white hover:bg-brand-primary-hover shadow-sm cursor-pointer': isPrintAllowed() && !isPrinting(),
+          'bg-brand-primary/80 text-white cursor-wait animate-pulse': isPrinting(),
           'bg-surface-card border border-surface-border text-text-muted opacity-60 cursor-not-allowed': !isPrintAllowed()
         }"
         [title]="isPrintAllowed() ? 'طباعة المذكرة مع العلامة المائية' : 'الطباعة غير مصرح بها لهذا الملف'"
       >
-        <app-icon [name]="isPrintAllowed() ? 'award' : 'lock'" [size]="14" />
-        <span class="hidden sm:inline">
-          {{ isPrintAllowed() ? 'طباعة مصرح بها' : 'الطباعة مقفلة' }}
-        </span>
+        @if (isPrinting()) {
+          <app-icon name="refresh" [size]="13" className="animate-spin text-white" />
+          <span class="font-numeric">
+            جاري التجهيز ({{ printProgress()?.current }} / {{ printProgress()?.total }})...
+          </span>
+        } @else {
+          <app-icon [name]="isPrintAllowed() ? 'award' : 'lock'" [size]="14" />
+          <span class="hidden sm:inline">
+            {{ isPrintAllowed() ? 'طباعة مصرح بها' : 'الطباعة مقفلة' }}
+          </span>
+        }
       </button>
     </div>
   </div>
@@ -100,7 +109,9 @@
         <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center mb-1">
           <app-icon name="alert-circle" [size]="24" />
         </div>
-        <p class="text-xs sm:text-sm font-bold text-text-primary max-w-md">{{ errorMessage() }}</p>
+        <p dir="rtl" class="text-xs sm:text-sm font-bold text-text-primary max-w-md leading-relaxed text-center">
+          {{ errorMessage() }}
+        </p>
         <button
           type="button"
           (click)="retryLoad()"

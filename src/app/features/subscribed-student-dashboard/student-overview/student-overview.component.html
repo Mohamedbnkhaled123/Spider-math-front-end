@@ -250,7 +250,7 @@
   <!-- ========================================================================= -->
   <!-- Coming Soon Banner or Real Active Academic Tracks                         -->
   <!-- ========================================================================= -->
-  @if (!isLoadingUnits() && !isCurrentGradeActive()) {
+  @if (!isLoadingUnits() && !isLoadingActiveGrades() && !isCurrentGradeActive()) {
     <div class="coming-soon-card p-8 sm:p-14 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-surface-card to-brand-primary/5 shadow-glass text-center max-w-3xl mx-auto my-8">
       <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-brand-glow animate-pulse">
         <app-icon name="sparkles" [size]="40" />
@@ -275,7 +275,26 @@
     <!-- ========================================================================= -->
     <!-- 2.5 Enrolled Units & Lecture Watch Percentages (متابعة إنجاز الوحدات واشتراكات الفصل) -->
     <!-- ========================================================================= -->
-    @if (units().length > 0) {
+    @if (isLoadingUnits()) {
+      <section class="space-y-4">
+        <div class="h-6 w-48 bg-surface-border/40 rounded-xl animate-pulse"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="rounded-2xl border border-surface-border bg-surface-card p-5 space-y-4 animate-pulse">
+              <div class="flex items-center justify-between">
+                <div class="h-4 w-3/5 bg-surface-border/60 rounded-lg"></div>
+                <div class="h-4 w-1/4 bg-surface-border/40 rounded-full"></div>
+              </div>
+              <div class="space-y-2">
+                <div class="h-3 w-1/2 bg-surface-border/40 rounded-lg"></div>
+                <div class="h-2 w-full bg-surface-border/50 rounded-full"></div>
+              </div>
+              <div class="h-4 w-2/3 bg-surface-border/30 rounded-lg pt-2 border-t border-surface-border/40"></div>
+            </div>
+          }
+        </div>
+      </section>
+    } @else if (units().length > 0) {
       <section class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-black text-text-primary flex items-center gap-2">

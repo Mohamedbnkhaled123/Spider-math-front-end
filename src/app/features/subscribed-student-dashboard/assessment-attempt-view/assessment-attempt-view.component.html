@@ -66,22 +66,48 @@
         <span class="hidden sm:inline">آلة ديسموس البيانية</span>
       </button>
 
-      <!-- Monotonic Countdown Badge (Animation 4.6 Urgency States) -->
-      <div
-        class="timer-badge px-3.5 py-2 rounded-xl border font-numeric font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm"
-        [class.border-surface-border]="quizCache.urgencyState() === 'CALM'"
-        [class.bg-surface-card]="quizCache.urgencyState() === 'CALM'"
-        [class.text-text-primary]="quizCache.urgencyState() === 'CALM'"
-        [class.border-amber-500]="quizCache.urgencyState() === 'WARNING'"
-        [class.bg-amber-500/10]="quizCache.urgencyState() === 'WARNING'"
-        [class.text-amber-500]="quizCache.urgencyState() === 'WARNING'"
-        [class.border-feedback-danger]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
-        [class.bg-feedback-danger/10]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
-        [class.text-feedback-danger]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
-        [class.animate-timer-urgency]="quizCache.urgencyState() === 'CRITICAL'"
-      >
-        <app-icon name="clock" [size]="14" />
-        <span>{{ quizCache.remainingSeconds() }} ثانية</span>
+      <!-- Monotonic Countdown Badge with Toggle Visibility & Urgency States (5m yellow, 2m orange, 1m red) -->
+      <div class="flex items-center gap-1.5">
+        <button
+          type="button"
+          (click)="toggleTimerVisibility()"
+          class="p-2 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-muted hover:text-text-primary transition-all shadow-sm cursor-pointer"
+          [title]="isTimerVisible() ? 'إخفاء مؤقت الوقت' : 'إظهار مؤقت الوقت'"
+        >
+          <app-icon [name]="isTimerVisible() ? 'eye-off' : 'eye'" [size]="14" />
+        </button>
+
+        @if (isTimerVisible()) {
+          <div
+            class="timer-badge px-3.5 py-2 rounded-xl border font-numeric font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all duration-300"
+            [class.border-surface-border]="quizCache.urgencyState() === 'CALM'"
+            [class.bg-surface-card]="quizCache.urgencyState() === 'CALM'"
+            [class.text-text-primary]="quizCache.urgencyState() === 'CALM'"
+            [class.border-amber-400]="quizCache.urgencyState() === 'WARNING'"
+            [class.bg-amber-400/10]="quizCache.urgencyState() === 'WARNING'"
+            [class.text-amber-500]="quizCache.urgencyState() === 'WARNING'"
+            [class.border-orange-500]="quizCache.urgencyState() === 'ORANGE_WARNING'"
+            [class.bg-orange-500/10]="quizCache.urgencyState() === 'ORANGE_WARNING'"
+            [class.text-orange-500]="quizCache.urgencyState() === 'ORANGE_WARNING'"
+            [class.border-rose-500]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+            [class.bg-rose-500/10]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+            [class.text-rose-500]="quizCache.urgencyState() === 'CRITICAL' || quizCache.urgencyState() === 'EXPIRED'"
+            [class.animate-pulse]="quizCache.urgencyState() === 'ORANGE_WARNING'"
+            [class.animate-timer-urgency]="quizCache.urgencyState() === 'CRITICAL'"
+          >
+            <app-icon name="clock" [size]="14" />
+            <span dir="ltr">{{ quizCache.formattedRemainingTime() }}</span>
+          </div>
+        } @else {
+          <div
+            (click)="toggleTimerVisibility()"
+            class="px-2.5 py-2 rounded-xl border border-surface-border bg-surface-card/60 hover:bg-surface-card text-text-muted text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1.5"
+            title="انقر لإظهار مؤقت الوقت"
+          >
+            <app-icon name="clock" [size]="12" />
+            <span>الوقت مخفي</span>
+          </div>
+        }
       </div>
     </div>
   </header>
@@ -121,6 +147,8 @@
             {{ idx + 1 }}
             @if (isQuestionAnswered(item._id)) {
               <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-surface-card" title="تمت الإجابة"></span>
+            } @else {
+              <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500/80 border-2 border-surface-card" title="لم تقم بالحل بعد"></span>
             }
           </button>
         }
@@ -289,8 +317,16 @@
           </div>
         }
 
+        <!-- Submission Warning Banner if incomplete -->
+        @if (submissionWarning()) {
+          <div class="mt-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2.5 animate-pulse">
+            <app-icon name="alert-circle" [size]="18" className="shrink-0 text-rose-500" />
+            <span>{{ submissionWarning() }}</span>
+          </div>
+        }
+
         <!-- Navigation & Submit Footer Actions -->
-        <div class="flex items-center justify-between pt-8 mt-10 border-t border-surface-border">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 mt-8 border-t border-surface-border">
           <button
             type="button"
             (click)="prevQuestion()"
@@ -311,20 +347,30 @@
               <app-icon name="chevron-left" [size]="14" />
             </button>
           } @else {
-            <button
-              type="button"
-              (click)="submitAssessment()"
-              [disabled]="isSubmitting()"
-              class="px-8 py-3 rounded-xl font-black text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              @if (isSubmitting()) {
-                <app-icon name="loader" [size]="16" className="animate-spin" />
-                <span>جارِ تسليم الامتحان...</span>
-              } @else {
-                <app-icon name="check-circle" [size]="16" />
-                <span>إنهاء التقييم وتسليم الإجابات</span>
+            <div class="flex flex-col items-end gap-1.5 w-full sm:w-auto">
+              @if (unansweredCount() > 0) {
+                <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <app-icon name="alert-circle" [size]="13" />
+                  <span>يتبقى لديك {{ unansweredCount() }} أسئلة لم تقم بحلها بعد!</span>
+                </span>
               }
-            </button>
+
+              <button
+                type="button"
+                (click)="submitAssessment()"
+                [disabled]="isSubmitting() || unansweredCount() > 0"
+                class="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                [title]="unansweredCount() > 0 ? 'يجب إجابة كافة الأسئلة أولاً لتتمكن من تسليم التقييم' : 'إنهاء وتسليم الإجابات'"
+              >
+                @if (isSubmitting()) {
+                  <app-icon name="loader" [size]="16" className="animate-spin" />
+                  <span>جارِ تسليم الامتحان...</span>
+                } @else {
+                  <app-icon name="check-circle" [size]="16" />
+                  <span>إنهاء التقييم وتسليم الإجابات</span>
+                }
+              </button>
+            </div>
           }
         </div>
 

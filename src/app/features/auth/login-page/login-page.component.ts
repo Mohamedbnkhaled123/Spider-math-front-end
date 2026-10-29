@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { DeviceFingerprintService } from '../../../core/auth/device-fingerprint.service';
@@ -33,6 +33,7 @@ export class LoginPageComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly fingerprintService = inject(DeviceFingerprintService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
 
   // Active navigation tab
@@ -84,6 +85,38 @@ export class LoginPageComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const qp = this.route.snapshot.queryParams;
+    if (qp['roleMismatch'] === 'true' || qp['role']) {
+      if (qp['requiredRole']?.includes('SUPER_ADMIN') || qp['role'] === 'ADMIN') {
+        this.activeTab.set('admin');
+        if (qp['roleMismatch'] === 'true') {
+          this.errorMessage.set(
+            'أنت مسجل حالياً بحساب ولي أمر أو طالب ولا تملك صلاحيات المشرف. يرجى تسجيل الدخول كـ مدير نظام للوصول إلى لوحة التحكم.'
+          );
+        }
+        return;
+      }
+      if (qp['role'] === 'PARENT' || this.router.url.includes('parent')) {
+        this.activeTab.set('parent');
+        return;
+      }
+    }
+
+    if (this.authService.isAuthenticated()) {
+      if (this.authService.isStudent()) {
+        this.router.navigateByUrl('/student');
+        return;
+      }
+      if (this.authService.isParent()) {
+        this.router.navigateByUrl('/parent');
+        return;
+      }
+      if (this.authService.isSuperAdmin()) {
+        this.router.navigateByUrl('/admin');
+        return;
+      }
+    }
+
     if (this.router.url.includes('parent')) {
       this.activeTab.set('parent');
     }
@@ -326,9 +359,8 @@ export class LoginPageComponent implements OnInit {
               }
             });
           } else {
-            // Already registered & profile completed
-            const target = data.user.has_active_subscription ? '/student' : '/inactive-student-portal';
-            this.router.navigateByUrl(target);
+            // Already registered & profile completed -> Student Dashboard
+            this.router.navigateByUrl('/student');
           }
         }
       },
@@ -381,8 +413,7 @@ export class LoginPageComponent implements OnInit {
         this.isSubmitting.set(false);
         if (res?.data?.token && res?.data?.user) {
           this.authService.setSession(res.data.token, res.data.user);
-          const target = res.data.user.has_active_subscription ? '/student' : '/inactive-student-portal';
-          this.router.navigateByUrl(target);
+          this.router.navigateByUrl('/student');
         } else {
           this.errorMessage.set('كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.');
         }

@@ -3,7 +3,7 @@
  * Phase 12: Offline-First Quiz Engine & Dexie.js Database Models
  */
 
-export type UrgencyState = 'CALM' | 'WARNING' | 'CRITICAL' | 'EXPIRED';
+export type UrgencyState = 'CALM' | 'WARNING' | 'ORANGE_WARNING' | 'CRITICAL' | 'EXPIRED';
 
 export type SyncStatus = 'IDLE' | 'QUEUED_OFFLINE' | 'SYNCING' | 'SYNCED_ONLINE' | 'FAILED';
 

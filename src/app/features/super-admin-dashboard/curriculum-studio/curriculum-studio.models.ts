@@ -6,7 +6,7 @@
 export type CurriculumCode = 'EGYPTIAN' | 'GULF' | 'INTERNATIONAL' | 'AMERICAN';
 export type AcademicTermCode = 'TERM_1' | 'TERM_2';
 export type CalculatorMode = 'NONE' | 'DESMOS';
-export type QuestionType = 'MCQ' | 'ESSAY';
+export type QuestionType = 'MCQ' | 'ESSAY' | 'ESSAY_PHOTO';
 
 export interface GradeOption {
   code: string;
@@ -31,13 +31,17 @@ export interface QuestionAdminItem {
   points: number;
 }
 
+export type AssessmentAdminType = 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
+
 export interface AssessmentAdminItem {
   id: string;
   unitId: string;
   titleAr: string;
+  type?: AssessmentAdminType;
   calculatorType: CalculatorMode;
   durationMinutes: number;
   submissionsCount: number;
+  xpReward?: number | null;
   questions: QuestionAdminItem[];
 }
 
@@ -51,6 +55,7 @@ export interface LectureAdminItem {
   isPrintAllowed: boolean;
   durationMinutes: number;
   isFreeTrial?: boolean;
+  xpReward?: number | null;
 }
 
 export interface UnitPackageAdminItem {

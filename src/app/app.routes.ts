@@ -3,10 +3,12 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { activeStudentGuard } from './core/guards/active-student.guard';
 import { deviceApprovedGuard } from './core/guards/device-approved.guard';
+import { rootRedirectGuard } from './core/guards/root-redirect.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [rootRedirectGuard],
     loadComponent: () =>
       import('./features/guest-portal/landing-home/landing-home.component').then(
         m => m.LandingHomeComponent
