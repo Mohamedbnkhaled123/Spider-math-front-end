@@ -324,7 +324,7 @@ export class PublicDiscoveryService {
       heroHeadlineEn: 'Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab',
       heroSubheadlineAr: 'منصة تفاعلية مخصصة للثانوية العامة والأنظمة الدولية بنظام حماية متطور واستراتيجيات ديسموس البيانية.',
       heroSubheadlineEn: 'Interactive learning for Egyptian, Gulf, International, and American Curriculums with Desmos graphing strategies.',
-      heroVideoUrl: 'https://www.youtube.com/watch?v=0e3GPea1Tyg',
+      heroVideoUrl: 'https://www.youtube.com/watch?v=AOtzdDq7vrI',
       announcementBannerText: '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦',
       isAnnouncementActive: true,
       activeAcademicYear: '2026 / 2027',

@@ -68,7 +68,7 @@ export class LandingHomeComponent implements OnInit {
   readonly isHeroVideoPlaying = signal<boolean>(false);
 
   readonly heroRawVideoUrl = computed<string>(() => {
-    return this.landingData()?.heroVideoUrl || 'https://www.youtube.com/watch?v=0e3GPea1Tyg';
+    return this.landingData()?.heroVideoUrl || 'https://www.youtube.com/watch?v=AOtzdDq7vrI';
   });
 
   readonly isHeroYouTube = computed<boolean>(() => {

@@ -241,8 +241,8 @@
             <!-- Notifications List -->
             <div class="max-h-80 overflow-y-auto divide-y divide-surface-border/50">
               @if (notificationsService.notifications().length === 0) {
-                <div class="p-6 text-center text-xs text-text-muted">
-                  <app-icon name="check-circle" [size]="24" className="mx-auto mb-2 text-text-muted/60" />
+                <div class="p-6 text-center text-xs text-slate-600 dark:text-slate-400">
+                  <app-icon name="check-circle" [size]="24" className="mx-auto mb-2 text-slate-400" />
                   <p>{{ langService.isArabic() ? 'لا توجد إشعارات حالياً' : 'No notifications found' }}</p>
                 </div>
               } @else {
@@ -265,7 +265,7 @@
                       <p class="text-[11px] text-text-secondary leading-relaxed line-clamp-2 mb-1.5">
                         {{ langService.isArabic() ? notif.body_ar : notif.body_en }}
                       </p>
-                      <span class="text-[10px] text-text-muted font-numeric block">
+                      <span class="text-[10px] text-slate-600 dark:text-slate-400 font-numeric block">
                         {{ notif.created_at | date:'shortTime' }}
                       </span>
                     </div>

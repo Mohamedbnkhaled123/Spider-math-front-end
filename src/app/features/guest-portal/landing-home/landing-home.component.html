@@ -376,7 +376,7 @@
             </h3>
 
             @if (isLoadingStudentUnits()) {
-              <div class="p-8 text-center text-xs text-text-muted">
+              <div class="p-8 text-center text-xs text-slate-600 dark:text-slate-400">
                 <app-icon name="refresh" [size]="20" className="animate-spin mx-auto mb-2 text-brand-accent" />
                 <span>{{ langService.isArabic() ? 'جاري تحميل مقرراتك...' : 'Loading your units...' }}</span>
               </div>
@@ -399,7 +399,7 @@
                     </div>
 
                     <div class="pt-3 border-t border-surface-border flex items-center justify-between gap-2">
-                      <span class="text-[11px] font-semibold text-text-muted font-numeric">
+                      <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 font-numeric">
                         {{ unit.total_lectures_count || 0 }} {{ langService.isArabic() ? 'محاضرات' : 'Lectures' }}
                       </span>
 
