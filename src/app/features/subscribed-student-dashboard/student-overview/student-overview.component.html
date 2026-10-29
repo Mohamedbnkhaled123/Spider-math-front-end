@@ -37,6 +37,16 @@
             <app-icon name="settings" [size]="13" className="text-brand-primary dark:text-brand-accent" />
             <span>تعديل بياناتي</span>
           </button>
+
+          <a
+            [routerLink]="['/']"
+            [queryParams]="{ view: 'public' }"
+            class="px-2.5 py-1 rounded-full text-xs font-bold bg-surface-card hover:bg-surface-bg border border-surface-border hover:border-brand-primary/40 text-text-primary transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            [title]="langService.isArabic() ? 'استعراض الصفحة الرئيسية للمنصة' : 'View Main Platform Page'"
+          >
+            <app-icon name="home" [size]="13" className="text-brand-primary dark:text-brand-accent" />
+            <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Main Page' }}</span>
+          </a>
         </div>
 
         <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">

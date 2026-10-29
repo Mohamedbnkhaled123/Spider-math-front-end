@@ -8,7 +8,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -42,6 +42,7 @@ export class LandingHomeComponent implements OnInit {
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
@@ -186,7 +187,12 @@ export class LandingHomeComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId) && this.authService.isAuthenticated()) {
+    const hasPublicViewParam =
+      this.route.snapshot.queryParamMap.get('view') === 'public' ||
+      this.route.snapshot.queryParamMap.has('preview') ||
+      this.route.snapshot.queryParamMap.has('public');
+
+    if (isPlatformBrowser(this.platformId) && this.authService.isAuthenticated() && !hasPublicViewParam) {
       if (this.authService.isStudent()) {
         if (this.authService.isPendingDeviceApproval()) {
           this.router.navigateByUrl('/pending-device-approval');

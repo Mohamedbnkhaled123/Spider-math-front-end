@@ -16,6 +16,14 @@ export const routes: Routes = [
     title: 'Spider Math Platform | منصة سبايدر ماث التعليمية'
   },
   {
+    path: 'landing',
+    loadComponent: () =>
+      import('./features/guest-portal/landing-home/landing-home.component').then(
+        m => m.LandingHomeComponent
+      ),
+    title: 'Spider Math Platform | منصة سبايدر ماث التعليمية'
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login-page/login-page.component').then(

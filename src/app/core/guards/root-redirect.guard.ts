@@ -11,9 +11,18 @@ import { AuthService } from '../auth/auth.service';
  * - If SUPER_ADMIN: redirects to ('/admin').
  * Guests (unauthenticated visitors) proceed to the public landing page.
  */
-export const rootRedirectGuard: CanActivateFn = () => {
+export const rootRedirectGuard: CanActivateFn = (route) => {
   const platformId = inject(PLATFORM_ID);
   if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
+
+  // Allow authenticated users to view public landing page when explicitly requested
+  if (
+    route.queryParamMap.get('view') === 'public' ||
+    route.queryParamMap.has('preview') ||
+    route.queryParamMap.has('public')
+  ) {
     return true;
   }
 

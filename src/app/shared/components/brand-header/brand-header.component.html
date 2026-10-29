@@ -114,6 +114,31 @@
           {{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}
         </a>
       </nav>
+    } @else {
+      <!-- 2. Authenticated Navigation Links (Desktop) -->
+      <nav class="hidden md:flex items-center gap-1.5 text-xs font-bold text-text-secondary" aria-label="Portal Navigation">
+        <!-- Return / View Public Landing Page -->
+        <a
+          [routerLink]="['/']"
+          [queryParams]="{ view: 'public' }"
+          class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary/40 text-text-secondary hover:text-brand-primary dark:hover:text-brand-accent transition-all flex items-center gap-1.5 shadow-sm"
+          [title]="langService.isArabic() ? 'استعراض الصفحة الرئيسية للمنصة' : 'View Public Landing Page'"
+        >
+          <app-icon name="home" [size]="14" />
+          <span>{{ langService.isArabic() ? 'الصفحة الرئيسية للمنصة' : 'Public Main Page' }}</span>
+        </a>
+
+        @if (authService.isStudent()) {
+          <a
+            routerLink="/student"
+            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary/40 text-text-secondary hover:text-brand-primary dark:hover:text-brand-accent transition-all flex items-center gap-1.5 shadow-sm"
+            [title]="langService.isArabic() ? 'لوحة المذاكرة الخاصة بالطالب' : 'Student Study Dashboard'"
+          >
+            <app-icon name="book-open" [size]="14" />
+            <span>{{ langService.isArabic() ? 'لوحة المذاكرة' : 'Study Dashboard' }}</span>
+          </a>
+        }
+      </nav>
     }
 
     <!-- 3. Global Action Bar Controls -->
@@ -413,6 +438,30 @@
           </div>
           @if (authService.currentUser()?.student_ha_code; as code) {
             <span class="font-mono text-xs font-black text-brand-secondary">{{ code }}</span>
+          }
+        </div>
+
+        <!-- Mobile Navigation Links for Authenticated Users -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold pt-1">
+          <a
+            [routerLink]="['/']"
+            [queryParams]="{ view: 'public' }"
+            (click)="closeMobileMenu()"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center flex items-center justify-center gap-1.5 hover:border-brand-primary/40 transition-colors"
+          >
+            <app-icon name="home" [size]="14" />
+            <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Main Page' }}</span>
+          </a>
+
+          @if (activePortal(); as portal) {
+            <a
+              [routerLink]="portal.route"
+              (click)="closeMobileMenu()"
+              class="p-2.5 rounded-xl border border-brand-accent/40 bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-center flex items-center justify-center gap-1.5 font-black hover:bg-brand-primary/20 transition-colors"
+            >
+              <app-icon name="sparkles" [size]="14" />
+              <span>{{ portal.label }}</span>
+            </a>
           }
         </div>
       }
