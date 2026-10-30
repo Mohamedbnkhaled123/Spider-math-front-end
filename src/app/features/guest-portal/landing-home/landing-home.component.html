@@ -166,7 +166,7 @@
             <div class="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-brand-secondary/40 via-brand-primary/30 to-brand-cyan/40 blur-xl opacity-60 pointer-events-none"></div>
 
             <!-- Video Player Card Container -->
-            <div class="relative rounded-3xl border border-white/10 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/80 backdrop-blur-xl p-3 sm:p-4 shadow-2xl overflow-hidden flex flex-col gap-3">
+            <div class="relative rounded-3xl border border-white/10 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/80 backdrop-blur-xl p-2 sm:p-2.5 shadow-2xl overflow-hidden">
               
               <!-- Responsive 16:9 Video Shell (Lite YouTube Facade: Loads in ~18 KiB with zero main-thread blocking) -->
               <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/95 shadow-inner border border-white/10 flex items-center justify-center group">
@@ -225,34 +225,8 @@
                         <app-icon name="play" [size]="28" className="text-white ml-1" />
                       </span>
                     </div>
-
-                    <!-- Floating Badge On Hover -->
-                    <div class="absolute bottom-3 inset-x-3 sm:inset-x-4 flex items-center justify-between text-xs font-bold text-white pointer-events-none">
-                      <span class="px-2.5 sm:px-3 py-1 rounded-full bg-slate-900/90 border border-cyan-400/30 text-cyan-300 text-[10px] sm:text-xs backdrop-blur-md shadow-lg">
-                        {{ langService.isArabic() ? 'اضغط للمشاهدة الفورية' : 'Click to Watch Video' }}
-                      </span>
-                      <span class="px-2.5 py-1 rounded-full bg-black/60 text-white/80 text-[10px] font-mono">
-                        HD 1080p
-                      </span>
-                    </div>
                   </button>
                 }
-              </div>
-
-              <!-- Video Footer Info Bar -->
-              <div class="px-2 pt-1 pb-0.5 flex items-center justify-between gap-3 text-xs">
-                <div class="flex items-center gap-2">
-                  <span class="relative flex h-2.5 w-2.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                  </span>
-                  <span class="font-bold text-text-primary text-[11px] sm:text-xs">
-                    {{ langService.isArabic() ? 'فيديو تعريفي بطريقة الشرح والمنصة' : 'Spider Math Platform Overview Video' }}
-                  </span>
-                </div>
-                <span class="text-[10px] sm:text-[11px] font-extrabold text-cyan-800 dark:text-cyan-300 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/25">
-                  {{ langService.isArabic() ? 'م/ هبة عبدالوهاب' : 'Eng. Heba Abdel-Wahab' }}
-                </span>
               </div>
 
             </div>
