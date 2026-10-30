@@ -279,10 +279,10 @@ export class LoginPageComponent implements OnInit {
             if (response.error !== 'popup_closed_by_user') {
               if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
                 this.googleAuthErrorMessage.set(
-                  'تم حظر تسجيل الدخول بواسطة Google (origin_mismatch). يجب تشغيل المنصة على المنفذ 4200 المصرح به أو إضافة المنفذ الحالي في Google Cloud Console.'
+                  'تعذر إتمام تسجيل الدخول عبر Google حالياً. يرجى استخدام تسجيل الدخول بكود الطالب أو المحاولة لاحقاً.'
                 );
               } else {
-                this.googleAuthErrorMessage.set(`تعذر استكمال الاتصال بحساب Google (${response.error})`);
+                this.googleAuthErrorMessage.set('تعذر استكمال الاتصال بحساب Google. يرجى إعادة المحاولة.');
               }
             }
             return;
@@ -520,21 +520,32 @@ export class LoginPageComponent implements OnInit {
   private extractErrorMessage(err: any, fallback: string): string {
     const rawMsg = err?.error?.error?.message || err?.error?.message;
     if (typeof rawMsg === 'string') {
+      const lower = rawMsg.toLowerCase();
+      // Intercept and sanitize any internal technical leaks (ports, databases, parsers, dev terms)
       if (
         rawMsg.includes('Unexpected token') ||
         rawMsg.includes('DOCTYPE') ||
         rawMsg.includes('JSON') ||
-        rawMsg.includes('is not valid')
+        rawMsg.includes('is not valid') ||
+        lower.includes('econnrefused') ||
+        lower.includes('gateway') ||
+        lower.includes('proxy') ||
+        rawMsg.includes('5000') ||
+        rawMsg.includes('4200') ||
+        rawMsg.includes('الباك إند') ||
+        rawMsg.includes('السيرفر الخلفي') ||
+        rawMsg.includes('المنفذ') ||
+        rawMsg.includes('خادم المنصة')
       ) {
-        return 'تعذر الاتصال بخادم المنصة بشكل صحيح (استجابة غير صالحة من السيرفر). يرجى التأكد من تشغيل السيرفر الخلفي.';
+        return 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.';
       }
       return rawMsg;
     }
     if (err?.status === 0) {
-      return 'تعذر الاتصال بالسيرفر. يرجى التأكد من تشغيل الباك إند واتصالك بالإنترنت.';
+      return 'تعذر الاتصال بالخدمة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.';
     }
-    if (err?.status === 502 || err?.status === 503) {
-      return 'خادم المنصة الخلفي (API) غير متاح حالياً. يرجى التأكد من تشغيل السيرفر على المنفذ 5000.';
+    if (err?.status === 502 || err?.status === 503 || err?.status === 504) {
+      return 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.';
     }
     return fallback;
   }

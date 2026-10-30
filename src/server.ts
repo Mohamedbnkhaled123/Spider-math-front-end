@@ -81,8 +81,8 @@ app.use('/api', (clientReq, clientRes) => {
       clientRes.status(502).json({
         success: false,
         error: {
-          code: 'GATEWAY_ERROR_502',
-          message: 'تعذر الاتصال بسيرفر الباك إند API. يرجى التأكد من تشغيل السيرفر على المنفذ 5000.'
+          code: 'SERVICE_UNAVAILABLE_502',
+          message: 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.'
         }
       });
     }
