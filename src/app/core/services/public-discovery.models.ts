@@ -87,6 +87,7 @@ export interface IPublicLandingData {
   announcementBannerText?: string;
   isAnnouncementActive?: boolean;
   activeAcademicYear?: string;
+  activeAcademicTerm?: AcademicTermCode;
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];
   pricingPackages: IPricingPackage[];

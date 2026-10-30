@@ -100,6 +100,7 @@ export class PublicDiscoveryService {
           announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || fallback.announcementBannerText,
           isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
           activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
+          activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || fallback.activeAcademicTerm || 'TERM_1',
           teacherBio: fallback.teacherBio,
           schedules: normalizedSchedules,
           pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
@@ -328,6 +329,7 @@ export class PublicDiscoveryService {
       announcementBannerText: '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦',
       isAnnouncementActive: true,
       activeAcademicYear: '2026 / 2027',
+      activeAcademicTerm: 'TERM_1',
       teacherBio: {
         nameAr: 'المهندسة / هبة عبدالوهاب',
         nameEn: 'Eng. Heba Abdel-Wahab',

@@ -6,6 +6,7 @@ import {
   input,
   output,
   inject,
+  effect,
   OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -31,7 +32,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 @Component({
   selector: 'app-curriculum-selector-cards',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, AppIconComponent],
   templateUrl: './curriculum-selector-cards.component.html',
   styleUrl: './curriculum-selector-cards.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -103,6 +104,29 @@ export class CurriculumSelectorCardsComponent implements OnInit {
     );
   });
 
+  constructor() {
+    effect(() => {
+      const term = this.initialTerm();
+      if (term) {
+        this.selectedTermCode.set(term);
+        this.loadUnitsForSelection();
+      }
+    });
+  }
+
+  getGradeLabel(gradeCode?: string): string {
+    if (!gradeCode) return '';
+    for (const c of CANONICAL_CURRICULUM_TREE) {
+      const g = c.grades.find(item => item.code === gradeCode);
+      if (g) {
+        return this.langService.isArabic()
+          ? `${g.stageAr} • ${g.shortLabelAr}`
+          : `${g.stageEn} • ${g.shortLabelEn}`;
+      }
+    }
+    return gradeCode;
+  }
+
   ngOnInit(): void {
     this.selectedCurriculumCode.set(this.initialCurriculum());
     this.selectedGradeCode.set(this.initialGrade());
@@ -123,9 +147,10 @@ export class CurriculumSelectorCardsComponent implements OnInit {
 
   loadUnitsForSelection(): void {
     this.isLoadingUnits.set(true);
+    // Fetch all published units for the selected curriculum and active term
     this.discoveryService.getUnitsCatalog(
       this.selectedCurriculumCode(),
-      this.selectedGradeCode(),
+      undefined,
       this.selectedTermCode()
     ).subscribe({
       next: units => {
@@ -143,10 +168,7 @@ export class CurriculumSelectorCardsComponent implements OnInit {
     this.selectedCurriculumCode.set(code);
     const curr = this.curriculumCards().find(c => c.code === code);
     if (curr && curr.availableGrades.length > 0) {
-      const exists = curr.availableGrades.some(g => g.code === this.selectedGradeCode());
-      if (!exists) {
-        this.selectedGradeCode.set(curr.availableGrades[0].code);
-      }
+      this.selectedGradeCode.set(curr.availableGrades[0].code);
     }
     this.emitSelection();
     this.loadUnitsForSelection();
@@ -155,7 +177,6 @@ export class CurriculumSelectorCardsComponent implements OnInit {
   selectGrade(gradeCode: string): void {
     this.selectedGradeCode.set(gradeCode);
     this.emitSelection();
-    this.loadUnitsForSelection();
   }
 
   selectTerm(term: AcademicTermCode): void {

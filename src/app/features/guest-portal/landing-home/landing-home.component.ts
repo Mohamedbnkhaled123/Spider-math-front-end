@@ -16,11 +16,22 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { CurriculumSelectorCardsComponent } from '../../../shared/components/curriculum-selector-cards/curriculum-selector-cards.component';
 import { ICurriculumSelection } from '../../../shared/components/curriculum-selector-cards/curriculum-selector-cards.models';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
-import { IPublicLandingData, IScheduleItem, IPricingPackage } from '../../../core/services/public-discovery.models';
+import {
+  IPublicLandingData,
+  IScheduleItem,
+  IPricingPackage,
+  IPlacementTestResponse
+} from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
 import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
-import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import {
+  CurriculumCode,
+  AcademicTermCode,
+  CANONICAL_CURRICULUM_TREE,
+  ICurriculumNode,
+  IGradeLevelMeta
+} from '../../../core/constants/curriculum-tree.constant';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -64,6 +75,24 @@ export class LandingHomeComponent implements OnInit {
   // Landing Data Signal
   readonly landingData = signal<IPublicLandingData | null>(null);
   readonly isLoading = signal<boolean>(true);
+
+  // Active Academic Term from CMS (Set by Admin, applies platform-wide)
+  readonly activeAcademicTerm = computed<AcademicTermCode>(() => {
+    return this.landingData()?.activeAcademicTerm || 'TERM_1';
+  });
+
+  // Dedicated Placement Test Section State
+  readonly placementCurriculum = signal<CurriculumCode>('EGYPTIAN');
+  readonly placementGrade = signal<string>('SEC_3');
+  readonly placementTestInfo = signal<IPlacementTestResponse | null>(null);
+  readonly isCheckingPlacement = signal<boolean>(false);
+  readonly canonicalCurricula = CANONICAL_CURRICULUM_TREE;
+
+  readonly placementAvailableGrades = computed<readonly IGradeLevelMeta[]>(() => {
+    const curr = this.placementCurriculum();
+    const node = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
+    return node ? node.grades : [];
+  });
 
   // Hero Video State (Lite YouTube Facade: Unprotected Public Video controlled by Super Admin via CMS)
   readonly isHeroVideoPlaying = signal<boolean>(false);
@@ -224,9 +253,53 @@ export class LandingHomeComponent implements OnInit {
       next: data => {
         this.landingData.set(data);
         this.isLoading.set(false);
+        this.checkPlacementAvailability();
       },
       error: () => {
         this.isLoading.set(false);
+        this.checkPlacementAvailability();
+      }
+    });
+  }
+
+  setPlacementCurriculum(curr: CurriculumCode): void {
+    this.placementCurriculum.set(curr);
+    const grades = this.placementAvailableGrades();
+    if (grades.length > 0 && !grades.some(g => g.code === this.placementGrade())) {
+      this.placementGrade.set(grades[0].code);
+    }
+    this.checkPlacementAvailability();
+  }
+
+  setPlacementGrade(gradeCode: string): void {
+    this.placementGrade.set(gradeCode);
+    this.checkPlacementAvailability();
+  }
+
+  checkPlacementAvailability(): void {
+    this.isCheckingPlacement.set(true);
+    const curr = this.placementCurriculum();
+    const grade = this.placementGrade();
+    const term = this.activeAcademicTerm();
+
+    this.discoveryService.getPlacementTest(curr, grade, term).subscribe({
+      next: (res) => {
+        this.placementTestInfo.set(res);
+        this.isCheckingPlacement.set(false);
+      },
+      error: () => {
+        this.placementTestInfo.set({
+          hasTest: false,
+          assessment_id: '',
+          title: `امتحان تحديد المستوى — ${curr} (${grade})`,
+          curriculum: curr,
+          grade_level: grade,
+          academic_term: term,
+          total_questions: 0,
+          time_limit_minutes: 15,
+          questions: []
+        });
+        this.isCheckingPlacement.set(false);
       }
     });
   }

@@ -55,6 +55,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     isAnnouncementActive: true,
     supportWhatsapp: '01012345678',
     activeAcademicYear: '2026 / 2027',
+    activeAcademicTerm: 'TERM_1',
     schedulesTable: []
   });
 

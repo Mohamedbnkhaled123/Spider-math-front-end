@@ -177,8 +177,8 @@
         />
       </div>
 
-      <!-- Support Whatsapp & Academic Year -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Support Whatsapp, Academic Year & Active Term -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label class="block font-bold text-text-secondary mb-1">رقم واتساب الدعم الفني المعتمد</label>
           <input
@@ -195,6 +195,38 @@
             [(ngModel)]="editableCms().activeAcademicYear"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary"
           />
+        </div>
+
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">الفصل الدراسي النشط للمنصة</label>
+          <div class="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              (click)="editableCms().activeAcademicTerm = 'TERM_1'"
+              class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
+              [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
+              [class.text-white]="editableCms().activeAcademicTerm === 'TERM_1'"
+              [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
+              [class.bg-surface-bg]="editableCms().activeAcademicTerm !== 'TERM_1'"
+              [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_1'"
+              [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_1'"
+            >
+              الترم الأول (Term 1)
+            </button>
+            <button
+              type="button"
+              (click)="editableCms().activeAcademicTerm = 'TERM_2'"
+              class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
+              [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
+              [class.text-white]="editableCms().activeAcademicTerm === 'TERM_2'"
+              [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
+              [class.bg-surface-bg]="editableCms().activeAcademicTerm !== 'TERM_2'"
+              [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_2'"
+              [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_2'"
+            >
+              الترم الثاني (Term 2)
+            </button>
+          </div>
         </div>
       </div>
 

@@ -97,6 +97,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     isAnnouncementActive: true,
     supportWhatsapp: '01012345678',
     activeAcademicYear: '2026 / 2027',
+    activeAcademicTerm: 'TERM_1',
     schedulesTable: [
       {
         curriculum: 'EGYPTIAN',
@@ -337,6 +338,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? true,
             supportWhatsapp: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || '01012345678',
             activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || '2026 / 2027',
+            activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || this.cmsConfig().activeAcademicTerm || 'TERM_1',
             schedulesTable: (raw.schedulesTable && raw.schedulesTable.length > 0)
               ? raw.schedulesTable
               : (raw.schedules_table && raw.schedules_table.length > 0)

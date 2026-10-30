@@ -35,5 +35,6 @@ export interface CmsConfigAdminItem {
   isAnnouncementActive: boolean;
   supportWhatsapp: string;
   activeAcademicYear: string;
+  activeAcademicTerm: 'TERM_1' | 'TERM_2';
   schedulesTable: ScheduleRow[];
 }
