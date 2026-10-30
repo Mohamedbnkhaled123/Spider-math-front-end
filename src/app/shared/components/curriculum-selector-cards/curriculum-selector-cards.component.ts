@@ -48,6 +48,7 @@ export class CurriculumSelectorCardsComponent implements OnInit {
   readonly initialGrade = input<string>('SEC_3');
   readonly initialTerm = input<AcademicTermCode>('TERM_1');
   readonly showDetails = input<boolean>(true);
+  readonly landingUnitIds = input<string[] | undefined>();
 
   // Outputs
   readonly selectionChange = output<ICurriculumSelection>();
@@ -154,7 +155,12 @@ export class CurriculumSelectorCardsComponent implements OnInit {
       this.selectedTermCode()
     ).subscribe({
       next: units => {
-        this.publishedUnits.set(units || []);
+        const allowedIds = this.landingUnitIds();
+        let filtered = units || [];
+        if (allowedIds && allowedIds.length > 0) {
+          filtered = filtered.filter(u => allowedIds.includes(u._id));
+        }
+        this.publishedUnits.set(filtered);
         this.isLoadingUnits.set(false);
       },
       error: () => {

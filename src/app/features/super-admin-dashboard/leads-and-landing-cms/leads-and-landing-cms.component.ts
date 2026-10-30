@@ -4,6 +4,7 @@ import {
   input,
   output,
   signal,
+  computed,
   inject,
   effect,
   OnInit
@@ -23,7 +24,7 @@ import {
  * Phase 14: Leads CRM & Landing Page CMS Component
  * 
  * Manages customer inquiries (Leads) with 1-click WhatsApp deep links,
- * and pure Landing Page content (Headlines, Announcements, Schedules Table scoped by Curriculum/Grade/Term).
+ * and pure Landing Page content (Headlines, Announcements, Schedules Table, and Showcased Units Scoped by Curriculum).
  * Strictly zero SEO fields (RULES.md Section 1.3 & 5.6).
  */
 @Component({
@@ -56,7 +57,25 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     supportWhatsapp: '01012345678',
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
-    schedulesTable: []
+    schedulesTable: [],
+    landingUnitIds: []
+  });
+
+  // Showcased Units Management
+  readonly allUnits = signal<any[]>([]);
+  readonly isLoadingUnits = signal<boolean>(false);
+  readonly selectedCurriculumForUnits = signal<string>('EGYPTIAN');
+
+  readonly curriculumTabs = [
+    { code: 'EGYPTIAN', label: 'المنهج المصري', icon: '🇪🇬' },
+    { code: 'GULF', label: 'المنهج الخليجي', icon: '🌴' },
+    { code: 'INTERNATIONAL', label: 'المنهج الدولي البريطاني', icon: '🌍' },
+    { code: 'AMERICAN', label: 'الدبلومة الأمريكية', icon: '🎓' }
+  ];
+
+  readonly filteredUnits = computed(() => {
+    const curr = this.selectedCurriculumForUnits();
+    return this.allUnits().filter(u => u.curriculum === curr);
   });
 
   // New Schedule Row Form
@@ -66,7 +85,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     term: 'TERM_1',
     dayOfWeek: 'الأحد والثلاثاء',
     timeSlot: '07:00 م - 09:00 م',
-    lectureSubject: 'تفاضل وتكامل وحساب مثلثات'
+    lectureSubject: ''
   });
 
   constructor() {
@@ -84,6 +103,68 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     if (config) {
       this.editableCms.set(JSON.parse(JSON.stringify(config)));
     }
+    this.fetchUnits();
+  }
+
+  fetchUnits(): void {
+    this.isLoadingUnits.set(true);
+    this.http.get<{ success: boolean; data: any[] }>('/api/v1/units').subscribe({
+      next: res => {
+        this.allUnits.set(res?.data || []);
+        this.isLoadingUnits.set(false);
+      },
+      error: () => {
+        this.allUnits.set([]);
+        this.isLoadingUnits.set(false);
+      }
+    });
+  }
+
+  toggleUnitOnLanding(unitId: string): void {
+    this.editableCms.update(cfg => {
+      const current = cfg.landingUnitIds || [];
+      const exists = current.includes(unitId);
+      const updated = exists ? current.filter(id => id !== unitId) : [...current, unitId];
+      return {
+        ...cfg,
+        landingUnitIds: updated
+      };
+    });
+  }
+
+  isUnitSelectedForLanding(unitId: string): boolean {
+    return (this.editableCms().landingUnitIds || []).includes(unitId);
+  }
+
+  selectAllUnitsForCurriculum(): void {
+    const idsToAdd = this.filteredUnits().map(u => u._id);
+    this.editableCms.update(cfg => {
+      const current = new Set(cfg.landingUnitIds || []);
+      idsToAdd.forEach(id => current.add(id));
+      return {
+        ...cfg,
+        landingUnitIds: Array.from(current)
+      };
+    });
+    this.toastTriggered.emit({ text: 'تم تحديد جميع وحدات المنهج للعرض للزوار!', type: 'success' });
+  }
+
+  deselectAllUnitsForCurriculum(): void {
+    const idsToRemove = new Set(this.filteredUnits().map(u => u._id));
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      landingUnitIds: (cfg.landingUnitIds || []).filter(id => !idsToRemove.has(id))
+    }));
+    this.toastTriggered.emit({ text: 'تم إلغاء تحديد وحدات هذا المنهج من صفحة الهبوط!', type: 'warning' });
+  }
+
+  getCurriculumSelectedCount(curriculumCode: string): number {
+    const selected = this.editableCms().landingUnitIds || [];
+    return this.allUnits().filter(u => u.curriculum === curriculumCode && selected.includes(u._id)).length;
+  }
+
+  getCurriculumTotalCount(curriculumCode: string): number {
+    return this.allUnits().filter(u => u.curriculum === curriculumCode).length;
   }
 
   // Open WhatsApp Link directly for Lead

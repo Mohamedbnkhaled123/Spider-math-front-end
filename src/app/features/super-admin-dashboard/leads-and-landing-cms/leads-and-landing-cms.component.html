@@ -265,7 +265,7 @@
           <input
             type="text"
             [(ngModel)]="newSchedule().lectureSubject"
-            placeholder="الفرع (تفاضل وتكامل)"
+            placeholder="الفرع (مثل: تفاضل وتكامل)"
             class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
           />
           <button
@@ -301,6 +301,130 @@
             </div>
           }
         </div>
+      </div>
+
+      <!-- 7. Showcased Units on Landing Page Selector -->
+      <div class="pt-5 border-t border-surface-border space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 class="font-black text-text-primary text-sm flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              <span>الوحدات والمقررات المعروضة لزوار صفحة الهبوط (Landing Units)</span>
+            </h4>
+            <p class="text-[11px] text-text-secondary mt-0.5">
+              اختاري بنفسك الوحدات التي تظهر للزائر عند اختيار منهج معين من صفحة الهبوط، لعزل باقي الوحدات وإظهار المقررات المعتمدة فقط.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="selectAllUnitsForCurriculum()"
+              class="px-3 py-1 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-[11px] font-bold text-text-secondary hover:text-brand-primary transition-all cursor-pointer"
+            >
+              تحديد كل وحدات المنهج
+            </button>
+            <button
+              type="button"
+              (click)="deselectAllUnitsForCurriculum()"
+              class="px-3 py-1 rounded-xl border border-surface-border bg-surface-bg hover:border-rose-500/40 text-[11px] font-bold text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+            >
+              إلغاء تحديد الكل
+            </button>
+          </div>
+        </div>
+
+        <!-- Curriculum Filter Tabs -->
+        <div class="flex flex-wrap gap-2">
+          @for (c of curriculumTabs; track c.code) {
+            <button
+              type="button"
+              (click)="selectedCurriculumForUnits.set(c.code)"
+              [class.bg-brand-primary]="selectedCurriculumForUnits() === c.code"
+              [class.text-white]="selectedCurriculumForUnits() === c.code"
+              [class.border-brand-primary]="selectedCurriculumForUnits() === c.code"
+              [class.bg-surface-bg]="selectedCurriculumForUnits() !== c.code"
+              [class.text-text-secondary]="selectedCurriculumForUnits() !== c.code"
+              class="px-3.5 py-1.5 rounded-xl border border-surface-border text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
+            >
+              <span>{{ c.icon }}</span>
+              <span>{{ c.label }}</span>
+              <span
+                class="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                [class.bg-white/20]="selectedCurriculumForUnits() === c.code"
+                [class.bg-surface-card]="selectedCurriculumForUnits() !== c.code"
+              >
+                {{ getCurriculumSelectedCount(c.code) }} / {{ getCurriculumTotalCount(c.code) }}
+              </span>
+            </button>
+          }
+        </div>
+
+        <!-- Units Grid for Selected Curriculum -->
+        @if (isLoadingUnits()) {
+          <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center text-xs text-text-muted">
+            جاري تحميل الوحدات والمقررات...
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            @for (unit of filteredUnits(); track unit._id) {
+              <div
+                (click)="toggleUnitOnLanding(unit._id)"
+                class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 select-none"
+                [class.border-cyan-500]="isUnitSelectedForLanding(unit._id)"
+                [class.bg-cyan-500/5]="isUnitSelectedForLanding(unit._id)"
+                [class.ring-1]="isUnitSelectedForLanding(unit._id)"
+                [class.ring-cyan-500/30]="isUnitSelectedForLanding(unit._id)"
+                [class.border-surface-border]="!isUnitSelectedForLanding(unit._id)"
+                [class.bg-surface-card]="!isUnitSelectedForLanding(unit._id)"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-5 h-5 rounded-lg border flex items-center justify-center transition-colors shrink-0"
+                    [class.bg-brand-primary]="isUnitSelectedForLanding(unit._id)"
+                    [class.border-brand-primary]="isUnitSelectedForLanding(unit._id)"
+                    [class.border-surface-border]="!isUnitSelectedForLanding(unit._id)"
+                  >
+                    @if (isUnitSelectedForLanding(unit._id)) {
+                      <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    }
+                  </div>
+
+                  <div>
+                    <h5 class="font-extrabold text-xs text-text-primary">
+                      {{ unit.title_ar }}
+                    </h5>
+                    <div class="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
+                      <span class="font-bold text-text-secondary">{{ unit.grade_level }}</span>
+                      <span>•</span>
+                      <span>{{ unit.package_type === 'FINAL_REVISION' ? 'مراجعة نهائية' : 'وحدة دراسية' }}</span>
+                      @if (unit.price_egp) {
+                        <span>•</span>
+                        <span class="font-bold text-brand-primary">{{ unit.price_egp }} ج.م</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <span
+                  class="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                  [class.bg-emerald-500/15]="isUnitSelectedForLanding(unit._id)"
+                  [class.text-emerald-500]="isUnitSelectedForLanding(unit._id)"
+                  [class.bg-surface-bg]="!isUnitSelectedForLanding(unit._id)"
+                  [class.text-text-muted]="!isUnitSelectedForLanding(unit._id)"
+                >
+                  {{ isUnitSelectedForLanding(unit._id) ? 'يظهر للزائر ✓' : 'مخفي' }}
+                </span>
+              </div>
+            } @empty {
+              <div class="col-span-2 p-8 rounded-2xl border border-dashed border-surface-border text-center text-text-muted text-xs bg-surface-bg/40">
+                لا توجد وحدات منشأة في المنصة لهذا المنهج حتى الآن. يمكنك إنشاء وحدات من قسم «استوديو المناهج».
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Action Button -->

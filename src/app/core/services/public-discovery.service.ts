@@ -70,13 +70,13 @@ export class PublicDiscoveryService {
         const fallback = this.getFallbackLandingData();
         if (!raw) return fallback;
 
-        const rawSchedules = (raw.schedulesTable && raw.schedulesTable.length > 0)
+        const rawSchedules = Array.isArray(raw.schedulesTable)
           ? raw.schedulesTable
-          : (raw.schedules_table && raw.schedules_table.length > 0)
+          : Array.isArray(raw.schedules_table)
             ? raw.schedules_table
-            : (raw.schedules && raw.schedules.length > 0)
+            : Array.isArray(raw.schedules)
               ? raw.schedules
-              : fallback.schedules;
+              : [];
 
         const normalizedSchedules: IScheduleItem[] = rawSchedules.map((s: any) => ({
           curriculum: s.curriculum || 'EGYPTIAN',
@@ -85,10 +85,10 @@ export class PublicDiscoveryService {
           dayOfWeekAr: s.dayOfWeekAr || s.days_ar || s.dayOfWeek || 'الأحد والثلاثاء',
           dayOfWeekEn: s.dayOfWeekEn || s.days_en || 'Sun & Tue',
           dayOfWeek: s.dayOfWeek || s.days_ar || s.dayOfWeekAr || 'الأحد والثلاثاء',
-          timeSlot: s.timeSlot || s.time_slot || '07:00 م - 09:00 م',
-          lectureTitleAr: s.lectureTitleAr || s.lectureSubject || s.lecture_subject || 'تفاضل وتكامل وحساب مثلثات',
-          lectureTitleEn: s.lectureTitleEn || 'Calculus & Trigonometry',
-          lectureSubject: s.lectureSubject || s.lecture_subject || s.lectureTitleAr || 'تفاضل وتكامل وحساب مثلثات'
+          timeSlot: s.timeSlot || s.time_slot || '',
+          lectureTitleAr: s.lectureTitleAr || s.lectureSubject || s.lecture_subject || '',
+          lectureTitleEn: s.lectureTitleEn || '',
+          lectureSubject: s.lectureSubject || s.lecture_subject || s.lectureTitleAr || ''
         }));
 
         return {
@@ -113,7 +113,8 @@ export class PublicDiscoveryService {
             : (raw.testimonials_items && raw.testimonials_items.length > 0)
               ? raw.testimonials_items
               : fallback.testimonials,
-          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber
+          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber,
+          landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
         };
       }),
       catchError(() => of(this.getFallbackLandingData()))
@@ -347,48 +348,7 @@ export class PublicDiscoveryService {
           'أعلى نسب تفوق في الثانوية العامة والشهادة الإعدادية لسنوات متتالية'
         ]
       },
-      schedules: [
-        {
-          curriculum: 'EGYPTIAN',
-          gradeLevel: 'SEC_3',
-          term: 'TERM_1',
-          dayOfWeekAr: 'الأحد والأربعاء',
-          dayOfWeekEn: 'Sunday & Wednesday',
-          timeSlot: '06:00 PM - 08:00 PM (Cairo)',
-          lectureTitleAr: 'التفاضل والتكامل — المعدلات الزمنية المرتبطة ورسم المنحنيات',
-          lectureTitleEn: 'Calculus — Related Rates & Curve Sketching'
-        },
-        {
-          curriculum: 'EGYPTIAN',
-          gradeLevel: 'SEC_1',
-          term: 'TERM_1',
-          dayOfWeekAr: 'الإثنين والخميس',
-          dayOfWeekEn: 'Monday & Thursday',
-          timeSlot: '05:00 PM - 07:00 PM (Cairo)',
-          lectureTitleAr: 'الجبر وحساب المثلثات — إشارة الدالة وحل المتباينات',
-          lectureTitleEn: 'Algebra & Trigonometry — Function Signs & Inequalities'
-        },
-        {
-          curriculum: 'AMERICAN',
-          gradeLevel: 'SAT_1',
-          term: 'TERM_1',
-          dayOfWeekAr: 'السبت والثلاثاء',
-          dayOfWeekEn: 'Saturday & Tuesday',
-          timeSlot: '07:30 PM - 09:30 PM (Cairo)',
-          lectureTitleAr: 'Advanced Math Heart of Algebra & Desmos Hacks',
-          lectureTitleEn: 'Heart of Algebra & Desmos Speed Solving Workouts'
-        },
-        {
-          curriculum: 'INTERNATIONAL',
-          gradeLevel: 'IGCSE_OL',
-          term: 'TERM_1',
-          dayOfWeekAr: 'الجمعة والسبت',
-          dayOfWeekEn: 'Friday & Saturday',
-          timeSlot: '04:00 PM - 06:30 PM (Cairo)',
-          lectureTitleAr: 'Extended Mathematics — Quadratics & Vectors 0580',
-          lectureTitleEn: 'Extended Mathematics — Quadratics & Vectors 0580'
-        }
-      ],
+      schedules: [],
       pricingPackages: [
         {
           _id: 'pkg_sec3_term1',

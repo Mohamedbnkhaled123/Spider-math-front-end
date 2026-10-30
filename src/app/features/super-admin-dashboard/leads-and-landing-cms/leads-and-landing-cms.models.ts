@@ -37,4 +37,5 @@ export interface CmsConfigAdminItem {
   activeAcademicYear: string;
   activeAcademicTerm: 'TERM_1' | 'TERM_2';
   schedulesTable: ScheduleRow[];
+  landingUnitIds?: string[];
 }

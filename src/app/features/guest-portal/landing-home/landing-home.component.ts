@@ -81,11 +81,11 @@ export class LandingHomeComponent implements OnInit {
     return this.landingData()?.activeAcademicTerm || 'TERM_1';
   });
 
-  // Dedicated Placement Test Section State
   readonly placementCurriculum = signal<CurriculumCode>('EGYPTIAN');
   readonly placementGrade = signal<string>('SEC_3');
   readonly placementTestInfo = signal<IPlacementTestResponse | null>(null);
   readonly isCheckingPlacement = signal<boolean>(false);
+  readonly isPlacementModalOpen = signal<boolean>(false);
   readonly canonicalCurricula = CANONICAL_CURRICULUM_TREE;
 
   readonly placementAvailableGrades = computed<readonly IGradeLevelMeta[]>(() => {
@@ -258,6 +258,26 @@ export class LandingHomeComponent implements OnInit {
       error: () => {
         this.isLoading.set(false);
         this.checkPlacementAvailability();
+      }
+    });
+  }
+
+  openPlacementModal(): void {
+    this.isPlacementModalOpen.set(true);
+    this.checkPlacementAvailability();
+  }
+
+  closePlacementModal(): void {
+    this.isPlacementModalOpen.set(false);
+  }
+
+  startPlacementExam(): void {
+    this.closePlacementModal();
+    this.router.navigate(['/placement-test'], {
+      queryParams: {
+        curriculum: this.placementCurriculum(),
+        gradeLevel: this.placementGrade(),
+        term: this.activeAcademicTerm()
       }
     });
   }

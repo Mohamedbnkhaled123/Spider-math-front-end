@@ -93,6 +93,7 @@ export interface IPublicLandingData {
   pricingPackages: IPricingPackage[];
   testimonials: ITestimonial[];
   whatsappSupportNumber: string;
+  landingUnitIds?: string[];
 }
 
 export interface IPlacementQuestionOption {

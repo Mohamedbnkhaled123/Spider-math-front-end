@@ -118,4 +118,11 @@ export class LeadGateModalComponent {
       }
     });
   }
+
+  goToLogin(): void {
+    this.closeModal();
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: '/placement-test' }
+    });
+  }
 }

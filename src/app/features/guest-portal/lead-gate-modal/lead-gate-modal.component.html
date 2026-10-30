@@ -24,38 +24,41 @@
       </button>
 
       <!-- ===================================================================== -->
-      <!-- State 1: Locked Form (Google Sign-In + WhatsApp Input)                -->
+      <!-- State 1: Locked Form (Login CTA + Details Form)                       -->
       <!-- ===================================================================== -->
       @if (!unlockedResult()) {
         <div class="text-center">
           
           <!-- Shield/Target Icon -->
-          <div class="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-accent/30 text-brand-primary dark:text-brand-accent mx-auto flex items-center justify-center mb-4 shadow-sm">
-            <app-icon name="target" [size]="28" />
+          <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-300 mx-auto flex items-center justify-center mb-4 shadow-sm">
+            <app-icon name="award" [size]="32" />
           </div>
 
           <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-2">
-            {{ langService.isArabic() ? 'نتيجة امتحان تحديد المستوى جاهزة!' : 'Placement Assessment Report Ready!' }}
+            {{ langService.isArabic() ? 'أحسنت! انتهى اختبارك بنجاح 🎯' : 'Assessment Completed Successfully!' }}
           </h3>
-          <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-            {{ langService.isArabic() ? 'أدخل اسم الطالب ورقم الواتساب للاطلاع الفوري على التقرير التفصيلي، نقاط القوة ونقاط التحسين، والحصول على كود الخصم.' : 'Enter student full name and WhatsApp phone to instantly unlock your diagnostic score report and academic recommendations.' }}
-          </p>
 
-          <!-- One-Click Google Sign-In Button -->
+          <div class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-text-primary text-xs sm:text-sm font-semibold mb-5 leading-relaxed">
+            {{ langService.isArabic() 
+              ? 'لمعرفة النتيجة ومعرفة نقاط القوة والضعف سجل دخول، وستتواصل معك المهندسة هبة عبدالوهاب شخصياً لمناقشة التقرير وخطة تطويرك الأكاديمي.'
+              : 'To view your score and analyze strengths and weaknesses, please log in. Eng. Heba Abdel-Wahab will follow up with you directly.' }}
+          </div>
+
+          <!-- Direct Login Button -->
           <button
             type="button"
-            (click)="triggerGoogleSignIn()"
-            class="w-full py-3 px-4 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-3 shadow-sm active:scale-95 mb-4"
+            (click)="goToLogin()"
+            class="w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 mb-3 cursor-pointer"
           >
-            <app-icon name="globe" [size]="18" className="text-brand-primary" />
-            <span>{{ langService.isArabic() ? 'المتابعة بنقرة واحدة عبر حساب Google' : 'Continue with 1-Click Google Sign-In' }}</span>
+            <app-icon name="log-in" [size]="18" />
+            <span>{{ langService.isArabic() ? 'تسجيل الدخول إلى المنصة (Login)' : 'Log In to View Results' }}</span>
           </button>
 
           <!-- Divider -->
           <div class="flex items-center gap-3 my-4">
             <div class="h-px bg-surface-border flex-1"></div>
             <span class="text-xs font-semibold text-text-muted">
-              {{ langService.isArabic() ? 'أو عبر بيانات الواتساب' : 'or via WhatsApp details' }}
+              {{ langService.isArabic() ? 'أو أدخل بياناتك للتواصل المباشر' : 'or enter details for direct contact' }}
             </span>
             <div class="h-px bg-surface-border flex-1"></div>
           </div>
@@ -81,7 +84,7 @@
 
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'رقم هاتف الواتساب (لإرسال النتيجة):' : 'WhatsApp Phone Number:' }}
+                {{ langService.isArabic() ? 'رقم هاتف الواتساب (للتواصل وإرسال التقرير):' : 'WhatsApp Phone Number:' }}
               </label>
               <input
                 type="tel"
@@ -105,14 +108,14 @@
             <button
               type="submit"
               [disabled]="isSubmitting()"
-              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-surface-card border border-brand-primary text-brand-primary dark:text-brand-accent hover:bg-brand-primary/10 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 cursor-pointer"
             >
               @if (isSubmitting()) {
                 <app-icon name="refresh" [size]="16" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري فتح التقرير...' : 'Unlocking Report...' }}</span>
+                <span>{{ langService.isArabic() ? 'جاري إرسال البيانات...' : 'Submitting...' }}</span>
               } @else {
                 <app-icon name="award" [size]="16" />
-                <span>{{ langService.isArabic() ? 'فتح التقرير الأكاديمي الشامل الآن' : 'Unlock Score Report Now' }}</span>
+                <span>{{ langService.isArabic() ? 'إرسال البيانات والاطلاع على النتيجة' : 'Submit & View Diagnostic Report' }}</span>
               }
             </button>
           </form>
@@ -131,8 +134,14 @@
           </div>
 
           <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-1">
-            {{ langService.isArabic() ? 'مبارك! تم فتح التقرير بنجاح' : 'Congratulations! Report Unlocked' }}
+            {{ langService.isArabic() ? 'مبارك! تم فتح التقرير واستلام بياناتك' : 'Congratulations! Report Unlocked' }}
           </h3>
+          
+          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold my-3 flex items-center justify-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{{ langService.isArabic() ? 'ستتواصل معك المهندسة هبة عبدالوهاب شخصياً لمناقشة التقرير ونقاط القوة والضعف.' : 'Eng. Heba Abdel-Wahab will follow up with you directly.' }}</span>
+          </div>
+
           <p class="text-xs text-text-secondary mb-4">
             {{ langService.isArabic() ? 'تقرير تقييم مستوى الطالب: ' + report.fullName : 'Diagnostic Report for: ' + report.fullName }}
           </p>

@@ -98,16 +98,8 @@ export class SuperAdminDashboardComponent implements OnInit {
     supportWhatsapp: '01012345678',
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
-    schedulesTable: [
-      {
-        curriculum: 'EGYPTIAN',
-        gradeLevel: 'SEC_3',
-        term: 'TERM_1',
-        dayOfWeek: 'الأحد والثلاثاء',
-        timeSlot: '07:00 م - 09:00 م',
-        lectureSubject: 'تفاضل وتكامل وحساب مثلثات'
-      }
-    ]
+    schedulesTable: [],
+    landingUnitIds: []
   });
 
   // Batched Notifications Center (Consolidating alerts every 5 submissions)
@@ -339,18 +331,19 @@ export class SuperAdminDashboardComponent implements OnInit {
             supportWhatsapp: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || '01012345678',
             activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || '2026 / 2027',
             activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || this.cmsConfig().activeAcademicTerm || 'TERM_1',
-            schedulesTable: (raw.schedulesTable && raw.schedulesTable.length > 0)
+            schedulesTable: Array.isArray(raw.schedulesTable)
               ? raw.schedulesTable
-              : (raw.schedules_table && raw.schedules_table.length > 0)
+              : (Array.isArray(raw.schedules_table)
                 ? raw.schedules_table.map((s: any) => ({
                     curriculum: s.curriculum,
                     gradeLevel: s.grade_level || s.gradeLevel,
                     term: s.academic_term || s.term,
                     dayOfWeek: s.dayOfWeek || s.days_ar,
                     timeSlot: s.time_slot || s.timeSlot,
-                    lectureSubject: s.lecture_subject || s.lectureSubject || 'تفاضل وتكامل وحساب مثلثات'
+                    lectureSubject: s.lecture_subject || s.lectureSubject || ''
                   }))
-                : this.cmsConfig().schedulesTable
+                : []),
+            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
           });
         }
       }
