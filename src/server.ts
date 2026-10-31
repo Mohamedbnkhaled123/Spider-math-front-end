@@ -130,3 +130,6 @@ if (process.argv[1]?.includes('server.mjs')) {
  */
 export const reqHandler = createNodeRequestHandler(app);
 
+export { app };
+export default app;
+
