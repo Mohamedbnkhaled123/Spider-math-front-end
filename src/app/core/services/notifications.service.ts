@@ -99,7 +99,7 @@ export class NotificationsService {
         this.isPromptDismissed.set(true);
         this.playNotificationChime();
         await this.showRealBrowserNotification({
-          title: 'Spider Math | تم تفعيل الإشعارات الفورية بنجاح 🔔',
+          title: 'Spider Math | تم تفعيل الإشعارات الفورية بنجاح',
           body: 'ستصلك الآن تنبيهات تصحيح الواجبات والامتحانات والدروس الجديدة حتى عندما تكون خارج المنصة!',
           url: '/'
         });
@@ -127,7 +127,7 @@ export class NotificationsService {
    */
   sendTestNotification(): void {
     this.showRealBrowserNotification({
-      title: 'Spider Math | اختبار الإشعارات الفورية 🎯',
+      title: 'Spider Math | اختبار الإشعارات الفورية',
       body: 'مبروك! نظام الإشعارات الفورية يعمل بنجاح وستصلك كل التنبيهات حتى أثناء تصفحك لأي موقع آخر!',
       url: '/'
     });

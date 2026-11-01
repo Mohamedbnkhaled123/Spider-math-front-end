@@ -205,6 +205,7 @@ export class AssessmentStudioComponent implements OnInit {
     availableFrom: string | null;
     availableUntil: string | null;
     calculatorType: CalculatorMode;
+    referenceSheetUrl: string | null;
     isPlacementTest: boolean;
   }>({
     titleAr: '',
@@ -219,6 +220,7 @@ export class AssessmentStudioComponent implements OnInit {
     availableFrom: null,
     availableUntil: null,
     calculatorType: 'NONE',
+    referenceSheetUrl: null,
     isPlacementTest: false
   });
 
@@ -305,6 +307,7 @@ export class AssessmentStudioComponent implements OnInit {
             gradeLevel: a.grade_level || a.gradeLevel,
             term: a.academic_term || a.term || 'TERM_1',
             calculatorType: (a.graph_calculator === 'DESMOS' || a.calculator_mode === 'DESMOS' || a.calculatorType === 'DESMOS') ? 'DESMOS' : 'NONE',
+            referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
             durationMinutes: a.time_limit_minutes || a.duration_minutes || a.durationMinutes || 45,
             passPercentage: a.pass_percentage ?? a.passPercentage ?? 60,
             maxAttempts: a.max_attempts ?? a.maxAttempts ?? 1,
@@ -420,6 +423,7 @@ export class AssessmentStudioComponent implements OnInit {
       availableFrom: null,
       availableUntil: null,
       calculatorType: 'NONE',
+      referenceSheetUrl: null,
       isPlacementTest: false
     });
     this.isCreateModalOpen.set(true);
@@ -484,6 +488,7 @@ export class AssessmentStudioComponent implements OnInit {
       assessment_type: form.isPlacementTest ? 'COMPREHENSIVE_EXAM' : 'QUIZ',
       calculator_mode: form.calculatorType,
       graph_calculator: form.calculatorType,
+      reference_sheet_url: form.referenceSheetUrl || null,
       duration_minutes: form.durationMinutes,
       time_limit_minutes: form.durationMinutes,
       pass_percentage: form.passPercentage,
@@ -591,6 +596,31 @@ export class AssessmentStudioComponent implements OnInit {
       'نعم، احذف الامتحان',
       'إلغاء'
     );
+  }
+
+  // =========================================================================
+  // Reference Sheet (ورقة القوانين والمفاهيم)
+  // =========================================================================
+  onReferenceSheetUploadedInCreate(url: string): void {
+    if (url) {
+      this.createForm.update((f) => ({ ...f, referenceSheetUrl: url }));
+      this.toastTriggered.emit({ text: 'تم رفع صورة ورقة القوانين بنجاح!', type: 'success' });
+    }
+  }
+
+  removeReferenceSheetInCreate(): void {
+    this.createForm.update((f) => ({ ...f, referenceSheetUrl: null }));
+  }
+
+  onReferenceSheetUploadedInEditor(url: string): void {
+    if (url) {
+      this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
+      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بالامتحان بنجاح!', type: 'success' });
+    }
+  }
+
+  removeReferenceSheetInEditor(): void {
+    this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
   }
 
   // =========================================================================
@@ -822,6 +852,7 @@ export class AssessmentStudioComponent implements OnInit {
       academic_term: asm.term,
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
+      reference_sheet_url: asm.referenceSheetUrl || null,
       duration_minutes: asm.durationMinutes,
       time_limit_minutes: asm.durationMinutes,
       pass_percentage: asm.passPercentage,

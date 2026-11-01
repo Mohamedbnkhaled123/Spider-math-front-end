@@ -32,6 +32,7 @@ export interface AssessmentItem {
   gradeLevel: string;
   term: AcademicTermCode;
   calculatorType: CalculatorMode;
+  referenceSheetUrl?: string | null;
   durationMinutes: number;
   passPercentage: number;
   maxAttempts: number;

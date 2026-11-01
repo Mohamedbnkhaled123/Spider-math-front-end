@@ -56,6 +56,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   // Modal & Calculator State
   readonly isDesmosOpen = signal<boolean>(false);
+  readonly isReferenceOpen = signal<boolean>(false);
   readonly isTimerVisible = signal<boolean>(true);
   readonly activeQuestionIdx = signal<number>(0);
   readonly isSubmitting = signal<boolean>(false);
@@ -141,6 +142,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
             unitId: record.unitId || '',
             titleAr: record.title || 'تقييم تدريبي',
             titleEn: '',
+            referenceSheetUrl: record.referenceSheetUrl || null,
             durationMinutes: record.durationMinutes || 30,
             questions: mappedQuestions
           });
@@ -244,6 +246,10 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   toggleDesmos(): void {
     this.isDesmosOpen.update(v => !v);
+  }
+
+  toggleReference(): void {
+    this.isReferenceOpen.update(v => !v);
   }
 
   toggleTimerVisibility(): void {

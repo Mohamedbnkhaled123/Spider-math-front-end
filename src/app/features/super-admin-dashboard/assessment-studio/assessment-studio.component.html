@@ -162,6 +162,12 @@
                       ديسموس
                     </span>
                   }
+                  @if (item.referenceSheetUrl) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" title="ورقة قوانين ومفاهيم مرفقة مع الامتحان">
+                      <app-icon name="file-text" [size]="10" />
+                      <span>ورقة قوانين</span>
+                    </span>
+                  }
                   @if (item.isPlacementTest) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" title="امتحان تحديد مستوى للزوار والطلاب الجدد">
                       تحديد مستوى
@@ -621,6 +627,51 @@
             }
           </div>
 
+          <!-- Reference Sheet Upload (ورقة القوانين والمفاهيم الرياضية) -->
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <app-icon name="file-text" [size]="16" className="text-brand-primary" />
+                <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+              </div>
+              <span class="text-[11px] text-text-muted">اختياري</span>
+            </div>
+
+            <p class="text-[11px] text-text-secondary leading-relaxed">
+              يمكنك رفع صورة ورقة القوانين المعتمدة (مثل ورقة مفاهيم SAT أو الوزارة) لتظهر للطالب أثناء حل الامتحان بجوار الآلة الحاسبة.
+            </p>
+
+            @if (createForm().referenceSheetUrl) {
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-surface-border">
+                <img
+                  [src]="createForm().referenceSheetUrl"
+                  alt="Reference Sheet"
+                  class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
+                />
+                <div class="flex-1 min-w-0">
+                  <span class="text-xs font-bold text-emerald-500 block">تم رفع ورقة القوانين بنجاح</span>
+                  <a [href]="createForm().referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
+                    عرض الصورة بالحجم الكامل
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeReferenceSheetInCreate()"
+                  class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                  title="حذف ورقة القوانين"
+                >
+                  <app-icon name="trash" [size]="14" />
+                </button>
+              </div>
+            } @else {
+              <app-image-compressor-uploader
+                uploadTarget="question"
+                buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                (imageUploaded)="onReferenceSheetUploadedInCreate($event)"
+              />
+            }
+          </div>
+
         </div>
 
         @if (createErrorMessage()) {
@@ -706,7 +757,7 @@
             [class.text-text-secondary]="editorActiveTab() !== 'SETTINGS'"
           >
             <app-icon name="settings" [size]="14" />
-            <span>⚙️ إعدادات وجدولة الامتحان</span>
+            <span>إعدادات وجدولة الامتحان</span>
           </button>
 
           <button
@@ -719,7 +770,7 @@
             [class.text-text-secondary]="editorActiveTab() !== 'QUESTIONS'"
           >
             <app-icon name="file-text" [size]="14" />
-            <span>📝 بنك الأسئلة والمسائل ({{ asm.questions.length }})</span>
+            <span>بنك الأسئلة والمسائل ({{ asm.questions.length }})</span>
           </button>
         </div>
 
@@ -979,6 +1030,51 @@
                   <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
                     * سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار كاختبار تحديد مستوى لهذا الصف.
                   </p>
+                }
+              </div>
+
+              <!-- Reference Sheet in Visual Editor -->
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <app-icon name="file-text" [size]="16" className="text-brand-primary" />
+                    <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+                  </div>
+                  <span class="text-[11px] text-text-muted">اختياري</span>
+                </div>
+
+                <p class="text-[11px] text-text-secondary leading-relaxed">
+                  يمكنك رفع صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان بجوار الآلة الحاسبة دون مغادرة صفحة الحل.
+                </p>
+
+                @if (asm.referenceSheetUrl) {
+                  <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-surface-border">
+                    <img
+                      [src]="asm.referenceSheetUrl"
+                      alt="Reference Sheet"
+                      class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <span class="text-xs font-bold text-emerald-500 block">ورقة القوانين مفعلة ومرفقة بالامتحان</span>
+                      <a [href]="asm.referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
+                        عرض الصورة بالحجم الكامل
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="removeReferenceSheetInEditor()"
+                      class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                      title="حذف ورقة القوانين"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                } @else {
+                  <app-image-compressor-uploader
+                    uploadTarget="question"
+                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    (imageUploaded)="onReferenceSheetUploadedInEditor($event)"
+                  />
                 }
               </div>
 

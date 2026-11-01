@@ -29,6 +29,7 @@ export interface ActiveQuizRecord {
   idempotencyKey?: string;
   title: string;
   unitId?: string;
+  referenceSheetUrl?: string | null;
   durationMinutes: number;
   questions: CachedQuestion[];
   elapsedSeconds: number;

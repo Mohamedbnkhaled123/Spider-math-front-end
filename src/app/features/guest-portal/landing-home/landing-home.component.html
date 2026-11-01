@@ -507,15 +507,15 @@
           <!-- 3 Feature Badges -->
           <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
-              <span class="text-emerald-500">⚡</span>
+              <app-icon name="check" [size]="14" className="text-emerald-500" />
               <span>{{ placementSection().feature1 }}</span>
             </div>
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
-              <span class="text-cyan-500">📊</span>
+              <app-icon name="activity" [size]="14" className="text-cyan-500" />
               <span>{{ placementSection().feature2 }}</span>
             </div>
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
-              <span class="text-purple-500">👩‍🏫</span>
+              <app-icon name="user" [size]="14" className="text-purple-500" />
               <span>{{ placementSection().feature3 }}</span>
             </div>
           </div>
@@ -650,7 +650,7 @@
               class="btn-spider-primary w-full py-3.5 sm:py-4 rounded-xl font-black text-xs sm:text-sm text-center flex items-center justify-center gap-2 shadow-brand-glow hover:opacity-95 transition-all cursor-pointer"
             >
               <app-icon name="target" [size]="18" />
-              <span>{{ langService.isArabic() ? 'بدء الاختبار الآن 🚀' : 'Start Assessment Now 🚀' }}</span>
+              <span>{{ langService.isArabic() ? 'بدء الاختبار الآن' : 'Start Assessment Now' }}</span>
             </button>
           </div>
 

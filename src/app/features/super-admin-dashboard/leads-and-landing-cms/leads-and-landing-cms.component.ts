@@ -165,10 +165,10 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly selectedCurriculumForUnits = signal<string>('EGYPTIAN');
 
   readonly curriculumTabs = [
-    { code: 'EGYPTIAN', label: 'المنهج المصري', icon: '🇪🇬' },
-    { code: 'GULF', label: 'المنهج الخليجي', icon: '🌴' },
-    { code: 'INTERNATIONAL', label: 'المنهج الدولي البريطاني', icon: '🌍' },
-    { code: 'AMERICAN', label: 'الدبلومة الأمريكية', icon: '🎓' }
+    { code: 'EGYPTIAN', label: 'المنهج المصري' },
+    { code: 'GULF', label: 'المنهج الخليجي' },
+    { code: 'INTERNATIONAL', label: 'المنهج الدولي البريطاني' },
+    { code: 'AMERICAN', label: 'الدبلومة الأمريكية' }
   ];
 
   readonly filteredUnits = computed(() => {

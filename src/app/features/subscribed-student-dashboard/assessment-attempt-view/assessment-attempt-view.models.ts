@@ -24,6 +24,7 @@ export interface AssessmentAttemptBundle {
   unitId: string;
   titleAr: string;
   titleEn: string;
+  referenceSheetUrl?: string | null;
   durationMinutes: number;
   questions: AssessmentQuestionItem[];
 }

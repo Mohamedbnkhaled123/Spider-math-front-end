@@ -158,8 +158,9 @@
                   {{ sub.gradeLevel }} • {{ sub.curriculum }}
                 </span>
                 @if (sub.parentPhone) {
-                  <span class="text-xs text-text-muted font-mono" dir="ltr">
-                    ☎ {{ sub.parentPhone }}
+                  <span class="text-xs text-text-muted font-mono flex items-center gap-1" dir="ltr">
+                    <app-icon name="phone" [size]="12" />
+                    <span>{{ sub.parentPhone }}</span>
                   </span>
                 }
               </div>
