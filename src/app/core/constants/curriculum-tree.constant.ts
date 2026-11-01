@@ -76,6 +76,7 @@ export const CANONICAL_ACADEMIC_TERMS: readonly ITermMeta[] = [
 ] as const;
 
 export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
+  // 1. المنهج المصري (من 1 ابتدائي إلى 3 ثانوي)
   {
     code: 'EGYPTIAN',
     titleAr: 'المنهج المصري',
@@ -84,8 +85,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'From Fundamentals to Thanaweya Amma Excellence',
     taglineAr: 'من الأساسيات للتميّز',
     taglineEn: 'From Fundamentals to Excellence',
-    descriptionAr: 'تغطية شاملة ومبسطة لمادة الرياضيات للمرحلتين الإعدادية والثانوية العامة بأحدث طرق التدريس وحل نماذج الامتحانات الوزارية والتجريبية.',
-    descriptionEn: 'Comprehensive and structured mathematics curriculum for Preparatory and Secondary stages with intensive Thanaweya Amma exam workouts.',
+    descriptionAr: 'تغطية شاملة ومبسطة لمادة الرياضيات لجميع المراحل من الابتدائي وحتى الثانوية العامة بأحدث طرق التدريس وحل نماذج الامتحانات الوزارية والتجريبية.',
+    descriptionEn: 'Comprehensive and structured mathematics curriculum from Primary 1 through Thanaweya Amma with intensive exam workouts.',
     iconName: 'pyramid',
     mathWatermarkSymbol: 'π',
     accentColorHex: '#6D28D9',
@@ -93,6 +94,60 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     badgeTextEn: 'Most Popular',
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
+      {
+        code: 'PRI_1',
+        titleAr: 'الصف الأول الابتدائي',
+        titleEn: 'Primary 1 (Grade 1)',
+        shortLabelAr: '١ ابتدائي',
+        shortLabelEn: 'Pri 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_2',
+        titleAr: 'الصف الثاني الابتدائي',
+        titleEn: 'Primary 2 (Grade 2)',
+        shortLabelAr: '٢ ابتدائي',
+        shortLabelEn: 'Pri 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_3',
+        titleAr: 'الصف الثالث الابتدائي',
+        titleEn: 'Primary 3 (Grade 3)',
+        shortLabelAr: '٣ ابتدائي',
+        shortLabelEn: 'Pri 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_4',
+        titleAr: 'الصف الرابع الابتدائي',
+        titleEn: 'Primary 4 (Grade 4)',
+        shortLabelAr: '٤ ابتدائي',
+        shortLabelEn: 'Pri 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_5',
+        titleAr: 'الصف الخامس الابتدائي',
+        titleEn: 'Primary 5 (Grade 5)',
+        shortLabelAr: '٥ ابتدائي',
+        shortLabelEn: 'Pri 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_6',
+        titleAr: 'الصف السادس الابتدائي',
+        titleEn: 'Primary 6 (Grade 6)',
+        shortLabelAr: '٦ ابتدائي',
+        shortLabelEn: 'Pri 6',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
       {
         code: 'PREP_1',
         titleAr: 'الصف الأول الإعدادي',
@@ -149,6 +204,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
       }
     ]
   },
+
+  // 2. المنهج الخليجي (من 1 ابتدائي إلى 12 توجيهي)
   {
     code: 'GULF',
     titleAr: 'المنهج الخليجي',
@@ -157,8 +214,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'Clear Explanations & Continuous Practice',
     taglineAr: 'شرح واضح وتدريب مستمر',
     taglineEn: 'Clear Explanation & Continuous Practice',
-    descriptionAr: 'منهج مخصص لطلاب دول الخليج العربي (السعودية، الإمارات، الكويت، قطر، عمان، البحرين) متوافق مع المعايير الوزارية والكتب المعتمدة.',
-    descriptionEn: 'Custom curriculum tailored to Saudi, Emirati and GCC ministerial standards from Grade 7 through Grade 12 with continuous assessments.',
+    descriptionAr: 'منهج مخصص لطلاب دول الخليج العربي (السعودية، الإمارات، الكويت، قطر، عمان، البحرين) متوافق مع المعايير الوزارية والكتب المعتمدة من الابتدائي حتى الثانوي.',
+    descriptionEn: 'Custom curriculum tailored to Saudi, Emirati and GCC ministerial standards from Grade 1 through Grade 12 with continuous assessments.',
     iconName: 'landmark',
     mathWatermarkSymbol: 'Σ',
     accentColorHex: '#0891B2',
@@ -226,7 +283,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 7 (Middle 1)',
         shortLabelAr: 'صف ٧',
         shortLabelEn: 'Gr 7',
-        stageAr: 'المتوسطة',
+        stageAr: 'المرحلة المتوسطة',
         stageEn: 'Middle School'
       },
       {
@@ -235,7 +292,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 8 (Middle 2)',
         shortLabelAr: 'صف ٨',
         shortLabelEn: 'Gr 8',
-        stageAr: 'المتوسطة',
+        stageAr: 'المرحلة المتوسطة',
         stageEn: 'Middle School'
       },
       {
@@ -244,7 +301,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 9 (Middle 3)',
         shortLabelAr: 'صف ٩',
         shortLabelEn: 'Gr 9',
-        stageAr: 'المتوسطة',
+        stageAr: 'المرحلة المتوسطة',
         stageEn: 'Middle School'
       },
       {
@@ -253,7 +310,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 10 (High School 1)',
         shortLabelAr: 'صف ١٠',
         shortLabelEn: 'Gr 10',
-        stageAr: 'الثانوية',
+        stageAr: 'المرحلة الثانوية',
         stageEn: 'High School'
       },
       {
@@ -262,20 +319,22 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 11 (High School 2)',
         shortLabelAr: 'صف ١١',
         shortLabelEn: 'Gr 11',
-        stageAr: 'الثانوية',
+        stageAr: 'المرحلة الثانوية',
         stageEn: 'High School'
       },
       {
         code: 'GRADE_12',
-        titleAr: 'الصف الثاني عشر (ثالث ثانوي)',
+        titleAr: 'الصف الثاني عشر (توجيهي / ثالث ثانوي)',
         titleEn: 'Grade 12 (Senior Year)',
         shortLabelAr: 'صف ١٢',
         shortLabelEn: 'Gr 12',
-        stageAr: 'الثانوية',
+        stageAr: 'المرحلة الثانوية',
         stageEn: 'High School'
       }
     ]
   },
+
+  // 3. المناهج الدولية البريطانية (من Year 1 إلى A-Level)
   {
     code: 'INTERNATIONAL',
     titleAr: 'المناهج الدولية (IGCSE / British)',
@@ -284,8 +343,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'World-Class Global Mathematical Standards',
     taglineAr: 'رياضيات بمعايير عالمية',
     taglineEn: 'World-Class Global Standards',
-    descriptionAr: 'برنامج مكثف لمناهج كامبريدج وبيرسون إديكسل (Cambridge & Edexcel) يشمل شرحاً دقيقاً للمفاهيم وحل أحدث امتحانات الـ Past Papers بأسلوب مبسط.',
-    descriptionEn: 'Specialized Cambridge & Edexcel past paper problem-solving strategies, topic classifications, and mark scheme masterclasses.',
+    descriptionAr: 'برنامج مكثف لمناهج كامبريدج وبيرسون إديكسل (Cambridge & Edexcel) من المرحلة الابتدائية وحتى الـ A-Level، مع حل مستمر لامتحانات الـ Past Papers.',
+    descriptionEn: 'Specialized Cambridge & Edexcel curriculum from Primary through A-Level with comprehensive past paper workouts.',
     iconName: 'globe',
     mathWatermarkSymbol: '∞',
     accentColorHex: '#9333EA',
@@ -293,6 +352,60 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     badgeTextEn: 'Cambridge & Edexcel',
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
+      {
+        code: 'IGCSE_YEAR_1',
+        titleAr: 'السنة الأولى الدولية (Year 1 / Primary 1)',
+        titleEn: 'International Year 1 (Cambridge Primary Stage 1)',
+        shortLabelAr: 'Year 1',
+        shortLabelEn: 'Yr 1',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
+      {
+        code: 'IGCSE_YEAR_2',
+        titleAr: 'السنة الثانية الدولية (Year 2 / Primary 2)',
+        titleEn: 'International Year 2 (Cambridge Primary Stage 2)',
+        shortLabelAr: 'Year 2',
+        shortLabelEn: 'Yr 2',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
+      {
+        code: 'IGCSE_YEAR_3',
+        titleAr: 'السنة الثالثة الدولية (Year 3 / Primary 3)',
+        titleEn: 'International Year 3 (Cambridge Primary Stage 3)',
+        shortLabelAr: 'Year 3',
+        shortLabelEn: 'Yr 3',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
+      {
+        code: 'IGCSE_YEAR_4',
+        titleAr: 'السنة الرابعة الدولية (Year 4 / Primary 4)',
+        titleEn: 'International Year 4 (Cambridge Primary Stage 4)',
+        shortLabelAr: 'Year 4',
+        shortLabelEn: 'Yr 4',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
+      {
+        code: 'IGCSE_YEAR_5',
+        titleAr: 'السنة الخامسة الدولية (Year 5 / Primary 5)',
+        titleEn: 'International Year 5 (Cambridge Primary Stage 5)',
+        shortLabelAr: 'Year 5',
+        shortLabelEn: 'Yr 5',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
+      {
+        code: 'IGCSE_YEAR_6',
+        titleAr: 'السنة السادسة الدولية (Year 6 / Primary 6)',
+        titleEn: 'International Year 6 (Cambridge Primary Stage 6)',
+        shortLabelAr: 'Year 6',
+        shortLabelEn: 'Yr 6',
+        stageAr: 'المرحلة الابتدائية الدولية',
+        stageEn: 'Cambridge Primary'
+      },
       {
         code: 'IGCSE_YEAR_7',
         titleAr: 'السنة السابعة الدولية (Year 7 / Stage 8)',
@@ -349,6 +462,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
       }
     ]
   },
+
+  // 4. الدبلومة الأمريكية (من Grade 1 إلى اختبارات SAT / ACT / EST)
   {
     code: 'AMERICAN',
     titleAr: 'الدبلومة الأمريكية (SAT • EST • ACT)',
@@ -357,8 +472,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'Digital SAT • EST I & II • ACT Math Prep',
     taglineAr: 'SAT • EST • ACT',
     taglineEn: 'SAT • EST • ACT',
-    descriptionAr: 'كورس تأهيلي متقدم لاختبارات القبول الجامعي الأمريكية والمصرية، يركز على استراتيجيات التفكير الرياضي السريع واحتراف استخدام حاسبة ديسموس (Desmos).',
-    descriptionEn: 'Advanced college readiness prep focusing on time management, mental math shortcuts, and masterclass proficiency in the Desmos Graphing Calculator.',
+    descriptionAr: 'منهج الدبلومة الأمريكية من المرحلة الابتدائية والمتوسطة وحتى الثانوية واختبارات القبول الجامعي (SAT • EST • ACT) مع احتراف الآلة الحاسبة البيانية (Desmos).',
+    descriptionEn: 'Complete American curriculum from Grade 1 through Grade 12 and standardized college readiness testing (SAT, EST, ACT) with Desmos mastery.',
     iconName: 'graduation-cap',
     mathWatermarkSymbol: '✦',
     accentColorHex: '#00B4D8',
@@ -367,11 +482,83 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
       {
+        code: 'US_GRADE_1',
+        titleAr: 'الصف الأول الأمريكي (Grade 1)',
+        titleEn: 'Grade 1 (Elementary Math)',
+        shortLabelAr: 'Gr 1 US',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School'
+      },
+      {
+        code: 'US_GRADE_2',
+        titleAr: 'الصف الثاني الأمريكي (Grade 2)',
+        titleEn: 'Grade 2 (Elementary Math)',
+        shortLabelAr: 'Gr 2 US',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School'
+      },
+      {
+        code: 'US_GRADE_3',
+        titleAr: 'الصف الثالث الأمريكي (Grade 3)',
+        titleEn: 'Grade 3 (Elementary Math)',
+        shortLabelAr: 'Gr 3 US',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School'
+      },
+      {
+        code: 'US_GRADE_4',
+        titleAr: 'الصف الرابع الأمريكي (Grade 4)',
+        titleEn: 'Grade 4 (Elementary Math)',
+        shortLabelAr: 'Gr 4 US',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School'
+      },
+      {
+        code: 'US_GRADE_5',
+        titleAr: 'الصف الخامس الأمريكي (Grade 5)',
+        titleEn: 'Grade 5 (Elementary Math)',
+        shortLabelAr: 'Gr 5 US',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School'
+      },
+      {
+        code: 'US_GRADE_6',
+        titleAr: 'الصف السادس الأمريكي (Grade 6)',
+        titleEn: 'Grade 6 (Middle School Math)',
+        shortLabelAr: 'Gr 6 US',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School'
+      },
+      {
+        code: 'US_GRADE_7',
+        titleAr: 'الصف السابع الأمريكي (Grade 7 — Pre-Algebra)',
+        titleEn: 'Grade 7 (Pre-Algebra)',
+        shortLabelAr: 'Gr 7 US',
+        shortLabelEn: 'Gr 7',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School'
+      },
+      {
+        code: 'US_GRADE_8',
+        titleAr: 'الصف الثامن الأمريكي (Grade 8 — Algebra Prep)',
+        titleEn: 'Grade 8 (Algebra Foundations)',
+        shortLabelAr: 'Gr 8 US',
+        shortLabelEn: 'Gr 8',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School'
+      },
+      {
         code: 'GRADE_9',
         titleAr: 'الصف التاسع الأمريكي (Grade 9 — Algebra I)',
         titleEn: 'Grade 9 (Algebra I & Intro Geometry)',
         shortLabelAr: 'Gr 9 US',
-        shortLabelEn: 'Gr 9 US',
+        shortLabelEn: 'Gr 9',
         stageAr: 'المرحلة الثانوية الأمريكية',
         stageEn: 'High School'
       },
@@ -380,7 +567,25 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleAr: 'الصف العاشر الأمريكي (Grade 10 — Geometry & Algebra II)',
         titleEn: 'Grade 10 (Geometry & Advanced Algebra II)',
         shortLabelAr: 'Gr 10 US',
-        shortLabelEn: 'Gr 10 US',
+        shortLabelEn: 'Gr 10',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School'
+      },
+      {
+        code: 'GRADE_11',
+        titleAr: 'الصف الحادي عشر الأمريكي (Grade 11 — Pre-Calculus / Trigonometry)',
+        titleEn: 'Grade 11 (Pre-Calculus & Trigonometry)',
+        shortLabelAr: 'Gr 11 US',
+        shortLabelEn: 'Gr 11',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School'
+      },
+      {
+        code: 'GRADE_12',
+        titleAr: 'الصف الثاني عشر الأمريكي (Grade 12 — AP Calculus / Statistics)',
+        titleEn: 'Grade 12 (AP Calculus & College Prep)',
+        shortLabelAr: 'Gr 12 US',
+        shortLabelEn: 'Gr 12',
         stageAr: 'المرحلة الثانوية الأمريكية',
         stageEn: 'High School'
       },
@@ -403,6 +608,15 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         stageEn: 'College Entrance'
       },
       {
+        code: 'SAT_MATH',
+        titleAr: 'Digital SAT Math Mastery (Hard Modules)',
+        titleEn: 'Digital SAT Math Mastery',
+        shortLabelAr: 'SAT Math',
+        shortLabelEn: 'SAT Math',
+        stageAr: 'اختبارات القبول',
+        stageEn: 'College Entrance'
+      },
+      {
         code: 'EST_1',
         titleAr: 'EST I Math (Egyptian Scholastic Test - Literacy I)',
         titleEn: 'EST I Math (Literacy I Math Section)',
@@ -421,6 +635,15 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         stageEn: 'Egyptian Scholastic Test'
       },
       {
+        code: 'EST_MATH',
+        titleAr: 'EST I & EST II Math Prep',
+        titleEn: 'EST Math Mastery',
+        shortLabelAr: 'EST Math',
+        shortLabelEn: 'EST Math',
+        stageAr: 'اختبارات القبول المصرية',
+        stageEn: 'Egyptian Scholastic Test'
+      },
+      {
         code: 'ACT_1',
         titleAr: 'ACT Math (60 Questions in 60 Minutes Drill)',
         titleEn: 'ACT Math (60 Questions Drills)',
@@ -435,6 +658,15 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'ACT Subject Math II (Advanced Trigonometry & Functions)',
         shortLabelAr: 'ACT II',
         shortLabelEn: 'ACT 2',
+        stageAr: 'اختبارات القبول',
+        stageEn: 'College Entrance'
+      },
+      {
+        code: 'ACT_MATH',
+        titleAr: 'ACT Math Mastery',
+        titleEn: 'ACT Mathematics Mastery',
+        shortLabelAr: 'ACT Math',
+        shortLabelEn: 'ACT Math',
         stageAr: 'اختبارات القبول',
         stageEn: 'College Entrance'
       }

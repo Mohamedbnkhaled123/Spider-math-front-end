@@ -1424,7 +1424,7 @@
             >
               @for (canon of canonicalGradesForModal(); track canon.code) {
                 <option [value]="canon.code">
-                  {{ canon.titleAr }} — ({{ canon.titleEn }})
+                  {{ canon.titleAr }} — {{ canon.titleEn }}
                 </option>
               }
             </select>
