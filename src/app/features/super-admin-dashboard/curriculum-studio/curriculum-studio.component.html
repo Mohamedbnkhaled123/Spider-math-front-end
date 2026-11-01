@@ -15,20 +15,11 @@
       <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
         <button
           type="button"
-          (click)="openGradesModal()"
-          class="px-4 py-2.5 rounded-2xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 hover:bg-brand-primary/20 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <app-icon name="check-circle" [size]="15" />
-          <span>تخصيص وإدارة الصفوف المفعلة</span>
-        </button>
-
-        <button
-          type="button"
           (click)="openCreateUnitModal()"
           class="px-5 py-2.5 rounded-2xl text-xs font-bold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
           <app-icon name="plus" [size]="15" />
-          <span>+ إضافة وحدة دراسية جديدة</span>
+          <span>إضافة وحدة دراسية جديدة</span>
         </button>
       </div>
     </div>
@@ -374,7 +365,7 @@
               class="px-3 py-1 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 hover:bg-brand-primary/20 transition-all flex items-center gap-1 cursor-pointer"
             >
               <app-icon name="plus" [size]="12" />
-              <span>+ إضافة كويز / واجب / امتحان</span>
+              <span>إضافة كويز / واجب / امتحان</span>
             </button>
           </div>
 
@@ -450,7 +441,7 @@
             </div>
           } @empty {
             <div class="text-[11px] text-text-muted italic py-1">
-              لا توجد امتحانات أو واجبات مضافة بعد بالوحدة. اضغط على "+ إضافة كويز / واجب / امتحان" لإضافة تقييم وتعيين أسئلته.
+              لا توجد امتحانات أو واجبات مضافة بعد بالوحدة. اضغط على "إضافة كويز / واجب / امتحان" لإضافة تقييم وتعيين أسئلته.
             </div>
           }
         </div>
@@ -469,7 +460,7 @@
           class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 cursor-pointer inline-flex items-center gap-1.5"
         >
           <app-icon name="plus" [size]="14" />
-          <span>+ إضافة وحدة دراسية جديدة</span>
+          <span>إضافة وحدة دراسية جديدة</span>
         </button>
       </div>
     }
@@ -482,7 +473,7 @@
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">+ إضافة وحدة دراسية جديدة</h3>
+          <h3 class="text-sm font-black text-text-primary">إضافة وحدة دراسية جديدة</h3>
           <button type="button" (click)="isUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
@@ -622,7 +613,7 @@
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">+ إضافة محاضرة جديدة للوحدة</h3>
+          <h3 class="text-sm font-black text-text-primary">إضافة محاضرة جديدة للوحدة</h3>
           <button type="button" (click)="isLectureModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
@@ -1072,7 +1063,7 @@
           <!-- Add New Question Box -->
           <div class="p-5 rounded-2xl border border-dashed border-brand-primary/30 bg-brand-primary/[0.02] space-y-4">
             <span class="font-bold text-brand-primary block text-xs">
-              + إضافة سؤال جديد للامتحان (Direct Question Image Upload):
+              إضافة سؤال جديد للامتحان (Direct Question Image Upload):
             </span>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1224,7 +1215,7 @@
               title="إضافة صف أو مرحلة دراسية لأي منهج"
             >
               <app-icon name="plus" [size]="14" />
-              <span>+ إضافة صف دراسي</span>
+              <span>إضافة صف دراسي</span>
             </button>
 
             <button
@@ -1237,12 +1228,12 @@
           </div>
         </div>
 
-        <!-- Body: 4 Curricula Tracks with Section Actions and Grade Cards -->
+        <!-- Body: 4 Curricula Tracks with Grade Cards -->
         <div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
           @for (track of allCurriculaTracks(); track track.code) {
             <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-4">
               
-              <!-- Section Header with Section Title & Action Buttons -->
+              <!-- Section Header with Section Title & Count (Single Top Button used for Adding) -->
               <div class="flex items-center justify-between gap-3 flex-wrap border-b border-surface-border/60 pb-3">
                 <div class="flex items-center gap-2">
                   <span class="w-2 h-2 rounded-full bg-brand-primary"></span>
@@ -1252,29 +1243,6 @@
                   <span class="text-[11px] font-bold text-text-muted">
                     ({{ track.grades.length }} صفوف دراسية)
                   </span>
-                </div>
-
-                <!-- Section Level Actions: Add Grade to this track & Confirm Section Edits -->
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    (click)="openAddGrade(track.code)"
-                    class="px-3 py-1.5 rounded-xl text-xs font-bold border border-brand-primary/30 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer"
-                    title="إضافة صف دراسي جديد لهذا المنهج"
-                  >
-                    <app-icon name="plus" [size]="14" />
-                    <span>إضافة صف دراسي</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="confirmSectionChanges(track.code)"
-                    class="px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
-                    title="تأكيد واعتماد تعديلات هذا القسم فوراً"
-                  >
-                    <app-icon name="check" [size]="14" />
-                    <span>تأكيد تعديلات القسم</span>
-                  </button>
                 </div>
               </div>
 
@@ -1553,7 +1521,7 @@
         <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
           <div>
             <h3 class="text-base font-black text-text-primary">
-              + إضافة تقييم جديد للوحدة
+              إضافة تقييم جديد للوحدة
             </h3>
             <p class="text-xs text-text-secondary mt-0.5">
               {{ activeUnitForAssessment()?.titleAr }}
