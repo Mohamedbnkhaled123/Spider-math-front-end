@@ -54,6 +54,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly isLoading = signal<boolean>(true);
   readonly playbackToken = signal<string>('');
   readonly isLectureLocked = signal<boolean>(false);
+  readonly isAssessmentsOnly = computed(() => this.workspaceData().accessScope === 'ASSESSMENTS_ONLY');
 
   // Workspace Data
   readonly workspaceData = signal<UnitWorkspaceData>({
@@ -94,6 +95,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         this.isLoading.set(false);
         const unit = res?.data?.unit;
         const isSubscribed = !!res?.data?.isSubscribed;
+        const accessScope = res?.data?.accessScope as ('FULL' | 'ASSESSMENTS_ONLY' | undefined);
         const rawLectures = res?.data?.lectures || [];
         const rawAssessments = res?.data?.assessments || [];
 
@@ -136,6 +138,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           gradeLevel: unit?.grade_level || 'SEC_3',
           term: unit?.academic_term || 'TERM_1',
           isSubscribed,
+          accessScope,
           lectures: mappedLectures,
           assessments: mappedAssessments
         });

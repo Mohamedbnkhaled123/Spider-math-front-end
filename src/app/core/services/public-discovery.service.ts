@@ -101,7 +101,91 @@ export class PublicDiscoveryService {
           isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
           activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
           activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || fallback.activeAcademicTerm || 'TERM_1',
-          teacherBio: fallback.teacherBio,
+          announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦',
+
+          heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || 'Spider Math✦ المنظومة الهندسية الرائدة',
+          heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || 'Spider Math✦ Engineering Excellence',
+          heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || 'اختار منهجك وابدأ الآن',
+          heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || 'Choose Your Curriculum & Begin',
+          heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || 'امتحان تحديد المستوى المجاني',
+          heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || 'Free Placement Test',
+
+          teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
+          teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
+          teacherTitleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
+          teacherTitleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
+          teacherBioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
+          teacherBioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
+          teacherQualificationsAr: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
+            ? raw.teacherQualificationsAr
+            : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
+              ? raw.teacher_qualifications_ar
+              : fallback.teacherBio.qualifications,
+          teacherQualificationsEn: (raw.teacherQualificationsEn && raw.teacherQualificationsEn.length > 0)
+            ? raw.teacherQualificationsEn
+            : (raw.teacher_qualifications_en && raw.teacher_qualifications_en.length > 0)
+              ? raw.teacher_qualifications_en
+              : [
+                'B.Sc. in Engineering — Cairo University with Honors',
+                'Certified International Desmos Graphing Calculator Specialist',
+                'Certified Instructor for SAT I/II, EST I/II and ACT Math',
+                'Consistent top scores and highest student rankings year over year'
+              ],
+          teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || 'تواصل مباشرة مع فريق م/ هبة عبر واتساب',
+          teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || 'Direct WhatsApp Consultation',
+
+          curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || 'المسارات الأكاديمية والمناهج',
+          curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || 'Academic Tracks & Curriculums',
+          curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || 'اختر منهجك الدراسي وابدأ رحلة التفوق',
+          curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || 'Choose Your Curriculum & Begin Mastery',
+          curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي',
+          curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || 'Comprehensive educational tracks designed with high engineering standards',
+
+          placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || 'اختبار تحديد المستوى وتشخيص المهارات الرياضية',
+          placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || 'Free Placement & Diagnostic Assessment',
+          placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك',
+          placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || 'Assess Your Skills & Discover Your Strengths',
+          placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.',
+          placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.',
+          placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || 'تقييم ذكي ومباشر',
+          placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || 'Instant Diagnostic Feedback',
+          placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || 'تقرير مفصل بنقاط القوة والضعف',
+          placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || 'Strengths & Weaknesses Report',
+          placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || 'متابعة شخصية من م/ هبة عبدالوهاب',
+          placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || 'Eng. Heba Follow-up',
+          placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ اختبار تحديد المستوى الآن',
+          placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start Diagnostic Assessment Now',
+
+          scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || 'جدول المواعيد والحصص',
+          scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || 'Live Lecture Schedule',
+          scheduleTitleAr: raw.scheduleTitleAr || raw.schedule_title_ar || 'مواعيد المحاضرات والبث المباشر',
+          scheduleTitleEn: raw.scheduleTitleEn || raw.schedule_title_en || 'Class Timetable & Streaming Schedule',
+          scheduleSubtitleAr: raw.scheduleSubtitleAr || raw.schedule_subtitle_ar || 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة',
+          scheduleSubtitleEn: raw.scheduleSubtitleEn || raw.schedule_subtitle_en || 'Times shown in Cairo Local Time (GMT+3)',
+
+          pricingBadgeAr: raw.pricingBadgeAr || raw.pricing_badge_ar || 'الباقات الدراسية والمراجعات',
+          pricingBadgeEn: raw.pricingBadgeEn || raw.pricing_badge_en || 'Packages & Tuition Plans',
+          pricingTitleAr: raw.pricingTitleAr || raw.pricing_title_ar || 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة',
+          pricingTitleEn: raw.pricingTitleEn || raw.pricing_title_en || 'Transparent Tuition & Revision Packages',
+          pricingSubtitleAr: raw.pricingSubtitleAr || raw.pricing_subtitle_ar || 'خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار',
+          pricingSubtitleEn: raw.pricingSubtitleEn || raw.pricing_subtitle_en || 'Flexible study units and intensive final revisions engineered for mastery',
+
+          teacherBio: {
+            nameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
+            nameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
+            titleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
+            titleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
+            bioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
+            bioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
+            yearsOfExperience: fallback.teacherBio.yearsOfExperience,
+            totalStudentsTaught: fallback.teacherBio.totalStudentsTaught,
+            avatarUrl: fallback.teacherBio.avatarUrl,
+            qualifications: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
+              ? raw.teacherQualificationsAr
+              : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
+                ? raw.teacher_qualifications_ar
+                : fallback.teacherBio.qualifications
+          },
           schedules: normalizedSchedules,
           pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
             ? raw.pricingPackages

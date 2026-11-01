@@ -35,17 +35,10 @@ describe('LeadsAndLandingCmsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should add schedule row to CMS config', () => {
-    const initialCount = component.editableCms().schedulesTable?.length || 0;
-    component.newSchedule.set({
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_3',
-      term: 'TERM_1',
-      dayOfWeek: 'Monday',
-      timeSlot: '07:00 PM',
-      lectureSubject: 'Calculus'
-    });
-    component.addScheduleRow();
-    expect(component.editableCms().schedulesTable.length).toBe(initialCount + 1);
+  it('should add qualification in Arabic to CMS config', () => {
+    const initialCount = component.editableCms().teacherQualificationsAr?.length || 0;
+    component.newQualAr.set('خبير معتمد في تدريس الرياضيات');
+    component.addQualificationAr();
+    expect(component.editableCms().teacherQualificationsAr?.length).toBe(initialCount + 1);
   });
 });

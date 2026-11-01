@@ -28,14 +28,80 @@ export interface ScheduleRow {
 }
 
 export interface CmsConfigAdminItem {
-  heroHeadlineAr: string;
-  heroSubheadlineAr: string;
-  heroVideoUrl: string;
-  announcementBannerText: string;
-  isAnnouncementActive: boolean;
-  supportWhatsapp: string;
-  activeAcademicYear: string;
-  activeAcademicTerm: 'TERM_1' | 'TERM_2';
-  schedulesTable: ScheduleRow[];
+  // Announcement
+  announcementBannerText?: string;
+  announcementBannerTextEn?: string;
+  isAnnouncementActive?: boolean;
+
+  // Hero Section
+  heroHeadlineAr?: string;
+  heroHeadlineEn?: string;
+  heroSubheadlineAr?: string;
+  heroSubheadlineEn?: string;
+  heroBadgeAr?: string;
+  heroBadgeEn?: string;
+  heroCtaPrimaryAr?: string;
+  heroCtaPrimaryEn?: string;
+  heroCtaSecondaryAr?: string;
+  heroCtaSecondaryEn?: string;
+  heroVideoUrl?: string;
+
+  // Teacher Profile
+  teacherNameAr?: string;
+  teacherNameEn?: string;
+  teacherTitleAr?: string;
+  teacherTitleEn?: string;
+  teacherBioAr?: string;
+  teacherBioEn?: string;
+  teacherQualificationsAr?: string[];
+  teacherQualificationsEn?: string[];
+  teacherWhatsappCtaAr?: string;
+  teacherWhatsappCtaEn?: string;
+
+  // Curriculum Section
+  curriculumBadgeAr?: string;
+  curriculumBadgeEn?: string;
+  curriculumTitleAr?: string;
+  curriculumTitleEn?: string;
+  curriculumSubtitleAr?: string;
+  curriculumSubtitleEn?: string;
+
+  // Placement Test Section
+  placementBadgeAr?: string;
+  placementBadgeEn?: string;
+  placementHeadlineAr?: string;
+  placementHeadlineEn?: string;
+  placementSubtitleAr?: string;
+  placementSubtitleEn?: string;
+  placementFeature1Ar?: string;
+  placementFeature1En?: string;
+  placementFeature2Ar?: string;
+  placementFeature2En?: string;
+  placementFeature3Ar?: string;
+  placementFeature3En?: string;
+  placementCtaAr?: string;
+  placementCtaEn?: string;
+
+  // Schedules Section
+  scheduleBadgeAr?: string;
+  scheduleBadgeEn?: string;
+  scheduleTitleAr?: string;
+  scheduleTitleEn?: string;
+  scheduleSubtitleAr?: string;
+  scheduleSubtitleEn?: string;
+
+  // Pricing Section
+  pricingBadgeAr?: string;
+  pricingBadgeEn?: string;
+  pricingTitleAr?: string;
+  pricingTitleEn?: string;
+  pricingSubtitleAr?: string;
+  pricingSubtitleEn?: string;
+
+  // General & Contact
+  supportWhatsapp?: string;
+  activeAcademicYear?: string;
+  activeAcademicTerm?: 'TERM_1' | 'TERM_2';
+  schedulesTable?: ScheduleRow[];
   landingUnitIds?: string[];
 }

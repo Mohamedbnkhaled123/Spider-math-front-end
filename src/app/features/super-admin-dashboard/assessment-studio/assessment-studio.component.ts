@@ -260,7 +260,7 @@ export class AssessmentStudioComponent implements OnInit {
             availableFrom: fromIso,
             availableUntil: untilIso,
             isScheduled: !!(fromIso || untilIso),
-            totalPoints: a.total_points || 20,
+            totalPoints: a.total_points || (a.questions?.length ? a.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
             isPublished: !!a.is_published,
             isPlacementTest: !!a.is_placement_test,
             submissionsCount: a.submissions_count || 0,

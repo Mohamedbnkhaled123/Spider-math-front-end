@@ -89,223 +89,873 @@
 
   <!-- 2. Pure Landing Page CMS Editor (Zero SEO fields per RULES.md) -->
   <div class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-6">
-    <div class="pb-4 border-b border-surface-border flex items-center justify-between">
+    
+    <!-- Header with Bilingual Control Overview -->
+    <div class="pb-5 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h3 class="text-lg font-black text-text-primary">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 text-[11px] font-black mb-1.5">
+          <app-icon name="sparkles" [size]="13" />
+          <span>التحكم الشامل في نصوص المنصة (CMS ثنائي اللغة)</span>
+        </div>
+        <h3 class="text-lg sm:text-xl font-black text-text-primary tracking-tight">
           محرر محتوى الصفحة الرئيسية (Landing Page CMS)
         </h3>
         <p class="text-xs text-text-secondary mt-0.5">
-          تعديل العناوين الرئيسية، شريط الإعلانات العاجل، رقم واتساب الدعم، وجداول الحصص الأسبوعية.
+          يمكنك تعديل كل حرف وكلمة تظهر للزوار في الواجهة الرئيسية بالعربية والإنجليزية مع الحفظ الفوري.
         </p>
       </div>
+
+      <!-- Quick Action: Save Button in Header -->
+      <button
+        type="button"
+        (click)="saveCms()"
+        class="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
+      >
+        <app-icon name="check" [size]="16" />
+        <span>حفظ ونشر التعديلات فورياً</span>
+      </button>
     </div>
 
-    <div class="space-y-4 text-xs">
-      <!-- Hero Headline -->
-      <div>
-        <label class="block font-bold text-text-secondary mb-1">
-          العنوان الرئيسي لصفحة الهبوط (Hero Headline)
-        </label>
-        <input
-          type="text"
-          [(ngModel)]="editableCms().heroHeadlineAr"
-          class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold focus:outline-none focus:border-brand-primary"
-        />
-      </div>
+    <!-- Navigation Tabs: Arabic vs English vs General Settings vs Showcased Units -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-surface-border pb-4">
+      <button
+        type="button"
+        (click)="activeCmsTab.set('AR')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'AR'"
+        [class.text-white]="activeCmsTab() === 'AR'"
+        [class.shadow-md]="activeCmsTab() === 'AR'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'AR'"
+        [class.text-text-secondary]="activeCmsTab() !== 'AR'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'AR'"
+      >
+        <span>🇪🇬</span>
+        <span>المحتوى العربي (Arabic)</span>
+      </button>
 
-      <!-- Hero Subheadline -->
-      <div>
-        <label class="block font-bold text-text-secondary mb-1">
-          الوصف الفرعي لصفحة الهبوط (Hero Subheadline)
-        </label>
-        <textarea
-          rows="2"
-          [(ngModel)]="editableCms().heroSubheadlineAr"
-          class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary leading-relaxed"
-        ></textarea>
-      </div>
+      <button
+        type="button"
+        (click)="activeCmsTab.set('EN')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'EN'"
+        [class.text-white]="activeCmsTab() === 'EN'"
+        [class.shadow-md]="activeCmsTab() === 'EN'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'EN'"
+        [class.text-text-secondary]="activeCmsTab() !== 'EN'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'EN'"
+      >
+        <span>🇬🇧</span>
+        <span>المحتوى الإنجليزي (English)</span>
+      </button>
 
-      <!-- Hero Video URL (Unprotected Landing Video) -->
-      <div class="p-4 rounded-2xl border border-brand-accent/30 bg-surface-bg space-y-3">
-        <div class="flex items-center justify-between">
-          <label class="font-bold text-text-primary flex items-center gap-2">
-            <app-icon name="video" [size]="16" className="text-brand-accent" />
-            <span>رابط الفيديو التعريفي في واجهة المنصة (Hero Section Video)</span>
-          </label>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-600">
-            فيديو عام غير محمي
-          </span>
+      <button
+        type="button"
+        (click)="activeCmsTab.set('GENERAL')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'GENERAL'"
+        [class.text-white]="activeCmsTab() === 'GENERAL'"
+        [class.shadow-md]="activeCmsTab() === 'GENERAL'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'GENERAL'"
+        [class.text-text-secondary]="activeCmsTab() !== 'GENERAL'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'GENERAL'"
+      >
+        <app-icon name="settings" [size]="14" />
+        <span>الإعدادات العامة والميديا</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="activeCmsTab.set('UNITS')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'UNITS'"
+        [class.text-white]="activeCmsTab() === 'UNITS'"
+        [class.shadow-md]="activeCmsTab() === 'UNITS'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'UNITS'"
+        [class.text-text-secondary]="activeCmsTab() !== 'UNITS'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'UNITS'"
+      >
+        <app-icon name="book-open" [size]="14" />
+        <span>الوحدات المعروضة لصفحة الهبوط ({{ editableCms().landingUnitIds?.length || 0 }})</span>
+      </button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: ARABIC CONTENT (المحتوى العربي)                                   -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'AR') {
+      <div class="space-y-6 text-xs animate-fade-in">
+
+        <!-- 1. شريط الإعلانات العاجل (عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
+          <div class="flex items-center gap-2 text-brand-primary font-black text-sm">
+            <span>✦</span>
+            <h4>شريط الإعلانات العاجل (باللغة العربية)</h4>
+          </div>
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">نص الإعلان أو الخصم الذي يظهر بأعلى المنصة:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().announcementBannerText"
+              placeholder="مثال: ✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول ✦"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold focus:outline-none focus:border-brand-primary"
+            />
+          </div>
         </div>
-        <p class="text-[11px] text-text-muted leading-relaxed">
-          هذا الفيديو يظهر في الواجهة الرئيسية للموقع بدلاً من الصورة، ومتاح للمشاهدة المباشرة وتكبير الشاشة للزوار وأولياء الأمور بحرية دون حماية. يمكنك وضع رابط يوتيوب (فيديو أو Shorts) أو رابط فيديو مباشر.
-        </p>
-        <input
-          type="url"
-          [(ngModel)]="editableCms().heroVideoUrl"
-          placeholder="مثال: https://www.youtube.com/watch?v=... أو https://youtu.be/..."
-          dir="ltr"
-          class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-mono text-xs focus:outline-none focus:border-brand-primary"
-        />
-      </div>
 
-      <!-- Announcement Banner -->
-      <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
-        <div class="flex items-center justify-between">
-          <label class="font-bold text-text-primary">شريط الإعلانات العاجل أعلى المنصة</label>
-          <button
-            type="button"
-            (click)="editableCms().isAnnouncementActive = !editableCms().isAnnouncementActive"
-            class="px-3 py-1 rounded-xl font-bold text-xs border"
-            [class.bg-emerald-500/10]="editableCms().isAnnouncementActive"
-            [class.text-emerald-500]="editableCms().isAnnouncementActive"
-            [class.border-emerald-500/30]="editableCms().isAnnouncementActive"
-            [class.bg-slate-500/10]="!editableCms().isAnnouncementActive"
-            [class.text-slate-400]="!editableCms().isAnnouncementActive"
-          >
-            {{ editableCms().isAnnouncementActive ? 'الشريط مفعّل' : 'الشريط معطّل' }}
-          </button>
+        <!-- 2. الواجهة الرئيسية (Hero Section - عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>🚀</span>
+            <h4>الواجهة الرئيسية (Hero Section - عربي)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">شارة / وسم الهيرو (Hero Badge):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().heroBadgeAr"
+                placeholder="مثال: Spider Math✦ المنظومة الهندسية الرائدة"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">نص الزر الأول (Primary CTA):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().heroCtaPrimaryAr"
+                placeholder="مثال: اختار منهجك وابدأ الآن"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">العنوان الرئيسي الكبير (Headline):</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroHeadlineAr"
+              placeholder="العنوان الرئيسي للمنصة..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي (Subheadline):</label>
+            <textarea
+              rows="2"
+              [(ngModel)]="editableCms().heroSubheadlineAr"
+              placeholder="الوصف التوضيحي تحت العنوان الرئيسي..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">نص الزر الثاني (Secondary CTA):</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroCtaSecondaryAr"
+              placeholder="مثال: امتحان تحديد المستوى المجاني"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
+          </div>
         </div>
 
-        <input
-          type="text"
-          [(ngModel)]="editableCms().announcementBannerText"
-          placeholder="نص الإعلان أو الخصم..."
-          class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
-        />
-      </div>
+        <!-- 3. نبذة المعلمة ومؤهلاتها (Teacher Profile - عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>👩‍🏫</span>
+            <h4>قسم نبذة المعلمة ومؤهلاتها (Teacher Bio - عربي)</h4>
+          </div>
 
-      <!-- Support Whatsapp, Academic Year & Active Term -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label class="block font-bold text-text-secondary mb-1">رقم واتساب الدعم الفني المعتمد</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">اسم المعلمة بالعربي:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().teacherNameAr"
+                placeholder="مثال: المهندسة / هبة عبدالوهاب"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">اللقب والصفة المهنية:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().teacherTitleAr"
+                placeholder="مثال: كبير محاضري الرياضيات للشهادات العامة والدولية"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">النبذة التعريفية المفصلة:</label>
+            <textarea
+              rows="3"
+              [(ngModel)]="editableCms().teacherBioAr"
+              placeholder="نبذة عن خبرة المعلمة في تدريس الرياضيات..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- قائمة المؤهلات والإنجازات (عربي) -->
+          <div class="space-y-2 pt-2">
+            <label class="block font-bold text-text-secondary">قائمة المؤهلات والإنجازات البارزة (Qualifications):</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="newQualAr"
+                (keydown.enter)="addQualificationAr()"
+                placeholder="اكتب مؤهلاً جديداً واضغط إضافة أو Enter..."
+                class="flex-1 px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
+              />
+              <button
+                type="button"
+                (click)="addQualificationAr()"
+                class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+              >
+                + إضافة مؤهل
+              </button>
+            </div>
+
+            <div class="space-y-1.5 pt-1">
+              @for (q of editableCms().teacherQualificationsAr; track $index) {
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs">
+                  <span class="font-bold text-text-primary flex items-center gap-2">
+                    <span class="text-emerald-500">✓</span>
+                    <span>{{ q }}</span>
+                  </span>
+                  <button
+                    type="button"
+                    (click)="removeQualificationAr($index)"
+                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer"
+                  >
+                    حذف
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">نص زر التواصل المباشر عبر واتساب:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().teacherWhatsappCtaAr"
+              placeholder="مثال: تواصل مباشرة مع فريق م/ هبة عبر واتساب"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
+          </div>
+        </div>
+
+        <!-- 4. قسم اختبار تحديد المستوى (Placement Test - عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>🎯</span>
+            <h4>قسم امتحان تحديد المستوى وتشخيص المهارات (Placement Test - عربي)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementBadgeAr"
+                placeholder="مثال: اختبار تحديد المستوى وتشخيص المهارات الرياضية"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">نص زر بدء الاختبار (CTA Button):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementCtaAr"
+                placeholder="مثال: ابدأ اختبار تحديد المستوى الآن"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">العنوان الرئيسي للقسم (Headline):</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().placementHeadlineAr"
+              placeholder="العنوان المشجع على خوض الاختبار..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي التفصيلي (Subtitle):</label>
+            <textarea
+              rows="2"
+              [(ngModel)]="editableCms().placementSubtitleAr"
+              placeholder="وصف مميزات الاختبار التشخيصي..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الميزة الأولى (Feature 1):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature1Ar"
+                placeholder="مثال: تقييم ذكي ومباشر"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الميزة الثانية (Feature 2):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature2Ar"
+                placeholder="مثال: تقرير مفصل بنقاط القوة والضعف"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">الميزة الثالثة (Feature 3):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature3Ar"
+                placeholder="مثال: متابعة شخصية من م/ هبة عبدالوهاب"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. قسم المناهج والمسارات (Curricula - عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-emerald-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>📚</span>
+            <h4>قسم المناهج والمسارات الأكاديمية (Curriculum Section - عربي)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().curriculumBadgeAr"
+                placeholder="مثال: المسارات الأكاديمية والمناهج"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">عنوان قسم المناهج (Title):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().curriculumTitleAr"
+                placeholder="مثال: اختر منهجك الدراسي وابدأ رحلة التفوق"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي لقسم المناهج (Subtitle):</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().curriculumSubtitleAr"
+              placeholder="مثال: مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 6. قسم الباقات والاشتراكات (Pricing - عربي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-amber-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>💎</span>
+            <h4>قسم الباقات والاشتراكات (Tuition Packages - عربي)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().pricingBadgeAr"
+                placeholder="مثال: الباقات الدراسية والمراجعات"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">عنوان قسم الباقات والاشتراكات:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().pricingTitleAr"
+                placeholder="مثال: استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">وصف قسم الباقات والاشتراكات:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().pricingSubtitleAr"
+              placeholder="مثال: خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: ENGLISH CONTENT (المحتوى الإنجليزي)                                 -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'EN') {
+      <div class="space-y-6 text-xs animate-fade-in" dir="ltr">
+
+        <!-- 1. Urgent Announcement Ribbon (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
+          <div class="flex items-center gap-2 text-brand-primary font-black text-sm">
+            <span>✦</span>
+            <h4>Urgent Announcement Ribbon (English)</h4>
+          </div>
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Banner Announcement Text:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().announcementBannerTextEn"
+              placeholder="e.g.: ✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold focus:outline-none focus:border-brand-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 2. Hero Section (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>🚀</span>
+            <h4>Hero Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Hero Badge Text:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().heroBadgeEn"
+                placeholder="e.g.: Spider Math✦ Engineering Excellence"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Primary CTA Button Text:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().heroCtaPrimaryEn"
+                placeholder="e.g.: Choose Your Curriculum & Begin"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Main Headline (H1):</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroHeadlineEn"
+              placeholder="e.g.: Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Hero Subheadline:</label>
+            <textarea
+              rows="2"
+              [(ngModel)]="editableCms().heroSubheadlineEn"
+              placeholder="e.g.: Interactive learning for Egyptian, Gulf, International, and American Curriculums..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Secondary CTA Button Text:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroCtaSecondaryEn"
+              placeholder="e.g.: Free Placement Test"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
+          </div>
+        </div>
+
+        <!-- 3. Teacher Profile (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>👩‍🏫</span>
+            <h4>Teacher Profile & Qualifications (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Teacher Full Name (English):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().teacherNameEn"
+                placeholder="e.g.: Eng. Heba Abdel-Wahab"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Professional / Academic Title:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().teacherTitleEn"
+                placeholder="e.g.: Principal Mathematics Educator & Desmos Specialist"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Detailed Bio (English):</label>
+            <textarea
+              rows="3"
+              [(ngModel)]="editableCms().teacherBioEn"
+              placeholder="Over 14 years of excellence in teaching..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- Qualifications Checklist (English) -->
+          <div class="space-y-2 pt-2">
+            <label class="block font-bold text-text-secondary">Key Qualifications & Milestones (English):</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="newQualEn"
+                (keydown.enter)="addQualificationEn()"
+                placeholder="Add a new qualification and press Enter..."
+                class="flex-1 px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
+              />
+              <button
+                type="button"
+                (click)="addQualificationEn()"
+                class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+              >
+                + Add Item
+              </button>
+            </div>
+
+            <div class="space-y-1.5 pt-1">
+              @for (q of editableCms().teacherQualificationsEn; track $index) {
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs">
+                  <span class="font-bold text-text-primary flex items-center gap-2">
+                    <span class="text-emerald-500">✓</span>
+                    <span>{{ q }}</span>
+                  </span>
+                  <button
+                    type="button"
+                    (click)="removeQualificationEn($index)"
+                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">WhatsApp Direct Consultation CTA Button:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().teacherWhatsappCtaEn"
+              placeholder="e.g.: Direct WhatsApp Consultation"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
+          </div>
+        </div>
+
+        <!-- 4. Placement Diagnostic Test (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>🎯</span>
+            <h4>Placement & Diagnostic Test Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementBadgeEn"
+                placeholder="e.g.: Free Placement & Diagnostic Assessment"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">CTA Button Text:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementCtaEn"
+                placeholder="e.g.: Start Diagnostic Assessment Now"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Main Headline:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().placementHeadlineEn"
+              placeholder="e.g.: Assess Your Skills & Discover Your Strengths"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Section Subtitle:</label>
+            <textarea
+              rows="2"
+              [(ngModel)]="editableCms().placementSubtitleEn"
+              placeholder="e.g.: Interactive diagnostic assessment designed to evaluate core concepts..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Feature 1 Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature1En"
+                placeholder="e.g.: Instant Diagnostic Feedback"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Feature 2 Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature2En"
+                placeholder="e.g.: Strengths & Weaknesses Report"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Feature 3 Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().placementFeature3En"
+                placeholder="e.g.: Eng. Heba Follow-up"
+                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Curriculum Section (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-emerald-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>📚</span>
+            <h4>Curriculum Explorer Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Curriculum Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().curriculumBadgeEn"
+                placeholder="e.g.: Academic Tracks & Curriculums"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Title:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().curriculumTitleEn"
+                placeholder="e.g.: Choose Your Curriculum & Begin Mastery"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Section Subtitle:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().curriculumSubtitleEn"
+              placeholder="e.g.: Comprehensive educational tracks designed with high engineering standards"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 6. Tuition Packages Section (English) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-amber-600 font-black text-sm pb-2 border-b border-surface-border">
+            <span>💎</span>
+            <h4>Tuition & Revision Packages Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Badge (English):</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().pricingBadgeEn"
+                placeholder="e.g.: Packages & Tuition Plans"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Pricing Section Title:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().pricingTitleEn"
+                placeholder="e.g.: Transparent Tuition & Revision Packages"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Pricing Subtitle:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().pricingSubtitleEn"
+              placeholder="e.g.: Flexible study units and intensive final revisions..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: GENERAL SETTINGS, MEDIA & SCHEDULES                               -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'GENERAL') {
+      <div class="space-y-6 text-xs animate-fade-in">
+
+        <!-- Hero Video URL (Unprotected Landing Video) -->
+        <div class="p-5 rounded-2xl border border-brand-accent/30 bg-surface-bg space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-text-primary flex items-center gap-2">
+              <app-icon name="video" [size]="16" className="text-brand-accent" />
+              <span>رابط الفيديو التعريفي في واجهة المنصة (Hero Section Video)</span>
+            </label>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-600">
+              فيديو عام غير محمي
+            </span>
+          </div>
+          <p class="text-[11px] text-text-muted leading-relaxed">
+            هذا الفيديو يظهر في الواجهة الرئيسية للموقع بدلاً من الصورة، ومتاح للمشاهدة المباشرة وتكبير الشاشة للزوار وأولياء الأمور بحرية دون حماية. يمكنك وضع رابط يوتيوب (فيديو أو Shorts) أو رابط فيديو مباشر.
+          </p>
           <input
-            type="text"
-            [(ngModel)]="editableCms().supportWhatsapp"
-            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary"
+            type="url"
+            [(ngModel)]="editableCms().heroVideoUrl"
+            placeholder="مثال: https://www.youtube.com/watch?v=AOtzdDq7vrI أو https://youtu.be/..."
+            dir="ltr"
+            class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-mono text-xs focus:outline-none focus:border-brand-primary"
           />
         </div>
 
-        <div>
-          <label class="block font-bold text-text-secondary mb-1">العام الدراسي الفعّال</label>
-          <input
-            type="text"
-            [(ngModel)]="editableCms().activeAcademicYear"
-            class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary"
-          />
-        </div>
-
-        <div>
-          <label class="block font-bold text-text-secondary mb-1">الفصل الدراسي النشط للمنصة</label>
-          <div class="flex items-center gap-2 mt-1">
+        <!-- Announcement Ribbon Toggle -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="font-bold text-text-primary text-sm">حالة شريط الإعلانات العاجل أعلى المنصة</label>
+              <p class="text-[11px] text-text-secondary mt-0.5">يمكنك تشغيل أو إخفاء الشريط في أي وقت دون مسح نصوصه.</p>
+            </div>
             <button
               type="button"
-              (click)="editableCms().activeAcademicTerm = 'TERM_1'"
-              class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
-              [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
-              [class.text-white]="editableCms().activeAcademicTerm === 'TERM_1'"
-              [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
-              [class.bg-surface-bg]="editableCms().activeAcademicTerm !== 'TERM_1'"
-              [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_1'"
-              [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_1'"
+              (click)="editableCms().isAnnouncementActive = !editableCms().isAnnouncementActive"
+              class="px-4 py-1.5 rounded-xl font-bold text-xs border cursor-pointer transition-all"
+              [class.bg-emerald-500/10]="editableCms().isAnnouncementActive"
+              [class.text-emerald-500]="editableCms().isAnnouncementActive"
+              [class.border-emerald-500/30]="editableCms().isAnnouncementActive"
+              [class.bg-slate-500/10]="!editableCms().isAnnouncementActive"
+              [class.text-slate-400]="!editableCms().isAnnouncementActive"
             >
-              الترم الأول (Term 1)
-            </button>
-            <button
-              type="button"
-              (click)="editableCms().activeAcademicTerm = 'TERM_2'"
-              class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
-              [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
-              [class.text-white]="editableCms().activeAcademicTerm === 'TERM_2'"
-              [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
-              [class.bg-surface-bg]="editableCms().activeAcademicTerm !== 'TERM_2'"
-              [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_2'"
-              [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_2'"
-            >
-              الترم الثاني (Term 2)
+              {{ editableCms().isAnnouncementActive ? '✓ الشريط مفعّل حالياً' : '✕ الشريط معطّل ومخفي' }}
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Weekly Schedules Table Scoped by Curriculum, Grade, Term -->
-      <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-surface-border">
-          <span class="font-bold text-text-primary">
-            جدول مواعيد الحصص الأسبوعية (Schedules Table):
-          </span>
-          <span class="text-[10px] text-text-muted">مربوط بالمنهج والصف والترم</span>
-        </div>
+        <!-- Support Whatsapp, Academic Year & Active Term -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
+            <label class="block font-bold text-text-secondary mb-1">رقم واتساب الدعم الفني والاستشارات</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().supportWhatsapp"
+              placeholder="01012345678"
+              class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card font-mono font-bold text-text-primary"
+            />
+          </div>
 
-        <!-- Add Schedule Row Box -->
-        <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 bg-surface-card p-3 rounded-xl border border-surface-border">
-          <input
-            type="text"
-            [(ngModel)]="newSchedule().curriculum"
-            placeholder="المنهج (EGYPTIAN)"
-            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
-          />
-          <input
-            type="text"
-            [(ngModel)]="newSchedule().gradeLevel"
-            placeholder="الصف (SEC_3)"
-            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
-          />
-          <input
-            type="text"
-            [(ngModel)]="newSchedule().dayOfWeek"
-            placeholder="الأيام (الأحد والثلاثاء)"
-            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
-          />
-          <input
-            type="text"
-            [(ngModel)]="newSchedule().timeSlot"
-            placeholder="التوقيت (07:00 م)"
-            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
-          />
-          <input
-            type="text"
-            [(ngModel)]="newSchedule().lectureSubject"
-            placeholder="الفرع (مثل: تفاضل وتكامل)"
-            class="px-2.5 py-1.5 rounded-lg border border-surface-border text-[11px] bg-surface-bg"
-          />
-          <button
-            type="button"
-            (click)="addScheduleRow()"
-            class="px-3 py-1.5 rounded-lg bg-brand-primary text-white font-bold text-[11px] cursor-pointer"
-          >
-            + إضافة موعد
-          </button>
-        </div>
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
+            <label class="block font-bold text-text-secondary mb-1">العام الأكاديمي الفعّال</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().activeAcademicYear"
+              placeholder="2026 / 2027"
+              class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card font-mono font-bold text-text-primary"
+            />
+          </div>
 
-        <!-- Existing Schedules List -->
-        <div class="space-y-2">
-          @for (row of editableCms().schedulesTable; track $index) {
-            <div class="p-2.5 rounded-xl border border-surface-border bg-surface-card flex items-center justify-between text-[11px]">
-              <div class="flex items-center gap-3 font-bold">
-                <span class="text-brand-primary">{{ row.curriculum }} • {{ row.gradeLevel }}</span>
-                <span>{{ row.dayOfWeek }}</span>
-                <span class="font-mono text-text-muted">{{ row.timeSlot }}</span>
-                <span class="text-text-secondary">{{ row.lectureSubject }}</span>
-              </div>
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
+            <label class="block font-bold text-text-secondary mb-1">الفصل الدراسي النشط للمنصة</label>
+            <div class="flex items-center gap-2 mt-1">
               <button
                 type="button"
-                (click)="removeScheduleRow($index)"
-                class="text-rose-500 hover:underline cursor-pointer"
+                (click)="editableCms().activeAcademicTerm = 'TERM_1'"
+                class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
+                [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
+                [class.text-white]="editableCms().activeAcademicTerm === 'TERM_1'"
+                [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_1'"
+                [class.bg-surface-card]="editableCms().activeAcademicTerm !== 'TERM_1'"
+                [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_1'"
+                [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_1'"
               >
-                حذف
+                الترم الأول (Term 1)
+              </button>
+              <button
+                type="button"
+                (click)="editableCms().activeAcademicTerm = 'TERM_2'"
+                class="flex-1 py-2 px-2.5 rounded-xl font-bold text-xs border transition-all cursor-pointer text-center"
+                [class.bg-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
+                [class.text-white]="editableCms().activeAcademicTerm === 'TERM_2'"
+                [class.border-brand-primary]="editableCms().activeAcademicTerm === 'TERM_2'"
+                [class.bg-surface-card]="editableCms().activeAcademicTerm !== 'TERM_2'"
+                [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_2'"
+                [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_2'"
+              >
+                الترم الثاني (Term 2)
               </button>
             </div>
-          } @empty {
-            <div class="text-[11px] text-text-muted italic py-1">
-              لا توجد مواعيد مضافة في جدول الحصص الأسبوعية بعد.
-            </div>
-          }
+          </div>
         </div>
-      </div>
 
-      <!-- 7. Showcased Units on Landing Page Selector -->
-      <div class="pt-5 border-t border-surface-border space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: SHOWCASED UNITS ON LANDING PAGE                                    -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'UNITS') {
+      <div class="space-y-4 animate-fade-in text-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-border">
           <div>
             <h4 class="font-black text-text-primary text-sm flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
@@ -426,18 +1076,25 @@
           </div>
         }
       </div>
+    }
 
-      <!-- Action Button -->
-      <div class="pt-4 border-t border-surface-border flex justify-end">
-        <button
-          type="button"
-          (click)="saveCms()"
-          class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all cursor-pointer"
-        >
-          حفظ ونشر التعديلات فورياً
-        </button>
+    <!-- Bottom Action Bar: Always Visible -->
+    <div class="pt-5 border-t border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="text-[11px] text-text-muted flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>جميع التعديلات يتم نشرها وتحديث الكاش تلقائياً في 0 ثانية فور الضغط على حفظ.</span>
       </div>
+
+      <button
+        type="button"
+        (click)="saveCms()"
+        class="px-8 py-3.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+      >
+        <app-icon name="check" [size]="16" />
+        <span>حفظ ونشر التعديلات فورياً على المنصة 🚀</span>
+      </button>
     </div>
+
   </div>
 
 </section>

@@ -72,6 +72,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly isActivatingUnit = signal<boolean>(false);
   readonly studentToActivate = signal<StudentAdminSummary | null>(null);
   readonly activationUnitId = signal<string>('');
+  readonly activationScope = signal<'FULL' | 'ASSESSMENTS_ONLY'>('FULL');
 
   ngOnInit(): void {
     this.fetchDatabaseUnits();
@@ -161,6 +162,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     } else {
       this.activationUnitId.set('');
     }
+    this.activationScope.set('FULL');
     this.isActivateModalOpen.set(true);
   }
 
@@ -179,7 +181,8 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     this.isActivatingUnit.set(true);
     this.http.post<{ success: boolean; data?: any; error?: any }>('/api/v1/admin/subscriptions/activate', {
       student_id: student.id,
-      unit_id: unitId
+      unit_id: unitId,
+      access_scope: this.activationScope()
     }).subscribe({
       next: () => {
         this.isActivatingUnit.set(false);
@@ -190,8 +193,9 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.isActivateModalOpen.set(false);
+        const scopeLabel = this.activationScope() === 'ASSESSMENTS_ONLY' ? 'باقة الاختبارات والكويزات فقط' : 'باقة الوحدة كاملة (محاضرات + اختبارات)';
         this.toastTriggered.emit({
-          text: `تم تفعيل اشتراك الوحدة للطالب ${student.name} بنجاح!`,
+          text: `تم تفعيل (${scopeLabel}) للطالب ${student.name} بنجاح!`,
           type: 'success'
         });
       },

@@ -82,14 +82,6 @@
           {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units & Revisions' }}
         </button>
 
-        <button
-          type="button"
-          (click)="navigateToSection('schedules-table')"
-          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
-        >
-          {{ langService.isArabic() ? 'جدول المواعيد' : 'Timetable' }}
-        </button>
-
         <a
           routerLink="/placement-test"
           class="px-3 py-2 rounded-xl hover:text-brand-accent hover:bg-surface-card text-brand-primary dark:text-brand-accent font-extrabold transition-all flex items-center gap-1.5"
@@ -392,14 +384,6 @@
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
             {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units' }}
-          </button>
-
-          <button
-            type="button"
-            (click)="navigateToSection('schedules-table')"
-            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
-          >
-            {{ langService.isArabic() ? 'جدول المواعيد' : 'Timetable' }}
           </button>
 
           <a

@@ -22,6 +22,7 @@ export interface EnrolledUnitSummary {
   completedQuizzes: number;
   thumbnailUrl?: string;
   isActive: boolean;
+  accessScope?: 'FULL' | 'ASSESSMENTS_ONLY';
   subscriptionExpiresAt?: string;
   isExpired?: boolean;
   lectures?: Array<{

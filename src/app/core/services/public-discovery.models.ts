@@ -86,8 +86,65 @@ export interface IPublicLandingData {
   heroVideoUrl?: string;
   announcementBannerText?: string;
   isAnnouncementActive?: boolean;
+  announcementBannerTextEn?: string;
   activeAcademicYear?: string;
   activeAcademicTerm?: AcademicTermCode;
+
+  // Bilingual Elements
+  heroBadgeAr?: string;
+  heroBadgeEn?: string;
+  heroCtaPrimaryAr?: string;
+  heroCtaPrimaryEn?: string;
+  heroCtaSecondaryAr?: string;
+  heroCtaSecondaryEn?: string;
+
+  teacherNameAr?: string;
+  teacherNameEn?: string;
+  teacherTitleAr?: string;
+  teacherTitleEn?: string;
+  teacherBioAr?: string;
+  teacherBioEn?: string;
+  teacherQualificationsAr?: string[];
+  teacherQualificationsEn?: string[];
+  teacherWhatsappCtaAr?: string;
+  teacherWhatsappCtaEn?: string;
+
+  curriculumBadgeAr?: string;
+  curriculumBadgeEn?: string;
+  curriculumTitleAr?: string;
+  curriculumTitleEn?: string;
+  curriculumSubtitleAr?: string;
+  curriculumSubtitleEn?: string;
+
+  placementBadgeAr?: string;
+  placementBadgeEn?: string;
+  placementHeadlineAr?: string;
+  placementHeadlineEn?: string;
+  placementSubtitleAr?: string;
+  placementSubtitleEn?: string;
+  placementFeature1Ar?: string;
+  placementFeature1En?: string;
+  placementFeature2Ar?: string;
+  placementFeature2En?: string;
+  placementFeature3Ar?: string;
+  placementFeature3En?: string;
+  placementCtaAr?: string;
+  placementCtaEn?: string;
+
+  scheduleBadgeAr?: string;
+  scheduleBadgeEn?: string;
+  scheduleTitleAr?: string;
+  scheduleTitleEn?: string;
+  scheduleSubtitleAr?: string;
+  scheduleSubtitleEn?: string;
+
+  pricingBadgeAr?: string;
+  pricingBadgeEn?: string;
+  pricingTitleAr?: string;
+  pricingTitleEn?: string;
+  pricingSubtitleAr?: string;
+  pricingSubtitleEn?: string;
+
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];
   pricingPackages: IPricingPackage[];

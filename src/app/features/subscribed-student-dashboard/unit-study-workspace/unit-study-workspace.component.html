@@ -96,27 +96,52 @@
                 <app-icon name="lock" [size]="30" />
               </div>
 
-              <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-                محتوى مخصص للطلاب المشتركين فقط
-              </span>
+              @if (isAssessmentsOnly()) {
+                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30 mb-3 flex items-center gap-1.5">
+                  <app-icon name="shield" [size]="14" />
+                  اشتراكك مخصص لاختبارات وكويزات الوحدة فقط
+                </span>
 
-              <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
-                {{ lec.titleAr }}
-              </h3>
+                <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
+                  {{ lec.titleAr }}
+                </h3>
 
-              <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
-                هذه المحاضرة وملزمة الشرح التفاعلية والاختبارات التابعة لها متاحة فقط لطلاب الوحدة المشتركين. اشترك الآن في الوحدة لفتح المحاضرة وكافة تدريبات ديسموس.
-              </p>
+                <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
+                  أنت مسجل حالياً في باقة الكويزات والاختبارات لهذه الوحدة. يمكنك أداء وحل كافة كويزات وامتحانات الوحدة من قسم الاختبارات أدناه. لفتح مشاهدة الشروحات والمحاضرات، تواصل مع المنصة لترقية باقتك للوحدة كاملة.
+                </p>
 
-              <div class="flex items-center gap-3">
-                <a
-                  routerLink="/student"
-                  class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <app-icon name="award" [size]="16" />
-                  <span>العودة والاشتراك في الوحدة</span>
-                </a>
-              </div>
+                <div class="flex items-center gap-3">
+                  <a
+                    href="#assessments-section"
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <app-icon name="award" [size]="16" />
+                    <span>الانتقال لحل كويزات واختبارات الوحدة</span>
+                  </a>
+                </div>
+              } @else {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
+                  محتوى مخصص للطلاب المشتركين فقط
+                </span>
+
+                <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
+                  {{ lec.titleAr }}
+                </h3>
+
+                <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
+                  هذه المحاضرة وملزمة الشرح التفاعلية والاختبارات التابعة لها متاحة فقط لطلاب الوحدة المشتركين. اشترك الآن في الوحدة لفتح المحاضرة وكافة تدريبات ديسموس.
+                </p>
+
+                <div class="flex items-center gap-3">
+                  <a
+                    routerLink="/student"
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <app-icon name="award" [size]="16" />
+                    <span>العودة والاشتراك في الوحدة</span>
+                  </a>
+                </div>
+              }
             </div>
           } @else if (activeTab() === 'video') {
             <!-- Protected YouTube Player Integration -->
@@ -233,7 +258,7 @@
                   } @else if (item.isAccessible === false) {
                     <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-surface-bg text-text-muted border border-surface-border flex items-center gap-1">
                       <app-icon name="lock" [size]="10" />
-                      <span>مشتركين</span>
+                      <span>{{ isAssessmentsOnly() ? 'للوحدة الكاملة' : 'مشتركين' }}</span>
                     </span>
                   }
                   <span class="text-[10px] font-bold text-text-muted font-numeric">

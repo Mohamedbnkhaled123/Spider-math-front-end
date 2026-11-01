@@ -271,6 +271,7 @@ export class StudentOverviewComponent implements OnInit {
           completionPercentage: 0,
           totalQuizzes: u.quizzes_count || 0,
           completedQuizzes: 0,
+          accessScope: u.accessScope || (u.access_scope ?? 'FULL'),
           isActive: true
         }));
         this.units.set(mappedUnits);
@@ -461,7 +462,7 @@ export class StudentOverviewComponent implements OnInit {
         titleAr: asm.title_ar,
         unitTitleAr: typeLabel,
         questionsCount: asm.questions?.length || 0,
-        totalPoints: asm.total_points || 20,
+        totalPoints: asm.total_points || (asm.questions?.length ? asm.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
         xpReward: asm.xp_reward || 50,
         dueDateAr,
         isUrgent,

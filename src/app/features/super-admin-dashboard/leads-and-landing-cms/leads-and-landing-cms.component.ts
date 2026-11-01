@@ -15,8 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
   CmsConfigAdminItem,
-  LeadAdminItem,
-  ScheduleRow
+  LeadAdminItem
 } from './leads-and-landing-cms.models';
 
 /**
@@ -47,19 +46,118 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly leadStatusUpdated = output<{ leadId: string; status: 'NEW' | 'CONTACTED' | 'REGISTERED' }>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
+  // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units)
+  readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS'>('AR');
+
   // Local Editable Copy of CMS Config
   readonly editableCms = signal<CmsConfigAdminItem>({
-    heroHeadlineAr: '',
-    heroSubheadlineAr: '',
-    heroVideoUrl: '',
     announcementBannerText: '',
+    announcementBannerTextEn: '',
     isAnnouncementActive: true,
+
+    heroHeadlineAr: '',
+    heroHeadlineEn: '',
+    heroSubheadlineAr: '',
+    heroSubheadlineEn: '',
+    heroBadgeAr: '',
+    heroBadgeEn: '',
+    heroCtaPrimaryAr: '',
+    heroCtaPrimaryEn: '',
+    heroCtaSecondaryAr: '',
+    heroCtaSecondaryEn: '',
+    heroVideoUrl: '',
+
+    teacherNameAr: '',
+    teacherNameEn: '',
+    teacherTitleAr: '',
+    teacherTitleEn: '',
+    teacherBioAr: '',
+    teacherBioEn: '',
+    teacherQualificationsAr: [],
+    teacherQualificationsEn: [],
+    teacherWhatsappCtaAr: '',
+    teacherWhatsappCtaEn: '',
+
+    curriculumBadgeAr: '',
+    curriculumBadgeEn: '',
+    curriculumTitleAr: '',
+    curriculumTitleEn: '',
+    curriculumSubtitleAr: '',
+    curriculumSubtitleEn: '',
+
+    placementBadgeAr: '',
+    placementBadgeEn: '',
+    placementHeadlineAr: '',
+    placementHeadlineEn: '',
+    placementSubtitleAr: '',
+    placementSubtitleEn: '',
+    placementFeature1Ar: '',
+    placementFeature1En: '',
+    placementFeature2Ar: '',
+    placementFeature2En: '',
+    placementFeature3Ar: '',
+    placementFeature3En: '',
+    placementCtaAr: '',
+    placementCtaEn: '',
+
+    scheduleBadgeAr: '',
+    scheduleBadgeEn: '',
+    scheduleTitleAr: '',
+    scheduleTitleEn: '',
+    scheduleSubtitleAr: '',
+    scheduleSubtitleEn: '',
+
+    pricingBadgeAr: '',
+    pricingBadgeEn: '',
+    pricingTitleAr: '',
+    pricingTitleEn: '',
+    pricingSubtitleAr: '',
+    pricingSubtitleEn: '',
+
     supportWhatsapp: '01012345678',
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
     schedulesTable: [],
     landingUnitIds: []
   });
+
+  // Dynamic Qualification Inputs
+  readonly newQualAr = signal<string>('');
+  readonly newQualEn = signal<string>('');
+
+  addQualificationAr(): void {
+    const text = this.newQualAr().trim();
+    if (!text) return;
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      teacherQualificationsAr: [...(cfg.teacherQualificationsAr || []), text]
+    }));
+    this.newQualAr.set('');
+  }
+
+  removeQualificationAr(index: number): void {
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      teacherQualificationsAr: (cfg.teacherQualificationsAr || []).filter((_, i) => i !== index)
+    }));
+  }
+
+  addQualificationEn(): void {
+    const text = this.newQualEn().trim();
+    if (!text) return;
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      teacherQualificationsEn: [...(cfg.teacherQualificationsEn || []), text]
+    }));
+    this.newQualEn.set('');
+  }
+
+  removeQualificationEn(index: number): void {
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      teacherQualificationsEn: (cfg.teacherQualificationsEn || []).filter((_, i) => i !== index)
+    }));
+  }
 
   // Showcased Units Management
   readonly allUnits = signal<any[]>([]);
@@ -76,16 +174,6 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly filteredUnits = computed(() => {
     const curr = this.selectedCurriculumForUnits();
     return this.allUnits().filter(u => u.curriculum === curr);
-  });
-
-  // New Schedule Row Form
-  readonly newSchedule = signal<ScheduleRow>({
-    curriculum: 'EGYPTIAN',
-    gradeLevel: 'SEC_3',
-    term: 'TERM_1',
-    dayOfWeek: 'الأحد والثلاثاء',
-    timeSlot: '07:00 م - 09:00 م',
-    lectureSubject: ''
   });
 
   constructor() {
@@ -191,24 +279,6 @@ export class LeadsAndLandingCmsComponent implements OnInit {
         });
       }
     });
-  }
-
-  // Schedule Rows Management
-  addScheduleRow(): void {
-    const s = this.newSchedule();
-    const currentList = this.editableCms().schedulesTable || [];
-    this.editableCms.update((cfg) => ({
-      ...cfg,
-      schedulesTable: [...currentList, { ...s }]
-    }));
-    this.toastTriggered.emit({ text: 'تمت إضافة الموعد لجدول الحصص الأسبوعية!', type: 'success' });
-  }
-
-  removeScheduleRow(index: number): void {
-    this.editableCms.update((cfg) => ({
-      ...cfg,
-      schedulesTable: (cfg.schedulesTable || []).filter((_, i) => i !== index)
-    }));
   }
 
   // Save Pure CMS Configuration

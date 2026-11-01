@@ -323,15 +323,22 @@
                 <h4 class="text-sm font-bold text-text-primary leading-snug">
                   {{ unit.titleAr }}
                 </h4>
-                <span
-                  class="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0 font-numeric"
-                  [class.bg-emerald-500/10]="!unit.isExpired"
+                <div class="flex items-center gap-1.5 flex-wrap shrink-0">
+                  @if (unit.accessScope === 'ASSESSMENTS_ONLY') {
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                      كويزات واختبارات فقط
+                    </span>
+                  }
+                  <span
+                    class="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0 font-numeric"
+                    [class.bg-emerald-500/10]="!unit.isExpired"
                   [class.text-emerald-500]="!unit.isExpired"
                   [class.bg-rose-500/10]="unit.isExpired"
                   [class.text-rose-500]="unit.isExpired"
                 >
                   {{ unit.isExpired ? 'الاشتراك منتهي' : (unit.subscriptionExpiresAt ? 'ساري حتى ' + unit.subscriptionExpiresAt : 'اشتراك مفعل') }}
-                </span>
+                  </span>
+                </div>
               </div>
 
               <!-- Watch Percentage Bar -->

@@ -284,6 +284,65 @@
           }
         </div>
 
+        <!-- Subscription Scope (Full Unit vs Assessments Only) -->
+        <div>
+          <label class="block font-bold text-text-secondary mb-1.5">نوع صلاحية التفعيل (نطاق وصول الطالب)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <label
+              class="flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all"
+              [class.border-cyan-500]="activationScope() === 'FULL'"
+              [class.bg-cyan-500/10]="activationScope() === 'FULL'"
+              [class.border-surface-border]="activationScope() !== 'FULL'"
+              [class.bg-surface-bg]="activationScope() !== 'FULL'"
+            >
+              <input
+                type="radio"
+                name="activationScope"
+                value="FULL"
+                [ngModel]="activationScope()"
+                (ngModelChange)="activationScope.set($event)"
+                class="mt-0.5 accent-cyan-500"
+              />
+              <div class="space-y-0.5">
+                <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
+                  <app-icon name="check-circle" [size]="13" className="text-cyan-500" />
+                  <span>الوحدة كاملة</span>
+                </div>
+                <p class="text-[10px] text-text-muted leading-relaxed">
+                  مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات
+                </p>
+              </div>
+            </label>
+
+            <label
+              class="flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all"
+              [class.border-purple-500]="activationScope() === 'ASSESSMENTS_ONLY'"
+              [class.bg-purple-500/10]="activationScope() === 'ASSESSMENTS_ONLY'"
+              [class.border-surface-border]="activationScope() !== 'ASSESSMENTS_ONLY'"
+              [class.bg-surface-bg]="activationScope() !== 'ASSESSMENTS_ONLY'"
+            >
+              <input
+                type="radio"
+                name="activationScope"
+                value="ASSESSMENTS_ONLY"
+                [ngModel]="activationScope()"
+                (ngModelChange)="activationScope.set($event)"
+                class="mt-0.5 accent-purple-500"
+              />
+              <div class="space-y-0.5">
+                <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
+                  <app-icon name="shield" [size]="13" className="text-purple-500" />
+                  <span>كويزات واختبارات فقط</span>
+                </div>
+                <p class="text-[10px] text-text-muted leading-relaxed">
+                  حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+
         <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
           <button
             type="button"

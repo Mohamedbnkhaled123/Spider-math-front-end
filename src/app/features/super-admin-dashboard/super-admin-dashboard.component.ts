@@ -195,7 +195,9 @@ export class SuperAdminDashboardComponent implements OnInit {
             questionNumber: 2,
             questionText: 'مسألة مقالية: أثبت صحة العلاقة الرياضية بالخطوات اليدوية.',
             studentAnswerImageWebp: s.homework_images?.[0]?.image_url || 'https://res.cloudinary.com/spider-math/image/upload/v1729000000/spider-math-questions/sample_curve_prompt.webp',
-            maxScore: typeof s.assessment_id === 'object' ? (s.assessment_id?.total_points || 10) : 10,
+            maxScore: typeof s.assessment_id === 'object'
+              ? (s.assessment_id?.total_points || (s.assessment_id?.questions?.length ? s.assessment_id.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 10))
+              : 10,
             awardedScore: s.essay_manual_score ?? 0,
             generalTeacherNote: s.teacher_feedback_notes || '',
             mistakes: [],
@@ -322,15 +324,82 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: (res) => {
         if (res?.data) {
           const raw = res.data;
+          const current = this.cmsConfig();
           this.cmsConfig.set({
-            heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || this.cmsConfig().heroHeadlineAr,
-            heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || this.cmsConfig().heroSubheadlineAr,
-            heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || this.cmsConfig().heroVideoUrl || '',
-            announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || this.cmsConfig().announcementBannerText,
+            announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || current.announcementBannerText,
+            announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || current.announcementBannerTextEn,
             isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? true,
+
+            heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || current.heroHeadlineAr,
+            heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || current.heroHeadlineEn,
+            heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || current.heroSubheadlineAr,
+            heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || current.heroSubheadlineEn,
+            heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || current.heroBadgeAr,
+            heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || current.heroBadgeEn,
+            heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || current.heroCtaPrimaryAr,
+            heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || current.heroCtaPrimaryEn,
+            heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || current.heroCtaSecondaryAr,
+            heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || current.heroCtaSecondaryEn,
+            heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || current.heroVideoUrl || '',
+
+            teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || current.teacherNameAr,
+            teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || current.teacherNameEn,
+            teacherTitleAr: raw.teacherTitleAr || raw.teacher_title_ar || current.teacherTitleAr,
+            teacherTitleEn: raw.teacherTitleEn || raw.teacher_title_en || current.teacherTitleEn,
+            teacherBioAr: raw.teacherBioAr || raw.teacher_bio_ar || current.teacherBioAr,
+            teacherBioEn: raw.teacherBioEn || raw.teacher_bio_en || current.teacherBioEn,
+            teacherQualificationsAr: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
+              ? raw.teacherQualificationsAr
+              : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
+                ? raw.teacher_qualifications_ar
+                : current.teacherQualificationsAr,
+            teacherQualificationsEn: (raw.teacherQualificationsEn && raw.teacherQualificationsEn.length > 0)
+              ? raw.teacherQualificationsEn
+              : (raw.teacher_qualifications_en && raw.teacher_qualifications_en.length > 0)
+                ? raw.teacher_qualifications_en
+                : current.teacherQualificationsEn,
+            teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || current.teacherWhatsappCtaAr,
+            teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || current.teacherWhatsappCtaEn,
+
+            curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || current.curriculumBadgeAr,
+            curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || current.curriculumBadgeEn,
+            curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || current.curriculumTitleAr,
+            curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || current.curriculumTitleEn,
+            curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || current.curriculumSubtitleAr,
+            curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || current.curriculumSubtitleEn,
+
+            placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || current.placementBadgeAr,
+            placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || current.placementBadgeEn,
+            placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || current.placementHeadlineAr,
+            placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || current.placementHeadlineEn,
+            placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || current.placementSubtitleAr,
+            placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || current.placementSubtitleEn,
+            placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || current.placementFeature1Ar,
+            placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || current.placementFeature1En,
+            placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || current.placementFeature2Ar,
+            placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || current.placementFeature2En,
+            placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || current.placementFeature3Ar,
+            placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || current.placementFeature3En,
+            placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || current.placementCtaAr,
+            placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || current.placementCtaEn,
+
+            scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || current.scheduleBadgeAr,
+            scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || current.scheduleBadgeEn,
+            scheduleTitleAr: raw.scheduleTitleAr || raw.schedule_title_ar || current.scheduleTitleAr,
+            scheduleTitleEn: raw.scheduleTitleEn || raw.schedule_title_en || current.scheduleTitleEn,
+            scheduleSubtitleAr: raw.scheduleSubtitleAr || raw.schedule_subtitle_ar || current.scheduleSubtitleAr,
+            scheduleSubtitleEn: raw.scheduleSubtitleEn || raw.schedule_subtitle_en || current.scheduleSubtitleEn,
+
+            pricingBadgeAr: raw.pricingBadgeAr || raw.pricing_badge_ar || current.pricingBadgeAr,
+            pricingBadgeEn: raw.pricingBadgeEn || raw.pricing_badge_en || current.pricingBadgeEn,
+            pricingTitleAr: raw.pricingTitleAr || raw.pricing_title_ar || current.pricingTitleAr,
+            pricingTitleEn: raw.pricingTitleEn || raw.pricing_title_en || current.pricingTitleEn,
+            pricingSubtitleAr: raw.pricingSubtitleAr || raw.pricing_subtitle_ar || current.pricingSubtitleAr,
+            pricingSubtitleEn: raw.pricingSubtitleEn || raw.pricing_subtitle_en || current.pricingSubtitleEn,
+
             supportWhatsapp: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || '01012345678',
             activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || '2026 / 2027',
-            activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || this.cmsConfig().activeAcademicTerm || 'TERM_1',
+            activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || current.activeAcademicTerm || 'TERM_1',
             schedulesTable: Array.isArray(raw.schedulesTable)
               ? raw.schedulesTable
               : (Array.isArray(raw.schedules_table)

@@ -49,6 +49,7 @@ export interface UnitWorkspaceData {
   gradeLevel: string;
   term: string;
   isSubscribed?: boolean;
+  accessScope?: 'FULL' | 'ASSESSMENTS_ONLY';
   lectures: LessonLectureItem[];
   assessments: UnitAssessmentItem[];
 }

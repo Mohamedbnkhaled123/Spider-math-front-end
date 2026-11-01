@@ -160,16 +160,6 @@ export class LandingHomeComponent implements OnInit {
   readonly mouseX = signal<number>(50);
   readonly mouseY = signal<number>(50);
 
-  // Filtered Schedules Table (Reacts immediately to curriculum, grade, term)
-  readonly filteredSchedules = computed<IScheduleItem[]>(() => {
-    const data = this.landingData();
-    if (!data || !Array.isArray(data.schedules)) return [];
-    const curr = this.selectedCurriculum();
-    const grade = this.selectedGradeLevel();
-    const list = data.schedules.filter(s => s.curriculum === curr && (!s.gradeLevel || s.gradeLevel === grade));
-    return list.length > 0 ? list : data.schedules.filter(s => s.curriculum === curr);
-  });
-
   // Dynamic CMS computed properties
   readonly heroHeadline = computed<string>(() => {
     const data = this.landingData();
@@ -197,9 +187,131 @@ export class LandingHomeComponent implements OnInit {
 
   readonly announcement = computed<{ text: string; isActive: boolean }>(() => {
     const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    const text = isAr
+      ? (data?.announcementBannerText || '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦')
+      : (data?.announcementBannerTextEn || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦');
     return {
-      text: data?.announcementBannerText || '',
-      isActive: !!(data?.isAnnouncementActive && data?.announcementBannerText)
+      text,
+      isActive: !!(data?.isAnnouncementActive && text)
+    };
+  });
+
+  readonly heroBadge = computed<string>(() => {
+    const data = this.landingData();
+    return this.langService.isArabic()
+      ? (data?.heroBadgeAr || 'Spider Math✦ المنظومة الهندسية الرائدة')
+      : (data?.heroBadgeEn || 'Spider Math✦ Engineering Excellence');
+  });
+
+  readonly heroCtaPrimary = computed<string>(() => {
+    const data = this.landingData();
+    return this.langService.isArabic()
+      ? (data?.heroCtaPrimaryAr || 'اختار منهجك وابدأ الآن')
+      : (data?.heroCtaPrimaryEn || 'Choose Your Curriculum & Begin');
+  });
+
+  readonly heroCtaSecondary = computed<string>(() => {
+    const data = this.landingData();
+    return this.langService.isArabic()
+      ? (data?.heroCtaSecondaryAr || 'امتحان تحديد المستوى المجاني')
+      : (data?.heroCtaSecondaryEn || 'Free Placement Test');
+  });
+
+  readonly teacherProfile = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    const bio = data?.teacherBio;
+    return {
+      name: isAr
+        ? (data?.teacherNameAr || bio?.nameAr || 'المهندسة / هبة عبدالوهاب')
+        : (data?.teacherNameEn || bio?.nameEn || 'Eng. Heba Abdel-Wahab'),
+      title: isAr
+        ? (data?.teacherTitleAr || bio?.titleAr || 'كبير محاضري الرياضيات للشهادات العامة والدولية وخبير الدبلومة الأمريكية و Desmos')
+        : (data?.teacherTitleEn || bio?.titleEn || 'Principal Mathematics Educator, American Diploma & Desmos Graphing Specialist'),
+      bio: isAr
+        ? (data?.teacherBioAr || bio?.bioAr || 'خبرة تزيد عن 14 عاماً في تدريس وتبسيط مناهج الرياضيات المصرية والخليجية والدولية (IGCSE) والدبلومة الأمريكية (SAT/EST/ACT). متخصصة في توظيف حاسبة ديسموس البيانية وحل المسائل الهندسية المعقدة بأسهل الطرق.')
+        : (data?.teacherBioEn || bio?.bioEn || 'Over 14 years of excellence in teaching Egyptian, Gulf, IGCSE, and American Diploma Mathematics with deep interactive mastery of the Desmos Graphing Calculator.'),
+      qualifications: isAr
+        ? ((data?.teacherQualificationsAr && data.teacherQualificationsAr.length > 0)
+            ? data.teacherQualificationsAr
+            : (bio?.qualifications || [
+                'بكالوريوس هندسة — جامعة القاهرة مع مرتبة الشرف',
+                'خبير معتمد ومحاضر دولي في حاسبة Desmos البيانية المتقدمة',
+                'مدرب معتمد لاختبارات الـ SAT I/II و EST I/II و ACT Math',
+                'أعلى نسب تفوق في الثانوية العامة والشهادة الإعدادية لسنوات متتالية'
+              ]))
+        : ((data?.teacherQualificationsEn && data.teacherQualificationsEn.length > 0)
+            ? data.teacherQualificationsEn
+            : [
+                'B.Sc. in Engineering — Cairo University with Honors',
+                'Certified International Desmos Graphing Calculator Specialist',
+                'Certified Instructor for SAT I/II, EST I/II and ACT Math',
+                'Consistent top scores and highest student rankings year over year'
+              ]),
+      whatsappCta: isAr
+        ? (data?.teacherWhatsappCtaAr || 'تواصل مباشرة مع فريق م/ هبة عبر واتساب')
+        : (data?.teacherWhatsappCtaEn || 'Direct WhatsApp Consultation')
+    };
+  });
+
+  readonly curriculumSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.curriculumBadgeAr || 'المسارات الأكاديمية والمناهج')
+        : (data?.curriculumBadgeEn || 'Academic Tracks & Curriculums'),
+      title: isAr
+        ? (data?.curriculumTitleAr || 'اختر منهجك الدراسي وابدأ رحلة التفوق')
+        : (data?.curriculumTitleEn || 'Choose Your Curriculum & Begin Mastery'),
+      subtitle: isAr
+        ? (data?.curriculumSubtitleAr || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي')
+        : (data?.curriculumSubtitleEn || 'Comprehensive educational tracks designed with high engineering standards')
+    };
+  });
+
+  readonly placementSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.placementBadgeAr || 'اختبار تحديد المستوى وتشخيص المهارات الرياضية')
+        : (data?.placementBadgeEn || 'Free Placement & Diagnostic Assessment'),
+      headline: isAr
+        ? (data?.placementHeadlineAr || 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك')
+        : (data?.placementHeadlineEn || 'Assess Your Skills & Discover Your Strengths'),
+      subtitle: isAr
+        ? (data?.placementSubtitleAr || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.')
+        : (data?.placementSubtitleEn || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.'),
+      feature1: isAr
+        ? (data?.placementFeature1Ar || 'تقييم ذكي ومباشر')
+        : (data?.placementFeature1En || 'Instant Diagnostic Feedback'),
+      feature2: isAr
+        ? (data?.placementFeature2Ar || 'تقرير مفصل بنقاط القوة والضعف')
+        : (data?.placementFeature2En || 'Strengths & Weaknesses Report'),
+      feature3: isAr
+        ? (data?.placementFeature3Ar || 'متابعة شخصية من م/ هبة عبدالوهاب')
+        : (data?.placementFeature3En || 'Eng. Heba Follow-up'),
+      cta: isAr
+        ? (data?.placementCtaAr || 'ابدأ اختبار تحديد المستوى الآن')
+        : (data?.placementCtaEn || 'Start Diagnostic Assessment Now')
+    };
+  });
+
+  readonly pricingSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.pricingBadgeAr || 'الباقات الدراسية والمراجعات')
+        : (data?.pricingBadgeEn || 'Packages & Tuition Plans'),
+      title: isAr
+        ? (data?.pricingTitleAr || 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة')
+        : (data?.pricingTitleEn || 'Transparent Tuition & Revision Packages'),
+      subtitle: isAr
+        ? (data?.pricingSubtitleAr || 'خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار')
+        : (data?.pricingSubtitleEn || 'Flexible study units and intensive final revisions engineered for mastery')
     };
   });
 

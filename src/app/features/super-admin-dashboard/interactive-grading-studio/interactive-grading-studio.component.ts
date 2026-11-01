@@ -111,7 +111,13 @@ export class InteractiveGradingStudioComponent implements OnInit {
         const mapped: AllQuizSubmissionItem[] = rawList.map((s: any) => {
           const student = s.student_id || {};
           const assessment = s.assessment_id || {};
-          const totalPoints = assessment.total_points || 10;
+          const questionsList: any[] = assessment.questions || [];
+          const calculatedPoints = questionsList.length > 0
+            ? questionsList.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0)
+            : 10;
+          const totalPoints = (assessment.total_points && assessment.total_points > 0)
+            ? assessment.total_points
+            : calculatedPoints;
           const finalScore = s.final_total_score ?? s.mcq_auto_score ?? 0;
           const scorePercentage = totalPoints > 0 ? Math.round((finalScore / totalPoints) * 100) : 0;
 
@@ -123,7 +129,6 @@ export class InteractiveGradingStudioComponent implements OnInit {
           }
 
           // Map student answers with questions
-          const questionsList: any[] = assessment.questions || [];
           const mcqAnswersList: any[] = s.mcq_answers || [];
           const mcqLookup = new Map(
             mcqAnswersList.map((a: any) => [a.question_id?.toString() || a.question_id, a])

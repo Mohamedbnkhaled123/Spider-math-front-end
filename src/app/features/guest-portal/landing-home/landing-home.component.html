@@ -97,9 +97,14 @@
         <div class="lg:col-span-7 text-center lg:text-start">
           
           <!-- Official Wordmark Tag -->
-          <div class="flex items-center justify-center lg:justify-start gap-2 mb-4">
-            <span class="brand-spider text-xl sm:text-2xl tracking-tight">Spider</span>
-            <span class="brand-math text-xl sm:text-2xl tracking-tight">Math<span class="spark-star">✦</span></span>
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-4">
+            <div class="flex items-center gap-2">
+              <span class="brand-spider text-xl sm:text-2xl tracking-tight">Spider</span>
+              <span class="brand-math text-xl sm:text-2xl tracking-tight">Math<span class="spark-star">✦</span></span>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/25 shadow-sm">
+              {{ heroBadge() }}
+            </span>
           </div>
 
           <!-- Main Dynamic CMS Headline with Authentic Gradient -->
@@ -137,19 +142,19 @@
               <button
                 type="button"
                 (click)="scrollToSection('curriculum-section')"
-                class="btn-spider-primary px-8 py-4 rounded-2xl font-extrabold text-sm sm:text-base flex items-center gap-3 cursor-pointer"
+                class="btn-spider-primary px-8 py-4 rounded-2xl font-extrabold text-sm sm:text-base flex items-center gap-3 cursor-pointer shadow-brand-glow hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <span>{{ langService.isArabic() ? 'اختار منهجك وابدأ الآن' : 'Choose Your Curriculum & Begin' }}</span>
+                <span>{{ heroCtaPrimary() }}</span>
                 <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="18" />
               </button>
 
               <button
                 type="button"
                 (click)="scrollToSection('placement-test-section')"
-                class="btn-spider-secondary px-7 py-4 rounded-2xl font-bold text-sm sm:text-base flex items-center gap-2.5 cursor-pointer"
+                class="btn-spider-secondary px-7 py-4 rounded-2xl font-bold text-sm sm:text-base flex items-center gap-2.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <app-icon name="target" [size]="18" className="text-cyan-700 dark:text-cyan-300" />
-                <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى المجاني' : 'Free Placement Test' }}</span>
+                <span>{{ heroCtaSecondary() }}</span>
               </button>
             }
           </div>
@@ -264,21 +269,21 @@
           <!-- Detailed Bio & Qualifications List -->
           <div class="lg:col-span-7">
             <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-text-primary mb-2">
-              {{ langService.isArabic() ? cms.teacherBio.nameAr : cms.teacherBio.nameEn }}
+              {{ teacherProfile().name }}
             </h2>
 
             <p class="text-sm sm:text-base font-bold text-cyan-800 dark:text-cyan-400 mb-4">
-              {{ langService.isArabic() ? cms.teacherBio.titleAr : cms.teacherBio.titleEn }}
+              {{ teacherProfile().title }}
             </p>
 
             <p class="text-sm text-text-secondary leading-relaxed mb-6">
-              {{ langService.isArabic() ? cms.teacherBio.bioAr : cms.teacherBio.bioEn }}
+              {{ teacherProfile().bio }}
             </p>
 
             <!-- Qualifications Checklist -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-              @for (qual of cms.teacherBio.qualifications; track qual) {
-                <div class="flex items-start gap-2.5 p-3.5 rounded-xl bg-surface-card border border-surface-border">
+              @for (qual of teacherProfile().qualifications; track qual) {
+                <div class="flex items-start gap-2.5 p-3.5 rounded-xl bg-surface-card border border-surface-border shadow-sm">
                   <app-icon name="check-circle" [size]="16" className="text-cyan-800 dark:text-cyan-400 mt-0.5 shrink-0" />
                   <span class="text-xs font-semibold text-text-primary leading-normal">{{ qual }}</span>
                 </div>
@@ -293,7 +298,7 @@
                 class="px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 cursor-pointer"
               >
                 <app-icon name="whatsapp" [size]="18" />
-                <span>{{ langService.isArabic() ? 'تواصل مباشرة مع فريق م/ هبة عبر واتساب' : 'Direct WhatsApp Consultation' }}</span>
+                <span>{{ teacherProfile().whatsappCta }}</span>
               </button>
             </div>
           </div>
@@ -439,13 +444,13 @@
 
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
             <span>●</span>
-            <span>{{ langService.isArabic() ? 'المسارات الأكاديمية والمناهج' : 'Academic Tracks' }}</span>
+            <span>{{ curriculumSection().badge }}</span>
           </div>
           <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-text-primary">
-            {{ 'CURRICULUM.CHOOSE_TITLE' | transloco }}
+            {{ curriculumSection().title }}
           </h2>
           <p class="mt-3 text-sm sm:text-base text-text-secondary">
-            {{ 'CURRICULUM.CHOOSE_SUBTITLE' | transloco }}
+            {{ curriculumSection().subtitle }}
           </p>
         </div>
 
@@ -486,34 +491,32 @@
           <!-- Badge -->
           <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 text-xs font-black">
             <app-icon name="target" [size]="16" />
-            <span>{{ langService.isArabic() ? 'اختبار تحديد المستوى وتشخيص المهارات الرياضية' : 'Free Placement & Diagnostic Assessment' }}</span>
+            <span>{{ placementSection().badge }}</span>
           </div>
 
           <!-- Headline -->
           <h2 class="text-2xl sm:text-4xl font-black text-text-primary tracking-tight leading-tight">
-            {{ langService.isArabic() ? 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك' : 'Assess Your Skills & Discover Your Strengths' }}
+            {{ placementSection().headline }}
           </h2>
 
           <!-- Subtitle -->
           <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
-            {{ langService.isArabic()
-              ? 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.'
-              : 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.' }}
+            {{ placementSection().subtitle }}
           </p>
 
           <!-- 3 Feature Badges -->
           <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
               <span class="text-emerald-500">⚡</span>
-              <span>{{ langService.isArabic() ? 'تقييم ذكي ومباشر' : 'Instant Diagnostic Feedback' }}</span>
+              <span>{{ placementSection().feature1 }}</span>
             </div>
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
               <span class="text-cyan-500">📊</span>
-              <span>{{ langService.isArabic() ? 'تقرير مفصل بنقاط القوة والضعف' : 'Strengths & Weaknesses Report' }}</span>
+              <span>{{ placementSection().feature2 }}</span>
             </div>
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-secondary shadow-sm">
               <span class="text-purple-500">👩‍🏫</span>
-              <span>{{ langService.isArabic() ? 'متابعة شخصية من م/ هبة عبدالوهاب' : 'Eng. Heba Follow-up' }}</span>
+              <span>{{ placementSection().feature3 }}</span>
             </div>
           </div>
 
@@ -534,7 +537,7 @@
               class="btn-spider-primary px-8 sm:px-12 py-4 sm:py-5 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-3 shadow-brand-glow hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
               <app-icon name="target" [size]="20" />
-              <span>{{ langService.isArabic() ? 'ابدأ اختبار تحديد المستوى الآن' : 'Start Diagnostic Assessment Now' }}</span>
+              <span>{{ placementSection().cta }}</span>
               <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="18" />
             </button>
           </div>
@@ -658,78 +661,21 @@
   }
 
   <!-- ========================================================================= -->
-  <!-- 4. Interactive Schedules Table                                            -->
-  <!-- ========================================================================= -->
-  <section id="schedules-table" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-2">
-            <app-icon name="calendar" [size]="14" />
-            <span>{{ langService.isArabic() ? 'جدول المواعيد والحصص' : 'Live Lecture Schedule' }}</span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-black text-text-primary">
-            {{ langService.isArabic() ? 'مواعيد المحاضرات والبث المباشر' : 'Class Timetable & Streaming Schedule' }}
-          </h2>
-        </div>
-
-        <span class="text-xs font-bold text-slate-600 dark:text-slate-400">
-          {{ langService.isArabic() ? 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة' : 'Times shown in Cairo Local Time (GMT+3)' }}
-        </span>
-      </div>
-
-      <!-- Schedule Cards / Table (Deferred on Viewport) -->
-      @defer (on viewport; prefetch on idle) {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          @for (sched of filteredSchedules(); track sched.lectureTitleAr) {
-            <div class="p-5 spider-card flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border/50">
-                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-purple-500/15 text-purple-900 dark:text-cyan-300 font-numeric">
-                  {{ sched.curriculum }} • {{ sched.gradeLevel }}
-                </span>
-                <span class="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-numeric">
-                  <app-icon name="clock" [size]="14" />
-                  <span>{{ sched.timeSlot }}</span>
-                </span>
-              </div>
-
-              <div>
-                <h3 class="text-base font-bold text-text-primary mb-1">
-                  {{ sched.lectureSubject || (langService.isArabic() ? sched.lectureTitleAr : sched.lectureTitleEn) }}
-                </h3>
-                <p class="text-xs text-text-secondary">
-                  {{ sched.dayOfWeek || (langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn) }}
-                </p>
-              </div>
-            </div>
-          } @empty {
-            <div class="col-span-full p-8 rounded-2xl border border-dashed border-surface-border spider-card text-center text-xs text-slate-600 dark:text-slate-400">
-              {{ langService.isArabic() ? 'لا توجد مواعيد معلنة حالياً لهذا المنهج والصف الدراسي.' : 'No active schedule slots for this curriculum and grade yet.' }}
-            </div>
-          }
-        </div>
-      } @placeholder {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[160px]">
-          <div class="p-5 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-28"></div>
-          <div class="p-5 rounded-2xl border border-surface-border bg-surface-card/40 animate-pulse h-28"></div>
-        </div>
-      }
-    </div>
-  </section>
-
-  <!-- ========================================================================= -->
-  <!-- 5. Study Units & Final Revisions Pricing Showcase                         -->
+  <!-- 4. Study Units & Final Revisions Pricing Showcase                         -->
   <!-- ========================================================================= -->
   <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-10">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
           <app-icon name="award" [size]="14" />
-          <span>{{ langService.isArabic() ? 'الباقات الدراسية والمراجعات' : 'Packages & Tuition Plans' }}</span>
+          <span>{{ pricingSection().badge }}</span>
         </div>
         <h2 class="text-2xl sm:text-4xl font-black text-text-primary">
-          {{ langService.isArabic() ? 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة' : 'Transparent Tuition & Revision Packages' }}
+          {{ pricingSection().title }}
         </h2>
+        <p class="mt-2 text-xs sm:text-sm text-text-secondary">
+          {{ pricingSection().subtitle }}
+        </p>
       </div>
 
       <!-- Pricing Content (Deferred on Viewport) -->
