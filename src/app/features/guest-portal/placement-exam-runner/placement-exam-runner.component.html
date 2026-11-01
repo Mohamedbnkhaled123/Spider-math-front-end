@@ -20,7 +20,7 @@
         @if (isStudentLoggedIn()) {
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-accent/20 text-xs font-extrabold text-brand-primary dark:text-brand-accent">
             <app-icon name="user" [size]="14" />
-            <span>{{ currentStudentName() }} • {{ curriculum() }} ({{ gradeLevel() }})</span>
+            <span>{{ currentStudentName() }} • {{ curriculum() }} ({{ gradeTitleDisplay() }})</span>
           </div>
         }
       </div>
@@ -231,7 +231,7 @@
         </h2>
 
         <p class="text-sm text-text-secondary max-w-lg mx-auto mb-8 leading-relaxed">
-          {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب لم تقم بنشر أسئلة اختبار تحديد المستوى لصف (' + gradeLevel() + ') بعد. جاري إعداد التمارين واستراتيجيات ديسموس البيانية وسيكون متاحاً قريباً.' : 'Eng. Heba Abdel-Wahab is currently preparing the diagnostic questions and Desmos graphing models for this grade level.' }}
+          {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب لم تقم بنشر أسئلة اختبار تحديد المستوى لصف (' + gradeTitleDisplay() + ') بعد. جاري إعداد التمارين واستراتيجيات ديسموس البيانية وسيكون متاحاً قريباً.' : 'Eng. Heba Abdel-Wahab is currently preparing the diagnostic questions and Desmos graphing models for this grade level.' }}
         </p>
 
         <!-- Quick Switch or Contact Support -->

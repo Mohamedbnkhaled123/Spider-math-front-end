@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { CANONICAL_CURRICULUM_TREE } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import {
   AcademicTermCode,
@@ -89,11 +90,15 @@ export class CurriculumStudioComponent implements OnInit {
     action: () => {}
   });
 
+  // Full Canonical Tree reference for dropdown selections (from 1st Primary to 3rd Secondary)
+  readonly canonicalCurriculumTree = CANONICAL_CURRICULUM_TREE;
+
   // Grade Add / Edit Modal State
   readonly gradeModal = signal<{
     isOpen: boolean;
     mode: 'add' | 'edit';
     trackCode: CurriculumCode;
+    selectedCanonicalCode: string;
     originalCode: string;
     code: string;
     titleAr: string;
@@ -102,10 +107,17 @@ export class CurriculumStudioComponent implements OnInit {
     isOpen: false,
     mode: 'add',
     trackCode: 'EGYPTIAN',
+    selectedCanonicalCode: '',
     originalCode: '',
     code: '',
     titleAr: '',
     titleEn: ''
+  });
+
+  readonly canonicalGradesForModal = computed(() => {
+    const trackCode = this.gradeModal().trackCode;
+    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === trackCode);
+    return treeNode ? treeNode.grades : [];
   });
 
   readonly allCurriculaTracks = signal<CurriculumTrackItem[]>([
@@ -329,16 +341,47 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   // Section-Level Grade CRUD
   // =========================================================================
-  openAddGrade(trackCode: CurriculumCode): void {
+  openAddGrade(trackCode?: CurriculumCode): void {
+    const code = trackCode || 'EGYPTIAN';
+    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === code);
+    const firstGrade = treeNode?.grades[0];
     this.gradeModal.set({
       isOpen: true,
       mode: 'add',
-      trackCode,
+      trackCode: code,
+      selectedCanonicalCode: firstGrade?.code || '',
       originalCode: '',
-      code: '',
-      titleAr: '',
-      titleEn: ''
+      code: firstGrade?.code || '',
+      titleAr: firstGrade?.titleAr || '',
+      titleEn: firstGrade?.titleEn || ''
     });
+  }
+
+  onModalCurriculumChange(curr: CurriculumCode): void {
+    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === curr);
+    const firstGrade = treeNode?.grades[0];
+    this.gradeModal.update((s) => ({
+      ...s,
+      trackCode: curr,
+      selectedCanonicalCode: firstGrade?.code || '',
+      code: firstGrade?.code || '',
+      titleAr: firstGrade?.titleAr || '',
+      titleEn: firstGrade?.titleEn || ''
+    }));
+  }
+
+  onModalGradeChange(gradeCode: string): void {
+    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === this.gradeModal().trackCode);
+    const grade = treeNode?.grades.find((g) => g.code === gradeCode);
+    if (grade) {
+      this.gradeModal.update((s) => ({
+        ...s,
+        selectedCanonicalCode: grade.code,
+        code: grade.code,
+        titleAr: grade.titleAr,
+        titleEn: grade.titleEn || ''
+      }));
+    }
   }
 
   openEditGrade(trackCode: CurriculumCode, grade: GradeOption): void {
@@ -346,11 +389,25 @@ export class CurriculumStudioComponent implements OnInit {
       isOpen: true,
       mode: 'edit',
       trackCode,
+      selectedCanonicalCode: grade.code,
       originalCode: grade.code,
       code: grade.code,
       titleAr: grade.titleAr,
       titleEn: grade.titleEn || ''
     });
+  }
+
+  formatGradeDisplay(code: string, titleEn?: string): string {
+    if (titleEn && titleEn.trim()) {
+      return titleEn.trim();
+    }
+    for (const track of this.canonicalCurriculumTree) {
+      const match = track.grades.find((g) => g.code === code);
+      if (match) {
+        return match.titleEn || match.titleAr;
+      }
+    }
+    return (code || '').replace(/_/g, ' ');
   }
 
   closeGradeModal(): void {
@@ -393,8 +450,12 @@ export class CurriculumStudioComponent implements OnInit {
     );
 
     if (hasDuplicate) {
-      this.toastTriggered.emit({ text: 'كود هذا الصف الدراسي موجود بالفعل داخل هذا القسم!', type: 'error' });
+      this.toastTriggered.emit({ text: 'هذا الصف الدراسي مضاف بالفعل داخل هذا القسم!', type: 'error' });
       return;
+    }
+
+    if (gm.mode === 'add') {
+      this.activeGrades.update((cur) => (cur.includes(newGrade.code) ? cur : [...cur, newGrade.code]));
     }
 
     if (gm.mode === 'edit' && gm.originalCode !== newGrade.code) {

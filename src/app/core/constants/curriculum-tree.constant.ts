@@ -167,6 +167,60 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
       {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول الابتدائي',
+        titleEn: 'Grade 1 (Primary 1)',
+        shortLabelAr: 'صف ١',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني الابتدائي',
+        titleEn: 'Grade 2 (Primary 2)',
+        shortLabelAr: 'صف ٢',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث الابتدائي',
+        titleEn: 'Grade 3 (Primary 3)',
+        shortLabelAr: 'صف ٣',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع الابتدائي',
+        titleEn: 'Grade 4 (Primary 4)',
+        shortLabelAr: 'صف ٤',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس الابتدائي',
+        titleEn: 'Grade 5 (Primary 5)',
+        shortLabelAr: 'صف ٥',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس الابتدائي',
+        titleEn: 'Grade 6 (Primary 6)',
+        shortLabelAr: 'صف ٦',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary School'
+      },
+      {
         code: 'GRADE_7',
         titleAr: 'الصف السابع (أول متوسط)',
         titleEn: 'Grade 7 (Middle 1)',

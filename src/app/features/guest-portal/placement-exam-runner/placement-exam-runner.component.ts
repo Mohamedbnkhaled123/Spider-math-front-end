@@ -59,6 +59,15 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   readonly gradeLevel = signal<string>('SEC_3');
   readonly term = signal<AcademicTermCode>('TERM_1');
 
+  readonly gradeTitleDisplay = computed(() => {
+    const code = this.gradeLevel();
+    for (const c of this.curriculumTree) {
+      const g = c.grades.find((item) => item.code === code);
+      if (g) return this.langService.isArabic() ? g.titleAr : g.titleEn;
+    }
+    return (code || '').replace(/_/g, ' ');
+  });
+
   // Authenticated Student State
   readonly isStudentLoggedIn = computed(() => this.authService.isAuthenticated() && this.authService.isStudent());
   readonly currentStudentName = computed(() => this.authService.currentUser()?.full_name || 'طالب سبايدر ماث');
