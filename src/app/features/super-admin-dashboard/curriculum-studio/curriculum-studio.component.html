@@ -1002,6 +1002,81 @@
             </div>
           </div>
 
+          <!-- Reference Sheet (ورقة القوانين والمفاهيم الرياضية) -->
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <app-icon name="file-text" [size]="16" className="text-brand-primary" />
+                <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+              </div>
+              <span class="text-[11px] text-text-muted">اختياري</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                (click)="setReferenceSheetActiveInCurriculum(false)"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-brand-primary]="!isRefSheetActiveInCurriculum()"
+                [class.bg-brand-primary/10]="!isRefSheetActiveInCurriculum()"
+                [class.text-brand-primary]="!isRefSheetActiveInCurriculum()"
+                [class.border-surface-border]="isRefSheetActiveInCurriculum()"
+              >
+                بدون ورقة قوانين
+              </button>
+
+              <button
+                type="button"
+                (click)="setReferenceSheetActiveInCurriculum(true)"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-amber-500]="isRefSheetActiveInCurriculum()"
+                [class.bg-amber-500/10]="isRefSheetActiveInCurriculum()"
+                [class.text-amber-500]="isRefSheetActiveInCurriculum()"
+                [class.border-surface-border]="!isRefSheetActiveInCurriculum()"
+              >
+                إرفاق ورقة قوانين (Reference)
+              </button>
+            </div>
+
+            @if (isRefSheetActiveInCurriculum()) {
+              <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
+                <p class="text-[11px] text-text-secondary leading-relaxed">
+                  أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم (Reference) بجوار الآلة الحاسبة.
+                </p>
+
+                @if (asm.referenceSheetUrl) {
+                  <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-surface-border">
+                    <img
+                      [src]="asm.referenceSheetUrl"
+                      alt="Reference Sheet"
+                      class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <span class="text-xs font-bold text-emerald-500 block">ورقة القوانين مفعلة ومرفقة بالامتحان</span>
+                      <a [href]="asm.referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
+                        عرض الصورة بالحجم الكامل
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="removeReferenceSheetInCurriculum()"
+                      class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                      title="حذف ورقة القوانين"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                } @else {
+                  <app-image-compressor-uploader
+                    uploadTarget="question"
+                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    (imageUploaded)="onReferenceSheetUploadedInCurriculum($event)"
+                  />
+                }
+              </div>
+            }
+          </div>
+
           <!-- Existing Questions List -->
           <div class="space-y-4">
             <span class="font-bold text-text-primary block text-sm">
@@ -1676,6 +1751,81 @@
                 <option value="DESMOS">آلة ديسموس الهندسية (Desmos)</option>
               </select>
             </div>
+          </div>
+
+          <!-- Reference Sheet (ورقة القوانين والمفاهيم الرياضية) -->
+          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <app-icon name="file-text" [size]="16" className="text-brand-primary" />
+                <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+              </div>
+              <span class="text-[11px] text-text-muted">اختياري</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                (click)="setReferenceSheetActiveInCreateAssessment(false)"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-brand-primary]="!isRefSheetActiveInCreateAssessment()"
+                [class.bg-brand-primary/10]="!isRefSheetActiveInCreateAssessment()"
+                [class.text-brand-primary]="!isRefSheetActiveInCreateAssessment()"
+                [class.border-surface-border]="isRefSheetActiveInCreateAssessment()"
+              >
+                بدون ورقة قوانين
+              </button>
+
+              <button
+                type="button"
+                (click)="setReferenceSheetActiveInCreateAssessment(true)"
+                class="p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs font-bold"
+                [class.border-amber-500]="isRefSheetActiveInCreateAssessment()"
+                [class.bg-amber-500/10]="isRefSheetActiveInCreateAssessment()"
+                [class.text-amber-500]="isRefSheetActiveInCreateAssessment()"
+                [class.border-surface-border]="!isRefSheetActiveInCreateAssessment()"
+              >
+                إرفاق ورقة قوانين (Reference)
+              </button>
+            </div>
+
+            @if (isRefSheetActiveInCreateAssessment()) {
+              <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
+                <p class="text-[11px] text-text-secondary leading-relaxed">
+                  أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم (Reference) بجوار الآلة الحاسبة.
+                </p>
+
+                @if (newAssessmentForm().referenceSheetUrl) {
+                  <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-surface-border">
+                    <img
+                      [src]="newAssessmentForm().referenceSheetUrl"
+                      alt="Reference Sheet"
+                      class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <span class="text-xs font-bold text-emerald-500 block">تم رفع ورقة القوانين بنجاح</span>
+                      <a [href]="newAssessmentForm().referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
+                        عرض الصورة بالحجم الكامل
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="removeReferenceSheetInCreateAssessment()"
+                      class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                      title="حذف ورقة القوانين"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                } @else {
+                  <app-image-compressor-uploader
+                    uploadTarget="question"
+                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    (imageUploaded)="onReferenceSheetUploadedInCreateAssessment($event)"
+                  />
+                }
+              </div>
+            }
           </div>
         </div>
 

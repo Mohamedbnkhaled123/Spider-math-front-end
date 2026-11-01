@@ -263,6 +263,7 @@ export class SuperAdminDashboardComponent implements OnInit {
                               calculatorType: a.calculator_mode || a.calculatorType || 'NONE',
                               durationMinutes: a.time_limit_minutes || a.duration_minutes || 20,
                               xpReward: a.xp_reward ?? null,
+                              referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
                               submissionsCount: a.submissions_count || 0,
                               questions: (a.questions || []).map((q: any, idx: number) => ({
                                 id: q._id || `q_${idx}`,

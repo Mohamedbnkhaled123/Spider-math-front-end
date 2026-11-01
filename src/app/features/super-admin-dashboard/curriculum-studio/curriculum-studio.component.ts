@@ -244,13 +244,19 @@ export class CurriculumStudioComponent implements OnInit {
     durationMinutes: number;
     calculatorType: 'NONE' | 'DESMOS';
     xpReward: number | null;
+    referenceSheetUrl: string | null;
   }>({
     titleAr: '',
     type: 'QUIZ',
     durationMinutes: 20,
     calculatorType: 'NONE',
-    xpReward: null
+    xpReward: null,
+    referenceSheetUrl: null
   });
+
+  // Reference Sheet Toggles
+  readonly isRefSheetActiveInCurriculum = signal<boolean>(false);
+  readonly isRefSheetActiveInCreateAssessment = signal<boolean>(false);
 
   // Assessment Safe Editor State
   readonly isAssessmentEditorOpen = signal<boolean>(false);
@@ -957,12 +963,14 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   openCreateAssessmentModal(unit: UnitPackageAdminItem): void {
     this.activeUnitForAssessment.set(unit);
+    this.isRefSheetActiveInCreateAssessment.set(false);
     this.newAssessmentForm.set({
       titleAr: '',
       type: 'QUIZ',
       durationMinutes: 20,
       calculatorType: 'NONE',
-      xpReward: null
+      xpReward: null,
+      referenceSheetUrl: null
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -1009,6 +1017,7 @@ export class CurriculumStudioComponent implements OnInit {
       min_expected_solve_sec: 10,
       max_attempts: isHw ? 5 : 3,
       graph_calculator: form.calculatorType,
+      reference_sheet_url: form.referenceSheetUrl || null,
       xp_reward: Number(form.xpReward),
       is_published: true,
       questions: [
@@ -1035,6 +1044,7 @@ export class CurriculumStudioComponent implements OnInit {
           calculatorType: form.calculatorType,
           durationMinutes: form.durationMinutes,
           xpReward: form.xpReward,
+          referenceSheetUrl: form.referenceSheetUrl || null,
           submissionsCount: 0,
           questions: (created?.questions || []).map((q: any, idx: number) => ({
             id: q._id || `q_${idx}`,
@@ -1087,8 +1097,49 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   // Assessment Builder & Safe Editor
   // =========================================================================
+  setReferenceSheetActiveInCurriculum(active: boolean): void {
+    this.isRefSheetActiveInCurriculum.set(active);
+    if (!active) {
+      this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
+    }
+  }
+
+  onReferenceSheetUploadedInCurriculum(url: string): void {
+    if (url) {
+      this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
+      this.isRefSheetActiveInCurriculum.set(true);
+      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بنجاح!', type: 'success' });
+    }
+  }
+
+  removeReferenceSheetInCurriculum(): void {
+    this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
+    this.isRefSheetActiveInCurriculum.set(false);
+  }
+
+  setReferenceSheetActiveInCreateAssessment(active: boolean): void {
+    this.isRefSheetActiveInCreateAssessment.set(active);
+    if (!active) {
+      this.newAssessmentForm.update((f) => ({ ...f, referenceSheetUrl: null }));
+    }
+  }
+
+  onReferenceSheetUploadedInCreateAssessment(url: string): void {
+    if (url) {
+      this.newAssessmentForm.update((f) => ({ ...f, referenceSheetUrl: url }));
+      this.isRefSheetActiveInCreateAssessment.set(true);
+      this.toastTriggered.emit({ text: 'تم رفع صورة ورقة القوانين بنجاح!', type: 'success' });
+    }
+  }
+
+  removeReferenceSheetInCreateAssessment(): void {
+    this.newAssessmentForm.update((f) => ({ ...f, referenceSheetUrl: null }));
+    this.isRefSheetActiveInCreateAssessment.set(false);
+  }
+
   openAssessmentEditor(asm: AssessmentAdminItem): void {
     this.activeAssessment.set(JSON.parse(JSON.stringify(asm)));
+    this.isRefSheetActiveInCurriculum.set(Boolean(asm.referenceSheetUrl));
     this.autoRegradeWarning.set(false);
     this.newQuestionTextAr.set('');
     this.newQuestionImageUrl.set(null);
@@ -1252,6 +1303,7 @@ export class CurriculumStudioComponent implements OnInit {
       title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
       calculator_mode: asm.calculatorType,
       duration_minutes: asm.durationMinutes,
+      reference_sheet_url: asm.referenceSheetUrl || null,
       xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';

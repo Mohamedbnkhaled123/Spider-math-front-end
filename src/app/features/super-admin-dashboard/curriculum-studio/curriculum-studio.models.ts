@@ -42,6 +42,7 @@ export interface AssessmentAdminItem {
   durationMinutes: number;
   submissionsCount: number;
   xpReward?: number | null;
+  referenceSheetUrl?: string | null;
   questions: QuestionAdminItem[];
 }
 
