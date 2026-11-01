@@ -300,6 +300,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
         client_started_at: record?.clientStartedAt ?? new Date().toISOString(),
         client_submitted_at: new Date().toISOString(),
         elapsed_time_sec: record?.elapsedSeconds ?? 120,
+        is_auto_submit: isAutoSubmit,
         is_offline_cached: false,
         offline_disconnect_count: 0
       };
