@@ -491,6 +491,10 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   selectCurriculum(curr: CurriculumCode): void {
     this.curriculumChange.emit(curr);
+    const track = this.allCurriculaTracks().find((t) => t.code === curr);
+    if (track && track.grades.length > 0) {
+      this.gradeChange.emit(track.grades[0].code);
+    }
   }
 
   selectGrade(grade: string): void {

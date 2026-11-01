@@ -472,6 +472,13 @@ export class SuperAdminDashboardComponent implements OnInit {
   // Unit Events
   onCurriculumChanged(curr: CurriculumCode): void {
     this.selectedCurriculum.set(curr);
+    const defaultGradeMap: Record<CurriculumCode, string> = {
+      EGYPTIAN: 'SEC_3',
+      GULF: 'GRADE_12',
+      INTERNATIONAL: 'IGCSE_AL',
+      AMERICAN: 'SAT_MATH'
+    };
+    this.selectedGrade.set(defaultGradeMap[curr] || 'SEC_3');
     this.fetchCurriculumUnits();
   }
 

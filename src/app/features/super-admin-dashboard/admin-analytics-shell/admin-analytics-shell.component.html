@@ -91,14 +91,7 @@
         <app-icon name="book-open" [size]="16" />
         <span>استوديو المناهج والوحدات</span>
       </div>
-      <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
-        [class.bg-white/20]="activeTab() === 'curriculum'"
-        [class.text-white]="activeTab() === 'curriculum'"
-        [class.bg-surface-bg]="activeTab() !== 'curriculum'"
-        [class.text-text-muted]="activeTab() !== 'curriculum'"
-      >
-        {{ analytics().activeSubscriptions }}
-      </span>
+      <app-icon name="chevron-left" [size]="14" />
     </button>
 
     <!-- 2b. Dedicated Assessment Studio -->
