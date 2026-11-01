@@ -34,11 +34,11 @@
   <!-- ========================================================================= -->
   <!-- 2. Header Bar: Exit, Monotonic Urgency Clock & Desmos Trigger            -->
   <!-- ========================================================================= -->
-  <header class="flex items-center justify-between pb-6 mb-8 border-b border-surface-border">
+  <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-surface-border">
     <div class="flex items-center gap-3">
       <a
         [routerLink]="['/student/units', bundle().unitId]"
-        class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+        class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm shrink-0"
       >
         <app-icon name="arrow-right" [size]="14" />
         <span>مغادرة التقييم</span>
@@ -51,19 +51,21 @@
       </div>
     </div>
 
-    <!-- Controls: Desmos & Monotonic Clock -->
-    <div class="flex items-center gap-3">
+    <!-- Controls: Desmos & Reference & Monotonic Clock -->
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
       <!-- Desmos Trigger Button -->
       <button
         type="button"
         (click)="toggleDesmos()"
-        class="px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+        class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm cursor-pointer"
         [class.border-brand-accent]="isDesmosOpen()"
         [class.bg-brand-primary/10]="isDesmosOpen()"
         [class.text-brand-primary]="isDesmosOpen()"
+        title="آلة ديسموس البيانية"
       >
         <app-icon name="calculator" [size]="16" />
         <span class="hidden sm:inline">آلة ديسموس البيانية</span>
+        <span class="inline sm:hidden text-[11px]">ديسموس</span>
       </button>
 
       <!-- Reference Sheet Trigger Button -->
@@ -71,7 +73,7 @@
         <button
           type="button"
           (click)="toggleReference()"
-          class="px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+          class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm cursor-pointer"
           [class.border-brand-accent]="isReferenceOpen()"
           [class.bg-brand-primary/10]="isReferenceOpen()"
           [class.text-brand-primary]="isReferenceOpen()"
@@ -79,6 +81,7 @@
         >
           <app-icon name="file-text" [size]="16" />
           <span class="hidden sm:inline">ورقة القوانين (Reference)</span>
+          <span class="inline sm:hidden text-[11px]">المرجع</span>
         </button>
       }
 
@@ -440,7 +443,7 @@
   <!-- ========================================================================= -->
   @if (isReferenceOpen() && bundle().referenceSheetUrl) {
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs md:bg-transparent md:backdrop-blur-none md:inset-auto md:bottom-6 md:left-6 md:p-0 pointer-events-none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs md:bg-transparent md:backdrop-blur-none md:inset-auto md:bottom-6 md:left-6 md:p-0 pointer-events-none"
     >
       <div
         class="w-full max-w-lg md:w-[480px] lg:w-[540px] max-h-[85vh] rounded-3xl bg-surface-card border border-surface-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto animate-scale-up"

@@ -238,6 +238,10 @@ export class AssessmentStudioComponent implements OnInit {
   readonly editorErrorMessage = signal<string | null>(null);
   readonly createErrorMessage = signal<string | null>(null);
 
+  // Reference Sheet (ورقة القوانين) Toggles
+  readonly isRefSheetActiveInCreate = signal<boolean>(false);
+  readonly isRefSheetActiveInEditor = signal<boolean>(false);
+
   readonly editorGradeOptions = computed<GradeOption[]>(() => {
     const asm = this.activeAssessment();
     if (!asm) return [];
@@ -410,6 +414,7 @@ export class AssessmentStudioComponent implements OnInit {
       : (track?.grades[0]?.code || 'SEC_3');
 
     this.createErrorMessage.set(null);
+    this.isRefSheetActiveInCreate.set(false);
     this.createForm.set({
       titleAr: '',
       titleEn: '',
@@ -601,26 +606,44 @@ export class AssessmentStudioComponent implements OnInit {
   // =========================================================================
   // Reference Sheet (ورقة القوانين والمفاهيم)
   // =========================================================================
+  setReferenceSheetActiveInCreate(active: boolean): void {
+    this.isRefSheetActiveInCreate.set(active);
+    if (!active) {
+      this.createForm.update((f) => ({ ...f, referenceSheetUrl: null }));
+    }
+  }
+
+  setReferenceSheetActiveInEditor(active: boolean): void {
+    this.isRefSheetActiveInEditor.set(active);
+    if (!active) {
+      this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
+    }
+  }
+
   onReferenceSheetUploadedInCreate(url: string): void {
     if (url) {
       this.createForm.update((f) => ({ ...f, referenceSheetUrl: url }));
+      this.isRefSheetActiveInCreate.set(true);
       this.toastTriggered.emit({ text: 'تم رفع صورة ورقة القوانين بنجاح!', type: 'success' });
     }
   }
 
   removeReferenceSheetInCreate(): void {
     this.createForm.update((f) => ({ ...f, referenceSheetUrl: null }));
+    this.isRefSheetActiveInCreate.set(false);
   }
 
   onReferenceSheetUploadedInEditor(url: string): void {
     if (url) {
       this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
+      this.isRefSheetActiveInEditor.set(true);
       this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بالامتحان بنجاح!', type: 'success' });
     }
   }
 
   removeReferenceSheetInEditor(): void {
     this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
+    this.isRefSheetActiveInEditor.set(false);
   }
 
   // =========================================================================
@@ -631,6 +654,7 @@ export class AssessmentStudioComponent implements OnInit {
     // Ensure scheduling flag is properly set if availableFrom or availableUntil exists
     copy.isScheduled = !!(copy.availableFrom || copy.availableUntil);
     this.activeAssessment.set(copy);
+    this.isRefSheetActiveInEditor.set(Boolean(copy.referenceSheetUrl));
     this.editorActiveTab.set(initialTab);
     this.editorErrorMessage.set(null);
     this.autoRegradeWarning.set(false);
