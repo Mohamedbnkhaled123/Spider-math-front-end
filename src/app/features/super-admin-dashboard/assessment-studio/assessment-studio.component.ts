@@ -46,6 +46,12 @@ export function toLocalDatetimeInputValue(isoDateStr?: string | null): string {
   return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
 }
 
+interface AssessmentCacheEntry {
+  items: AssessmentItem[];
+  timestamp: number;
+}
+const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
+
 @Component({
   selector: 'app-assessment-studio',
   standalone: true,
@@ -131,6 +137,39 @@ export class AssessmentStudioComponent implements OnInit {
         a.term === this.selectedTerm()
     );
   });
+
+  // Pagination State (15 Quizzes/Assessments Per Page with In-Memory Caching)
+  readonly pageSize = 15;
+  readonly currentPage = signal<number>(1);
+  readonly totalItems = computed(() => this.scopedAssessments().length);
+  readonly totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize) || 1);
+  readonly paginatedAssessments = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.scopedAssessments().slice(start, start + this.pageSize);
+  });
+  readonly displayedPages = computed(() => {
+    const current = this.currentPage();
+    const total = this.totalPages();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  });
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  prevPage(): void {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage() + 1);
+  }
 
   // In-App Confirmation Modal State (Zero JavaScript window.confirm)
   readonly confirmDialog = signal<{
@@ -231,11 +270,23 @@ export class AssessmentStudioComponent implements OnInit {
     });
   }
 
-  loadAssessments(): void {
-    this.isLoading.set(true);
+  loadAssessments(forceRefresh = false): void {
     const curr = this.selectedCurriculum();
     const gr = this.selectedGrade();
     const tm = this.selectedTerm();
+    const cacheKey = `${curr}_${gr}_${tm}`;
+
+    if (!forceRefresh && ASSESSMENTS_MEMORY_CACHE.has(cacheKey)) {
+      const cached = ASSESSMENTS_MEMORY_CACHE.get(cacheKey)!;
+      this.assessmentsList.set(cached.items);
+      this.isLoading.set(false);
+      // If cached less than 60 seconds ago, skip network request for 0ms instant display
+      if (Date.now() - cached.timestamp < 60_000) {
+        return;
+      }
+    } else {
+      this.isLoading.set(true);
+    }
 
     this.http.get<{ success: boolean; data: any[] }>(
       `/api/v1/admin/assessments?curriculum=${curr}&gradeLevel=${gr}&academicTerm=${tm}`
@@ -279,10 +330,13 @@ export class AssessmentStudioComponent implements OnInit {
           };
         });
         this.assessmentsList.set(items);
+        ASSESSMENTS_MEMORY_CACHE.set(cacheKey, { items, timestamp: Date.now() });
       },
       error: () => {
         this.isLoading.set(false);
-        this.assessmentsList.set([]);
+        if (!ASSESSMENTS_MEMORY_CACHE.has(cacheKey)) {
+          this.assessmentsList.set([]);
+        }
       }
     });
   }
@@ -295,16 +349,19 @@ export class AssessmentStudioComponent implements OnInit {
     this.selectedCurriculum.set(curr);
     const firstGrade = this.gradeOptions()[0]?.code || 'SEC_3';
     this.selectedGrade.set(firstGrade);
+    this.currentPage.set(1);
     this.loadAssessments();
   }
 
   selectGrade(grade: string): void {
     this.selectedGrade.set(grade);
+    this.currentPage.set(1);
     this.loadAssessments();
   }
 
   selectTerm(term: AcademicTermCode): void {
     this.selectedTerm.set(term);
+    this.currentPage.set(1);
     this.loadAssessments();
   }
 
@@ -441,8 +498,9 @@ export class AssessmentStudioComponent implements OnInit {
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/assessments', payload).subscribe({
       next: () => {
         this.isSaving.set(false);
+        ASSESSMENTS_MEMORY_CACHE.clear();
         this.closeCreateModal();
-        this.loadAssessments();
+        this.loadAssessments(true);
         this.toastTriggered.emit({
           text: `تم إنشاء الامتحان وتخصيصه لـ (${form.gradeLevel}) بنجاح!`,
           type: 'success'
@@ -484,6 +542,7 @@ export class AssessmentStudioComponent implements OnInit {
       () => {
         this.http.patch(`/api/v1/admin/assessments/${item.id}`, { is_published: nextState }).subscribe({
           next: () => {
+            ASSESSMENTS_MEMORY_CACHE.clear();
             this.assessmentsList.update((list) =>
               list.map((a) => (a.id === item.id ? { ...a, isPublished: nextState } : a))
             );
@@ -516,6 +575,7 @@ export class AssessmentStudioComponent implements OnInit {
       () => {
         this.http.delete(`/api/v1/admin/assessments/${item.id}`).subscribe({
           next: () => {
+            ASSESSMENTS_MEMORY_CACHE.clear();
             this.assessmentsList.update((list) => list.filter((a) => a.id !== item.id));
             this.toastTriggered.emit({ text: 'تم حذف الامتحان بنجاح!', type: 'warning' });
           },
@@ -789,11 +849,12 @@ export class AssessmentStudioComponent implements OnInit {
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
       next: () => {
         this.isSaving.set(false);
+        ASSESSMENTS_MEMORY_CACHE.clear();
         this.assessmentsList.update((list) =>
           list.map((a) => (a.id === asm.id ? asm : a))
         );
         this.closeEditor();
-        this.loadAssessments();
+        this.loadAssessments(true);
         this.toastTriggered.emit({
           text: this.autoRegradeWarning()
             ? 'تم حفظ الامتحان وتفعيل إعادة التصحيح التلقائي للطلاب المسلمين بنجاح!'

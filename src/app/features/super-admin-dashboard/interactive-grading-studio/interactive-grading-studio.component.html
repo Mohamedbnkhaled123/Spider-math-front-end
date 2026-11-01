@@ -12,7 +12,7 @@
 
       <button
         type="button"
-        (click)="fetchAllSubmissions()"
+        (click)="fetchAllSubmissions(true)"
         class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-xs font-bold text-text-primary flex items-center gap-2 transition-all cursor-pointer self-start sm:self-auto"
       >
         <app-icon name="loader" [size]="14" [className]="isLoadingSubmissions() ? 'animate-spin' : ''" />
@@ -95,7 +95,7 @@
         <div class="flex items-center gap-1 text-xs">
           <button
             type="button"
-            (click)="activeStatusFilter.set('ALL')"
+            (click)="setStatusFilter('ALL')"
             class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
             [class.bg-brand-primary/10]="activeStatusFilter() === 'ALL'"
             [class.text-brand-primary]="activeStatusFilter() === 'ALL'"
@@ -105,7 +105,7 @@
           </button>
           <button
             type="button"
-            (click)="activeStatusFilter.set('PUBLISHED')"
+            (click)="setStatusFilter('PUBLISHED')"
             class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
             [class.bg-emerald-500/10]="activeStatusFilter() === 'PUBLISHED'"
             [class.text-emerald-600]="activeStatusFilter() === 'PUBLISHED'"
@@ -115,7 +115,7 @@
           </button>
           <button
             type="button"
-            (click)="activeStatusFilter.set('PENDING')"
+            (click)="setStatusFilter('PENDING')"
             class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
             [class.bg-amber-500/10]="activeStatusFilter() === 'PENDING'"
             [class.text-amber-600]="activeStatusFilter() === 'PENDING'"
@@ -130,7 +130,7 @@
           <input
             type="text"
             [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
+            (ngModelChange)="setSearchQuery($event)"
             placeholder="بحث باسم الطالب أو الكود..."
             class="w-full px-3 py-1.5 pr-8 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:border-brand-primary focus:outline-none"
           />
@@ -143,7 +143,7 @@
   <!-- TAB 1: ALL QUIZ SUBMISSIONS -->
   @if (activeStudioTab() === 'SUBMISSIONS') {
     <div class="space-y-4">
-      @for (sub of filteredSubmissions(); track sub.id) {
+      @for (sub of paginatedSubmissions(); track sub.id) {
         <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm hover:border-brand-primary/30 transition-all">
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
@@ -268,6 +268,54 @@
         </div>
       }
     </div>
+
+    <!-- Pagination Controls (15 Submissions Per Page, Memory Cached) -->
+    @if (totalPages() > 1) {
+      <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
+        <div class="text-text-muted font-bold">
+          عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} تسليم إجمالي)</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            (click)="prevPage()"
+            [disabled]="currentPage() === 1"
+            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <span>السابق</span>
+          </button>
+
+          @for (p of displayedPages(); track p) {
+            <button
+              type="button"
+              (click)="goToPage(p)"
+              class="w-8 h-8 rounded-xl font-bold font-mono transition-all cursor-pointer flex items-center justify-center text-xs"
+              [class.bg-brand-primary]="currentPage() === p"
+              [class.text-white]="currentPage() === p"
+              [class.shadow-brand-glow]="currentPage() === p"
+              [class.bg-surface-bg]="currentPage() !== p"
+              [class.text-text-secondary]="currentPage() !== p"
+              [class.border]="currentPage() !== p"
+              [class.border-surface-border]="currentPage() !== p"
+              [class.hover:border-brand-primary]="currentPage() !== p"
+            >
+              {{ p }}
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="currentPage() === totalPages()"
+            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <span>التالي</span>
+          </button>
+        </div>
+      </div>
+    }
   }
 
   <!-- TAB 2: CANVAS ESSAY REVIEW -->

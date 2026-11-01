@@ -146,7 +146,7 @@
       </div>
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @for (item of scopedAssessments(); track item.id) {
+        @for (item of paginatedAssessments(); track item.id) {
           <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
             
             <div class="space-y-3">
@@ -312,6 +312,54 @@
           </div>
         }
       </div>
+
+      <!-- Pagination Controls (15 Assessments Per Page, Memory Cached) -->
+      @if (totalPages() > 1) {
+        <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
+          <div class="text-text-muted font-bold">
+            عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+            <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} امتحان/كويز إجمالي)</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              (click)="prevPage()"
+              [disabled]="currentPage() === 1"
+              class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span>السابق</span>
+            </button>
+
+            @for (p of displayedPages(); track p) {
+              <button
+                type="button"
+                (click)="goToPage(p)"
+                class="w-8 h-8 rounded-xl font-bold font-mono transition-all cursor-pointer flex items-center justify-center text-xs"
+                [class.bg-brand-primary]="currentPage() === p"
+                [class.text-white]="currentPage() === p"
+                [class.shadow-brand-glow]="currentPage() === p"
+                [class.bg-surface-bg]="currentPage() !== p"
+                [class.text-text-secondary]="currentPage() !== p"
+                [class.border]="currentPage() !== p"
+                [class.border-surface-border]="currentPage() !== p"
+                [class.hover:border-brand-primary]="currentPage() !== p"
+              >
+                {{ p }}
+              </button>
+            }
+
+            <button
+              type="button"
+              (click)="nextPage()"
+              [disabled]="currentPage() === totalPages()"
+              class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span>التالي</span>
+            </button>
+          </div>
+        </div>
+      }
     }
   </div>
 

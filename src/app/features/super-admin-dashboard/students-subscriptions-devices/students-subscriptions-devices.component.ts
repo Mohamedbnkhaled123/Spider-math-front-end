@@ -24,6 +24,8 @@ import {
  * Instant HAxxxx Search, 1-Click Unit Activation, Frozen/Cancelled Subscription State Machine,
  * Additive Device Approval Queue ($push into approved_devices[]), and XP Adjustments.
  */
+let cachedAdminUnits: any[] | null = null;
+
 @Component({
   selector: 'app-students-subscriptions-devices',
   standalone: true,
@@ -67,6 +69,44 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     );
   });
 
+  // Pagination State (15 Students Per Page with In-Memory Caching)
+  readonly pageSize = 15;
+  readonly currentPage = signal<number>(1);
+  readonly totalItems = computed(() => this.filteredStudents().length);
+  readonly totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize) || 1);
+  readonly paginatedStudents = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredStudents().slice(start, start + this.pageSize);
+  });
+  readonly displayedPages = computed(() => {
+    const current = this.currentPage();
+    const total = this.totalPages();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  });
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  prevPage(): void {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  onSearchChange(q: string): void {
+    this.searchQuery.set(q);
+    this.currentPage.set(1);
+  }
+
   // Unit Activation Modal
   readonly isActivateModalOpen = signal<boolean>(false);
   readonly isActivatingUnit = signal<boolean>(false);
@@ -79,9 +119,18 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   }
 
   fetchDatabaseUnits(): void {
+    if (cachedAdminUnits && cachedAdminUnits.length > 0) {
+      this.realUnits.set(cachedAdminUnits);
+      if (!this.activationUnitId()) {
+        this.activationUnitId.set(cachedAdminUnits[0].id || cachedAdminUnits[0]._id);
+      }
+      return;
+    }
+
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/units').subscribe({
       next: (res) => {
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          cachedAdminUnits = res.data;
           this.realUnits.set(res.data);
           if (!this.activationUnitId()) {
             this.activationUnitId.set(res.data[0].id || res.data[0]._id);
@@ -93,6 +142,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         this.http.get<{ success: boolean; data: any[] }>('/api/v1/units').subscribe({
           next: (res) => {
             if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+              cachedAdminUnits = res.data;
               this.realUnits.set(res.data);
               if (!this.activationUnitId()) {
                 this.activationUnitId.set(res.data[0].id || res.data[0]._id);

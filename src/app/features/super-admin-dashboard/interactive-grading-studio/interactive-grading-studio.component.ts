@@ -29,6 +29,13 @@ import {
  * 2. Detailed answers inspector modal (student's answers vs model answers, points).
  * 3. HTML5 Canvas Image Inspector for essay grading (Zoom, Pan, 90° Rotation).
  */
+interface SubmissionsMemoryCacheEntry {
+  submissions: AllQuizSubmissionItem[];
+  stats: QuizSubmissionStats;
+  timestamp: number;
+}
+let submissionsMemoryCache: SubmissionsMemoryCacheEntry | null = null;
+
 @Component({
   selector: 'app-interactive-grading-studio',
   standalone: true,
@@ -57,6 +64,10 @@ export class InteractiveGradingStudioComponent implements OnInit {
   readonly activeStatusFilter = signal<'ALL' | 'PENDING' | 'PUBLISHED' | 'IN_PROGRESS'>('ALL');
   readonly searchQuery = signal<string>('');
   readonly activeStudioTab = signal<'SUBMISSIONS' | 'CANVAS'>('SUBMISSIONS');
+
+  // Pagination State (15 items per page with in-memory caching)
+  readonly pageSize = 15;
+  readonly currentPage = signal<number>(1);
 
   // Answers Inspector Modal State
   readonly isAnswersModalOpen = signal<boolean>(false);
@@ -94,12 +105,67 @@ export class InteractiveGradingStudioComponent implements OnInit {
     return list;
   });
 
+  // Paginated Submissions Slice
+  readonly totalItems = computed(() => this.filteredSubmissions().length);
+  readonly totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize) || 1);
+  readonly paginatedSubmissions = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredSubmissions().slice(start, start + this.pageSize);
+  });
+  readonly displayedPages = computed(() => {
+    const current = this.currentPage();
+    const total = this.totalPages();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  });
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  prevPage(): void {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  setStatusFilter(status: 'ALL' | 'PENDING' | 'PUBLISHED' | 'IN_PROGRESS'): void {
+    this.activeStatusFilter.set(status);
+    this.currentPage.set(1);
+  }
+
+  setSearchQuery(q: string): void {
+    this.searchQuery.set(q);
+    this.currentPage.set(1);
+  }
+
   ngOnInit(): void {
     this.fetchAllSubmissions();
   }
 
-  fetchAllSubmissions(): void {
-    this.isLoadingSubmissions.set(true);
+  fetchAllSubmissions(forceRefresh = false): void {
+    // 1. Instant 0ms Memory Cache Check
+    if (!forceRefresh && submissionsMemoryCache) {
+      this.allSubmissions.set(submissionsMemoryCache.submissions);
+      this.submissionStats.set(submissionsMemoryCache.stats);
+      this.isLoadingSubmissions.set(false);
+      // If cache is fresh (< 60s), no background network roundtrip is needed
+      if (Date.now() - submissionsMemoryCache.timestamp < 60_000) {
+        return;
+      }
+    }
+
+    if (!submissionsMemoryCache) {
+      this.isLoadingSubmissions.set(true);
+    }
+
     this.http.get<{ success: boolean; data: any }>('/api/v1/admin/submissions').subscribe({
       next: (res) => {
         const rawList: any[] = res?.data?.submissions || [];
@@ -186,6 +252,11 @@ export class InteractiveGradingStudioComponent implements OnInit {
         });
 
         this.allSubmissions.set(mapped);
+        submissionsMemoryCache = {
+          submissions: mapped,
+          stats: this.submissionStats(),
+          timestamp: Date.now()
+        };
         this.isLoadingSubmissions.set(false);
       },
       error: () => {

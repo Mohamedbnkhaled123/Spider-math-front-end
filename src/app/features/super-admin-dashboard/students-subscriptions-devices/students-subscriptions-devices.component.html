@@ -73,7 +73,7 @@
         <input
           type="text"
           [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
+          (ngModelChange)="onSearchChange($event)"
           placeholder="بحث بكود الطالب (HAxxxx) أو الاسم..."
           class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
         />
@@ -98,7 +98,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-surface-border">
-          @for (student of filteredStudents(); track student.id) {
+          @for (student of paginatedStudents(); track student.id) {
             <tr class="hover:bg-surface-bg/50 transition-colors">
               <td class="p-4">
                 <div class="font-bold text-text-primary text-sm">{{ student.name }}</div>
@@ -245,6 +245,54 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination Controls (15 Students Per Page, Memory Cached) -->
+    @if (totalPages() > 1) {
+      <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
+        <div class="text-text-muted font-bold">
+          عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} طالب إجمالي)</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            (click)="prevPage()"
+            [disabled]="currentPage() === 1"
+            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <span>السابق</span>
+          </button>
+
+          @for (p of displayedPages(); track p) {
+            <button
+              type="button"
+              (click)="goToPage(p)"
+              class="w-8 h-8 rounded-xl font-bold font-mono transition-all cursor-pointer flex items-center justify-center text-xs"
+              [class.bg-brand-primary]="currentPage() === p"
+              [class.text-white]="currentPage() === p"
+              [class.shadow-brand-glow]="currentPage() === p"
+              [class.bg-surface-bg]="currentPage() !== p"
+              [class.text-text-secondary]="currentPage() !== p"
+              [class.border]="currentPage() !== p"
+              [class.border-surface-border]="currentPage() !== p"
+              [class.hover:border-brand-primary]="currentPage() !== p"
+            >
+              {{ p }}
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="currentPage() === totalPages()"
+            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <span>التالي</span>
+          </button>
+        </div>
+      </div>
+    }
   </div>
 
   <!-- ========================================================================= -->
