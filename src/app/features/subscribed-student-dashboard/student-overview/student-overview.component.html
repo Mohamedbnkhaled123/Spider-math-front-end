@@ -564,10 +564,10 @@
     <!-- ========================================================================= -->
     <!-- 4. Quizzes & Grades Section (الكويزات اللي عليه ودرجاته)                    -->
     <!-- ========================================================================= -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
       <!-- Column A: Due Quizzes (الكويزات اللي عليه) -->
-      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 flex flex-col justify-between">
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 h-fit">
         <div>
           <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
             <div class="flex items-center gap-2">
@@ -589,11 +589,99 @@
             </span>
           </div>
 
-          <div class="space-y-3">
-            @for (quiz of dueQuizzes(); track quiz.id) {
+          <!-- Filter Tabs / Pills -->
+          <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border mb-3 overflow-x-auto no-scrollbar">
+            <button
+              type="button"
+              (click)="setQuizFilter('ALL')"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              [class.bg-brand-primary]="activeQuizFilter() === 'ALL'"
+              [class.text-white]="activeQuizFilter() === 'ALL'"
+              [class.text-text-secondary]="activeQuizFilter() !== 'ALL'"
+              [class.hover:text-text-primary]="activeQuizFilter() !== 'ALL'"
+            >
+              <span>الكل</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-numeric"
+                [class.bg-white/20]="activeQuizFilter() === 'ALL'"
+                [class.bg-surface-card]="activeQuizFilter() !== 'ALL'"
+              >
+                {{ quizCountAll() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="setQuizFilter('LECTURE_QUIZ')"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              [class.bg-amber-500]="activeQuizFilter() === 'LECTURE_QUIZ'"
+              [class.text-white]="activeQuizFilter() === 'LECTURE_QUIZ'"
+              [class.text-text-secondary]="activeQuizFilter() !== 'LECTURE_QUIZ'"
+              [class.hover:text-text-primary]="activeQuizFilter() !== 'LECTURE_QUIZ'"
+            >
+              <span>كويزات الدروس</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-numeric"
+                [class.bg-white/20]="activeQuizFilter() === 'LECTURE_QUIZ'"
+                [class.bg-surface-card]="activeQuizFilter() !== 'LECTURE_QUIZ'"
+              >
+                {{ quizCountLecture() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="setQuizFilter('HOMEWORK')"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              [class.bg-blue-600]="activeQuizFilter() === 'HOMEWORK'"
+              [class.text-white]="activeQuizFilter() === 'HOMEWORK'"
+              [class.text-text-secondary]="activeQuizFilter() !== 'HOMEWORK'"
+              [class.hover:text-text-primary]="activeQuizFilter() !== 'HOMEWORK'"
+            >
+              <span>واجبات منزلية</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-numeric"
+                [class.bg-white/20]="activeQuizFilter() === 'HOMEWORK'"
+                [class.bg-surface-card]="activeQuizFilter() !== 'HOMEWORK'"
+              >
+                {{ quizCountHomework() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="setQuizFilter('COMPREHENSIVE_EXAM')"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              [class.bg-purple-600]="activeQuizFilter() === 'COMPREHENSIVE_EXAM'"
+              [class.text-white]="activeQuizFilter() === 'COMPREHENSIVE_EXAM'"
+              [class.text-text-secondary]="activeQuizFilter() !== 'COMPREHENSIVE_EXAM'"
+              [class.hover:text-text-primary]="activeQuizFilter() !== 'COMPREHENSIVE_EXAM'"
+            >
+              <span>امتحانات شاملة</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-numeric"
+                [class.bg-white/20]="activeQuizFilter() === 'COMPREHENSIVE_EXAM'"
+                [class.bg-surface-card]="activeQuizFilter() !== 'COMPREHENSIVE_EXAM'"
+              >
+                {{ quizCountComprehensive() }}
+              </span>
+            </button>
+          </div>
+
+          <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1 custom-scrollbar">
+            @for (quiz of filteredDueQuizzes(); track quiz.id) {
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-amber-500/40 transition-all">
                 <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-[11px] font-bold text-text-muted">{{ quiz.unitTitleAr }}</span>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-black border"
+                    [class.bg-amber-500/10]="quiz.categoryType === 'LECTURE_QUIZ'"
+                    [class.text-amber-500]="quiz.categoryType === 'LECTURE_QUIZ'"
+                    [class.border-amber-500/20]="quiz.categoryType === 'LECTURE_QUIZ'"
+                    [class.bg-blue-500/10]="quiz.categoryType === 'HOMEWORK'"
+                    [class.text-blue-500]="quiz.categoryType === 'HOMEWORK'"
+                    [class.border-blue-500/20]="quiz.categoryType === 'HOMEWORK'"
+                    [class.bg-purple-500/10]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                    [class.text-purple-500]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                    [class.border-purple-500/20]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                  >
+                    {{ quiz.categoryLabelAr }}
+                  </span>
                   @if (quiz.isUrgent) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20">
                       مستعجل
@@ -638,8 +726,8 @@
             } @empty {
               <div class="p-6 rounded-2xl border border-surface-border bg-surface-bg text-center">
                 <app-icon name="check-circle" [size]="28" className="text-emerald-500 mx-auto mb-2" />
-                <h4 class="text-xs font-bold text-text-primary mb-1">لا توجد كويزات مستحقة عليك الآن</h4>
-                <p class="text-[11px] text-text-secondary">أحسنت! جميع التقييمات الحالية منجزة أو لم تُفتح بعد.</p>
+                <h4 class="text-xs font-bold text-text-primary mb-1">لا توجد كويزات في هذا التصنيف حالياً</h4>
+                <p class="text-[11px] text-text-secondary">يمكنك متابعة باقي التقييمات من التبويبات الأخرى بالأعلى.</p>
               </div>
             }
           </div>
@@ -647,7 +735,7 @@
       </div>
 
       <!-- Column B: Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته) -->
-      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 flex flex-col justify-between">
+      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 h-fit">
         <div>
           <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
             <div class="flex items-center gap-2">
@@ -669,7 +757,7 @@
             </span>
           </div>
 
-          <div class="space-y-3">
+          <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1 custom-scrollbar">
             @for (grade of completedGrades(); track grade.id) {
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-emerald-500/40 transition-all">
                 <div class="flex items-center justify-between mb-1.5">

@@ -173,6 +173,23 @@ export class StudentOverviewComponent implements OnInit {
   readonly dueQuizzes = signal<StudentDueQuizItem[]>([]);
   private readonly rawAssessmentsList = signal<any[]>([]);
 
+  readonly activeQuizFilter = signal<'ALL' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'>('ALL');
+  readonly quizCountAll = computed(() => this.dueQuizzes().length);
+  readonly quizCountLecture = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'LECTURE_QUIZ').length);
+  readonly quizCountHomework = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'HOMEWORK').length);
+  readonly quizCountComprehensive = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'COMPREHENSIVE_EXAM').length);
+
+  readonly filteredDueQuizzes = computed(() => {
+    const filter = this.activeQuizFilter();
+    const list = this.dueQuizzes();
+    if (filter === 'ALL') return list;
+    return list.filter(q => q.categoryType === filter);
+  });
+
+  setQuizFilter(filter: 'ALL' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
+    this.activeQuizFilter.set(filter);
+  }
+
   // =========================================================================
   // Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته - Real from Atlas)
   // =========================================================================
@@ -451,16 +468,26 @@ export class StudentOverviewComponent implements OnInit {
         }
       }
 
-      const typeLabel = (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM')
-        ? 'امتحان شامل'
-        : ((asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK')
-          ? 'واجب منزلي'
-          : 'كويز تفاعلي');
+      let categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' = 'LECTURE_QUIZ';
+      let categoryLabelAr = 'كويز تفاعلي';
+
+      if (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM') {
+        categoryType = 'COMPREHENSIVE_EXAM';
+        categoryLabelAr = 'امتحان شامل';
+      } else if (asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK') {
+        categoryType = 'HOMEWORK';
+        categoryLabelAr = 'واجب منزلي';
+      } else {
+        categoryType = 'LECTURE_QUIZ';
+        categoryLabelAr = 'كويز درس';
+      }
 
       return {
         id: asm._id,
         titleAr: asm.title_ar,
-        unitTitleAr: typeLabel,
+        unitTitleAr: categoryLabelAr,
+        categoryType,
+        categoryLabelAr,
         questionsCount: asm.questions?.length || 0,
         totalPoints: asm.total_points || (asm.questions?.length ? asm.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
         xpReward: asm.xp_reward || 50,
