@@ -134,24 +134,42 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/users/students').subscribe({
       next: (res) => {
         if (res?.data) {
-          const mapped: StudentAdminSummary[] = res.data.map((u) => ({
-            id: u._id,
-            name: u.full_name || 'طالب مسجل',
-            haCode: u.student_code || (u.role === 'SUPER_ADMIN' ? 'ADMIN' : (u.is_profile_completed === false ? 'قيد التسجيل' : '—')),
-            email: u.email,
-            phone: u.phone,
-            parentPhone: u.parent_phone,
-            curriculum: u.curriculum || (u.role === 'SUPER_ADMIN' ? 'إشراف أكاديمي' : 'المصري'),
-            gradeLevel: u.grade_level || (u.role === 'SUPER_ADMIN' ? 'Super Admin' : 'SEC_3'),
-            hasActiveSubscription: !!u.has_active_subscription,
-            subscriptionStatus: u.has_active_subscription ? 'ACTIVE' : 'CANCELLED',
-            totalXp: u.total_xp || 0,
-            approvedDevices: Array.isArray(u.approved_devices) ? u.approved_devices.length : 1,
-            isLocked: u.account_lock_status === 'LOCKED',
-            isLeaderboardHidden: false,
-            isProfileCompleted: u.is_profile_completed ?? (!!u.student_code),
-            createdAt: u.createdAt
-          }));
+          const mapped: StudentAdminSummary[] = res.data.map((u) => {
+            const role = (u.role || 'STUDENT') as 'STUDENT' | 'PARENT' | 'SUPER_ADMIN';
+            let roleCurriculum = u.curriculum || 'المصري';
+            let roleGrade = u.grade_level || 'SEC_3';
+            let defaultCode = u.student_code || (u.is_profile_completed === false ? 'قيد التسجيل' : '—');
+
+            if (role === 'PARENT') {
+              roleCurriculum = 'حساب ولي أمر';
+              roleGrade = 'متابعة الأبناء';
+              defaultCode = '—';
+            } else if (role === 'SUPER_ADMIN') {
+              roleCurriculum = 'إشراف المنصة';
+              roleGrade = 'مدير النظام';
+              defaultCode = 'ADMIN';
+            }
+
+            return {
+              id: u._id,
+              name: u.full_name || (role === 'PARENT' ? 'ولي أمر' : (role === 'SUPER_ADMIN' ? 'الإدارة' : 'طالب مسجل')),
+              role,
+              haCode: defaultCode,
+              email: u.email,
+              phone: u.phone,
+              parentPhone: u.parent_phone,
+              curriculum: roleCurriculum,
+              gradeLevel: roleGrade,
+              hasActiveSubscription: !!u.has_active_subscription,
+              subscriptionStatus: u.has_active_subscription ? 'ACTIVE' : 'CANCELLED',
+              totalXp: u.total_xp || 0,
+              approvedDevices: Array.isArray(u.approved_devices) ? u.approved_devices.length : 1,
+              isLocked: u.account_lock_status === 'LOCKED',
+              isLeaderboardHidden: false,
+              isProfileCompleted: u.is_profile_completed ?? (!!u.student_code),
+              createdAt: u.createdAt
+            };
+          });
           this.studentsList.set(mapped);
         }
         this.isLoading.set(false);

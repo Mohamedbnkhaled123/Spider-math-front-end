@@ -51,6 +51,20 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // Search Signal
   readonly searchQuery = signal<string>('');
 
+  // User Category Filter
+  readonly activeCategory = signal<'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS' | 'ADMINS'>('ALL');
+
+  readonly userCounts = computed(() => {
+    const list = this.studentsList();
+    return {
+      all: list.length,
+      activeStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && s.hasActiveSubscription).length,
+      inactiveStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription).length,
+      parents: list.filter((s) => s.role === 'PARENT').length,
+      admins: list.filter((s) => s.role === 'SUPER_ADMIN').length
+    };
+  });
+
   // Real Units from Database
   readonly realUnits = signal<any[]>([]);
   readonly allAvailableUnits = computed(() => {
@@ -62,10 +76,29 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // Filtered Students Computed
   readonly filteredStudents = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
-    const list = this.studentsList();
+    const cat = this.activeCategory();
+    let list = this.studentsList();
+
+    // 1. Category Filter
+    if (cat === 'ACTIVE_STUDENTS') {
+      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && s.hasActiveSubscription);
+    } else if (cat === 'INACTIVE_STUDENTS') {
+      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription);
+    } else if (cat === 'PARENTS') {
+      list = list.filter((s) => s.role === 'PARENT');
+    } else if (cat === 'ADMINS') {
+      list = list.filter((s) => s.role === 'SUPER_ADMIN');
+    }
+
+    // 2. Search Query Filter
     if (!q) return list;
     return list.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.haCode.toLowerCase().includes(q)
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.haCode.toLowerCase().includes(q) ||
+        (s.phone && s.phone.includes(q)) ||
+        (s.parentPhone && s.parentPhone.includes(q)) ||
+        (s.email && s.email.toLowerCase().includes(q))
     );
   });
 
@@ -107,12 +140,43 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     this.currentPage.set(1);
   }
 
+  setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS' | 'ADMINS'): void {
+    this.activeCategory.set(cat);
+    this.currentPage.set(1);
+  }
+
   // Unit Activation Modal
   readonly isActivateModalOpen = signal<boolean>(false);
   readonly isActivatingUnit = signal<boolean>(false);
   readonly studentToActivate = signal<StudentAdminSummary | null>(null);
   readonly activationUnitId = signal<string>('');
   readonly activationScope = signal<'FULL' | 'ASSESSMENTS_ONLY'>('FULL');
+
+  // Academic Integrity: Units matching student's exact curriculum and grade level
+  readonly studentMatchingUnits = computed(() => {
+    const student = this.studentToActivate();
+    const all = this.allAvailableUnits();
+    if (!student) return [];
+
+    const sCurr = (student.curriculum || '').trim().toUpperCase();
+    const sGrade = (student.gradeLevel || '').trim().toUpperCase();
+
+    return all.filter((u) => {
+      const uCurr = (u.curriculum || '').trim().toUpperCase();
+      const uGrade = (u.gradeLevel || u.grade_level || '').trim().toUpperCase();
+
+      const isEgyptian = (sCurr.includes('EGYPTIAN') || sCurr.includes('المصري')) &&
+                         (uCurr.includes('EGYPTIAN') || uCurr.includes('المصري'));
+      const isGulf = sCurr.includes('GULF') && uCurr.includes('GULF');
+      const isIntl = sCurr.includes('INTERNATIONAL') && uCurr.includes('INTERNATIONAL');
+      const isAmerican = sCurr.includes('AMERICAN') && uCurr.includes('AMERICAN');
+      const currMatch = uCurr === sCurr || isEgyptian || isGulf || isIntl || isAmerican;
+
+      const gradeMatch = uGrade === sGrade;
+
+      return currMatch && gradeMatch;
+    });
+  });
 
   ngOnInit(): void {
     this.fetchDatabaseUnits();

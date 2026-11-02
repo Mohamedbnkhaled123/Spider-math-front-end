@@ -61,10 +61,10 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight">
-          إدارة حسابات الطلاب والاشتراكات ونقاط الـ XP
+          إدارة حسابات الطلاب والمستخدمين والاشتراكات
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          البحث الفوري بكود الطالب الفريد (HAxxxx)، تفعيل وإيقاف الاشتراكات، وإدارة لوحة الشرف التنافسية.
+          تصنيف الحسابات (طلاب مشتركون، غير مشتركين، أولياء أمور، إدارة)، والبحث الفوري وتفعيل الوحدات المخصصة.
         </p>
       </div>
 
@@ -74,7 +74,7 @@
           type="text"
           [ngModel]="searchQuery()"
           (ngModelChange)="onSearchChange($event)"
-          placeholder="بحث بكود الطالب (HAxxxx) أو الاسم..."
+          placeholder="بحث بالاسم، الكود، الهاتف، أو البريد..."
           class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
         />
         <span class="absolute right-3.5 top-3 text-text-muted">
@@ -83,12 +83,104 @@
       </div>
     </div>
 
+    <!-- Category Filter Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
+      <button
+        type="button"
+        (click)="setCategory('ALL')"
+        class="px-3.5 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shrink-0 shadow-sm"
+        [class.bg-brand-primary]="activeCategory() === 'ALL'"
+        [class.text-white]="activeCategory() === 'ALL'"
+        [class.border-brand-primary]="activeCategory() === 'ALL'"
+        [class.bg-surface-card]="activeCategory() !== 'ALL'"
+        [class.text-text-secondary]="activeCategory() !== 'ALL'"
+        [class.border-surface-border]="activeCategory() !== 'ALL'"
+      >
+        <span>الكل</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ALL'" [class.bg-surface-bg]="activeCategory() !== 'ALL'">
+          {{ userCounts().all }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setCategory('ACTIVE_STUDENTS')"
+        class="px-3.5 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shrink-0 shadow-sm"
+        [class.bg-emerald-600]="activeCategory() === 'ACTIVE_STUDENTS'"
+        [class.text-white]="activeCategory() === 'ACTIVE_STUDENTS'"
+        [class.border-emerald-600]="activeCategory() === 'ACTIVE_STUDENTS'"
+        [class.bg-surface-card]="activeCategory() !== 'ACTIVE_STUDENTS'"
+        [class.text-text-secondary]="activeCategory() !== 'ACTIVE_STUDENTS'"
+        [class.border-surface-border]="activeCategory() !== 'ACTIVE_STUDENTS'"
+      >
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>طلاب باشتراك نشط</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'ACTIVE_STUDENTS'">
+          {{ userCounts().activeStudents }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setCategory('INACTIVE_STUDENTS')"
+        class="px-3.5 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shrink-0 shadow-sm"
+        [class.bg-amber-600]="activeCategory() === 'INACTIVE_STUDENTS'"
+        [class.text-white]="activeCategory() === 'INACTIVE_STUDENTS'"
+        [class.border-amber-600]="activeCategory() === 'INACTIVE_STUDENTS'"
+        [class.bg-surface-card]="activeCategory() !== 'INACTIVE_STUDENTS'"
+        [class.text-text-secondary]="activeCategory() !== 'INACTIVE_STUDENTS'"
+        [class.border-surface-border]="activeCategory() !== 'INACTIVE_STUDENTS'"
+      >
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span>طلاب غير مشتركين</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'INACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'INACTIVE_STUDENTS'">
+          {{ userCounts().inactiveStudents }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setCategory('PARENTS')"
+        class="px-3.5 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shrink-0 shadow-sm"
+        [class.bg-teal-600]="activeCategory() === 'PARENTS'"
+        [class.text-white]="activeCategory() === 'PARENTS'"
+        [class.border-teal-600]="activeCategory() === 'PARENTS'"
+        [class.bg-surface-card]="activeCategory() !== 'PARENTS'"
+        [class.text-text-secondary]="activeCategory() !== 'PARENTS'"
+        [class.border-surface-border]="activeCategory() !== 'PARENTS'"
+      >
+        <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+        <span>أولياء الأمور</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'PARENTS'" [class.bg-surface-bg]="activeCategory() !== 'PARENTS'">
+          {{ userCounts().parents }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setCategory('ADMINS')"
+        class="px-3.5 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shrink-0 shadow-sm"
+        [class.bg-purple-600]="activeCategory() === 'ADMINS'"
+        [class.text-white]="activeCategory() === 'ADMINS'"
+        [class.border-purple-600]="activeCategory() === 'ADMINS'"
+        [class.bg-surface-card]="activeCategory() !== 'ADMINS'"
+        [class.text-text-secondary]="activeCategory() !== 'ADMINS'"
+        [class.border-surface-border]="activeCategory() !== 'ADMINS'"
+      >
+        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+        <span>فريق الإدارة</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ADMINS'" [class.bg-surface-bg]="activeCategory() !== 'ADMINS'">
+          {{ userCounts().admins }}
+        </span>
+      </button>
+    </div>
+
     <!-- Students Table -->
     <div class="overflow-x-auto rounded-3xl border border-surface-border bg-surface-card shadow-sm">
       <table class="w-full text-right rtl:text-right text-xs">
         <thead class="bg-surface-bg border-b border-surface-border text-text-muted font-bold">
           <tr>
-            <th class="p-4">اسم الطالب</th>
+            <th class="p-4">اسم الحساب / المستخدم</th>
             <th class="p-4">الكود الفريد</th>
             <th class="p-4">المنهج والصف</th>
             <th class="p-4">الاشتراك</th>
@@ -101,7 +193,16 @@
           @for (student of paginatedStudents(); track student.id) {
             <tr class="hover:bg-surface-bg/50 transition-colors">
               <td class="p-4">
-                <div class="font-bold text-text-primary text-sm">{{ student.name }}</div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-text-primary text-sm">{{ student.name }}</span>
+                  @if (student.role === 'PARENT') {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">ولي أمر</span>
+                  } @else if (student.role === 'SUPER_ADMIN') {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">إدارة</span>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">طالب</span>
+                  }
+                </div>
                 <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                   <span class="text-text-secondary">{{ student.email }}</span>
                   @if (student.phone) {
@@ -310,25 +411,41 @@
           </button>
         </div>
 
+        <!-- Student Academic Track & Grade Info -->
+        <div class="p-3 rounded-2xl bg-surface-bg border border-surface-border text-xs flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-text-secondary">المسار والصف الدراسي:</span>
+            <span class="px-2.5 py-0.5 rounded-lg font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 font-mono">
+              {{ student.curriculum }} — {{ student.gradeLevel }}
+            </span>
+          </div>
+          <span class="text-[11px] text-text-muted">
+            يتم عرض الوحدات المطابقة لصف ومسار الطالب فقط منعاً للتداخل
+          </span>
+        </div>
+
         <div>
-          <label class="block font-bold text-text-secondary mb-1">اختر الوحدة المراد تفعيلها فورياً من قاعدة البيانات</label>
+          <label class="block font-bold text-text-secondary mb-1">اختر الوحدة المطابقة لصف الطالب ({{ student.curriculum }} - {{ student.gradeLevel }}):</label>
           <select
             [ngModel]="activationUnitId()"
             (ngModelChange)="activationUnitId.set($event)"
             class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
           >
-            @for (unit of allAvailableUnits(); track (unit.id || unit._id)) {
+            @for (unit of studentMatchingUnits(); track (unit.id || unit._id)) {
               <option [value]="unit.id || unit._id">
                 {{ unit.titleAr || unit.title_ar }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} ج.م
               </option>
             } @empty {
-              <option value="" disabled selected>لا توجد أي وحدات دراسية مسجلة في قاعدة البيانات حالياً</option>
+              <option value="" disabled selected>لا توجد وحدات مطابقة لصف الطالب ({{ student.curriculum }} - {{ student.gradeLevel }})</option>
             }
           </select>
-          @if (allAvailableUnits().length === 0) {
-            <p class="text-[11px] text-amber-500 font-medium mt-1">
-              تنبيه: يجب إضافة وحدة دراسية أولاً من تبويب استوديو المناهج لتتمكن من تفعيلها للطلاب.
-            </p>
+          @if (studentMatchingUnits().length === 0) {
+            <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2 mt-2">
+              <app-icon name="alert-circle" [size]="16" />
+              <span>
+                تنبيه: لا توجد أي وحدات دراسية مسجلة حالياً لـ ({{ student.curriculum }} - {{ student.gradeLevel }}). لا يمكن تفعيل وحدات من صفوف أخرى لهذا الطالب منعاً للتداخل الأكاديمي. يمكنك إضافة وحدات لهذا الصف من تبويب استوديو المناهج.
+              </span>
+            </div>
           }
         </div>
 
@@ -402,7 +519,7 @@
           <button
             type="button"
             (click)="confirmUnitActivation()"
-            [disabled]="isActivatingUnit() || !activationUnitId()"
+            [disabled]="isActivatingUnit() || !activationUnitId() || studentMatchingUnits().length === 0"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
           >
             @if (isActivatingUnit()) {
