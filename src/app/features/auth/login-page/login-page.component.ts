@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -30,6 +30,7 @@ declare const google: any;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginPageComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly authService = inject(AuthService);
   private readonly fingerprintService = inject(DeviceFingerprintService);
   private readonly router = inject(Router);
@@ -85,6 +86,10 @@ export class LoginPageComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.ensureGoogleScriptLoaded().catch(() => {});
+    }
+
     const qp = this.route.snapshot.queryParams;
     if (qp['roleMismatch'] === 'true' || qp['role']) {
       if (qp['requiredRole']?.includes('SUPER_ADMIN') || qp['role'] === 'ADMIN') {
@@ -255,17 +260,49 @@ export class LoginPageComponent implements OnInit {
   // =========================================================================
   // Authentic Google Identity Services (GIS) OAuth Popup Flow
   // =========================================================================
-  triggerGoogleOAuth(intent: 'login' | 'signup'): void {
+  private ensureGoogleScriptLoaded(): Promise<boolean> {
+    if (typeof window === 'undefined') return Promise.resolve(false);
+    const win = window as any;
+    if (win.google?.accounts?.oauth2) return Promise.resolve(true);
+
+    return new Promise((resolve) => {
+      let script = document.querySelector('script[src*="accounts.google.com/gsi/client"]') as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+
+      let waitedMs = 0;
+      const interval = setInterval(() => {
+        waitedMs += 100;
+        if (win.google?.accounts?.oauth2) {
+          clearInterval(interval);
+          resolve(true);
+        } else if (waitedMs >= 4000) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, 100);
+    });
+  }
+
+  async triggerGoogleOAuth(intent: 'login' | 'signup'): Promise<void> {
     this.errorMessage.set(null);
     this.googleAuthErrorMessage.set(null);
     this.unregisteredGoogleEmail.set(null);
 
     const win = window as any;
     if (typeof win.google === 'undefined' || !win.google?.accounts?.oauth2) {
-      this.googleAuthErrorMessage.set(
-        'جاري الاتصال بخدمات Google... يرجى الانتظار بضع ثوانٍ أو التحقق من اتصال الإنترنت ثم إعادة المحاولة.'
-      );
-      return;
+      const isLoaded = await this.ensureGoogleScriptLoaded();
+      if (!isLoaded || !win.google?.accounts?.oauth2) {
+        this.googleAuthErrorMessage.set(
+          'جاري الاتصال بخدمات Google... يرجى الانتظار بضع ثوانٍ أو التحقق من اتصال الإنترنت ثم إعادة المحاولة.'
+        );
+        return;
+      }
     }
 
     try {
