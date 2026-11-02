@@ -31,13 +31,15 @@ app.use((req, res, next) => {
 
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://s.ytimg.com https://www.desmos.com https://accounts.google.com https://apis.google.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://s.ytimg.com https://www.desmos.com https://accounts.google.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com https://res.cloudinary.com https://lh3.googleusercontent.com",
+    "img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com https://res.cloudinary.com https://lh3.googleusercontent.com https://api.dicebear.com",
     "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://www.desmos.com",
-    "connect-src 'self' http://localhost:5000 http://localhost:4000 http://localhost:4200 https://accounts.google.com https://www.googleapis.com https://api.cloudinary.com https://res.cloudinary.com https://www.desmos.com",
+    "connect-src 'self' http://localhost:5000 http://localhost:4000 http://localhost:4200 https://accounts.google.com https://www.googleapis.com https://api.cloudinary.com https://res.cloudinary.com https://www.desmos.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
     "media-src 'self' blob: https://res.cloudinary.com",
+    "worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
+    "child-src 'self' blob: https://cdnjs.cloudflare.com",
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'self'"

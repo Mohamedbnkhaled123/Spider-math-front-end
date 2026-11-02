@@ -265,16 +265,38 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
     if (window.pdfjsLib) {
       onPdfJsReady();
     } else {
+      // 1. Primary: Load self-hosted local bundle (Fastest & 100% immune to external CDN/CSP blocks)
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.src = '/assets/libs/pdfjs/pdf.min.js';
       script.onload = () => {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/libs/pdfjs/pdf.worker.min.js';
         onPdfJsReady();
       };
       script.onerror = () => {
-        this.isLoading.set(false);
-        this.errorMessage.set('تعذر تحميل مكتبة معالجة الـ PDF. يرجى التحقق من اتصالك بالإنترنت.');
+        // 2. Secondary fallback: Cloudflare CDN
+        const cdnScript = document.createElement('script');
+        cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        cdnScript.onload = () => {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          onPdfJsReady();
+        };
+        cdnScript.onerror = () => {
+          // 3. Tertiary fallback: jsDelivr CDN
+          const jsdelivrScript = document.createElement('script');
+          jsdelivrScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+          jsdelivrScript.onload = () => {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+              'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+            onPdfJsReady();
+          };
+          jsdelivrScript.onerror = () => {
+            this.isLoading.set(false);
+            this.errorMessage.set('تعذر تحميل مكتبة معالجة الـ PDF. يرجى التحقق من اتصالك بالإنترنت.');
+          };
+          document.head.appendChild(jsdelivrScript);
+        };
+        document.head.appendChild(cdnScript);
       };
       document.head.appendChild(script);
     }
