@@ -105,56 +105,23 @@
             </div>
           </div>
 
-          <!-- Grade Level & Term Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'الصف الدراسي:' : 'Grade Level:' }}
-              </label>
-              <select
-                [ngModel]="gradeLevel()"
-                (ngModelChange)="gradeLevel.set($event)"
-                name="gradeLevel"
-                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
-              >
-                @for (grade of availableGrades(); track grade.code) {
-                  <option [value]="grade.code">
-                    {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
-                  </option>
-                }
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}
-              </label>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  (click)="academicTerm.set('TERM_1')"
-                  class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all"
-                  [ngClass]="{
-                    'border-brand-primary bg-brand-primary text-white shadow-sm': academicTerm() === 'TERM_1',
-                    'border-surface-border bg-surface-bg text-text-secondary hover:bg-surface-card': academicTerm() !== 'TERM_1'
-                  }"
-                >
-                  {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
-                </button>
-
-                <button
-                  type="button"
-                  (click)="academicTerm.set('TERM_2')"
-                  class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all"
-                  [ngClass]="{
-                    'border-brand-primary bg-brand-primary text-white shadow-sm': academicTerm() === 'TERM_2',
-                    'border-surface-border bg-surface-bg text-text-secondary hover:bg-surface-card': academicTerm() !== 'TERM_2'
-                  }"
-                >
-                  {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
-                </button>
-              </div>
-            </div>
+          <!-- Grade Level -->
+          <div>
+            <label class="block text-xs font-bold text-text-secondary mb-1.5">
+              {{ langService.isArabic() ? 'الصف الدراسي:' : 'Grade Level:' }}
+            </label>
+            <select
+              [ngModel]="gradeLevel()"
+              (ngModelChange)="gradeLevel.set($event)"
+              name="gradeLevel"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
+            >
+              @for (grade of availableGrades(); track grade.code) {
+                <option [value]="grade.code">
+                  {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
+                </option>
+              }
+            </select>
           </div>
 
           <!-- Country Selection & Conditional Governorate -->

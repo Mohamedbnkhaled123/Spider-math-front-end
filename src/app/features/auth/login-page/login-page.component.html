@@ -433,52 +433,22 @@
                   </div>
                 </div>
 
-                <!-- 6. Grade and Term Selection -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label for="regGradeLevel" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      الصف الدراسي
-                    </label>
-                    <select
-                      id="regGradeLevel"
-                      [ngModel]="regGradeLevel()"
-                      (ngModelChange)="regGradeLevel.set($event)"
-                      name="regGradeLevel"
-                      class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
-                    >
-                      @for (grade of regAvailableGrades(); track grade.code) {
-                        <option [value]="grade.code">{{ grade.titleAr }}</option>
-                      }
-                    </select>
-                  </div>
-
-                  <div>
-                    <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      الفصل الدراسي
-                    </label>
-                    <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
-                      <button
-                        type="button"
-                        (click)="regAcademicTerm.set('TERM_1')"
-                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                        [class.bg-brand-primary]="regAcademicTerm() === 'TERM_1'"
-                        [class.text-white]="regAcademicTerm() === 'TERM_1'"
-                        [class.text-text-secondary]="regAcademicTerm() !== 'TERM_1'"
-                      >
-                        الترم الأول
-                      </button>
-                      <button
-                        type="button"
-                        (click)="regAcademicTerm.set('TERM_2')"
-                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                        [class.bg-brand-primary]="regAcademicTerm() === 'TERM_2'"
-                        [class.text-white]="regAcademicTerm() === 'TERM_2'"
-                        [class.text-text-secondary]="regAcademicTerm() !== 'TERM_2'"
-                      >
-                        الترم الثاني
-                      </button>
-                    </div>
-                  </div>
+                <!-- 6. Grade Selection -->
+                <div>
+                  <label for="regGradeLevel" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                    الصف الدراسي
+                  </label>
+                  <select
+                    id="regGradeLevel"
+                    [ngModel]="regGradeLevel()"
+                    (ngModelChange)="regGradeLevel.set($event)"
+                    name="regGradeLevel"
+                    class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
+                  >
+                    @for (grade of regAvailableGrades(); track grade.code) {
+                      <option [value]="grade.code">{{ grade.titleAr }}</option>
+                    }
+                  </select>
                 </div>
 
                 <!-- 7. Governorate (for Egypt) -->
