@@ -270,7 +270,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // =========================================================================
   openActivateModal(student: StudentAdminSummary): void {
     this.studentToActivate.set(student);
-    const units = this.allAvailableUnits();
+    const units = this.studentMatchingUnits();
     if (units && units.length > 0) {
       this.activationUnitId.set(units[0].id || units[0]._id);
     } else {

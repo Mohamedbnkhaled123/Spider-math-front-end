@@ -150,11 +150,25 @@ export class AssessmentAttemptViewComponent implements OnInit {
         error: (err) => {
           console.error('Failed to load assessment questions', err);
           const errorCode = err?.error?.error?.code;
-          const latestSubId = err?.error?.error?.details?.latestSubmissionId || assessmentId;
+          const latestSubId = err?.error?.error?.details?.latestSubmissionId;
 
-          // If maximum attempts exceeded or attempt already completed:
-          if (errorCode === 'MAX_ATTEMPTS_EXCEEDED' || err?.status === 403) {
+          // If maximum attempts exceeded AND there is an actual completed submission:
+          if (errorCode === 'MAX_ATTEMPTS_EXCEEDED' && latestSubId) {
             this.router.navigate(['/student/submissions', latestSubId, 'feedback']);
+            return;
+          }
+
+          if (errorCode === 'NO_ACTIVE_SUBSCRIPTION_403') {
+            const msg = err?.error?.error?.message || 'عذراً، هذا الاختبار مخصص للطلاب المشتركين فقط. يرجى تفعيل اشتراكك للوصول إليه.';
+            alert(msg);
+            this.router.navigate(['/student']);
+            return;
+          }
+
+          if (errorCode === 'FORBIDDEN_403') {
+            const msg = err?.error?.error?.message || 'عذراً، هذا الاختبار مخصص لصف دراسي آخر أو غير متاح لحسابك.';
+            alert(msg);
+            this.router.navigate(['/student']);
             return;
           }
 
@@ -169,6 +183,10 @@ export class AssessmentAttemptViewComponent implements OnInit {
             this.router.navigate(['/student']);
             return;
           }
+
+          const fallbackMsg = err?.error?.error?.message || err?.error?.message || 'عذراً، تعذر بدء الاختبار في الوقت الحالي.';
+          alert(fallbackMsg);
+          this.router.navigate(['/student']);
         }
       });
     }

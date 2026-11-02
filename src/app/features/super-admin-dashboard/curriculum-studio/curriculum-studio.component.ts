@@ -1020,17 +1020,7 @@ export class CurriculumStudioComponent implements OnInit {
       reference_sheet_url: form.referenceSheetUrl || null,
       xp_reward: Number(form.xpReward),
       is_published: true,
-      questions: [
-        {
-          question_type: isHw ? 'ESSAY_PHOTO' : 'MCQ',
-          question_text: isHw
-            ? 'المسألة الأولى (حل يدوي بالخطوات في الكشكول مع رفع الصورة):'
-            : 'مسألة رياضية أولى',
-          options: isHw ? [] : ['أ', 'ب', 'ج', 'د'],
-          correct_option_index: 0,
-          points: 5
-        }
-      ]
+      questions: []
     };
 
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/assessments', payload).subscribe({
