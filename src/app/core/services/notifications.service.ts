@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID, NgZone } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -14,6 +14,7 @@ export class NotificationsService {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly ngZone = inject(NgZone);
   private readonly apiBase = '/api/v1/notifications';
 
   // Signals
@@ -70,16 +71,20 @@ export class NotificationsService {
 
   /**
    * Initializes periodic background polling (every 25 seconds).
+   * Runs outside Angular Zone so hydration stability is never blocked (fixes NG0506).
    */
   private initBackgroundPolling(): void {
     if (this.pollingTimer) return;
 
-    // Check periodically for new notifications when authenticated
-    this.pollingTimer = setInterval(() => {
-      if (this.authService.isAuthenticated()) {
-        this.fetchNotifications(false, true);
-      }
-    }, 25000);
+    this.ngZone.runOutsideAngular(() => {
+      this.pollingTimer = setInterval(() => {
+        if (this.authService.isAuthenticated()) {
+          this.ngZone.run(() => {
+            this.fetchNotifications(false, true);
+          });
+        }
+      }, 25000);
+    });
   }
 
   /**
