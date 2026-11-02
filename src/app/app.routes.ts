@@ -70,7 +70,7 @@ export const routes: Routes = [
   },
   {
     path: 'inactive-student-portal',
-    canActivate: [authGuard, deviceApprovedGuard],
+    canActivate: [authGuard, roleGuard(['STUDENT']), deviceApprovedGuard],
     loadComponent: () =>
       import(
         './features/inactive-student-portal/inactive-dashboard/inactive-dashboard.component'

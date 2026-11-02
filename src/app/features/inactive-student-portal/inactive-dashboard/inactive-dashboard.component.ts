@@ -42,10 +42,10 @@ export class InactiveDashboardComponent implements OnInit {
 
   // Student Profile Data
   readonly student = computed(() => this.authService.currentUser());
-  readonly haCode = computed(() => this.student()?.student_ha_code ?? 'HA1001');
+  readonly haCode = computed(() => this.student()?.student_ha_code ?? '—');
   readonly studentName = computed(() => this.student()?.full_name ?? (this.langService.isArabic() ? 'طالب سبايدر ماث' : 'Spider Math Student'));
   readonly curriculum = computed<CurriculumCode>(() => (this.student()?.curriculum as CurriculumCode) ?? 'EGYPTIAN');
-  readonly gradeLevel = computed<string>(() => this.student()?.grade_level ?? 'SEC_3');
+  readonly gradeLevel = computed<string>(() => this.student()?.grade_level ?? '—');
   readonly term = computed<AcademicTermCode>(() => (this.student()?.academic_term as AcademicTermCode) ?? 'TERM_1');
 
   // UI Interactive States
