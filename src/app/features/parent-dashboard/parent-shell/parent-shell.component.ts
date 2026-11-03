@@ -61,34 +61,9 @@ export class ParentShellComponent implements OnInit {
           this.selectedChildId.set(children[0].studentId);
           this.isLoadingChildren.set(false);
         } else {
-          // If no linked children in parent account yet, fallback to registered student for seamless live preview
-          this.http.get<any>('/api/v1/admin/users/students').subscribe({
-            next: (studentsRes) => {
-              const students = studentsRes?.data || [];
-              if (students.length > 0) {
-                const fallbackChild: LinkedChildSummary = {
-                  studentId: students[0]._id,
-                  fullName: students[0].full_name || 'طالب سبايدر ماث',
-                  haCode: students[0].student_code || 'HA1001',
-                  curriculum: students[0].curriculum || 'المنهج المصري',
-                  gradeLevel: students[0].grade_level || 'الصف الأول الثانوي',
-                  activeUnitsCount: 1,
-                  totalXp: students[0].total_xp || 0
-                };
-                this.linkedChildren.set([fallbackChild]);
-                this.selectedChildId.set(fallbackChild.studentId);
-              } else {
-                this.linkedChildren.set([]);
-                this.selectedChildId.set('');
-              }
-              this.isLoadingChildren.set(false);
-            },
-            error: () => {
-              this.linkedChildren.set([]);
-              this.selectedChildId.set('');
-              this.isLoadingChildren.set(false);
-            }
-          });
+          this.linkedChildren.set([]);
+          this.selectedChildId.set('');
+          this.isLoadingChildren.set(false);
         }
       },
       error: () => {
