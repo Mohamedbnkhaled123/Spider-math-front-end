@@ -902,30 +902,32 @@
       </p>
     </div>
 
-    @if (topThreePodium().length >= 3) {
+    @if (topThreePodium().length > 0) {
       <!-- 3D Podiums Visual (Animation 4.5: Ranks 2, 1, 3) -->
       <div class="podiums-container flex items-end justify-center gap-3 sm:gap-6 max-w-2xl mx-auto pt-8 pb-4">
         
         <!-- Rank 2 (Silver) -->
-        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
-          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3">
-            <app-icon name="award" [size]="24" className="text-slate-400" />
-            <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800">
-              #2
-            </span>
+        @if (topThreePodium().length >= 2) {
+          <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
+            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3">
+              <app-icon name="award" [size]="24" className="text-slate-400" />
+              <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800">
+                #2
+              </span>
+            </div>
+            <div class="text-center mb-2">
+              <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
+                {{ topThreePodium()[1].studentName }}
+              </p>
+              <span class="text-[11px] font-numeric font-bold text-brand-secondary">
+                {{ topThreePodium()[1].totalXp }} XP
+              </span>
+            </div>
+            <div class="w-full h-28 rounded-t-2xl bg-gradient-to-t from-slate-300/40 to-slate-200/60 border border-slate-300/60 flex items-center justify-center">
+              <span class="font-numeric font-black text-lg text-slate-500">2nd</span>
+            </div>
           </div>
-          <div class="text-center mb-2">
-            <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-              {{ topThreePodium()[1].studentName }}
-            </p>
-            <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-              {{ topThreePodium()[1].totalXp }} XP
-            </span>
-          </div>
-          <div class="w-full h-28 rounded-t-2xl bg-gradient-to-t from-slate-300/40 to-slate-200/60 border border-slate-300/60 flex items-center justify-center">
-            <span class="font-numeric font-black text-lg text-slate-500">2nd</span>
-          </div>
-        </div>
+        }
 
         <!-- Rank 1 (Gold - Center & Highest Elevation) -->
         <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise z-10" style="animation-delay: 0s;">
@@ -950,32 +952,52 @@
         </div>
 
         <!-- Rank 3 (Bronze) -->
-        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
-          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3">
-            <app-icon name="award" [size]="24" className="text-amber-700" />
-            <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400">
-              #3
-            </span>
+        @if (topThreePodium().length >= 3) {
+          <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
+            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3">
+              <app-icon name="award" [size]="24" className="text-amber-700" />
+              <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400">
+                #3
+              </span>
+            </div>
+            <div class="text-center mb-2">
+              <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
+                {{ topThreePodium()[2].studentName }}
+              </p>
+              <span class="text-[11px] font-numeric font-bold text-brand-secondary">
+                {{ topThreePodium()[2].totalXp }} XP
+              </span>
+            </div>
+            <div class="w-full h-20 rounded-t-2xl bg-gradient-to-t from-amber-700/20 to-amber-600/30 border border-amber-700/40 flex items-center justify-center">
+              <span class="font-numeric font-black text-base text-amber-800 dark:text-amber-400">3rd</span>
+            </div>
           </div>
-          <div class="text-center mb-2">
-            <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-              {{ topThreePodium()[2].studentName }}
-            </p>
-            <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-              {{ topThreePodium()[2].totalXp }} XP
-            </span>
-          </div>
-          <div class="w-full h-20 rounded-t-2xl bg-gradient-to-t from-amber-700/20 to-amber-600/30 border border-amber-700/40 flex items-center justify-center">
-            <span class="font-numeric font-black text-base text-amber-800 dark:text-amber-400">3rd</span>
-          </div>
-        </div>
+        }
 
       </div>
+
+      <!-- Current User below podium if rank > 3 -->
+      @if (currentUserRank() && currentUserRank()!.rank > 3) {
+        <div class="mt-4 p-4 rounded-2xl border border-brand-primary/30 bg-surface-card max-w-md mx-auto flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-primary/15 text-brand-primary font-black font-numeric flex items-center justify-center text-sm">
+              #{{ currentUserRank()!.rank }}
+            </div>
+            <div>
+              <p class="text-xs font-bold text-text-primary">{{ currentUserRank()!.studentName }}</p>
+              <p class="text-[10px] text-text-muted">ترتيبك الحالي في الدفعة</p>
+            </div>
+          </div>
+          <span class="text-xs font-numeric font-black text-brand-primary">
+            {{ currentUserRank()!.totalXp }} XP
+          </span>
+        </div>
+      }
     } @else {
       <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center max-w-lg mx-auto">
         <app-icon name="award" [size]="32" className="text-amber-500 mx-auto mb-2" />
         <h4 class="text-sm font-bold text-text-primary mb-1">لوحة الشرف قيد التحديث</h4>
-        <p class="text-xs text-text-secondary">ستظهر المنصة الثلاثية للأوائل فور تقدم طلاب الدفعة في حل الاختبارات ومشاهدة المحاضرات.</p>
+        <p class="text-xs text-text-secondary">ستظهر المنصة للأوائل فور تقدم طلاب الدفعة في حل الاختبارات ومشاهدة المحاضرات.</p>
       </div>
     }
   </section>

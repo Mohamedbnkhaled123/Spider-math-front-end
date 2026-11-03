@@ -84,18 +84,16 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly isCelebrationVisible = signal<boolean>(false);
   readonly xpAwarded = signal<boolean>(false);
 
-  // 5-second chunk tracking
-  private readonly watchedChunks = new Set<number>();
   private ytPlayer: any = null;
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private hideControlsTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Computed Properties
   readonly watchPercentage = computed<number>(() => {
     const total = this.duration();
     if (total <= 0) return 0;
-    const watchedSec = this.watchedChunks.size * 5;
-    return Math.min(100, Math.round((watchedSec / total) * 100));
+    return Math.min(100, Math.round((this.currentTimeSec() / total) * 100));
   });
 
   readonly progressPercentage = computed<number>(() => {
@@ -115,7 +113,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       const id = this.lectureId();
-      this.watchedChunks.clear();
       this.xpAwarded.set(false);
       this.currentTimeSec.set(this.resumePositionSec());
       if (this.videoDurationSec() > 0) {
@@ -154,6 +151,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.dispatchHeartbeat();
     this.cleanup();
   }
 
@@ -342,7 +340,6 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   private syncRealDuration(durationSec: number): void {
     if (!this.lectureId() || durationSec <= 0) return;
     this.duration.set(durationSec);
-    this.dispatchHeartbeat();
   }
 
   private resolveVideoId(token: string): string {
@@ -359,29 +356,24 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================================
-  // 5-Second Chunk Tracking & 85% XP Celebration (Animation 4.4)
+  // Lightweight Heartbeat & 85% XP Celebration (Animation 4.4)
   // =========================================================================
   private startTracking(): void {
     this.stopTracking();
+
+    // 1-second interval for real-time player progress updates
     this.trackingInterval = setInterval(() => {
       if (!this.ytPlayer || !this.isPlaying()) return;
 
       const currentSec = Math.round(this.ytPlayer.getCurrentTime?.() || 0);
       this.currentTimeSec.set(currentSec);
 
-      // Record 5-second chunk index
-      const chunkIdx = Math.floor(currentSec / 5);
-      if (!this.watchedChunks.has(chunkIdx)) {
-        this.watchedChunks.add(chunkIdx);
-        this.chunkCompleted.emit(chunkIdx);
-      }
-
       const pct = this.watchPercentage();
       this.progressUpdated.emit({
         currentPositionSec: currentSec,
         videoDurationSec: this.duration(),
         watchPercentage: pct,
-        watchedChunksCount: this.watchedChunks.size,
+        watchedChunksCount: Math.floor(currentSec / 5),
         isCompleted: pct >= this.completionThresholdPct()
       });
 
@@ -390,6 +382,13 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
         this.triggerXpCelebration();
       }
     }, 1000);
+
+    // 60-second periodic heartbeat while playing
+    this.heartbeatInterval = setInterval(() => {
+      if (this.isPlaying()) {
+        this.dispatchHeartbeat();
+      }
+    }, 60000);
   }
 
   private stopTracking(): void {
@@ -397,22 +396,23 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
       clearInterval(this.trackingInterval);
       this.trackingInterval = null;
     }
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
-  public dispatchHeartbeat(): void {
+  public dispatchHeartbeat(forceCompleted?: boolean): void {
     if (!this.lectureId() || !isPlatformBrowser(this.platformId)) return;
 
     const currentPlaybackSec = this.currentTimeSec();
-    const chunkIndex = Math.floor(currentPlaybackSec / 5);
-    const chunksArray = Array.from(this.watchedChunks);
+    const isCompleted = forceCompleted ?? (this.watchPercentage() >= this.completionThresholdPct());
 
     this.http.post<{ success: boolean; data: IPlaybackHeartbeatResponse }>(
       `/api/v1/lectures/${this.lectureId()}/watch-heartbeat`,
       {
         currentPlaybackSec,
-        chunkIndex,
-        watchedChunks: chunksArray,
-        actualDurationSec: this.duration()
+        isCompleted
       }
     ).subscribe({
       next: res => {
@@ -422,7 +422,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
               currentPositionSec: currentPlaybackSec,
               videoDurationSec: this.duration(),
               watchPercentage: res.data.watchPercentage,
-              watchedChunksCount: chunksArray.length,
+              watchedChunksCount: Math.floor(currentPlaybackSec / 5),
               isCompleted: res.data.isCompleted || res.data.watchPercentage >= this.completionThresholdPct()
             });
           }
@@ -443,7 +443,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     this.thresholdReached.emit(50); // XP awarded
 
     // Trigger one-shot milestone completion to backend
-    this.dispatchHeartbeat();
+    this.dispatchHeartbeat(true);
 
     // Dismiss floating pop badge after 5 seconds
     setTimeout(() => {

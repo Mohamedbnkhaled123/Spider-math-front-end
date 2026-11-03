@@ -115,41 +115,22 @@ export class ParentShellComponent implements OnInit {
     this.linkError.set(null);
     this.linkSuccess.set(null);
 
-    const payload: LinkChildRequestPayload = { student_ha_code: code };
+    const payload: LinkChildRequestPayload = {
+      studentCode: code,
+      student_ha_code: code
+    };
 
-    this.http.post<{ success: boolean; message: string; child: LinkedChildSummary }>('/api/v1/auth/parent/link-additional-child', payload).subscribe({
+    this.http.post<{ success: boolean; message: string; child?: LinkedChildSummary }>('/api/v1/auth/parent/link-additional-child', payload).subscribe({
       next: (res) => {
         this.isLinking.set(false);
-        this.linkSuccess.set('تم ربط حساب الطالب بنجاح!');
-        if (res.child) {
-          this.linkedChildren.update((curr) => [...curr, res.child]);
-          this.selectedChildId.set(res.child.studentId);
-        } else {
-          this.fetchLinkedChildren();
-        }
+        this.linkSuccess.set(res?.message || 'تم ربط حساب الطالب بنجاح!');
+        this.fetchLinkedChildren();
         setTimeout(() => this.closeLinkModal(), 1500);
       },
       error: (err) => {
         this.isLinking.set(false);
-        const serverMsg = err?.error?.message;
-        if (serverMsg) {
-          this.linkError.set(serverMsg);
-        } else {
-          // In development mock environment:
-          const newChild: LinkedChildSummary = {
-            studentId: `child-${Date.now()}`,
-            fullName: 'طالب سبايدر ماث',
-            haCode: code,
-            curriculum: 'GULF',
-            gradeLevel: 'الصف العاشر (Grade 10)',
-            activeUnitsCount: 1,
-            totalXp: 500
-          };
-          this.linkedChildren.update((curr) => [...curr, newChild]);
-          this.selectedChildId.set(newChild.studentId);
-          this.linkSuccess.set('تم ربط حساب الطالب بنجاح!');
-          setTimeout(() => this.closeLinkModal(), 1200);
-        }
+        const serverMsg = err?.error?.message || err?.error?.error?.message || 'تعذر ربط حساب الطالب. يرجى التحقق من الكود ورقم الهاتف المسجل.';
+        this.linkError.set(serverMsg);
       }
     });
   }

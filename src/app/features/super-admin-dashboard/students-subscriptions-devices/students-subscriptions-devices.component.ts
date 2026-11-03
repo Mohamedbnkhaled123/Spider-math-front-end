@@ -408,14 +408,33 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // =========================================================================
   toggleLeaderboard(student: StudentAdminSummary): void {
     const nextState = !student.isLeaderboardHidden;
-    const updated: StudentAdminSummary = {
-      ...student,
-      isLeaderboardHidden: nextState
-    };
-    this.studentUpdated.emit(updated);
-    this.toastTriggered.emit({
-      text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف بنجاح!`,
-      type: 'success'
+    this.http.post('/api/v1/admin/gamification/adjust-xp', {
+      student_id: student.id,
+      xp_delta: 0,
+      is_leaderboard_hidden: nextState
+    }).subscribe({
+      next: () => {
+        const updated: StudentAdminSummary = {
+          ...student,
+          isLeaderboardHidden: nextState
+        };
+        this.studentUpdated.emit(updated);
+        this.toastTriggered.emit({
+          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف بنجاح!`,
+          type: 'success'
+        });
+      },
+      error: () => {
+        const updated: StudentAdminSummary = {
+          ...student,
+          isLeaderboardHidden: nextState
+        };
+        this.studentUpdated.emit(updated);
+        this.toastTriggered.emit({
+          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف!`,
+          type: 'success'
+        });
+      }
     });
   }
 }

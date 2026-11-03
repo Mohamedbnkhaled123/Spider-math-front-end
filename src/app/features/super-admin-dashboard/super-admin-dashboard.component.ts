@@ -165,7 +165,7 @@ export class SuperAdminDashboardComponent implements OnInit {
               totalXp: u.total_xp || 0,
               approvedDevices: Array.isArray(u.approved_devices) ? u.approved_devices.length : 1,
               isLocked: u.account_lock_status === 'LOCKED',
-              isLeaderboardHidden: false,
+              isLeaderboardHidden: !!u.is_leaderboard_hidden,
               isProfileCompleted: u.is_profile_completed ?? (!!u.student_code),
               createdAt: u.createdAt
             };

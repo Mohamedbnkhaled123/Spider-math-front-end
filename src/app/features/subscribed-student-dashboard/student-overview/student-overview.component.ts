@@ -206,7 +206,11 @@ export class StudentOverviewComponent implements OnInit {
 
   // Animation 4.5 Leaderboard Podiums (Real from Gamification API)
   readonly leaderboard = signal<LeaderboardRankEntry[]>([]);
-  readonly topThreePodium = computed(() => this.leaderboard().filter(e => e.rank <= 3));
+  readonly topThreePodium = computed(() =>
+    this.leaderboard()
+      .filter(e => e.rank <= 3)
+      .sort((a, b) => a.rank - b.rank)
+  );
   readonly currentUserRank = computed(() => this.leaderboard().find(e => e.isCurrentUser));
 
   // Notifications List (Real from Notifications API)
@@ -543,9 +547,21 @@ export class StudentOverviewComponent implements OnInit {
             });
           }
 
-          if (mapped.length >= 3) {
-            this.leaderboard.set(mapped);
+          const currentUserEntry = mapped.find(m => m.isCurrentUser);
+          if (currentUserEntry && this.authService.currentUser()?.total_xp !== currentUserEntry.totalXp) {
+            this.authService.updateCurrentUser({ total_xp: currentUserEntry.totalXp });
           }
+
+          this.leaderboard.set(mapped);
+        } else if (user) {
+          this.leaderboard.set([{
+            rank: 1,
+            studentId: user._id,
+            studentName: user.full_name + ' (أنت)',
+            haCode: currentCode,
+            totalXp: user.total_xp ?? 0,
+            isCurrentUser: true
+          }]);
         }
       },
       error: () => {

@@ -17,5 +17,6 @@ export interface LinkedChildSummary {
 }
 
 export interface LinkChildRequestPayload {
-  student_ha_code: string;
+  studentCode?: string;
+  student_ha_code?: string;
 }

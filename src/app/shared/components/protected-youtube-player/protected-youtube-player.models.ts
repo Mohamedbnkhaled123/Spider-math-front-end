@@ -8,7 +8,8 @@ export interface IPlaybackProgress {
 
 export interface IPlaybackHeartbeatPayload {
   currentPlaybackSec: number;
-  chunkIndex: number;
+  isCompleted?: boolean;
+  chunkIndex?: number;
 }
 
 export interface IPlaybackHeartbeatResponse {
