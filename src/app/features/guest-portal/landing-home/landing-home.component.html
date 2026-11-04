@@ -157,78 +157,33 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- Right Column: Official Spider Math Video Showcase (5 Cols)          -->
+        <!-- Right Column: Spider Math 3D Mascot with Open Book (5 Cols)         -->
         <!-- =================================================================== -->
-        <div class="lg:col-span-5 flex justify-center w-full">
-          <div class="relative w-full max-w-lg lg:max-w-none">
+        <div class="lg:col-span-5 flex justify-center items-center w-full">
+          <div class="relative w-full max-w-lg flex flex-col items-center">
 
-            <!-- Futuristic Ambient Glow Behind Video -->
-            <div class="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-brand-secondary/40 via-brand-primary/30 to-brand-cyan/40 blur-xl opacity-60 pointer-events-none"></div>
+            <!-- Ambient Glow Behind Mascot -->
+            <div class="absolute -inset-4 rounded-full bg-gradient-to-tr from-brand-secondary/40 via-brand-primary/30 to-brand-cyan/40 blur-3xl opacity-70 pointer-events-none"></div>
 
-            <!-- Video Player Card Container -->
-            <div class="relative rounded-3xl border border-white/10 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/80 backdrop-blur-xl p-2 sm:p-2.5 shadow-2xl overflow-hidden">
-              
-              <!-- Responsive 16:9 Video Shell (Lite YouTube Facade: Loads in ~18 KiB with zero main-thread blocking) -->
-              <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/95 shadow-inner border border-white/10 flex items-center justify-center group">
-                @if (isHeroVideoPlaying()) {
-                  @if (heroVideoSafeEmbedUrl(); as safeUrl) {
-                    @if (isHeroYouTube()) {
-                      <iframe
-                        [src]="safeUrl"
-                        title="Spider Math Introductory Video"
-                        width="560"
-                        height="315"
-                        class="w-full h-full border-0 rounded-2xl"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen
-                      ></iframe>
-                    } @else {
-                      <video
-                        [src]="safeUrl"
-                        controls
-                        autoplay
-                        playsinline
-                        class="w-full h-full object-cover rounded-2xl"
-                      ></video>
-                    }
-                  }
-                } @else {
-                  <!-- Lite Facade Thumbnail & Interactive Play Trigger -->
-                  <button
-                    type="button"
-                    (click)="playHeroPromoVideo()"
-                    class="group relative w-full h-full block cursor-pointer focus:outline-none"
-                    [attr.aria-label]="heroVideoAriaLabel()"
-                  >
-                    @if (heroVideoThumbnailUrl(); as thumbUrl) {
-                      <img
-                        [src]="thumbUrl"
-                        [alt]="heroVideoAlt()"
-                        width="560"
-                        height="315"
-                        fetchpriority="high"
-                        decoding="async"
-                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    } @else {
-                      <div class="w-full h-full bg-slate-950 flex items-center justify-center">
-                        <app-icon name="video" [size]="48" className="text-brand-primary opacity-40" />
-                      </div>
-                    }
+            <!-- 3D Mascot Image with Book -->
+            <div class="relative z-10 w-full flex items-center justify-center">
+              <img
+                src="/assets/branding/spider-mascot-book.webp"
+                alt="Spider Math AI Study Partner"
+                width="480"
+                height="480"
+                fetchpriority="high"
+                decoding="async"
+                class="w-full max-w-[340px] sm:max-w-[400px] lg:max-w-[440px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-300"
+              />
+            </div>
 
-                    <!-- Dark Gradient Overlay for Cinematic Contrast -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/20 group-hover:via-black/20 transition-colors duration-300"></div>
-
-                    <!-- Glowing Center Play Button -->
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      <span class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-spider text-white flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 ring-4 ring-cyan-400/30 group-hover:ring-cyan-400/60 group-hover:shadow-[0_0_35px_rgba(0,186,198,0.5)]">
-                        <app-icon name="play" [size]="28" className="text-white ml-1" />
-                      </span>
-                    </div>
-                  </button>
-                }
-              </div>
-
+            <!-- Floating AI Partner Badge -->
+            <div class="relative z-20 -mt-4 sm:-mt-6 px-4 py-2 rounded-2xl bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 shadow-xl flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs sm:text-sm font-bold text-text-primary">
+                {{ langService.isArabic() ? 'الشريك الذكي لدراسة الرياضيات' : 'AI Study Partner' }}
+              </span>
             </div>
 
           </div>
@@ -246,18 +201,79 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          <!-- Avatar Frame with Official Logo (Square White Container) -->
-          <div class="lg:col-span-5 flex flex-col items-center text-center">
-            <div class="about-avatar-card bg-white rounded-3xl w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center overflow-hidden p-6 shadow-xl border border-white/20">
-              <img
-                src="/assets/branding/spider-math-logo.webp"
-                alt="Eng. Heba Abdel-Wahab — Spider Math"
-                width="224"
-                height="224"
-                loading="lazy"
-                decoding="async"
-                class="w-full h-full object-contain transition-transform duration-200 hover:scale-105"
-              />
+          <!-- Video Player Showcase Container in About Section (5 Cols) -->
+          <div class="lg:col-span-5 flex justify-center w-full">
+            <div class="relative w-full max-w-lg lg:max-w-none">
+
+              <!-- Ambient Glow Behind Video -->
+              <div class="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-brand-secondary/40 via-brand-primary/30 to-brand-cyan/40 blur-xl opacity-60 pointer-events-none"></div>
+
+              <!-- Video Player Card Container -->
+              <div class="relative rounded-3xl border border-white/10 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/80 backdrop-blur-xl p-2 sm:p-2.5 shadow-2xl overflow-hidden">
+                
+                <!-- Responsive 16:9 Video Shell (Lite YouTube Facade: Loads in ~18 KiB with zero main-thread blocking) -->
+                <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/95 shadow-inner border border-white/10 flex items-center justify-center group">
+                  @if (isHeroVideoPlaying()) {
+                    @if (heroVideoSafeEmbedUrl(); as safeUrl) {
+                      @if (isHeroYouTube()) {
+                        <iframe
+                          [src]="safeUrl"
+                          title="Spider Math Introductory Video"
+                          width="560"
+                          height="315"
+                          class="w-full h-full border-0 rounded-2xl"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowfullscreen
+                        ></iframe>
+                      } @else {
+                        <video
+                          [src]="safeUrl"
+                          controls
+                          autoplay
+                          playsinline
+                          class="w-full h-full object-cover rounded-2xl"
+                        ></video>
+                      }
+                    }
+                  } @else {
+                    <!-- Lite Facade Thumbnail & Interactive Play Trigger -->
+                    <button
+                      type="button"
+                      (click)="playHeroPromoVideo()"
+                      class="group relative w-full h-full block cursor-pointer focus:outline-none"
+                      [attr.aria-label]="heroVideoAriaLabel()"
+                    >
+                      @if (heroVideoThumbnailUrl(); as thumbUrl) {
+                        <img
+                          [src]="thumbUrl"
+                          [alt]="heroVideoAlt()"
+                          width="560"
+                          height="315"
+                          loading="lazy"
+                          decoding="async"
+                          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      } @else {
+                        <div class="w-full h-full bg-slate-950 flex items-center justify-center">
+                          <app-icon name="video" [size]="48" className="text-brand-primary opacity-40" />
+                        </div>
+                      }
+
+                      <!-- Dark Gradient Overlay for Cinematic Contrast -->
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/20 group-hover:via-black/20 transition-colors duration-300"></div>
+
+                      <!-- Glowing Center Play Button -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-spider text-white flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 ring-4 ring-cyan-400/30 group-hover:ring-cyan-400/60 group-hover:shadow-[0_0_35px_rgba(0,186,198,0.5)]">
+                          <app-icon name="play" [size]="28" className="text-white ml-1" />
+                        </span>
+                      </div>
+                    </button>
+                  }
+                </div>
+
+              </div>
+
             </div>
           </div>
 
