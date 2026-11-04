@@ -3,30 +3,20 @@
   width: 100%;
 }
 
-.brand-spider {
-  background: linear-gradient(135deg, #2A0E6F 0%, #5B1F9E 50%, #7C28C7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 900;
+.academic-wordmark {
+  font-family: var(--font-display-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-:host-context(.dark) .brand-spider,
-:host-context([data-theme='dark']) .brand-spider {
-  background: linear-gradient(135deg, #C084FC 0%, #A855F7 50%, #8B3CE0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.brand-math {
-  background: linear-gradient(135deg, #00BAC6 0%, #00D2DE 50%, #00F2FE 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 900;
-}
-
-.spark-star {
-  color: #00BAC6;
+.footer-pill-container {
+  background: var(--surface-bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
+  border-right: 1px solid var(--surface-border);
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.25);
 }

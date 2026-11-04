@@ -11,7 +11,7 @@ import { PublicDiscoveryService } from '../../../core/services/public-discovery.
 @Component({
   selector: 'app-brand-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent],
+  imports: [CommonModule, RouterLink, AppIconComponent],
   templateUrl: './brand-footer.component.html',
   styleUrl: './brand-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

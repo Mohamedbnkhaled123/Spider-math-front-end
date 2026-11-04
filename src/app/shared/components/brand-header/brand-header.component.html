@@ -1,4 +1,5 @@
-<header class="sticky top-0 z-layer-header glass-panel border-b border-surface-border transition-colors duration-200">
+<header class="header-glass-bar transition-colors duration-300 relative z-layer-header">
+  
   <!-- Real Web Notifications Permission Request Banner -->
   @if (authService.isAuthenticated() && notificationsService.permissionStatus() === 'default' && !notificationsService.isPromptDismissed()) {
     <div class="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary text-white px-4 py-2 text-xs flex items-center justify-between gap-3 shadow-md border-b border-brand-accent/20 animate-fade-in relative z-50">
@@ -31,99 +32,79 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
     
-    <!-- 1. Brand Logo & Dual-Spectrum Wordmark -->
+    <!-- 1. Brand Logo & Luxury Academic Wordmark -->
     <a
       [routerLink]="activePortal() ? activePortal()!.route : '/'"
       (click)="closeMobileMenu()"
-      class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-brand-accent rounded-xl p-1.5 transition-transform duration-200 hover:scale-[1.02] shrink-0"
+      class="flex items-center gap-2.5 group focus:outline-none rounded-xl p-1 transition-transform duration-200 hover:scale-[1.02] shrink-0"
     >
-      <!-- Official Geometric Logo Icon -->
-      <div class="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center rounded-2xl bg-surface-card border border-surface-border shadow-sm overflow-hidden group-hover:border-cyan-400 transition-colors duration-200">
-        <img
-          src="/assets/branding/spider-mascot-logo.webp"
-          alt="Spider Math Logo — المهندسة هبة عبدالوهاب"
-          width="48"
-          height="48"
-          decoding="async"
-          class="w-full h-full object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
-        />
-      </div>
+      <!-- Official Mascot Logo Icon (Floating Transparent WebP) -->
+      <img
+        src="/assets/branding/spider-mascot-nav.webp"
+        alt="Spider Math Logo"
+        width="40"
+        height="40"
+        decoding="async"
+        class="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200"
+      />
 
-      <!-- Split-Spectrum Wordmark -->
-      <div class="flex flex-col">
-        <div class="flex items-center tracking-tight font-black text-xl sm:text-2xl leading-none">
-          <span class="brand-spider">Spider</span>
-          <span class="brand-math ml-1 rtl:mr-1 rtl:ml-0 flex items-center">
-            Math<span class="spark-star inline-block text-brand-accent text-lg sm:text-xl font-normal ml-0.5 rtl:mr-0.5 rtl:ml-0 animate-spark-twinkle">✦</span>
-          </span>
-        </div>
-        <span class="text-[11px] sm:text-xs text-text-secondary font-medium tracking-normal mt-0.5">
-          {{ 'BRAND.TEACHER' | transloco }}
-        </span>
-      </div>
+      <!-- Academic Wordmark -->
+      <span class="academic-wordmark text-2xl font-bold">
+        Spider Math
+      </span>
     </a>
 
-    <!-- 2. Visitor Navigation Links (Desktop) -->
+    <!-- 2. Visitor Navigation Links (Desktop — Editorial Clean Style) -->
     @if (!authService.isAuthenticated()) {
-      <nav class="hidden xl:flex items-center gap-1 lg:gap-2 text-xs font-bold text-text-secondary" aria-label="Main Navigation">
+      <nav class="hidden xl:flex items-center gap-6 text-sm font-medium text-text-secondary" aria-label="Main Navigation">
         <button
           type="button"
           (click)="navigateToSection('curriculum-section')"
-          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
+          class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'اختار منهجك' : 'Curriculums' }}
-        </button>
-
-        <button
-          type="button"
-          (click)="navigateToSection('pricing-packages')"
-          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all cursor-pointer"
-        >
-          {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units & Revisions' }}
+          {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
         </button>
 
         <a
           routerLink="/placement-test"
-          class="px-3 py-2 rounded-xl hover:text-brand-accent hover:bg-surface-card text-brand-primary dark:text-brand-accent font-extrabold transition-all flex items-center gap-1.5"
+          class="hover:text-brand-gold transition-colors flex items-center gap-1.5"
         >
-          <app-icon name="target" [size]="14" className="text-brand-accent" />
-          <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
+          <span>{{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}</span>
         </a>
 
-        <a
-          routerLink="/login"
-          [queryParams]="{ role: 'STUDENT' }"
-          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all"
+        <button
+          type="button"
+          (click)="navigateToSection('hall-of-fame-section')"
+          class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'دخول الطلاب' : 'Student Login' }}
-        </a>
+          {{ langService.isArabic() ? 'لوحة الشرف والنتائج' : 'Performance Analytics' }}
+        </button>
 
-        <a
-          routerLink="/login"
-          [queryParams]="{ role: 'PARENT' }"
-          class="px-3 py-2 rounded-xl hover:text-brand-primary dark:hover:text-brand-accent hover:bg-surface-card transition-all"
+        <button
+          type="button"
+          (click)="navigateToSection('about-section')"
+          class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}
-        </a>
+          {{ langService.isArabic() ? 'عن المنصة والحصص' : 'Live Sessions' }}
+        </button>
       </nav>
     } @else {
       <!-- 2. Authenticated Navigation Links (Desktop) -->
-      <nav class="hidden md:flex items-center gap-1.5 text-xs font-bold text-text-secondary" aria-label="Portal Navigation">
-        <!-- Return / View Public Landing Page -->
+      <nav class="hidden md:flex items-center gap-2 text-xs font-semibold text-text-secondary" aria-label="Portal Navigation">
         <a
           [routerLink]="['/']"
           [queryParams]="{ view: 'public' }"
-          class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary/40 text-text-secondary hover:text-brand-primary dark:hover:text-brand-accent transition-all flex items-center gap-1.5 shadow-sm"
+          class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
           [title]="langService.isArabic() ? 'استعراض الصفحة الرئيسية للمنصة' : 'View Public Landing Page'"
         >
           <app-icon name="home" [size]="14" />
-          <span>{{ langService.isArabic() ? 'الصفحة الرئيسية للمنصة' : 'Public Main Page' }}</span>
+          <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home' }}</span>
         </a>
 
         @if (authService.isStudent()) {
           <a
             routerLink="/student"
-            class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary/40 text-text-secondary hover:text-brand-primary dark:hover:text-brand-accent transition-all flex items-center gap-1.5 shadow-sm"
+            class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
             [title]="langService.isArabic() ? 'لوحة المذاكرة الخاصة بالطالب' : 'Student Study Dashboard'"
           >
             <app-icon name="book-open" [size]="14" />
@@ -136,30 +117,40 @@
     <!-- 3. Global Action Bar Controls -->
     <div class="flex items-center gap-2 sm:gap-3">
       
+      <!-- Visitor CTA Get Started (Metallic Gold Button) -->
+      @if (!authService.isAuthenticated()) {
+        <a
+          routerLink="/login"
+          class="btn-gold-metallic px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-slate-950 rounded-lg shadow-md hover:scale-[1.02] active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>{{ langService.isArabic() ? 'ابدأ الآن' : 'Get Started' }}</span>
+        </a>
+      }
+
       <!-- Language Switcher (EN / عربي) -->
       <button
         type="button"
         (click)="toggleLanguage()"
-        class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-secondary text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+        class="px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
         title="Toggle Language / تغيير اللغة"
       >
-        <app-icon name="globe" [size]="15" className="text-brand-secondary" />
-        <span>{{ langService.isArabic() ? 'English' : 'عربي' }}</span>
+        <app-icon name="globe" [size]="14" className="text-brand-gold" />
+        <span>{{ langService.isArabic() ? 'EN' : 'عربي' }}</span>
       </button>
 
       <!-- Theme Switcher (Light / Dark) -->
       <button
         type="button"
         (click)="toggleTheme()"
-        class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-sm text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 cursor-pointer"
+        class="p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
         [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
         @if (themeService.isDark()) {
-          <app-icon name="sun" [size]="18" className="text-amber-400 hover:rotate-45 transition-transform duration-300" />
+          <app-icon name="sun" [size]="16" className="text-brand-gold hover:rotate-45 transition-transform duration-300" />
         } @else {
-          <app-icon name="moon" [size]="18" className="text-brand-primary hover:-rotate-12 transition-transform duration-300" />
+          <app-icon name="moon" [size]="16" className="text-brand-gold hover:-rotate-12 transition-transform duration-300" />
         }
       </button>
 
@@ -168,15 +159,15 @@
         <button
           type="button"
           (click)="toggleNotifications()"
-          class="p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 relative cursor-pointer"
+          class="p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 relative cursor-pointer"
           [attr.aria-label]="langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Notifications'"
           title="الإشعارات / Notifications"
         >
-          <app-icon name="bell" [size]="18" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-accent animate-spark-twinkle' : 'text-text-secondary'" />
+          <app-icon name="bell" [size]="16" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold animate-spark-twinkle' : 'text-text-secondary'" />
           
           <!-- Glowing Unread Badge -->
           @if (notificationsService.unreadCount() > 0) {
-            <span class="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 min-w-[18px] h-[18px] px-1 rounded-full bg-feedback-danger text-white text-[10px] font-black flex items-center justify-center shadow-sm font-numeric">
+            <span class="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-feedback-danger text-white text-[9px] font-black flex items-center justify-center shadow-sm font-numeric">
               {{ notificationsService.unreadCount() }}
             </span>
           }
@@ -190,7 +181,7 @@
             <!-- Dropdown Header -->
             <div class="p-3.5 border-b border-surface-border flex items-center justify-between bg-surface-secondary/50">
               <div class="flex items-center gap-2">
-                <app-icon name="bell" [size]="16" className="text-brand-accent" />
+                <app-icon name="bell" [size]="16" className="text-brand-gold" />
                 <span class="text-xs font-black text-text-primary">
                   {{ langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Alerts & Notifications' }}
                 </span>
@@ -200,60 +191,12 @@
                 <button
                   type="button"
                   (click)="markAllRead()"
-                  class="text-[11px] font-bold text-brand-secondary hover:underline cursor-pointer"
+                  class="text-[11px] font-bold text-brand-gold hover:underline cursor-pointer"
                 >
                   {{ langService.isArabic() ? 'تحديد الكل كمقروء' : 'Mark all read' }}
                 </button>
               }
             </div>
-
-            <!-- Web Notifications Permission & Test Controls -->
-            @if (notificationsService.isSupported()) {
-              @if (notificationsService.permissionStatus() === 'default') {
-                <div class="p-3 bg-brand-primary/10 border-b border-brand-primary/20 flex items-start gap-2.5">
-                  <app-icon name="bell" [size]="16" className="text-brand-primary shrink-0 mt-0.5" />
-                  <div class="flex-1 text-xs">
-                    <span class="font-bold text-text-primary block">تفعيل التنبيهات الفورية للمتصفح</span>
-                    <p class="text-[11px] text-text-secondary mt-0.5 leading-relaxed">
-                      اسمح بالاشعارات ليصلك تنبيه فوري على شاشة جهازك عند تصحيح الواجب أو إضافة درس جديد حتى لو كنت تتصفح مواقع أخرى.
-                    </p>
-                    <button
-                      type="button"
-                      (click)="requestPermission()"
-                      class="mt-2 px-3 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-secondary text-white text-[11px] font-bold shadow-sm transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      <app-icon name="check" [size]="12" />
-                      <span>السماح بالإشعارات الفورية الآن</span>
-                    </button>
-                  </div>
-                </div>
-              } @else if (notificationsService.permissionStatus() === 'granted') {
-                <div class="px-3.5 py-2 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between text-[11px]">
-                  <span class="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1.5">
-                    <app-icon name="check-circle" [size]="14" />
-                    <span>الإشعارات الفورية مفعلة على جهازك</span>
-                  </span>
-                  <button
-                    type="button"
-                    (click)="sendTestNotification()"
-                    class="text-brand-primary hover:underline font-bold cursor-pointer"
-                    title="تجربة إشعار حقيقي"
-                  >
-                    تجربة إشعار فوري
-                  </button>
-                </div>
-              } @else if (notificationsService.permissionStatus() === 'denied') {
-                <div class="p-3 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2 leading-relaxed">
-                  <app-icon name="alert-circle" [size]="16" className="shrink-0 mt-0.5 text-amber-600" />
-                  <div>
-                    <span class="font-bold block text-text-primary">الإشعارات محظورة في إعدادات متصفحك</span>
-                    <p class="text-[11px] mt-0.5">
-                      لتفعيلها: اضغط على علامة <strong>(i)</strong> الدائرية بجوار <strong>localhost:4200</strong> في شريط عنوان المتصفح بالأعلى، ثم غيّر «الإشعارات / Notifications» إلى <strong>سماح (Allow)</strong> ثم حدّث الصفحة.
-                    </p>
-                  </div>
-                </div>
-              }
-            }
 
             <!-- Notifications List -->
             <div class="max-h-80 overflow-y-auto divide-y divide-surface-border/50">
@@ -267,12 +210,12 @@
                   <div
                     (click)="onNotificationClick(notif)"
                     class="p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-surface-secondary/60"
-                    [ngClass]="{ 'bg-brand-primary/5': !notif.is_read }"
+                    [ngClass]="{ 'bg-brand-gold/5': !notif.is_read }"
                   >
                     <!-- Read Dot -->
                     <span
                       class="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                      [ngClass]="notif.is_read ? 'bg-transparent' : 'bg-brand-accent animate-pulse'"
+                      [ngClass]="notif.is_read ? 'bg-transparent' : 'bg-brand-gold animate-pulse'"
                     ></span>
 
                     <div class="flex-1 min-w-0">
@@ -303,17 +246,16 @@
             <button
               type="button"
               (click)="copyHaCode(haCode, $event)"
-              class="ha-code-badge hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-bg border border-brand-accent/40 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm hover:border-brand-accent hover:bg-brand-primary/10 transition-all cursor-pointer group"
+              class="ha-code-badge hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/40 text-xs font-bold text-brand-gold font-numeric shadow-sm hover:border-brand-gold transition-all cursor-pointer group"
               title="نسخ كود الطالب / Copy HA Code"
             >
               <span>{{ haCode }}</span>
-              <app-icon name="copy" [size]="13" className="text-brand-accent group-hover:scale-110 transition-transform" />
+              <app-icon name="copy" [size]="12" className="text-brand-gold group-hover:scale-110 transition-transform" />
             </button>
           }
 
           <!-- Glowing XP Pill -->
-          <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-primary/10 to-brand-secondary/15 border border-brand-accent/30 text-xs font-bold text-brand-primary dark:text-brand-accent font-numeric shadow-sm">
-            <app-icon name="award" [size]="14" className="text-brand-accent" />
+          <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm">
             <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
           </span>
 
@@ -321,9 +263,9 @@
           @if (activePortal(); as portal) {
             <a
               [routerLink]="portal.route"
-              class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-gradient-spider hover:opacity-95 shadow-sm hover:shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+              class="btn-gold-metallic px-3.5 py-1.5 text-xs font-bold text-slate-950 rounded-lg shadow-sm hover:scale-[1.02] transition-transform flex items-center gap-1"
             >
-              <app-icon name="sparkles" [size]="14" />
+              <app-icon name="sparkles" [size]="13" />
               <span>{{ portal.label }}</span>
             </a>
           }
@@ -332,23 +274,11 @@
           <button
             type="button"
             (click)="logout()"
-            class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
+            class="p-1.5 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
             title="تسجيل الخروج"
           >
             <app-icon name="log-out" [size]="15" />
-            <span class="hidden lg:inline">{{ 'NAV.LOGOUT' | transloco }}</span>
           </button>
-        </div>
-      } @else {
-        <!-- Visitor CTA Login / Role Simulator Button -->
-        <div class="flex items-center gap-2">
-          <a
-            routerLink="/login"
-            class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-extrabold text-white bg-gradient-spider rounded-xl shadow-sm hover:shadow-md hover:opacity-95 active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
-          >
-            <app-icon name="sparkles" [size]="14" />
-            <span>{{ langService.isArabic() ? 'دخول المنصة' : 'Enter Platform' }}</span>
-          </a>
         </div>
       }
 
@@ -356,10 +286,10 @@
       <button
         type="button"
         (click)="toggleMobileMenu()"
-        class="xl:hidden p-2 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-9 h-9 cursor-pointer"
+        class="xl:hidden p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 cursor-pointer"
         aria-label="Toggle Mobile Navigation"
       >
-        <app-icon [name]="isMobileMenuOpen() ? 'x' : 'menu'" [size]="18" />
+        <app-icon [name]="isMobileMenuOpen() ? 'x' : 'menu'" [size]="16" />
       </button>
 
     </div>
@@ -367,7 +297,7 @@
 
   <!-- 4. Mobile Navigation Drawer / Dropdown -->
   @if (isMobileMenuOpen()) {
-    <div class="xl:hidden border-t border-surface-border bg-surface-card/95 backdrop-blur-xl px-4 py-5 animate-fade-in space-y-3">
+    <div class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 animate-fade-in space-y-3">
       @if (!authService.isAuthenticated()) {
         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
           <button
@@ -375,88 +305,71 @@
             (click)="navigateToSection('curriculum-section')"
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
-            {{ langService.isArabic() ? 'اختار منهجك' : 'Curriculums' }}
-          </button>
-
-          <button
-            type="button"
-            (click)="navigateToSection('pricing-packages')"
-            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
-          >
-            {{ langService.isArabic() ? 'الوحدات والمراجعات' : 'Units' }}
+            {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
           </button>
 
           <a
             routerLink="/placement-test"
             (click)="closeMobileMenu()"
-            class="p-2.5 rounded-xl border border-brand-accent bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-center font-extrabold"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
-            {{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}
+            {{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}
           </a>
+
+          <button
+            type="button"
+            (click)="navigateToSection('hall-of-fame-section')"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'لوحة الشرف' : 'Leaderboard' }}
+          </button>
+
+          <button
+            type="button"
+            (click)="navigateToSection('about-section')"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'عن المنصة' : 'About' }}
+          </button>
         </div>
 
-        <div class="pt-2 flex flex-col gap-2">
+        <div class="pt-2">
           <a
             routerLink="/login"
-            [queryParams]="{ role: 'STUDENT' }"
             (click)="closeMobileMenu()"
-            class="w-full py-2.5 rounded-xl border border-surface-border bg-surface-bg text-center text-xs font-bold text-text-primary"
+            class="btn-gold-metallic w-full py-2.5 text-xs font-bold text-slate-950 rounded-xl shadow-md text-center block"
           >
-            {{ langService.isArabic() ? 'دخول الطلاب' : 'Student Login' }}
-          </a>
-          <a
-            routerLink="/login"
-            [queryParams]="{ role: 'PARENT' }"
-            (click)="closeMobileMenu()"
-            class="w-full py-2.5 rounded-xl border border-surface-border bg-surface-bg text-center text-xs font-bold text-text-primary"
-          >
-            {{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}
+            {{ langService.isArabic() ? 'ابدأ الآن' : 'Get Started' }}
           </a>
         </div>
       } @else {
-        <!-- Mobile User Stats & HA code -->
-        <div class="p-3 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <app-icon name="user" [size]="16" className="text-brand-accent" />
-            <span class="text-xs font-bold text-text-primary">{{ authService.currentUser()?.full_name }}</span>
-          </div>
-          @if (authService.currentUser()?.student_ha_code; as code) {
-            <span class="font-mono text-xs font-black text-brand-secondary">{{ code }}</span>
-          }
-        </div>
-
-        <!-- Mobile Navigation Links for Authenticated Users -->
-        <div class="grid grid-cols-2 gap-2 text-xs font-bold pt-1">
-          <a
-            [routerLink]="['/']"
-            [queryParams]="{ view: 'public' }"
-            (click)="closeMobileMenu()"
-            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center flex items-center justify-center gap-1.5 hover:border-brand-primary/40 transition-colors"
-          >
-            <app-icon name="home" [size]="14" />
-            <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Main Page' }}</span>
-          </a>
-
+        <div class="flex flex-col gap-2 text-xs font-bold">
           @if (activePortal(); as portal) {
             <a
               [routerLink]="portal.route"
               (click)="closeMobileMenu()"
-              class="p-2.5 rounded-xl border border-brand-accent/40 bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-center flex items-center justify-center gap-1.5 font-black hover:bg-brand-primary/20 transition-colors"
+              class="btn-gold-metallic p-2.5 rounded-xl text-center block"
             >
-              <app-icon name="sparkles" [size]="14" />
-              <span>{{ portal.label }}</span>
+              {{ portal.label }}
             </a>
           }
+          <button
+            type="button"
+            (click)="logout()"
+            class="p-2.5 rounded-xl border border-feedback-danger/30 text-feedback-danger text-center"
+          >
+            {{ 'NAV.LOGOUT' | transloco }}
+          </button>
         </div>
       }
     </div>
   }
 
-  <!-- 5. Toast Feedback for HA Code Copy -->
+  <!-- Copied HA Code Toast Notification -->
   @if (isCopiedToastVisible()) {
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-layer-modal px-4 py-2.5 rounded-xl bg-surface-card border border-brand-accent shadow-brand-glow text-xs font-bold text-text-primary flex items-center gap-2 animate-fade-in">
-      <app-icon name="check" [size]="16" className="text-emerald-500" />
-      <span>{{ langService.isArabic() ? 'تم نسخ كود الطالب إلى الحافظة بنجاح!' : 'HA Student Code copied to clipboard!' }}</span>
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-layer-modal px-4 py-2 rounded-xl bg-slate-950/95 text-white border border-brand-gold/40 shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce-subtle">
+      <app-icon name="check" [size]="14" className="text-brand-gold" />
+      <span>{{ langService.isArabic() ? 'تم نسخ كود الطالب بنجاح' : 'Student HA code copied to clipboard!' }}</span>
     </div>
   }
 
