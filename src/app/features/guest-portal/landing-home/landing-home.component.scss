@@ -476,3 +476,19 @@ $axis-blue: #0284C7;
   contain: layout paint;
   will-change: transform;
 }
+
+
+// Mascot Gentle Float
+@keyframes mascotGentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-mascot-float {
+  animation: mascotGentleFloat 5s ease-in-out infinite;
+  will-change: transform;
+}
