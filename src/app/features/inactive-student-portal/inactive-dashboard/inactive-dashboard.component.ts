@@ -10,12 +10,14 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { UnitsSubscriptionsService } from '../../../core/services/units-subscriptions.service';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { IUnitPackageItem } from '../../../core/services/units-subscriptions.models';
 import { ITrialLecture, IPlacementReportSummary } from './inactive-dashboard.models';
 import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
@@ -32,12 +34,35 @@ export class InactiveDashboardComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
   private readonly unitsService = inject(UnitsSubscriptionsService);
+  private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+
+  // Dynamic Contact Channels from CMS
+  readonly landingData = toSignal(this.discoveryService.getLandingData(), { initialValue: null });
+  readonly teacherWhatsAppNumber = computed(() => {
+    return this.landingData()?.whatsappSupportNumber ||
+      this.landingData()?.contactChannels?.subscription_whatsapp ||
+      this.landingData()?.contactChannels?.support_whatsapp ||
+      '';
+  });
 
   activateAndOpenDashboard(): void {
     this.authService.updateCurrentUser({ has_active_subscription: true });
     this.router.navigateByUrl('/student');
+  }
+
+  openPlacementDiscussionWhatsApp(): void {
+    const phone = this.teacherWhatsAppNumber().replace(/[^0-9]/g, '');
+    const rep = this.placementReport();
+    const scoreText = rep ? `بنسبة (${rep.percentage}%)` : '';
+    const msg = encodeURIComponent(
+      `مرحباً م/ هبة عبدالوهاب، أنا الطالب (${this.studentName()}) كود: (${this.haCode()})، سلمت امتحان تحديد المستوى ${scoreText} وأرغب في معرفة تقييمك لمستواي وتحديد ما أحتاجه والوحدة المناسبة لي.`
+    );
+    if (isPlatformBrowser(this.platformId)) {
+      const targetPhone = phone || '201000000001';
+      window.open(`https://wa.me/${targetPhone}?text=${msg}`, '_blank');
+    }
   }
 
   // Student Profile Data
@@ -86,52 +111,17 @@ export class InactiveDashboardComponent implements OnInit {
         }
 
         const scorePct = attempt.scorePercentage ?? attempt.score_percentage ?? 0;
-        const badge = attempt.academicLevelBadge ?? attempt.academic_level_badge ?? 'GOOD';
-
-        let badgeAr = 'مستوى متقدم — عبقري رياضيات (Advanced Mastery)';
-        let badgeEn = 'Advanced Mastery — Math Genius';
-        let recAr = 'مستوى الطالب يؤهله لتحقيق الدرجة النهائية بإذن الله. ننصح بالبدء فوراً بالوحدة الأولى والتركيز على ورش العمل التطبيقية مع م/ هبة.';
-        let recEn = 'Excellent algebraic intuition. Enrolling in Unit 1 will bridge trigonometry gaps and solidify speed tactics.';
-
-        if (badge === 'EXCELLENT' || scorePct >= 85) {
-          badgeAr = 'مستوى متقدم — عبقري رياضيات (Advanced Mastery)';
-          badgeEn = 'Advanced Mastery — Math Genius';
-          recAr = 'مستوى الطالب يؤهله لتحقيق الدرجة النهائية بإذن الله. ننصح بالبدء فوراً بالوحدة الأولى والتركيز على ورش العمل التطبيقية مع م/ هبة.';
-          recEn = 'Excellent algebraic intuition. Enrolling in Unit 1 will bridge trigonometry gaps and solidify speed tactics.';
-        } else if (badge === 'GOOD' || scorePct >= 65) {
-          badgeAr = 'مستوى جيد جداً ومتمكن (Proficient)';
-          badgeEn = 'Proficient Mastery';
-          recAr = 'أداء متميز مع استيعاب جيد جداً للمفاهيم الرياضية الأساسية، وبعض الجزئيات تحتاج إلى تدريب وتطبيق مكثف مع م/ هبة.';
-          recEn = 'Good conceptual understanding. Focus on problem sets and speed optimization with Eng. Heba.';
-        } else if (badge === 'NEEDS_REVISION' || scorePct >= 50) {
-          badgeAr = 'يحتاج إلى مراجعة وتثبيت المفاهيم (Needs Revision)';
-          badgeEn = 'Needs Concept Revision';
-          recAr = 'ينصح بالتركيز على مراجعة الأساسيات وحضور الحصص التأسيسية لردم الفجوات الرياضية والتفوق.';
-          recEn = 'Core foundations require targeted revision. Participating in fundamentals sessions will close knowledge gaps.';
-        } else {
-          badgeAr = 'تأسيس مكثف مطلوب (Foundation Required)';
-          badgeEn = 'Foundation Required';
-          recAr = 'يحتاج الطالب إلى مسار تأسيسي مخصص لتثبيت القواعد الأساسية، وفريق م/ هبة جاهز لدعمه خطوة بخطوة.';
-          recEn = 'Intensive foundational drills are recommended to build confidence and essential mathematical mastery.';
-        }
-
-        const sw = attempt.strengthsWeaknesses || attempt.strengths_weaknesses || {};
-        const strengths = Array.isArray(sw.strong_topics) && sw.strong_topics.length > 0
-          ? sw.strong_topics
-          : ['الجبر والعمليات الرياضية الأساسية', 'القدرة على استيعاب الأسئلة التحليلية'];
-        const weaknesses = Array.isArray(sw.weak_topics) && sw.weak_topics.length > 0
-          ? sw.weak_topics
-          : ['المسائل المركبة متعددة الخطوات', 'إدارة الوقت وحيل السرعة'];
+        const correct = attempt.correctCount ?? attempt.correct_count ?? Math.round(scorePct);
 
         this.placementReport.set({
-          score: attempt.correctCount ?? attempt.correct_count ?? Math.round(scorePct),
+          score: correct,
           percentage: scorePct,
-          academicLevelBadgeAr: badgeAr,
-          academicLevelBadgeEn: badgeEn,
-          strengths,
-          weaknesses,
-          teacherRecommendationAr: recAr,
-          teacherRecommendationEn: recEn
+          academicLevelBadgeAr: `${scorePct}%`,
+          academicLevelBadgeEn: `${scorePct}%`,
+          strengths: [],
+          weaknesses: [],
+          teacherRecommendationAr: '',
+          teacherRecommendationEn: ''
         });
       },
       error: () => {

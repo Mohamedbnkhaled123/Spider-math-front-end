@@ -94,77 +94,55 @@
       <span>{{ langService.isArabic() ? 'جاري جلب تقرير تحديد المستوى الأكاديمي...' : 'Loading Placement Assessment Report...' }}</span>
     </div>
   } @else if (placementReport(); as rep) {
-    <div class="rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-card relative overflow-hidden animate-fade-in">
+    <div class="rounded-3xl border border-cyan-500/30 bg-surface-card p-6 sm:p-8 shadow-card relative overflow-hidden animate-fade-in">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-surface-border mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
+          <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
             <app-icon name="target" [size]="24" />
           </div>
           <div>
             <h3 class="text-lg sm:text-xl font-black text-text-primary">
-              {{ langService.isArabic() ? 'تقرير امتحان تحديد المستوى التفاعلي' : 'Diagnostic Placement Assessment Report' }}
+              {{ langService.isArabic() ? 'نتيجة امتحان تحديد المستوى' : 'Placement Assessment Result' }}
             </h3>
             <p class="text-xs text-text-secondary mt-0.5">
-              {{ langService.isArabic() ? 'تحليل شامل لنقاط القوة والمجالات المستهدفة للتطوير' : 'Skill assessment and personalized study trajectory' }}
+              {{ langService.isArabic() ? 'تم تسليم إجاباتك وإرسالها بنجاح إلى لوحة تحكم المعلمة م/ هبة عبدالوهاب' : 'Your test answers were submitted to the teacher dashboard' }}
             </p>
           </div>
         </div>
 
-        <div class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-sm flex items-center gap-2 self-start sm:self-auto">
+        <div class="px-4 py-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 font-black text-sm flex items-center gap-2 self-start sm:self-auto font-numeric">
           <app-icon name="award" [size]="16" />
-          <span class="font-numeric">{{ rep.percentage }}%</span>
-          <span>•</span>
-          <span>{{ rep.academicLevelBadgeAr }}</span>
+          <span>الدرجة: {{ rep.percentage }}%</span>
         </div>
       </div>
 
-      <!-- Strengths & Weaknesses Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <!-- Strengths -->
-        <div class="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
-          <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-2.5 flex items-center gap-2">
-            <app-icon name="check-circle" [size]="16" />
-            <span>{{ langService.isArabic() ? 'المفاهيم المتقنة (نقاط القوة):' : 'Mastered Competencies:' }}</span>
-          </h4>
-          <ul class="space-y-2 text-xs text-text-secondary">
-            @for (str of rep.strengths; track str) {
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span>{{ str }}</span>
-              </li>
-            }
-          </ul>
+      <!-- Notice: Teacher Direct WhatsApp Consultation -->
+      <div class="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+            <app-icon name="message-circle" [size]="20" />
+          </div>
+          <div class="text-xs space-y-1">
+            <span class="font-extrabold text-text-primary text-sm block">
+              {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب ستتواصل معك هاتفياً وعبر الواتساب' : 'Teacher Follow-up on WhatsApp' }}
+            </span>
+            <p class="text-text-secondary leading-relaxed">
+              {{ langService.isArabic()
+                ? 'وصلت نتيجتك وخطوات إجاباتك إلى الداشبورد، وستتواصل معك المهندسة هبة شخصياً عبر الواتساب لتشخيص مستواك بدقة، وتحديد ما تحتاجه بالضبط، والبدء في الخطة والوحدة الأنسب لك.'
+                : 'Your result was received by the teacher. Eng. Heba will contact you via WhatsApp to review your exact needs and set your personalized study plan.' }}
+            </p>
+          </div>
         </div>
 
-        <!-- Weaknesses -->
-        <div class="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-          <h4 class="text-xs font-bold text-amber-600 dark:text-amber-400 mb-2.5 flex items-center gap-2">
-            <app-icon name="alert-circle" [size]="16" />
-            <span>{{ langService.isArabic() ? 'مجالات تحتاج إلى تركيز وتدريب إضافي:' : 'Areas For Reinforcement:' }}</span>
-          </h4>
-          <ul class="space-y-2 text-xs text-text-secondary">
-            @for (weak of rep.weaknesses; track weak) {
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
-                <span>{{ weak }}</span>
-              </li>
-            }
-          </ul>
-        </div>
-      </div>
-
-      <!-- Teacher Note -->
-      <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border flex items-start gap-3">
-        <app-icon name="message-circle" [size]="18" className="text-brand-accent mt-0.5 shrink-0" />
-        <div class="text-xs">
-          <span class="font-extrabold text-brand-primary dark:text-brand-accent block mb-0.5">
-            {{ langService.isArabic() ? 'توصية المهندسة هبة عبدالوهاب الأكاديمية:' : 'Teacher Recommendation:' }}
-          </span>
-          <p class="text-text-secondary leading-relaxed">
-            {{ langService.isArabic() ? rep.teacherRecommendationAr : rep.teacherRecommendationEn }}
-          </p>
-        </div>
+        <button
+          type="button"
+          (click)="openPlacementDiscussionWhatsApp()"
+          class="shrink-0 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <app-icon name="whatsapp" [size]="16" />
+          <span>{{ langService.isArabic() ? 'مراسلة م/ هبة عبر واتساب' : 'Chat on WhatsApp' }}</span>
+        </button>
       </div>
 
     </div>
