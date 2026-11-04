@@ -1,383 +1,956 @@
-<div class="w-full curriculum-selector-wrapper">
-  
-  <!-- 4-Curriculum Interactive Cards Grid (3D Spring Physics) -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    @for (curriculum of curriculumCards(); track curriculum.code) {
-      <div
-        (click)="selectCurriculum(curriculum.code)"
-        class="curriculum-card relative rounded-2xl p-6 transition-all duration-300 cursor-pointer border flex flex-col justify-between overflow-hidden group select-none"
-        [ngClass]="{
-          'curriculum-card--active border-brand-accent ring-1 ring-cyan-400/40 bg-surface-card shadow-md':
-            selectedCurriculumCode() === curriculum.code,
-          'border-surface-border bg-surface-card hover:border-cyan-400/40 hover:shadow-card':
-            selectedCurriculumCode() !== curriculum.code
-        }"
-      >
-        <!-- Top Badge & Vector Icon -->
-        <div class="flex items-center justify-between mb-4 relative z-10">
-          <span
-            class="px-2.5 py-1 text-xs font-extrabold rounded-md font-numeric"
-            [ngClass]="{
-              'bg-brand-primary/15 text-brand-primary dark:text-brand-accent border border-brand-accent/30':
-                selectedCurriculumCode() === curriculum.code,
-              'bg-surface-secondary text-slate-700 dark:text-slate-300':
-                selectedCurriculumCode() !== curriculum.code
-            }"
-          >
-            {{ langService.isArabic() ? curriculum.badgeTextAr : curriculum.badgeTextEn }}
-          </span>
-
-          <div class="w-10 h-10 rounded-xl bg-surface-bg flex items-center justify-center border border-surface-border/60 group-hover:scale-110 group-hover:border-brand-accent transition-all duration-200">
-            @switch (curriculum.code) {
-              @case ('EGYPTIAN') {
-                <app-icon name="landmark" [size]="22" className="text-brand-primary" />
-              }
-              @case ('GULF') {
-                <app-icon name="palmtree" [size]="22" className="text-brand-secondary" />
-              }
-              @case ('INTERNATIONAL') {
-                <app-icon name="globe" [size]="22" className="text-brand-magenta" />
-              }
-              @case ('AMERICAN') {
-                <app-icon name="graduation-cap" [size]="22" className="text-brand-accent" />
-              }
-            }
-          </div>
-        </div>
-
-        <!-- Title & Subtitle -->
-        <div class="relative z-10">
-          <h3 class="text-lg font-bold text-text-primary mb-1 group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
-            {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
-          </h3>
-          <p class="text-xs font-semibold text-cyan-800 dark:text-cyan-300 mb-3">
-            {{ langService.isArabic() ? curriculum.subtitleAr : curriculum.subtitleEn }}
-          </p>
-          <p class="text-xs text-text-secondary leading-relaxed line-clamp-3">
-            {{ langService.isArabic() ? curriculum.descriptionAr : curriculum.descriptionEn }}
-          </p>
-        </div>
-
-        <!-- Card Bottom Status Indicator -->
-        <div class="mt-6 pt-4 border-t border-surface-border/60 flex items-center justify-between relative z-10">
-          <span class="text-xs font-medium text-slate-600 dark:text-slate-400 font-numeric flex items-center gap-1.5">
-            <app-icon name="book-open" [size]="14" />
-            <span>{{ curriculum.availableGrades.length }} {{ langService.isArabic() ? 'صفوف دراسية' : 'Grades' }}</span>
-          </span>
-          <span
-            class="text-xs font-bold flex items-center gap-1.5"
-            [ngClass]="selectedCurriculumCode() === curriculum.code ? 'text-cyan-700 dark:text-brand-accent font-extrabold' : 'text-slate-600 dark:text-slate-400'"
-          >
-            @if (selectedCurriculumCode() === curriculum.code) {
-              <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span>
-              <span>{{ langService.isArabic() ? 'المسار النشط' : 'Active Track' }}</span>
-            } @else {
-              <span>{{ langService.isArabic() ? 'استعراض' : 'Explore' }}</span>
-              <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="12" />
-            }
-          </span>
-        </div>
-      </div>
-    }
-  </div>
-
-  <!-- Dynamic Grade Levels & Academic Term Showcase (Animation 4.3 Staggered Cascade) -->
-  @if (showDetails() && selectedCurriculum(); as active) {
-    <div class="mt-10 rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-card relative overflow-hidden">
-      
-      <!-- Subtle Cartesian Ambient Corner Glow -->
-      <div class="absolute -top-16 -right-16 rtl:-right-auto rtl:-left-16 w-48 h-48 bg-brand-primary/10 rounded-full blur-2xl pointer-events-none"></div>
-
-      <!-- Top Row: Curriculum Title & Active Term Badge -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-surface-border relative z-10">
-        <div>
-          <div class="flex items-center gap-3">
-            <h3 class="text-xl sm:text-2xl font-black text-brand-primary dark:text-brand-accent">
-              {{ langService.isArabic() ? active.titleAr : active.titleEn }}
-            </h3>
-            <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border border-cyan-500/20">
-              {{ langService.isArabic() ? active.taglineAr : active.taglineEn }}
-            </span>
-          </div>
-          <p class="text-sm text-text-secondary mt-1 max-w-2xl">
-            {{ langService.isArabic() ? active.descriptionAr : active.descriptionEn }}
-          </p>
-        </div>
-
-        <!-- Active Term Badge (Managed by Admin via CMS) -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-bg-secondary border border-surface-border self-start sm:self-auto shadow-sm text-xs font-bold text-text-secondary font-numeric">
-          <app-icon name="calendar" [size]="14" className="text-brand-primary dark:text-brand-accent" />
-          <span>{{ selectedTermCode() === 'TERM_1' ? (langService.isArabic() ? 'الفصل الدراسي الأول' : 'Term 1') : (langService.isArabic() ? 'الفصل الدراسي الثاني' : 'Term 2') }}</span>
-        </div>
-      </div>
-
-      <!-- Units Showcase for Selected Curriculum -->
-      <div class="mt-8 relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-            <h3 class="text-sm sm:text-base font-extrabold text-text-primary">
-              {{ langService.isArabic() ? 'الوحدات والمقررات الدراسية المتاحة لهذا المنهج:' : 'Available Study Units for This Curriculum:' }}
-            </h3>
-          </div>
-
-          <span class="text-xs font-bold text-text-muted font-numeric">
-            {{ publishedUnits().length }} {{ langService.isArabic() ? 'وحدات معتمدة' : 'Units' }}
-          </span>
-        </div>
-
-        <!-- Loading Units State -->
-        @if (isLoadingUnits()) {
-          <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center">
-            <app-icon name="refresh" [size]="20" className="text-brand-accent animate-spin mx-auto mb-2" />
-            <span class="text-xs text-text-muted">
-              {{ langService.isArabic() ? 'جاري تحميل الوحدات الدراسية...' : 'Loading units...' }}
-            </span>
-          </div>
-        }
-
-        <!-- Published Units Grid -->
-        @else if (publishedUnits().length > 0) {
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @for (unit of publishedUnits(); track unit._id) {
-              <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg hover:border-brand-accent/50 transition-all flex flex-col justify-between group shadow-sm">
-                <div>
-                  <div class="flex items-center justify-between gap-2 mb-3">
-                    <span class="px-2.5 py-1 rounded-lg bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-[11px] font-black">
-                      {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
-                    </span>
-                    @if (unit.grade_level) {
-                      <span class="px-2 py-0.5 rounded-md bg-surface-card border border-surface-border text-[11px] font-bold text-text-secondary">
-                        {{ getGradeLabel(unit.grade_level) }}
-                      </span>
-                    }
-                  </div>
-
-                  <h4 class="text-base font-bold text-text-primary mb-1.5 group-hover:text-brand-primary dark:group-hover:text-brand-accent transition-colors">
-                    {{ unit.title_ar }}
-                  </h4>
-                  @if (unit.description_ar) {
-                    <p class="text-xs text-text-secondary leading-relaxed line-clamp-2 mb-4">
-                      {{ unit.description_ar }}
-                    </p>
-                  }
-
-                  <div class="flex items-center justify-between text-[11px] font-semibold text-text-muted mb-4 font-numeric">
-                    <div class="flex items-center gap-3">
-                      <span class="flex items-center gap-1">
-                        <app-icon name="video" [size]="12" />
-                        <span>{{ unit.total_lectures_count || unit.lectures_count || 0 }} {{ langService.isArabic() ? 'محاضرات' : 'Lectures' }}</span>
-                      </span>
-                      <span>•</span>
-                      <span class="flex items-center gap-1">
-                        <app-icon name="file-text" [size]="12" />
-                        <span>{{ unit.total_assessments_count || unit.quizzes_count || 0 }} {{ langService.isArabic() ? 'كويزات' : 'Quizzes' }}</span>
-                      </span>
-                    </div>
-
-                    @if (unit.price_egp) {
-                      <span class="font-black text-brand-primary dark:text-brand-accent text-xs">
-                        {{ unit.price_egp }} EGP
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <div class="pt-3 border-t border-surface-border/60 flex items-center gap-2">
-                  <button
-                    type="button"
-                    (click)="openUnitPreview(unit)"
-                    class="flex-1 py-2 px-3 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <app-icon name="eye" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'فهرس المحتوى' : 'Syllabus' }}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="attemptWatchLecture(unit)"
-                    class="py-2 px-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
-                    title="{{ langService.isArabic() ? 'بدء المشاهدة' : 'Watch' }}"
-                  >
-                    <app-icon name="play" [size]="12" />
-                    <span>{{ langService.isArabic() ? 'مشاهدة' : 'Watch' }}</span>
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Coming Soon State (When teacher has not added units for this curriculum yet) -->
-        @else {
-          <div class="p-8 rounded-2xl border border-dashed border-surface-border bg-surface-bg/60 text-center">
-            <div class="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-500 mx-auto flex items-center justify-center mb-3">
-              <app-icon name="clock" [size]="24" />
-            </div>
-            <h4 class="text-sm font-black text-text-primary mb-1">
-              {{ langService.isArabic() ? 'محتوى هذا المنهج قريباً — Coming Soon' : 'Units Coming Soon' }}
-            </h4>
-            <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
-              {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب تقوم حالياً بإعداد وتدقيق وحدات ومراجعات هذا المنهج. سيتم إضافة الحصص وشروحات ديسموس قريباً.' : 'Eng. Heba Abdel-Wahab is currently preparing units and lectures for this curriculum.' }}
-            </p>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- ========================================================================= -->
-  <!-- Unit Content / Syllabus Preview Modal                                     -->
-  <!-- ========================================================================= -->
-  @if (selectedUnitForPreview(); as unit) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" (click)="closeUnitPreview()"></div>
-
-      <div class="relative w-full max-w-xl rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-2xl z-10 my-8">
-        <button
-          type="button"
-          (click)="closeUnitPreview()"
-          class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-text-primary p-2 rounded-xl hover:bg-surface-bg transition-colors"
-        >
-          <app-icon name="x" [size]="18" />
-        </button>
-
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-lg bg-brand-primary/15 text-brand-primary dark:text-brand-accent text-xs font-black">
-            {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
-          </span>
-          <span class="text-xs font-bold text-text-muted">
-            {{ selectedCurriculum().titleAr }} • {{ selectedGradeCode() }}
-          </span>
-        </div>
-
-        <h3 class="text-xl font-black text-text-primary mb-2">
-          {{ unit.title_ar }}
-        </h3>
-        @if (unit.description_ar) {
-          <p class="text-xs text-text-secondary leading-relaxed mb-6">
-            {{ unit.description_ar }}
-          </p>
-        }
-
-        <!-- Lectures List Inside Unit -->
-        <div class="space-y-3 mb-6 max-h-72 overflow-y-auto pr-1">
-          <span class="text-xs font-bold text-text-muted block mb-2">
-            {{ langService.isArabic() ? 'فهرس المحاضرات والدروس:' : 'Lectures & Topics Index:' }}
-          </span>
-
-          @if (isLoadingUnitContents()) {
-            <div class="p-6 text-center text-xs text-text-muted">
-              <app-icon name="refresh" [size]="18" className="animate-spin mx-auto mb-2 text-brand-accent" />
-              <span>{{ langService.isArabic() ? 'جاري تحميل فهرس الدروس...' : 'Loading syllabus...' }}</span>
-            </div>
-          } @else if (unitLectures().length > 0) {
-            @for (lec of unitLectures(); track lec._id; let idx = $index) {
-              <div class="p-3.5 rounded-xl border border-surface-border bg-surface-bg flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <span class="w-7 h-7 rounded-lg bg-surface-card border border-surface-border flex items-center justify-center text-xs font-bold font-numeric text-text-muted">
-                    {{ idx + 1 }}
-                  </span>
-                  <div>
-                    <h4 class="text-xs font-bold text-text-primary">
-                      {{ lec.title_ar || ('المحاضرة ' + (idx + 1)) }}
-                    </h4>
-                    @if (lec.duration_minutes) {
-                      <span class="text-[10px] text-text-muted font-numeric">
-                        {{ lec.duration_minutes }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  (click)="attemptWatchLecture(unit)"
-                  class="px-3 py-1.5 rounded-lg bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary-hover transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <app-icon name="play" [size]="12" />
-                  <span>{{ langService.isArabic() ? 'مشاهدة' : 'Watch' }}</span>
-                </button>
-              </div>
-            }
-          } @else {
-            <div class="p-4 rounded-xl border border-dashed border-surface-border text-center text-xs text-text-muted">
-              {{ langService.isArabic() ? 'لم يتم إضافة محاضرات داخل هذه الوحدة بعد.' : 'No lectures added yet.' }}
-            </div>
-          }
-        </div>
-
-        <!-- Action Bar -->
-        <div class="pt-4 border-t border-surface-border flex items-center justify-between gap-4">
-          <button
-            type="button"
-            (click)="closeUnitPreview()"
-            class="px-5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-secondary text-xs font-bold hover:bg-surface-secondary transition-colors"
-          >
-            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
-          </button>
-
-          <button
-            type="button"
-            (click)="attemptWatchLecture(unit)"
-            class="px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-black shadow-md hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <app-icon name="play" [size]="14" />
-            <span>{{ langService.isArabic() ? 'دخول ومشاهدة الوحدة' : 'Enter Study Unit' }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ========================================================================= -->
-  <!-- Auth Gate Prompt Modal (When Unregistered Visitor Attempts to Watch)      -->
-  <!-- ========================================================================= -->
-  @if (showAuthGateModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" (click)="closeAuthGateModal()"></div>
-
-      <div class="relative w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-2xl text-center z-10 my-8">
-        <button
-          type="button"
-          (click)="closeAuthGateModal()"
-          class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-text-primary p-2 rounded-xl hover:bg-surface-bg transition-colors"
-        >
-          <app-icon name="x" [size]="18" />
-        </button>
-
-        <div class="w-16 h-16 rounded-2xl bg-brand-primary/15 border border-brand-accent/30 text-brand-primary dark:text-brand-accent mx-auto flex items-center justify-center mb-4">
-          <app-icon name="lock" [size]="30" />
-        </div>
-
-        <h3 class="text-xl font-black text-text-primary mb-2">
-          {{ langService.isArabic() ? 'تسجيل الدخول مطلوب للمشاهدة' : 'Login Required to Access' }}
-        </h3>
-        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-          {{ langService.isArabic() ? 'هذا المحتوى والشروحات الهندسية مخصصة للطلاب المشتركين. يرجى تسجيل الدخول أو إنشاء حساب طالب جديد للاستمتاع بالمحاضرات واستخدام حاسبة ديسموس وحل الواجبات.' : 'This lecture is restricted to enrolled students. Please log in or create a student account to access.' }}
-        </p>
-
-        <div class="space-y-3">
-          <button
-            type="button"
-            (click)="goToLogin()"
-            class="w-full py-3 px-4 rounded-xl font-black text-xs sm:text-sm text-white bg-gradient-spider shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <app-icon name="log-in" [size]="16" />
-            <span>{{ langService.isArabic() ? 'تسجيل الدخول إلى حسابي' : 'Log In' }}</span>
-          </button>
-
-          <button
-            type="button"
-            (click)="goToSignup()"
-            class="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <app-icon name="user-plus" [size]="16" />
-            <span>{{ langService.isArabic() ? 'إنشاء حساب طالب جديد' : 'Create Student Account' }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-</div>
+<div class="w-full curriculum-selector-wrapper relative">
+
+  <!-- ========================================================================= -->
+  <!-- 1. DESKTOP VIEW (>= 1024px): 4-Card Silk Architecture                      -->
+  <!-- ========================================================================= -->
+  <div class="hidden lg:block relative py-6">
+
+    <!-- Center Spider Mascot with Radial Ambient Aura -->
+    <div class="relative flex flex-col items-center mb-0 select-none">
+      <div class="absolute w-72 h-72 rounded-full bg-gradient-to-tr from-brand-violet/25 via-brand-gold/20 to-purple-500/20 blur-3xl opacity-75 pointer-events-none"></div>
+      <img
+        src="/assets/branding/spider-mascot-curricula.webp"
+        alt="Spider Math Curricula Guide"
+        width="340"
+        height="340"
+        class="w-56 lg:w-64 h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] animate-mascot-float relative z-10"
+      />
+    </div>
+
+    <!-- Desktop SVG Silk Threads Layer Connecting Legs to the 4 Cards -->
+    <div class="relative w-full h-20 -mt-6 mb-2 pointer-events-none select-none z-10 overflow-visible">
+      <svg viewBox="0 0 1200 120" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+        <defs>
+          <filter id="goldGlowDesk" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          <linearGradient id="silkGradDesk" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stop-color="#D4AF6A" stop-opacity="0.9" />
+            <stop offset="60%" stop-color="#F3DC9E" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#D4AF6A" stop-opacity="1" />
+          </linearGradient>
+        </defs>
+
+        <!-- Card 1 Silk Thread (Left Outer, x=150) -->
+        <path d="M 520,15 C 430,60 270,95 150,118" stroke="url(#silkGradDesk)" stroke-width="1.75" fill="none" filter="url(#goldGlowDesk)" />
+        <path d="M 510,12 C 420,55 260,90 150,118" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+        <circle cx="150" cy="118" r="4.5" fill="#D4AF6A" filter="url(#goldGlowDesk)" />
+        <circle cx="150" cy="118" r="2" fill="#FFFFFF" />
+
+        <!-- Card 2 Silk Thread (Left Inner, x=450) -->
+        <path d="M 565,25 C 535,65 490,95 450,118" stroke="url(#silkGradDesk)" stroke-width="1.75" fill="none" filter="url(#goldGlowDesk)" />
+        <path d="M 555,22 C 525,60 480,90 450,118" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+        <circle cx="450" cy="118" r="4.5" fill="#D4AF6A" filter="url(#goldGlowDesk)" />
+        <circle cx="450" cy="118" r="2" fill="#FFFFFF" />
+
+        <!-- Card 3 Silk Thread (Right Inner, x=750) -->
+        <path d="M 635,25 C 665,65 710,95 750,118" stroke="url(#silkGradDesk)" stroke-width="1.75" fill="none" filter="url(#goldGlowDesk)" />
+        <path d="M 645,22 C 675,60 720,90 750,118" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+        <circle cx="750" cy="118" r="4.5" fill="#D4AF6A" filter="url(#goldGlowDesk)" />
+        <circle cx="750" cy="118" r="2" fill="#FFFFFF" />
+
+        <!-- Card 4 Silk Thread (Right Outer, x=1050) -->
+        <path d="M 680,15 C 770,60 930,95 1050,118" stroke="url(#silkGradDesk)" stroke-width="1.75" fill="none" filter="url(#goldGlowDesk)" />
+        <path d="M 690,12 C 780,55 940,90 1050,118" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+        <circle cx="1050" cy="118" r="4.5" fill="#D4AF6A" filter="url(#goldGlowDesk)" />
+        <circle cx="1050" cy="118" r="2" fill="#FFFFFF" />
+      </svg>
+    </div>
+
+    <!-- Desktop 4 Cards Grid -->
+    <div class="grid grid-cols-4 gap-5 relative z-20">
+      @for (curriculum of curriculumCards(); track curriculum.code) {
+        <div
+          (click)="openTrackModal(curriculum.code)"
+          class="curriculum-card spider-rim-glass-card rounded-3xl p-6 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-brand-gold/60 hover:shadow-2xl hover:-translate-y-1.5"
+        >
+          <!-- Top Row: Title & Vector Art Icon -->
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <h3 class="text-xl font-bold font-academic-serif text-text-primary group-hover:text-gold-accent transition-colors">
+                {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
+              </h3>
+
+              <div class="w-12 h-12 rounded-2xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:border-brand-gold/60 transition-all duration-300 shadow-inner">
+                @switch (curriculum.code) {
+                  @case ('EGYPTIAN') {
+                    <!-- Pyramid SVG Icon -->
+                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="16,3 2,28 30,28" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                      <line x1="9" y1="16" x2="23" y2="16" stroke="currentColor" />
+                      <line x1="16" y1="3" x2="16" y2="28" stroke="currentColor" stroke-dasharray="2 2" />
+                      <line x1="6" y1="22" x2="26" y2="22" stroke="currentColor" />
+                    </svg>
+                  }
+                  @case ('GULF') {
+                    <!-- Falcon SVG Icon -->
+                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 4 L22 10 L28 12 L22 18 L24 28 L16 23 L8 28 L10 18 L4 12 L10 10 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                      <circle cx="16" cy="12" r="2" fill="currentColor" />
+                      <line x1="16" y1="14" x2="16" y2="21" stroke="currentColor" />
+                    </svg>
+                  }
+                  @case ('INTERNATIONAL') {
+                    <!-- Compass / Astrolabe SVG Icon -->
+                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="16" cy="16" r="12" stroke="currentColor" fill="currentColor" fill-opacity="0.06" stroke-dasharray="2 3" />
+                      <circle cx="16" cy="16" r="6" stroke="currentColor" />
+                      <polygon points="16,2 18,12 28,14 18,18 16,28 14,18 4,14 14,12" stroke="currentColor" fill="currentColor" fill-opacity="0.12" />
+                    </svg>
+                  }
+                  @case ('AMERICAN') {
+                    <!-- Shield SVG Icon -->
+                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 3 L27 7 V16 C27 22.5 22 28 16 30 C10 28 5 22.5 5 16 V7 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                      <path d="M10 14 L16 19 L22 14" stroke="currentColor" />
+                      <line x1="16" y1="7" x2="16" y2="18" stroke="currentColor" />
+                    </svg>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Subtitle -->
+            <p class="text-xs font-semibold text-brand-gold mb-2 leading-relaxed">
+              @switch (curriculum.code) {
+                @case ('EGYPTIAN') {
+                  {{ langService.isArabic() ? 'الثانوية العامة • صفوف 1-3 ثانوي' : 'Thanawiya Amma • Sec 1-3' }}
+                }
+                @case ('GULF') {
+                  {{ langService.isArabic() ? 'السعودية • الإمارات • الكويت • قطر' : 'KSA • UAE • Kuwait • Qatar' }}
+                }
+                @case ('INTERNATIONAL') {
+                  {{ langService.isArabic() ? 'كامبريدج • إدكسل • أكسفورد' : 'Cambridge • Edexcel • Oxford' }}
+                }
+                @case ('AMERICAN') {
+                  {{ langService.isArabic() ? 'Digital SAT • EST I & II • ACT' : 'Digital SAT • EST I & II • ACT' }}
+                }
+              }
+            </p>
+
+            <!-- Branches & Subjects -->
+            <p class="text-xs text-text-secondary leading-relaxed mb-4">
+              @switch (curriculum.code) {
+                @case ('EGYPTIAN') {
+                  {{ langService.isArabic() ? 'الجبر والهندسة • التفاضل والتكامل • الاستاتيكا والديناميكا' : 'Algebra & Geometry • Calculus • Statics & Dynamics' }}
+                }
+                @case ('GULF') {
+                  {{ langService.isArabic() ? 'القدرات • التحصيلي • الرياضيات المتقدمة' : 'Qudurat • Tahsili • Advanced Math' }}
+                }
+                @case ('INTERNATIONAL') {
+                  {{ langService.isArabic() ? 'الرياضيات البحتة والميكانيكا والإحصاء' : 'OL & AL Pure Math • Mechanics • Statistics' }}
+                }
+                @case ('AMERICAN') {
+                  {{ langService.isArabic() ? 'الجبر المتقدم وحل المسائل الهندسية' : 'Heart of Algebra • Problem Solving • Advanced Math' }}
+                }
+              }
+            </p>
+          </div>
+
+          <!-- Bottom Action: Explore Track -->
+          <div class="pt-4 border-t border-surface-border/60 flex items-center justify-between">
+            <span class="text-xs font-bold text-gold-accent group-hover:underline flex items-center gap-1.5 transition-all">
+              <span>{{ langService.isArabic() ? 'استعراض المسار' : 'Explore Track' }}</span>
+              <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="14" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+            </span>
+
+            <span class="text-[11px] font-semibold text-text-muted font-numeric">
+              {{ curriculum.availableGrades.length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MOBILE VIEW (< 1024px): 2-1-2 Sandwich Architecture (Matching Mockup 1) -->
+  <!-- ========================================================================= -->
+  <div class="lg:hidden relative py-4">
+
+    <!-- Top Row: Card 1 (Egyptian) & Card 2 (Gulf) -->
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 relative z-20">
+      
+      <!-- Card 1: Egyptian Curriculum -->
+      <div
+        (click)="openTrackModal('EGYPTIAN')"
+        class="curriculum-card spider-rim-glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-brand-gold/60 shadow-lg"
+      >
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <h3 class="text-sm sm:text-base font-bold font-academic-serif text-text-primary leading-tight">
+              {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
+            </h3>
+
+            <!-- Pyramid Icon -->
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shrink-0 shadow-inner">
+              <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="16,3 2,28 30,28" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                <line x1="9" y1="16" x2="23" y2="16" stroke="currentColor" />
+                <line x1="16" y1="3" x2="16" y2="28" stroke="currentColor" stroke-dasharray="2 2" />
+                <line x1="6" y1="22" x2="26" y2="22" stroke="currentColor" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="text-[11px] font-semibold text-brand-gold mb-1.5 leading-snug">
+            {{ langService.isArabic() ? 'الثانوية العامة • صفوف 1-3 ثانوي' : 'Thanawiya Amma • Sec 1-3' }}
+          </p>
+
+          <p class="text-[10px] sm:text-xs text-text-secondary leading-relaxed line-clamp-3 mb-3">
+            {{ langService.isArabic() ? 'الجبر والهندسة • التفاضل والتكامل • الاستاتيكا والديناميكا' : 'Algebra & Geometry • Calculus • Statics & Dynamics' }}
+          </p>
+        </div>
+
+        <div class="pt-2.5 border-t border-surface-border/60">
+          <span class="text-xs font-bold text-gold-accent flex items-center gap-1 group-hover:underline">
+            <span>{{ langService.isArabic() ? 'استعراض المسار' : 'Explore Track' }}</span>
+            <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="12" />
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 2: Gulf Curriculum -->
+      <div
+        (click)="openTrackModal('GULF')"
+        class="curriculum-card spider-rim-glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-brand-gold/60 shadow-lg"
+      >
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <h3 class="text-sm sm:text-base font-bold font-academic-serif text-text-primary leading-tight">
+              {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
+            </h3>
+
+            <!-- Falcon Icon -->
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shrink-0 shadow-inner">
+              <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4 L22 10 L28 12 L22 18 L24 28 L16 23 L8 28 L10 18 L4 12 L10 10 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                <circle cx="16" cy="12" r="2" fill="currentColor" />
+                <line x1="16" y1="14" x2="16" y2="21" stroke="currentColor" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="text-[11px] font-semibold text-brand-gold mb-1.5 leading-snug">
+            {{ langService.isArabic() ? 'السعودية • الإمارات • الكويت • قطر' : 'KSA • UAE • Kuwait • Qatar' }}
+          </p>
+
+          <p class="text-[10px] sm:text-xs text-text-secondary leading-relaxed line-clamp-3 mb-3">
+            {{ langService.isArabic() ? 'القدرات • التحصيلي • الرياضيات المتقدمة' : 'Qudurat • Tahsili • Advanced Math' }}
+          </p>
+        </div>
+
+        <div class="pt-2.5 border-t border-surface-border/60">
+          <span class="text-xs font-bold text-gold-accent flex items-center gap-1 group-hover:underline">
+            <span>{{ langService.isArabic() ? 'استعراض المسار' : 'Explore Track' }}</span>
+            <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="12" />
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Middle Row: Spider Mascot + Upward & Downward SVG Silk Arcs (Mockup 1) -->
+    <div class="relative py-4 my-2 flex items-center justify-center overflow-visible select-none">
+      
+      <!-- Ambient Radial Aura Behind Spider -->
+      <div class="absolute w-56 h-56 rounded-full bg-gradient-to-tr from-brand-violet/25 via-brand-gold/20 to-purple-500/20 blur-2xl opacity-80 pointer-events-none"></div>
+
+      <!-- Mobile SVG Silk Layer Connecting Up & Down -->
+      <div class="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+        <svg viewBox="0 0 400 240" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+          <defs>
+            <filter id="goldGlowMob" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+            <linearGradient id="silkGradUp" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stop-color="#D4AF6A" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#F3DC9E" stop-opacity="1" />
+            </linearGradient>
+            <linearGradient id="silkGradDown" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stop-color="#D4AF6A" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#F3DC9E" stop-opacity="1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Upward Silk Threads (Connecting to Card 1 and Card 2 bottom centers) -->
+          <!-- To Card 1 bottom center (x=100, y=0) -->
+          <path d="M 165,100 C 145,45 115,15 100,0" stroke="url(#silkGradUp)" stroke-width="1.5" fill="none" filter="url(#goldGlowMob)" />
+          <path d="M 175,95 C 155,50 120,20 100,0" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+          <circle cx="100" cy="0" r="4" fill="#D4AF6A" filter="url(#goldGlowMob)" />
+
+          <!-- To Card 2 bottom center (x=300, y=0) -->
+          <path d="M 235,100 C 255,45 285,15 300,0" stroke="url(#silkGradUp)" stroke-width="1.5" fill="none" filter="url(#goldGlowMob)" />
+          <path d="M 225,95 C 245,50 280,20 300,0" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+          <circle cx="300" cy="0" r="4" fill="#D4AF6A" filter="url(#goldGlowMob)" />
+
+          <!-- Downward Silk Threads (Connecting to Card 3 and Card 4 top centers) -->
+          <!-- To Card 3 top center (x=100, y=240) -->
+          <path d="M 160,140 C 140,195 115,225 100,240" stroke="url(#silkGradDown)" stroke-width="1.5" fill="none" filter="url(#goldGlowMob)" />
+          <path d="M 170,145 C 150,190 120,220 100,240" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+          <circle cx="100" cy="240" r="4" fill="#D4AF6A" filter="url(#goldGlowMob)" />
+
+          <!-- To Card 4 top center (x=300, y=240) -->
+          <path d="M 240,140 C 260,195 285,225 300,240" stroke="url(#silkGradDown)" stroke-width="1.5" fill="none" filter="url(#goldGlowMob)" />
+          <path d="M 230,145 C 250,190 280,220 300,240" stroke="#D4AF6A" stroke-width="0.75" fill="none" opacity="0.6" />
+          <circle cx="300" cy="240" r="4" fill="#D4AF6A" filter="url(#goldGlowMob)" />
+        </svg>
+      </div>
+
+      <!-- Mascot Spider -->
+      <img
+        src="/assets/branding/spider-mascot-curricula.webp"
+        alt="Spider Math Curricula Mascot"
+        width="280"
+        height="280"
+        class="relative z-10 w-48 sm:w-56 h-auto object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.65)] animate-mascot-float"
+      />
+    </div>
+
+    <!-- Bottom Row: Card 3 (International) & Card 4 (American) -->
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 relative z-20">
+      
+      <!-- Card 3: International Curricula -->
+      <div
+        (click)="openTrackModal('INTERNATIONAL')"
+        class="curriculum-card spider-rim-glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-brand-gold/60 shadow-lg"
+      >
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <h3 class="text-sm sm:text-base font-bold font-academic-serif text-text-primary leading-tight">
+              {{ langService.isArabic() ? 'المناهج الدولية' : 'International Curricula' }}
+            </h3>
+
+            <!-- Compass Icon -->
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shrink-0 shadow-inner">
+              <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="16" cy="16" r="12" stroke="currentColor" fill="currentColor" fill-opacity="0.06" stroke-dasharray="2 3" />
+                <circle cx="16" cy="16" r="6" stroke="currentColor" />
+                <polygon points="16,2 18,12 28,14 18,18 16,28 14,18 4,14 14,12" stroke="currentColor" fill="currentColor" fill-opacity="0.12" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="text-[11px] font-semibold text-brand-gold mb-1.5 leading-snug">
+            {{ langService.isArabic() ? 'كامبريدج • إدكسل • أكسفورد' : '(IGCSE / British)' }}
+          </p>
+
+          <p class="text-[10px] sm:text-xs text-text-secondary leading-relaxed line-clamp-3 mb-3">
+            {{ langService.isArabic() ? 'الرياضيات البحتة والميكانيكا والإحصاء' : 'OL & AL Pure Math • Mechanics • Statistics' }}
+          </p>
+        </div>
+
+        <div class="pt-2.5 border-t border-surface-border/60">
+          <span class="text-xs font-bold text-gold-accent flex items-center gap-1 group-hover:underline">
+            <span>{{ langService.isArabic() ? 'استعراض المسار' : 'Explore Track' }}</span>
+            <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="12" />
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 4: American Diploma -->
+      <div
+        (click)="openTrackModal('AMERICAN')"
+        class="curriculum-card spider-rim-glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-brand-gold/60 shadow-lg"
+      >
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <h3 class="text-sm sm:text-base font-bold font-academic-serif text-text-primary leading-tight">
+              {{ langService.isArabic() ? 'الدبلومة الأمريكية' : 'American Diploma' }}
+            </h3>
+
+            <!-- Shield Icon -->
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shrink-0 shadow-inner">
+              <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 3 L27 7 V16 C27 22.5 22 28 16 30 C10 28 5 22.5 5 16 V7 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
+                <path d="M10 14 L16 19 L22 14" stroke="currentColor" />
+                <line x1="16" y1="7" x2="16" y2="18" stroke="currentColor" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="text-[11px] font-semibold text-brand-gold mb-1.5 leading-snug">
+            {{ langService.isArabic() ? '(SAT • EST • ACT)' : '(SAT • EST • ACT)' }}
+          </p>
+
+          <p class="text-[10px] sm:text-xs text-text-secondary leading-relaxed line-clamp-3 mb-3">
+            {{ langService.isArabic() ? 'الجبر المتقدم وحل المسائل الهندسية' : 'Heart of Algebra • Problem Solving • Advanced Math' }}
+          </p>
+        </div>
+
+        <div class="pt-2.5 border-t border-surface-border/60">
+          <span class="text-xs font-bold text-gold-accent flex items-center gap-1 group-hover:underline">
+            <span>{{ langService.isArabic() ? 'استعراض المسار' : 'Explore Track' }}</span>
+            <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="12" />
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. FROSTED GLASS TRACK MODAL (Matching Mockup 2: image_448525.jpg)        -->
+  <!-- ========================================================================= -->
+  @if (isTrackModalOpen()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+      (keydown.escape)="closeTrackModal()"
+      tabindex="-1"
+    >
+      <!-- Dark Frosted Backdrop -->
+      <div
+        class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl transition-opacity animate-fade-in"
+        (click)="closeTrackModal()"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Modal Capsule Window -->
+      <div
+        class="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-3xl spider-rim-glass-card bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-2xl border border-white/25 dark:border-white/10 shadow-2xl overflow-hidden z-10 animate-scale-up"
+        role="dialog"
+        aria-modal="true"
+      >
+        <!-- Modal Top Bar -->
+        <div class="px-5 sm:px-8 pt-6 pb-4 border-b border-surface-border/60 flex items-center justify-between shrink-0">
+          
+          <!-- Back Button (Step dependent) -->
+          @if (modalStep() === 'UNITS') {
+            <button
+              type="button"
+              (click)="backToGrades()"
+              class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-gold hover:underline cursor-pointer transition-colors"
+            >
+              <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
+              <span>{{ langService.isArabic() ? 'العودة للصفوف الدراسية' : 'Back to Grades' }}</span>
+            </button>
+          } @else {
+            <button
+              type="button"
+              (click)="closeTrackModal()"
+              class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-text-muted hover:text-brand-gold cursor-pointer transition-colors"
+            >
+              <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
+              <span>{{ langService.isArabic() ? 'العودة للمناهج' : 'Back to Curricula' }}</span>
+            </button>
+          }
+
+          <!-- Close Modal X Button -->
+          <button
+            type="button"
+            (click)="closeTrackModal()"
+            class="w-8 h-8 rounded-full border border-surface-border bg-surface-card/60 flex items-center justify-center text-text-muted hover:text-brand-gold hover:border-brand-gold/50 transition-colors cursor-pointer"
+            [attr.aria-label]="langService.isArabic() ? 'إغلاق النافذة' : 'Close modal'"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Curriculum Title & Stage Filter Tabs Header -->
+        <div class="px-5 sm:px-8 py-5 border-b border-surface-border/60 bg-surface-card/40 shrink-0">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            
+            <!-- Curriculum Identity -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center text-brand-gold shadow-sm">
+                @switch (selectedCurriculumCode()) {
+                  @case ('EGYPTIAN') {
+                    <svg viewBox="0 0 32 32" class="w-6 h-6 stroke-current fill-none" stroke-width="2">
+                      <polygon points="16,3 2,28 30,28" />
+                      <line x1="9" y1="16" x2="23" y2="16" />
+                    </svg>
+                  }
+                  @case ('GULF') {
+                    <svg viewBox="0 0 32 32" class="w-6 h-6 stroke-current fill-none" stroke-width="2">
+                      <path d="M16 4 L22 10 L28 12 L22 18 L24 28 L16 23 L8 28 L10 18 L4 12 L10 10 Z" />
+                    </svg>
+                  }
+                  @case ('INTERNATIONAL') {
+                    <svg viewBox="0 0 32 32" class="w-6 h-6 stroke-current fill-none" stroke-width="2">
+                      <circle cx="16" cy="16" r="10" />
+                      <polygon points="16,2 18,12 28,14 18,18 16,28 14,18 4,14 14,12" />
+                    </svg>
+                  }
+                  @case ('AMERICAN') {
+                    <svg viewBox="0 0 32 32" class="w-6 h-6 stroke-current fill-none" stroke-width="2">
+                      <path d="M16 3 L27 7 V16 C27 22.5 22 28 16 30 C10 28 5 22.5 5 16 V7 Z" />
+                    </svg>
+                  }
+                }
+              </div>
+
+              <div>
+                <h3 class="text-xl sm:text-2xl font-bold font-academic-serif text-text-primary">
+                  {{ langService.isArabic() ? selectedCurriculum().titleAr : selectedCurriculum().titleEn }}
+                </h3>
+                <p class="text-xs text-text-muted mt-0.5">
+                  {{ selectedCurriculum().availableGrades.length }} {{ langService.isArabic() ? 'صفوف دراسية مسجلة' : 'Registered Grade Levels' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Stage Filter Tabs (Only in Step 1) -->
+            @if (modalStep() === 'GRADES') {
+              <div class="inline-flex items-center p-1 rounded-2xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto">
+                <button
+                  type="button"
+                  (click)="setStageFilter('ALL')"
+                  class="px-3 sm:px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="activeStageFilter() === 'ALL'"
+                  [class.border]="activeStageFilter() === 'ALL'"
+                  [class.border-brand-gold/60]="activeStageFilter() === 'ALL'"
+                  [class.text-brand-gold]="activeStageFilter() === 'ALL'"
+                  [class.font-bold]="activeStageFilter() === 'ALL'"
+                  [class.text-text-muted]="activeStageFilter() !== 'ALL'"
+                >
+                  {{ langService.isArabic() ? 'جميع المراحل' : 'All Stages' }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setStageFilter('PRIMARY')"
+                  class="px-3 sm:px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="activeStageFilter() === 'PRIMARY'"
+                  [class.border]="activeStageFilter() === 'PRIMARY'"
+                  [class.border-brand-gold/60]="activeStageFilter() === 'PRIMARY'"
+                  [class.text-brand-gold]="activeStageFilter() === 'PRIMARY'"
+                  [class.font-bold]="activeStageFilter() === 'PRIMARY'"
+                  [class.text-text-muted]="activeStageFilter() !== 'PRIMARY'"
+                >
+                  {{ langService.isArabic() ? 'الابتدائية' : 'Primary' }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setStageFilter('PREPARATORY')"
+                  class="px-3 sm:px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="activeStageFilter() === 'PREPARATORY'"
+                  [class.border]="activeStageFilter() === 'PREPARATORY'"
+                  [class.border-brand-gold/60]="activeStageFilter() === 'PREPARATORY'"
+                  [class.text-brand-gold]="activeStageFilter() === 'PREPARATORY'"
+                  [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
+                  [class.text-text-muted]="activeStageFilter() !== 'PREPARATORY'"
+                >
+                  {{ langService.isArabic() ? 'الإعدادية' : 'Preparatory' }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setStageFilter('SECONDARY')"
+                  class="px-3 sm:px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="activeStageFilter() === 'SECONDARY'"
+                  [class.border]="activeStageFilter() === 'SECONDARY'"
+                  [class.border-brand-gold/60]="activeStageFilter() === 'SECONDARY'"
+                  [class.text-brand-gold]="activeStageFilter() === 'SECONDARY'"
+                  [class.font-bold]="activeStageFilter() === 'SECONDARY'"
+                  [class.text-text-muted]="activeStageFilter() !== 'SECONDARY'"
+                >
+                  {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
+                </button>
+              </div>
+            }
+
+            <!-- Term Switcher (In Step 2: Units View) -->
+            @if (modalStep() === 'UNITS') {
+              <div class="inline-flex items-center p-1 rounded-2xl bg-surface-card border border-surface-border text-xs font-semibold">
+                <button
+                  type="button"
+                  (click)="selectTerm('TERM_1')"
+                  class="px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="selectedTermCode() === 'TERM_1'"
+                  [class.border]="selectedTermCode() === 'TERM_1'"
+                  [class.border-brand-gold/60]="selectedTermCode() === 'TERM_1'"
+                  [class.text-brand-gold]="selectedTermCode() === 'TERM_1'"
+                  [class.font-bold]="selectedTermCode() === 'TERM_1'"
+                  [class.text-text-muted]="selectedTermCode() !== 'TERM_1'"
+                >
+                  {{ langService.isArabic() ? 'الفصل الدراسي الأول' : 'Term 1' }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="selectTerm('TERM_2')"
+                  class="px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+                  [class.bg-brand-gold/20]="selectedTermCode() === 'TERM_2'"
+                  [class.border]="selectedTermCode() === 'TERM_2'"
+                  [class.border-brand-gold/60]="selectedTermCode() === 'TERM_2'"
+                  [class.text-brand-gold]="selectedTermCode() === 'TERM_2'"
+                  [class.font-bold]="selectedTermCode() === 'TERM_2'"
+                  [class.text-text-muted]="selectedTermCode() !== 'TERM_2'"
+                >
+                  {{ langService.isArabic() ? 'الفصل الدراسي الثاني' : 'Term 2' }}
+                </button>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <!-- Scrollable Modal Body -->
+        <div class="p-5 sm:p-8 overflow-y-auto flex-1">
+          
+          <!-- ================================================================= -->
+          <!-- STEP 1: GRADES GRID (Matching Mockup 2: 8 Grade Cards)             -->
+          <!-- ================================================================= -->
+          @if (modalStep() === 'GRADES') {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              @for (grade of filteredGradesForModal(); track grade.code) {
+                <div
+                  (click)="openGradeUnits(grade.code)"
+                  class="grade-card spider-rim-glass-card rounded-2xl p-5 flex flex-col justify-between border border-white/15 dark:border-white/10 bg-surface-card/85 dark:bg-surface-card/80 backdrop-blur-xl shadow-lg hover:border-brand-gold/60 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group relative overflow-hidden"
+                >
+                  <div>
+                    <!-- Top Row: Grade Name & Math Operator Icon -->
+                    <div class="flex items-start justify-between gap-2 mb-2.5">
+                      <h4 class="text-base sm:text-lg font-bold font-academic-serif text-text-primary group-hover:text-gold-accent transition-colors">
+                        {{ langService.isArabic() ? grade.shortLabelAr : grade.shortLabelEn }}
+                      </h4>
+
+                      <!-- Math Symbol Vector Art -->
+                      <div class="w-8 h-8 rounded-lg bg-brand-gold/10 flex items-center justify-center shrink-0 text-brand-gold">
+                        @switch (getGradeMathIcon(grade.code)) {
+                          @case ('operators') {
+                            <!-- + ÷ × = operators -->
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round">
+                              <line x1="5" y1="7" x2="9" y2="7" />
+                              <line x1="7" y1="5" x2="7" y2="9" />
+                              <line x1="15" y1="7" x2="19" y2="7" />
+                              <circle cx="17" cy="5" r="0.75" fill="currentColor" />
+                              <circle cx="17" cy="9" r="0.75" fill="currentColor" />
+                              <line x1="5" y1="15" x2="9" y2="19" />
+                              <line x1="9" y1="15" x2="5" y2="19" />
+                              <line x1="15" y1="16" x2="19" y2="16" />
+                              <line x1="15" y1="18" x2="19" y2="18" />
+                            </svg>
+                          }
+                          @case ('triangle') {
+                            <!-- Triangle geometry ruler -->
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 21 L21 21 L3 3 Z" />
+                              <line x1="7" y1="21" x2="7" y2="18" />
+                              <line x1="11" y1="21" x2="11" y2="17" />
+                              <line x1="15" y1="21" x2="15" y2="18" />
+                            </svg>
+                          }
+                          @case ('calculus') {
+                            <!-- Graph / Calculus axes -->
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="2 2" opacity="0.4" />
+                              <path d="M4 18 C 9 18, 11 8, 20 6" />
+                            </svg>
+                          }
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Stage Pill Badge -->
+                    <div class="mb-3">
+                      <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
+                        {{ langService.isArabic() ? grade.stageAr : grade.stageEn }}
+                      </span>
+                    </div>
+
+                    <!-- Subtitle (Units & Branches) -->
+                    <p class="text-xs text-text-secondary leading-relaxed mb-4">
+                      {{ getGradeSubtitle(grade) }}
+                    </p>
+                  </div>
+
+                  <!-- Bottom Link: View Units -->
+                  <div class="pt-3 border-t border-surface-border/60 flex items-center justify-between">
+                    <span class="text-xs font-bold text-gold-accent group-hover:underline flex items-center gap-1.5 transition-all">
+                      <span>{{ langService.isArabic() ? 'استعراض الوحدات' : 'View Units' }}</span>
+                      <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="12" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ================================================================= -->
+          <!-- STEP 2: UNITS & PACKAGES VIEW FOR SELECTED GRADE                   -->
+          <!-- ================================================================= -->
+          @if (modalStep() === 'UNITS') {
+            <div>
+              <!-- Grade Overview Bar -->
+              <div class="flex items-center justify-between mb-6 pb-4 border-b border-surface-border/60">
+                <div>
+                  <h4 class="text-lg sm:text-xl font-bold font-academic-serif text-text-primary">
+                    {{ currentSelectedGrade()?.titleEn }}
+                  </h4>
+                  <p class="text-xs text-brand-gold mt-0.5">
+                    {{ currentSelectedGrade()?.stageEn }} • {{ selectedTermCode() === 'TERM_1' ? 'Term 1' : 'Term 2' }}
+                  </p>
+                </div>
+
+                <!-- Placement Exam Direct Action -->
+                <button
+                  type="button"
+                  (click)="startPlacementExamForCurrentGrade()"
+                  class="btn-gold-metallic px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-950 flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <app-icon name="target" [size]="16" />
+                  <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى لهذا الصف' : 'Placement Test For This Grade' }}</span>
+                </button>
+              </div>
+
+              <!-- Units Grid -->
+              @if (isLoadingUnits()) {
+                <div class="p-12 text-center">
+                  <app-icon name="refresh" [size]="28" className="animate-spin text-brand-gold mx-auto mb-3" />
+                  <p class="text-sm text-text-muted">
+                    {{ langService.isArabic() ? 'جاري تحميل الوحدات الدراسية...' : 'Loading study units...' }}
+                  </p>
+                </div>
+              } @else if (publishedUnits().length > 0) {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  @for (unit of publishedUnits(); track unit._id) {
+                    <div class="spider-rim-glass-card rounded-2xl p-5 border border-white/15 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl flex flex-col justify-between shadow-lg">
+                      <div>
+                        <!-- Unit Type Badge & Grade -->
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                          <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[11px] font-bold">
+                            {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
+                          </span>
+                          
+                          @if (unit.price_egp) {
+                            <span class="text-xs font-black text-brand-gold font-numeric">
+                              {{ unit.price_egp }} EGP
+                            </span>
+                          }
+                        </div>
+
+                        <!-- Unit Title -->
+                        <h5 class="text-base font-bold text-text-primary mb-2">
+                          {{ unit.title_ar }}
+                        </h5>
+
+                        @if (unit.description_ar) {
+                          <p class="text-xs text-text-secondary leading-relaxed line-clamp-3 mb-4">
+                            {{ unit.description_ar }}
+                          </p>
+                        }
+
+                        <!-- Stats -->
+                        <div class="flex items-center gap-3 text-xs text-text-muted font-numeric mb-4">
+                          <span class="flex items-center gap-1">
+                            <app-icon name="video" [size]="14" className="text-brand-gold" />
+                            <span>{{ unit.total_lectures_count || 0 }} {{ langService.isArabic() ? 'حصص' : 'Lectures' }}</span>
+                          </span>
+                          <span>•</span>
+                          <span class="flex items-center gap-1">
+                            <app-icon name="file-text" [size]="14" className="text-brand-gold" />
+                            <span>{{ unit.total_assessments_count || 0 }} {{ langService.isArabic() ? 'تمارين' : 'Quizzes' }}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="pt-3 border-t border-surface-border/60 flex items-center gap-2">
+                        <button
+                          type="button"
+                          (click)="openUnitPreview(unit)"
+                          class="flex-1 py-2 px-3 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <app-icon name="eye" [size]="14" />
+                          <span>{{ langService.isArabic() ? 'فهرس المحتوى' : 'Syllabus' }}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          (click)="attemptWatchLecture(unit)"
+                          class="py-2 px-4 rounded-xl btn-gold-metallic text-slate-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <app-icon name="play" [size]="12" />
+                          <span>{{ langService.isArabic() ? 'مشاهدة' : 'Watch' }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Coming Soon for this Grade -->
+                <div class="p-10 rounded-3xl border border-dashed border-surface-border text-center bg-surface-card/40 max-w-xl mx-auto my-8">
+                  <div class="w-14 h-14 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold mx-auto flex items-center justify-center mb-4 shadow-sm">
+                    <app-icon name="clock" [size]="28" />
+                  </div>
+                  <h4 class="text-base sm:text-lg font-bold font-academic-serif text-text-primary mb-2">
+                    {{ langService.isArabic() ? 'محتوى هذا الصف قريباً — بإشراف م/ هبة عبدالوهاب' : 'Units For This Grade Coming Soon' }}
+                  </h4>
+                  <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
+                    {{ langService.isArabic() ? 'المعلمة م/ هبة عبدالوهاب تقوم حالياً بإعداد وتدقيق الوحدات والشروحات التفاعلية لهذا الصف. ابدأ الآن بامتحان تحديد المستوى لاكتشاف نقاط قوتك.' : 'Eng. Heba Abdel-Wahab is currently finalizing interactive lectures and exercises for this grade.' }}
+                  </p>
+                  <button
+                    type="button"
+                    (click)="startPlacementExamForCurrentGrade()"
+                    class="btn-gold-metallic px-6 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-950 inline-flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <app-icon name="target" [size]="16" />
+                    <span>{{ langService.isArabic() ? 'خوض امتحان تحديد المستوى لهذا الصف' : 'Take Placement Test For This Grade' }}</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+
+        <!-- Modal Bottom Bar -->
+        <div class="px-5 sm:px-8 py-4 border-t border-surface-border/60 bg-surface-card/60 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <p class="text-xs text-text-muted text-center sm:text-start">
+            {{ langService.isArabic() ? 'منصة Spider Math • إشراف كامل من م/ هبة عبدالوهاب' : 'Spider Math Platform • Supervised by Eng. Heba Abdel-Wahab' }}
+          </p>
+
+          <button
+            type="button"
+            (click)="startPlacementExamForCurrentGrade()"
+            class="w-full sm:w-auto text-xs font-bold text-gold-accent hover:underline flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى التشخيصي' : 'Diagnostic Placement Assessment' }}</span>
+            <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="14" />
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 4. Unit Content / Syllabus Preview Modal                                  -->
+  <!-- ========================================================================= -->
+  @if (selectedUnitForPreview(); as unit) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity" (click)="closeUnitPreview()"></div>
+
+      <div class="relative w-full max-w-xl rounded-3xl border border-white/20 dark:border-white/10 bg-surface-card/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl z-10 my-8">
+        <button
+          type="button"
+          (click)="closeUnitPreview()"
+          class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-brand-gold p-2 rounded-xl hover:bg-surface-bg transition-colors cursor-pointer"
+        >
+          <app-icon name="x" [size]="18" />
+        </button>
+
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold text-xs font-bold border border-brand-gold/30">
+            {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
+          </span>
+          <span class="text-xs font-bold text-text-muted">
+            {{ selectedCurriculum().titleEn }} • {{ getGradeLabel(unit.grade_level) }}
+          </span>
+        </div>
+
+        <h3 class="text-xl font-bold font-academic-serif text-text-primary mb-3">
+          {{ unit.title_ar }}
+        </h3>
+
+        @if (unit.description_ar) {
+          <p class="text-xs text-text-secondary leading-relaxed mb-6">
+            {{ unit.description_ar }}
+          </p>
+        }
+
+        <h4 class="text-xs font-bold uppercase tracking-wider text-brand-gold mb-3 flex items-center gap-2">
+          <app-icon name="book-open" [size]="14" />
+          <span>{{ langService.isArabic() ? 'فهرس المحاضرات والتمارين المعتمدة:' : 'Unit Syllabus & Lectures:' }}</span>
+        </h4>
+
+        <div class="max-h-60 overflow-y-auto rounded-2xl border border-surface-border p-2 bg-surface-bg/50 mb-6">
+          @if (isLoadingUnitContents()) {
+            <div class="p-6 text-center text-xs text-text-muted">
+              <app-icon name="refresh" [size]="16" className="animate-spin mx-auto mb-2 text-brand-gold" />
+              <span>{{ langService.isArabic() ? 'جاري تحميل الفهرس...' : 'Loading syllabus...' }}</span>
+            </div>
+          } @else if (unitLectures().length > 0) {
+            <div class="space-y-2">
+              @for (lecture of unitLectures(); track lecture._id; let idx = $index) {
+                <div class="p-3 rounded-xl bg-surface-card border border-surface-border/60 flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-brand-gold/15 text-brand-gold font-bold flex items-center justify-center font-numeric text-[11px]">
+                      {{ idx + 1 }}
+                    </span>
+                    <span class="font-bold text-text-primary">{{ lecture.title_ar || lecture.title }}</span>
+                  </div>
+                  <span class="text-[11px] text-text-muted font-numeric">
+                    {{ lecture.duration_minutes || 45 }} دقيقة
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="p-4 text-center text-xs text-text-muted">
+              {{ langService.isArabic() ? 'سيتم رفع الفهرس التفصيلي فور تدشين الحصص.' : 'Lectures will be added soon.' }}
+            </p>
+          }
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="attemptWatchLecture(unit)"
+            class="flex-1 py-3 rounded-xl btn-gold-metallic text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md"
+          >
+            <app-icon name="play" [size]="14" />
+            <span>{{ langService.isArabic() ? 'دخول الوحدة والمشاهدة' : 'Watch & Study Unit' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="closeUnitPreview()"
+            class="py-3 px-5 rounded-xl border border-surface-border text-text-muted hover:text-text-primary text-xs font-bold cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 5. Auth Gate Modal (For guest students attempting to watch)               -->
+  <!-- ========================================================================= -->
+  @if (showAuthGateModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity" (click)="closeAuthGateModal()"></div>
+
+      <div class="relative w-full max-w-md rounded-3xl border border-white/20 dark:border-white/10 bg-surface-card/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl z-10 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-brand-gold/15 border border-brand-gold/40 text-brand-gold flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <app-icon name="lock" [size]="28" />
+        </div>
+
+        <h3 class="text-xl font-bold font-academic-serif text-text-primary mb-2">
+          {{ langService.isArabic() ? 'محتوى دراسي مخصص للطلاب' : 'Student Authentication Required' }}
+        </h3>
+
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
+          {{ langService.isArabic() ? 'لمشاهدة الحصص وحل الواجبات والتمارين التفاعلية، يرجى تسجيل الدخول أو إنشاء حساب طالب مجاني في ثوانٍ.' : 'Sign in or create a student account to unlock interactive lessons and quizzes.' }}
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <button
+            type="button"
+            (click)="goToLogin()"
+            class="w-full py-3 rounded-xl btn-gold-metallic text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md"
+          >
+            <app-icon name="log-in" [size]="16" />
+            <span>{{ langService.isArabic() ? 'تسجيل الدخول بالحساب' : 'Sign In' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="goToSignup()"
+            class="w-full py-3 rounded-xl border border-brand-gold/40 hover:bg-brand-gold/10 text-brand-gold font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          >
+            <app-icon name="user-plus" [size]="16" />
+            <span>{{ langService.isArabic() ? 'إنشاء حساب طالب جديد' : 'Create Free Account' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
