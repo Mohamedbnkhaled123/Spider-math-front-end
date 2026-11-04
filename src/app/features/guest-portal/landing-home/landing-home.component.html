@@ -95,17 +95,6 @@
         <!-- Left Column: Typography, CMS Headlines & Primary CTAs (7 Cols)      -->
         <!-- =================================================================== -->
         <div class="lg:col-span-7 text-center lg:text-start">
-          
-          <!-- Official Wordmark Tag -->
-          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-4">
-            <div class="flex items-center gap-2">
-              <span class="brand-spider text-xl sm:text-2xl tracking-tight">Spider</span>
-              <span class="brand-math text-xl sm:text-2xl tracking-tight">Math<span class="spark-star">✦</span></span>
-            </div>
-            <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/25 shadow-sm">
-              {{ heroBadge() }}
-            </span>
-          </div>
 
           <!-- Main Dynamic CMS Headline with Authentic Gradient -->
           <h1 class="text-3xl sm:text-5xl lg:text-5.5xl font-black tracking-tight leading-tight sm:leading-tight mb-6">
@@ -661,127 +650,313 @@
   }
 
   <!-- ========================================================================= -->
-  <!-- 4. Study Units & Final Revisions Pricing Showcase                         -->
+  <!-- TEMPORARILY HIDDEN SECTION: Study Units & Final Revisions Pricing Showcase -->
+  <!-- Reminder: Consult user before public launch whether to re-enable this.     -->
   <!-- ========================================================================= -->
-  <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-2xl mx-auto mb-10">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
-          <app-icon name="award" [size]="14" />
-          <span>{{ pricingSection().badge }}</span>
+  @if (showPricingPackagesSection()) {
+    <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
+            <app-icon name="award" [size]="14" />
+            <span>{{ pricingSection().badge }}</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-black text-text-primary">
+            {{ pricingSection().title }}
+          </h2>
+          <p class="mt-2 text-xs sm:text-sm text-text-secondary">
+            {{ pricingSection().subtitle }}
+          </p>
         </div>
-        <h2 class="text-2xl sm:text-4xl font-black text-text-primary">
-          {{ pricingSection().title }}
+
+        <!-- Pricing Content (Deferred on Viewport) -->
+        @defer (on viewport; prefetch on idle) {
+          <!-- 2 Clear Tabs: STUDY_UNIT vs FINAL_REVISION -->
+          <div class="flex items-center justify-center gap-4 mb-10">
+            <button
+              type="button"
+              (click)="setUnitTab('STUDY_UNIT')"
+              class="spider-tab-btn"
+              [class.active]="activeUnitTab() === 'STUDY_UNIT'"
+            >
+              <app-icon name="book-open" [size]="18" />
+              <span>{{ langService.isArabic() ? 'الوحدات الدراسية' : 'Study Units' }}</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="setUnitTab('FINAL_REVISION')"
+              class="spider-tab-btn"
+              [class.active]="activeUnitTab() === 'FINAL_REVISION'"
+            >
+              <app-icon name="award" [size]="18" />
+              <span>{{ langService.isArabic() ? 'المراجعات النهائية' : 'Final Revisions' }}</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            @for (pkg of filteredPackages(); track pkg._id) {
+              <div class="p-8 spider-card flex flex-col justify-between relative overflow-hidden group">
+                @if (pkg.isPopular) {
+                  <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 px-4 py-1.5 bg-gradient-to-r from-purple-700 to-cyan-500 text-white text-[11px] font-black rounded-bl-2xl rtl:rounded-bl-none rtl:rounded-br-2xl shadow-sm">
+                    {{ langService.isArabic() ? 'الأعلى تقييماً' : 'Most Popular' }}
+                  </div>
+                }
+
+                <div>
+                  <div class="mb-4">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
+                      {{ pkg.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Final Revision') : (langService.isArabic() ? 'حزمة وحدة دراسية' : 'Study Unit') }}
+                    </span>
+                  </div>
+
+                  <h3 class="text-xl font-black text-text-primary mb-2">
+                    {{ langService.isArabic() ? pkg.titleAr : pkg.titleEn }}
+                  </h3>
+                  <p class="text-xs text-text-secondary leading-relaxed mb-6">
+                    {{ langService.isArabic() ? pkg.descriptionAr : pkg.descriptionEn }}
+                  </p>
+
+                  <!-- Price Box -->
+                  <div class="flex items-baseline gap-2 mb-6 font-numeric">
+                    <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
+                      {{ pkg.priceEgp }}
+                    </span>
+                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
+                      {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
+                    </span>
+                    @if (pkg.originalPriceEgp) {
+                      <span class="text-xs text-slate-500 dark:text-slate-400 line-through mr-2">
+                        {{ pkg.originalPriceEgp }} EGP
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Features Checklist -->
+                  <div class="space-y-2.5 mb-8">
+                    @for (feat of (langService.isArabic() ? pkg.featuresAr : pkg.featuresEn); track feat) {
+                      <div class="flex items-start gap-2 text-xs font-medium text-text-secondary">
+                        <app-icon name="check" [size]="14" className="text-cyan-700 dark:text-cyan-400 mt-0.5 shrink-0" />
+                        <span>{{ feat }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- CTA Button -->
+                <button
+                  type="button"
+                  (click)="openWhatsAppSupport()"
+                  class="btn-spider-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <app-icon name="message-circle" [size]="18" />
+                  <span>{{ langService.isArabic() ? 'طلب الاشتراك وتفعيل الحساب' : 'Subscribe via WhatsApp' }}</span>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Direct Grade-Specific Placement Exam CTA Action Bar -->
+          <div class="mt-14 text-center">
+            <a
+              [routerLink]="['/placement-test']"
+              [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
+              class="btn-spider-primary inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-sm"
+            >
+              <app-icon name="target" [size]="18" className="text-white" />
+              <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني لهذا الصف' : 'Start Free Placement Test For This Grade' }}</span>
+            </a>
+          </div>
+        } @placeholder {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto min-h-[360px]">
+            <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
+            <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 5. Hardcoded Wall of Fame & Top Scorers Showcase (لوحة الشرف والتفوق الأكاديمي) -->
+  <!-- ========================================================================= -->
+  <section id="hall-of-fame-section" class="py-16 sm:py-24 border-b border-surface-border relative overflow-hidden bg-gradient-to-b from-transparent via-purple-950/10 to-transparent">
+    
+    <!-- Background Mathematical Ambient Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-layer-content">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-black mb-3 border border-amber-500/30 shadow-sm">
+          <app-icon name="crown" [size]="15" className="text-amber-500" />
+          <span>{{ langService.isArabic() ? 'لوحة الشرف والتفوق الرياضي' : 'Wall of Fame • Top Scorers' }}</span>
+        </div>
+        <h2 class="text-3xl sm:text-4.5xl font-black text-text-primary tracking-tight">
+          {{ langService.isArabic() ? 'أوائل Spider Math المتفوقين' : 'Spider Math Honors & Top Scorers' }}
         </h2>
-        <p class="mt-2 text-xs sm:text-sm text-text-secondary">
-          {{ pricingSection().subtitle }}
+        <p class="mt-3 text-sm sm:text-base text-text-secondary leading-relaxed">
+          {{ langService.isArabic()
+            ? 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز في امتحانات الثانوية العامة والأنظمة الدولية.'
+            : 'Elite students who achieved perfect scores and mathematical excellence across Thanaweya Amma and International Systems.' }}
         </p>
       </div>
 
-      <!-- Pricing Content (Deferred on Viewport) -->
-      @defer (on viewport; prefetch on idle) {
-        <!-- 2 Clear Tabs: STUDY_UNIT vs FINAL_REVISION -->
-        <div class="flex items-center justify-center gap-4 mb-10">
-          <button
-            type="button"
-            (click)="setUnitTab('STUDY_UNIT')"
-            class="spider-tab-btn"
-            [class.active]="activeUnitTab() === 'STUDY_UNIT'"
-          >
-            <app-icon name="book-open" [size]="18" />
-            <span>{{ langService.isArabic() ? 'الوحدات الدراسية' : 'Study Units' }}</span>
-          </button>
-
-          <button
-            type="button"
-            (click)="setUnitTab('FINAL_REVISION')"
-            class="spider-tab-btn"
-            [class.active]="activeUnitTab() === 'FINAL_REVISION'"
-          >
-            <app-icon name="award" [size]="18" />
-            <span>{{ langService.isArabic() ? 'المراجعات النهائية' : 'Final Revisions' }}</span>
-          </button>
+      <!-- 3D Podiums Visual (Ranks 2, 1, 3) -->
+      <div class="podiums-container flex items-end justify-center gap-3 sm:gap-6 max-w-3xl mx-auto pt-6 pb-8">
+        
+        <!-- Rank 2: Silver (Left) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3 group hover:border-slate-100 transition-colors">
+            <app-icon name="award" [size]="30" className="text-slate-400" />
+            <span class="absolute -bottom-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800 shadow-sm">
+              #2
+            </span>
+          </div>
+          <div class="text-center mb-2 px-1">
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 mb-1">
+              {{ langService.isArabic() ? hardcodedTopThree[1].badgeAr : hardcodedTopThree[1].badgeEn }}
+            </span>
+            <p class="text-xs sm:text-sm font-black text-text-primary truncate max-w-[150px]">
+              {{ langService.isArabic() ? hardcodedTopThree[1].nameAr : hardcodedTopThree[1].nameEn }}
+            </p>
+            <p class="text-[11px] text-text-muted truncate max-w-[150px]">
+              {{ langService.isArabic() ? hardcodedTopThree[1].systemAr : hardcodedTopThree[1].systemEn }}
+            </p>
+            <span class="text-xs font-numeric font-extrabold text-brand-secondary">
+              {{ hardcodedTopThree[1].xp }} XP
+            </span>
+          </div>
+          <div class="w-full h-32 sm:h-36 rounded-t-2xl bg-gradient-to-t from-slate-400/30 via-slate-300/40 to-slate-200/60 border border-slate-300/60 flex flex-col items-center justify-center p-2 text-center shadow-md">
+            <span class="font-numeric font-black text-xl text-slate-600 dark:text-slate-300">2nd</span>
+            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300 hidden sm:block">
+              {{ langService.isArabic() ? hardcodedTopThree[1].achievementAr : hardcodedTopThree[1].achievementEn }}
+            </span>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          @for (pkg of filteredPackages(); track pkg._id) {
-            <div class="p-8 spider-card flex flex-col justify-between relative overflow-hidden group">
-              @if (pkg.isPopular) {
-                <div class="absolute top-0 right-0 rtl:right-auto rtl:left-0 px-4 py-1.5 bg-gradient-to-r from-purple-700 to-cyan-500 text-white text-[11px] font-black rounded-bl-2xl rtl:rounded-bl-none rtl:rounded-br-2xl shadow-sm">
-                  {{ langService.isArabic() ? 'الأعلى تقييماً' : 'Most Popular' }}
+        <!-- Rank 1: Gold (Center & Highest Elevation) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise z-10" style="animation-delay: 0s;">
+          <app-icon name="crown" [size]="28" className="text-amber-400 mb-1 animate-bounce" />
+          <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-surface-card border-2 border-amber-400 shadow-brand-glow flex items-center justify-center font-black text-amber-500 text-base mb-3 group hover:scale-105 transition-all">
+            <app-icon name="award" [size]="36" className="text-amber-500" />
+            <span class="absolute -bottom-3 px-3 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 shadow-md">
+              #1 الأول
+            </span>
+          </div>
+          <div class="text-center mb-2 px-1">
+            <span class="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 mb-1">
+              {{ langService.isArabic() ? hardcodedTopThree[0].badgeAr : hardcodedTopThree[0].badgeEn }}
+            </span>
+            <p class="text-sm sm:text-base font-black text-text-primary truncate max-w-[170px]">
+              {{ langService.isArabic() ? hardcodedTopThree[0].nameAr : hardcodedTopThree[0].nameEn }}
+            </p>
+            <p class="text-[11px] sm:text-xs text-text-muted truncate max-w-[170px]">
+              {{ langService.isArabic() ? hardcodedTopThree[0].systemAr : hardcodedTopThree[0].systemEn }}
+            </p>
+            <span class="text-xs sm:text-sm font-numeric font-black text-amber-500">
+              {{ hardcodedTopThree[0].xp }} XP
+            </span>
+          </div>
+          <div class="w-full h-44 sm:h-52 rounded-t-2xl bg-gradient-to-t from-amber-500/30 via-amber-400/40 to-amber-300/60 border border-amber-400/70 shadow-brand-glow flex flex-col items-center justify-center p-2 text-center">
+            <span class="font-numeric font-black text-3xl text-amber-700 dark:text-amber-200">1st</span>
+            <span class="text-xs font-bold text-amber-900 dark:text-amber-100 mt-1 px-1">
+              {{ langService.isArabic() ? hardcodedTopThree[0].achievementAr : hardcodedTopThree[0].achievementEn }}
+            </span>
+            <span class="text-[10px] text-amber-800 dark:text-amber-200 mt-0.5 hidden sm:block">
+              {{ langService.isArabic() ? hardcodedTopThree[0].locationAr : hardcodedTopThree[0].locationEn }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Rank 3: Bronze (Right) -->
+        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3 group hover:border-amber-600 transition-colors">
+            <app-icon name="award" [size]="30" className="text-amber-700" />
+            <span class="absolute -bottom-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400 shadow-sm">
+              #3
+            </span>
+          </div>
+          <div class="text-center mb-2 px-1">
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-700/15 text-amber-800 dark:text-amber-400 mb-1">
+              {{ langService.isArabic() ? hardcodedTopThree[2].badgeAr : hardcodedTopThree[2].badgeEn }}
+            </span>
+            <p class="text-xs sm:text-sm font-black text-text-primary truncate max-w-[150px]">
+              {{ langService.isArabic() ? hardcodedTopThree[2].nameAr : hardcodedTopThree[2].nameEn }}
+            </p>
+            <p class="text-[11px] text-text-muted truncate max-w-[150px]">
+              {{ langService.isArabic() ? hardcodedTopThree[2].systemAr : hardcodedTopThree[2].systemEn }}
+            </p>
+            <span class="text-xs font-numeric font-extrabold text-brand-secondary">
+              {{ hardcodedTopThree[2].xp }} XP
+            </span>
+          </div>
+          <div class="w-full h-24 sm:h-28 rounded-t-2xl bg-gradient-to-t from-amber-800/25 via-amber-700/35 to-amber-600/40 border border-amber-700/50 flex flex-col items-center justify-center p-2 text-center shadow-md">
+            <span class="font-numeric font-black text-lg text-amber-800 dark:text-amber-300">3rd</span>
+            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-200 hidden sm:block">
+              {{ langService.isArabic() ? hardcodedTopThree[2].achievementAr : hardcodedTopThree[2].achievementEn }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Honorable Top Scorers Grid (Ranks 4-7) -->
+      <div class="mt-8 pt-8 border-t border-surface-border/60">
+        <h3 class="text-center text-sm font-extrabold text-text-secondary uppercase tracking-wider mb-6">
+          {{ langService.isArabic() ? 'قائمة الشرف الأكاديمي' : 'Distinguished Honor Roll' }}
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          @for (honoree of hardcodedHonorsList; track honoree.rank) {
+            <div class="p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-cyan-500/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-numeric font-black flex items-center justify-center text-sm shrink-0">
+                  #{{ honoree.rank }}
                 </div>
-              }
-
-              <div>
-                <div class="mb-4">
-                  <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
-                    {{ pkg.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Final Revision') : (langService.isArabic() ? 'حزمة وحدة دراسية' : 'Study Unit') }}
-                  </span>
-                </div>
-
-                <h3 class="text-xl font-black text-text-primary mb-2">
-                  {{ langService.isArabic() ? pkg.titleAr : pkg.titleEn }}
-                </h3>
-                <p class="text-xs text-text-secondary leading-relaxed mb-6">
-                  {{ langService.isArabic() ? pkg.descriptionAr : pkg.descriptionEn }}
-                </p>
-
-                <!-- Price Box -->
-                <div class="flex items-baseline gap-2 mb-6 font-numeric">
-                  <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
-                    {{ pkg.priceEgp }}
-                  </span>
-                  <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
-                    {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
-                  </span>
-                  @if (pkg.originalPriceEgp) {
-                    <span class="text-xs text-slate-500 dark:text-slate-400 line-through mr-2">
-                      {{ pkg.originalPriceEgp }} EGP
-                    </span>
-                  }
-                </div>
-
-                <!-- Features Checklist -->
-                <div class="space-y-2.5 mb-8">
-                  @for (feat of (langService.isArabic() ? pkg.featuresAr : pkg.featuresEn); track feat) {
-                    <div class="flex items-start gap-2 text-xs font-medium text-text-secondary">
-                      <app-icon name="check" [size]="14" className="text-cyan-700 dark:text-cyan-400 mt-0.5 shrink-0" />
-                      <span>{{ feat }}</span>
-                    </div>
-                  }
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-text-primary truncate">
+                    {{ langService.isArabic() ? honoree.nameAr : honoree.nameEn }}
+                  </p>
+                  <p class="text-[10px] text-text-muted truncate">
+                    {{ langService.isArabic() ? honoree.systemAr : honoree.systemEn }}
+                  </p>
+                  <p class="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold truncate">
+                    {{ langService.isArabic() ? honoree.achievementAr : honoree.achievementEn }}
+                  </p>
                 </div>
               </div>
-
-              <!-- CTA Button -->
-              <button
-                type="button"
-                (click)="openWhatsAppSupport()"
-                class="btn-spider-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <app-icon name="message-circle" [size]="18" />
-                <span>{{ langService.isArabic() ? 'طلب الاشتراك وتفعيل الحساب' : 'Subscribe via WhatsApp' }}</span>
-              </button>
+              <div class="text-end shrink-0">
+                <span class="text-xs font-numeric font-extrabold text-brand-primary block">
+                  {{ honoree.xp }}
+                </span>
+                <span class="text-[9px] text-text-muted">XP</span>
+              </div>
             </div>
           }
         </div>
+      </div>
 
-        <!-- Direct Grade-Specific Placement Exam CTA Action Bar -->
-        <div class="mt-14 text-center">
-          <a
-            [routerLink]="['/placement-test']"
-            [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
-            class="btn-spider-primary inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-sm"
-          >
-            <app-icon name="target" [size]="18" className="text-white" />
-            <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني لهذا الصف' : 'Start Free Placement Test For This Grade' }}</span>
-          </a>
-        </div>
-      } @placeholder {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto min-h-[360px]">
-          <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
-          <div class="p-8 rounded-3xl border border-surface-border bg-surface-card/40 animate-pulse h-80"></div>
-        </div>
-      }
+      <!-- Placement Test Action Banner -->
+      <div class="mt-14 max-w-3xl mx-auto text-center p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-purple-900/20 via-cyan-900/20 to-purple-900/20 border border-cyan-500/30 backdrop-blur-md shadow-lg">
+        <h4 class="text-lg sm:text-xl font-black text-text-primary mb-2">
+          {{ langService.isArabic() ? 'هل أنت مستعد لتكون ضمن أوائل الدفعة القادمة؟' : 'Ready to Join the Top Scorers?' }}
+        </h4>
+        <p class="text-xs sm:text-sm text-text-secondary mb-6 max-w-lg mx-auto">
+          {{ langService.isArabic()
+            ? 'ابدأ بامتحان تحديد المستوى المجاني المصمم هندسياً لاكتشاف مستواك الرياضي ورسم خطة تفوقك فوراً.'
+            : 'Start with our free diagnostic placement test engineered to pinpoint your math strengths and accelerate your progress.' }}
+        </p>
+        <a
+          routerLink="/placement-test"
+          class="btn-spider-primary inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-sm shadow-brand-glow hover:scale-105 active:scale-95 transition-all"
+        >
+          <app-icon name="target" [size]="18" />
+          <span>{{ langService.isArabic() ? 'ابدأ امتحان تحديد المستوى المجاني' : 'Start Free Placement Test' }}</span>
+        </a>
+      </div>
+
     </div>
   </section>
 

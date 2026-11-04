@@ -10,7 +10,6 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { CurriculumSelectorCardsComponent } from '../../../shared/components/curriculum-selector-cards/curriculum-selector-cards.component';
@@ -40,7 +39,6 @@ import { AuthService } from '../../../core/auth/auth.service';
   imports: [
     CommonModule,
     RouterLink,
-    TranslocoPipe,
     AppIconComponent,
     CurriculumSelectorCardsComponent
   ],
@@ -326,6 +324,114 @@ export class LandingHomeComponent implements OnInit {
     const tabList = data.pricingPackages.filter(p => p.type === tab);
     return tabList.length > 0 ? tabList : data.pricingPackages.filter(p => p.curriculum === curr);
   });
+
+  // Temporarily hidden pricing & packages section (consult user before public release whether to re-enable)
+  readonly showPricingPackagesSection = signal<boolean>(false);
+
+  // Hard-Coded Wall of Fame & Top Scorers (لوحة شرف أوائل الطلبة)
+  readonly hardcodedTopThree = [
+    {
+      rank: 1,
+      nameAr: 'سارة أحمد محمود',
+      nameEn: 'Sarah Ahmed Mahmoud',
+      systemAr: 'ثانوية عامة (علمي رياضة)',
+      systemEn: 'Egyptian Curriculum (Thanaweya)',
+      achievementAr: '100% الدرجة النهائية في التفاضل والتكامل',
+      achievementEn: '100% Final Score in Calculus & Analysis',
+      locationAr: 'القاهرة — مدرسة المتفوقين STEM',
+      locationEn: 'Cairo — STEM High School',
+      xp: 2950,
+      badgeAr: 'المركز الأول على مستوى المنصة',
+      badgeEn: 'Rank #1 Platform Champion'
+    },
+    {
+      rank: 2,
+      nameAr: 'عمر خالد الشناوي',
+      nameEn: 'Omar Khaled El-Shenawy',
+      systemAr: 'الدبلومة الأمريكية (Digital SAT)',
+      systemEn: 'American Diploma (Digital SAT Math)',
+      achievementAr: '800 / 800 الدرجة الكاملة في الرياضيات',
+      achievementEn: '800 / 800 Perfect Math Score',
+      locationAr: 'الجيزة — مدرسة الألسن الدولية',
+      locationEn: 'Giza — Al-Alson Int. School',
+      xp: 2780,
+      badgeAr: 'الدرجة الكاملة SAT',
+      badgeEn: 'Perfect SAT Score'
+    },
+    {
+      rank: 3,
+      nameAr: 'مريم يوسف عبد الرحمن',
+      nameEn: 'Mariam Youssef Abdel-Rahman',
+      systemAr: 'المنهج الخليجي (الصف 12 متقدم)',
+      systemEn: 'Gulf Curriculum (Grade 12 Advanced)',
+      achievementAr: '99.8% في الرياضيات المتقدمة',
+      achievementEn: '99.8% in Advanced Mathematics',
+      locationAr: 'الرياض — مدارس الرواد',
+      locationEn: 'Riyadh — Al-Rowad Schools',
+      xp: 2620,
+      badgeAr: 'تفوق استثنائي',
+      badgeEn: 'Exceptional Mastery'
+    }
+  ];
+
+  readonly hardcodedHonorsList = [
+    {
+      rank: 4,
+      nameAr: 'زياد طارق إبراهيم',
+      nameEn: 'Ziad Tarek Ibrahim',
+      systemAr: 'ثانوية عامة (الجبر والهندسة الفراغية)',
+      systemEn: 'Egyptian Curriculum (Algebra & Solid Geom)',
+      achievementAr: '100% الدرجة النهائية',
+      achievementEn: '100% Final Score',
+      locationAr: 'الإسكندرية',
+      locationEn: 'Alexandria',
+      xp: 2450,
+      badgeAr: 'عبقري الجبر',
+      badgeEn: 'Algebra Master'
+    },
+    {
+      rank: 5,
+      nameAr: 'ياسمين حازم المهدي',
+      nameEn: 'Yasmine Hazem El-Mahdy',
+      systemAr: 'البريطاني الدولي (IGCSE Cambridge)',
+      systemEn: 'British Curriculum (IGCSE Cambridge)',
+      achievementAr: 'Grade A* في الرياضيات البحتة المتقدمة',
+      achievementEn: 'Grade A* in Further Pure Math',
+      locationAr: 'القاهرة',
+      locationEn: 'Cairo',
+      xp: 2390,
+      badgeAr: 'امتياز كامبريدج',
+      badgeEn: 'Cambridge A*'
+    },
+    {
+      rank: 6,
+      nameAr: 'أحمد هشام النجار',
+      nameEn: 'Ahmed Hesham El-Naggar',
+      systemAr: 'ثانوية عامة (الميكانيكا والديناميكا)',
+      systemEn: 'Egyptian Curriculum (Mechanics & Dynamics)',
+      achievementAr: '100% في الرياضيات التطبيقية',
+      achievementEn: '100% in Applied Math',
+      locationAr: 'الدقهلية — المنصورة',
+      locationEn: 'Mansoura',
+      xp: 2280,
+      badgeAr: 'فارس الميكانيكا',
+      badgeEn: 'Mechanics Pro'
+    },
+    {
+      rank: 7,
+      nameAr: 'نور الدين وليد',
+      nameEn: 'Nour Eldin Walid',
+      systemAr: 'الدبلومة الأمريكية (ACT Math)',
+      systemEn: 'American Diploma (ACT Math 36/36)',
+      achievementAr: '36 / 36 الدرجة الكاملة في الـ ACT',
+      achievementEn: '36 / 36 Perfect ACT Score',
+      locationAr: 'الغربية — طنطا',
+      locationEn: 'Tanta',
+      xp: 2190,
+      badgeAr: 'الدرجة الكاملة ACT',
+      badgeEn: 'Perfect ACT 36'
+    }
+  ];
 
   ngOnInit(): void {
     const hasPublicViewParam =
