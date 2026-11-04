@@ -8,7 +8,7 @@
   <!-- ========================================================================= -->
   <!-- 0. Dynamic Urgent Announcement Banner (Pure CMS)                           -->
   <!-- ========================================================================= -->
-  @if (announcement().isActive) {
+  @if (announcement().isActive && announcement().text) {
     <div class="spider-announcement-ribbon w-full py-2.5 px-4 text-center text-xs sm:text-sm font-black text-white relative z-layer-header flex items-center justify-center gap-2">
       <span class="spark-star">✦</span>
       <span class="tracking-wide">{{ announcement().text }}</span>
@@ -23,7 +23,7 @@
         <div class="flex items-center gap-2 text-text-primary">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="font-bold">
-            {{ langService.isArabic() ? 'أنت تتصفح الصفحة الرئيسية للمنصة' : 'You are browsing the platform main page' }}
+            {{ studentBannerNotice() }}
           </span>
           @if (currentStudent()?.full_name; as name) {
             <span class="text-text-secondary hidden sm:inline font-semibold">({{ name }})</span>
@@ -34,7 +34,7 @@
           class="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-spider text-white font-extrabold hover:opacity-95 shadow-sm active:scale-95 transition-all text-xs"
         >
           <app-icon name="sparkles" [size]="14" />
-          <span>{{ langService.isArabic() ? 'العودة إلى لوحة دراستك' : 'Back to Study Dashboard' }}</span>
+          <span>{{ studentBannerCta() }}</span>
           <app-icon name="arrow-right" [size]="13" className="rtl:rotate-180" />
         </a>
       </div>
@@ -96,6 +96,12 @@
         <!-- =================================================================== -->
         <div class="lg:col-span-7 text-center lg:text-start">
 
+          <!-- Active Academic Year Authority Badge (Pure CMS) -->
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-700 dark:text-cyan-300 text-xs font-bold mb-4 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span>{{ academicYearText() }}</span>
+          </div>
+
           <!-- Main Dynamic CMS Headline with Authentic Gradient -->
           <h1 class="text-3xl sm:text-5xl lg:text-5.5xl font-black tracking-tight leading-tight sm:leading-tight mb-6">
             <span class="hero-title-gradient block">
@@ -116,7 +122,7 @@
                 class="btn-spider-primary px-8 py-4 rounded-2xl font-extrabold text-sm sm:text-base flex items-center gap-3 cursor-pointer shadow-md"
               >
                 <app-icon name="book-open" [size]="18" />
-                <span>{{ langService.isArabic() ? 'متابعة المذاكرة (لوحة تحكم الطالب)' : 'Continue Learning (Student Dashboard)' }}</span>
+                <span>{{ studentContinueLearningCta() }}</span>
               </a>
 
               <a
@@ -125,7 +131,7 @@
                 class="btn-spider-secondary px-7 py-4 rounded-2xl font-bold text-sm sm:text-base flex items-center gap-2.5"
               >
                 <app-icon name="target" [size]="18" className="text-cyan-700 dark:text-cyan-300" />
-                <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى لصفك' : 'Your Placement Test' }}</span>
+                <span>{{ studentPlacementTestCta() }}</span>
               </a>
             } @else {
               <button
@@ -192,12 +198,12 @@
                     type="button"
                     (click)="playHeroPromoVideo()"
                     class="group relative w-full h-full block cursor-pointer focus:outline-none"
-                    [attr.aria-label]="langService.isArabic() ? 'تشغيل الفيديو التعريفي لمنصة سبايدر ماث' : 'Play Spider Math Platform Intro Video'"
+                    [attr.aria-label]="heroVideoAriaLabel()"
                   >
                     @if (heroVideoThumbnailUrl(); as thumbUrl) {
                       <img
                         [src]="thumbUrl"
-                        [alt]="langService.isArabic() ? 'الفيديو التعريفي لمنصة سبايدر ماث — المهندسة هبة عبدالوهاب' : 'Spider Math Intro Video — Eng. Heba Abdel-Wahab'"
+                        [alt]="heroVideoAlt()"
                         width="560"
                         height="315"
                         fetchpriority="high"
@@ -235,7 +241,7 @@
   <!-- ========================================================================= -->
   <!-- 2. Eng. Heba Abdel-Wahab Bio & Qualifications Section (White Background)   -->
   <!-- ========================================================================= -->
-  @if (landingData(); as cms) {
+  @if (teacherProfile()) {
     <section class="py-16 sm:py-24 border-b border-surface-border relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
@@ -650,6 +656,57 @@
   }
 
   <!-- ========================================================================= -->
+  <!-- 4. Class Timetables & Live Streaming Schedule (CMS Schedules Table)       -->
+  <!-- ========================================================================= -->
+  @if (schedulesList().length > 0) {
+    <section id="schedule-section" class="py-16 sm:py-24 border-b border-surface-border relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
+            <app-icon name="clock" [size]="14" />
+            <span>{{ scheduleSection().badge }}</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-text-primary">
+            {{ scheduleSection().title }}
+          </h2>
+          <p class="mt-3 text-sm sm:text-base text-text-secondary">
+            {{ scheduleSection().subtitle }}
+          </p>
+        </div>
+
+        <div class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs sm:text-sm text-start">
+              <thead class="bg-surface-bg border-b border-surface-border text-text-secondary uppercase text-[11px] font-bold">
+                <tr>
+                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الصف الدراسي' : 'Grade' }}</th>
+                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'اليوم' : 'Day' }}</th>
+                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الموعد' : 'Time' }}</th>
+                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'المادة / الموضوع' : 'Subject' }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-border font-medium">
+                @for (sched of schedulesList(); track $index) {
+                  <tr class="hover:bg-surface-bg/50 transition-colors">
+                    <td class="py-3.5 px-4 font-bold text-text-primary">{{ sched.gradeLevel }}</td>
+                    <td class="py-3.5 px-4 text-text-secondary">{{ langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn }}</td>
+                    <td class="py-3.5 px-4 text-cyan-600 dark:text-cyan-400 font-numeric font-bold">{{ sched.timeSlot || '—' }}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
+                        {{ langService.isArabic() ? (sched.lectureTitleAr || sched.lectureSubject || 'محاضرة تفاعلية') : (sched.lectureTitleEn || sched.lectureSubject || 'Interactive Lecture') }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================= -->
   <!-- TEMPORARILY HIDDEN SECTION: Study Units & Final Revisions Pricing Showcase -->
   <!-- Reminder: Consult user before public launch whether to re-enable this.     -->
   <!-- ========================================================================= -->
@@ -967,8 +1024,8 @@
     type="button"
     (click)="openWhatsAppSupport()"
     class="fixed bottom-6 right-6 rtl:right-auto rtl:left-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center cursor-pointer group"
-    [attr.aria-label]="langService.isArabic() ? 'تواصل معنا عبر واتساب' : 'WhatsApp Support'"
-    [title]="langService.isArabic() ? 'تواصل معنا عبر واتساب' : 'WhatsApp Support'"
+    [attr.aria-label]="whatsappButtonLabel()"
+    [title]="whatsappButtonLabel()"
   >
     <app-icon name="whatsapp" [size]="26" className="text-white" />
   </button>

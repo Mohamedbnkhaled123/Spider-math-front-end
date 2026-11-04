@@ -297,6 +297,68 @@ export class LandingHomeComponent implements OnInit {
     };
   });
 
+  readonly heroVideoAriaLabel = computed<string>(() => {
+    return this.langService.isArabic()
+      ? 'تشغيل الفيديو التعريفي لمنصة سبايدر ماث'
+      : 'Play Spider Math Platform Intro Video';
+  });
+
+  readonly heroVideoAlt = computed<string>(() => {
+    const teacherName = this.teacherProfile().name;
+    return this.langService.isArabic()
+      ? `الفيديو التعريفي لمنصة سبايدر ماث — ${teacherName}`
+      : `Spider Math Intro Video — ${teacherName}`;
+  });
+
+  readonly studentBannerNotice = computed<string>(() => {
+    return this.langService.isArabic()
+      ? 'أنت تتصفح الصفحة الرئيسية للمنصة'
+      : 'You are browsing the platform main page';
+  });
+
+  readonly studentBannerCta = computed<string>(() => {
+    return this.langService.isArabic()
+      ? 'العودة إلى لوحة دراستك'
+      : 'Back to Study Dashboard';
+  });
+
+  readonly studentContinueLearningCta = computed<string>(() => {
+    return this.langService.isArabic()
+      ? 'متابعة المذاكرة (لوحة تحكم الطالب)'
+      : 'Continue Learning (Student Dashboard)';
+  });
+
+  readonly studentPlacementTestCta = computed<string>(() => {
+    return this.langService.isArabic()
+      ? 'امتحان تحديد المستوى لصفك'
+      : 'Your Placement Test';
+  });
+
+  readonly scheduleSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.scheduleBadgeAr || 'جدول المواعيد والحصص')
+        : (data?.scheduleBadgeEn || 'Live Lecture Schedule'),
+      title: isAr
+        ? (data?.scheduleTitleAr || 'مواعيد المحاضرات والبث المباشر')
+        : (data?.scheduleTitleEn || 'Class Timetable & Streaming Schedule'),
+      subtitle: isAr
+        ? (data?.scheduleSubtitleAr || 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة (GMT+2)')
+        : (data?.scheduleSubtitleEn || 'Times shown in Cairo Local Time (GMT+2)')
+    };
+  });
+
+  readonly schedulesList = computed<IScheduleItem[]>(() => {
+    const data = this.landingData();
+    return Array.isArray(data?.schedules) ? data.schedules : [];
+  });
+
+  readonly whatsappButtonLabel = computed<string>(() => {
+    return this.langService.isArabic() ? 'تواصل معنا عبر واتساب' : 'WhatsApp Support';
+  });
+
   readonly pricingSection = computed(() => {
     const data = this.landingData();
     const isAr = this.langService.isArabic();
