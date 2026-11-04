@@ -88,8 +88,13 @@
   <!-- ========================================================================= -->
   <!-- 2. Placement Exam Diagnostic Report Card                                  -->
   <!-- ========================================================================= -->
-  @if (placementReport(); as rep) {
-    <div class="rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-card relative overflow-hidden">
+  @if (isLoadingPlacement()) {
+    <div class="rounded-3xl border border-surface-border bg-surface-card p-8 shadow-card flex items-center justify-center gap-3 text-text-secondary text-xs sm:text-sm">
+      <app-icon name="refresh" [size]="20" className="animate-spin text-brand-primary" />
+      <span>{{ langService.isArabic() ? 'جاري جلب تقرير تحديد المستوى الأكاديمي...' : 'Loading Placement Assessment Report...' }}</span>
+    </div>
+  } @else if (placementReport(); as rep) {
+    <div class="rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-card relative overflow-hidden animate-fade-in">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-surface-border mb-6">
         <div class="flex items-center gap-3">
@@ -162,6 +167,32 @@
         </div>
       </div>
 
+    </div>
+  } @else {
+    <!-- Empty State: Student has not taken placement test yet -->
+    <div class="rounded-3xl border border-dashed border-cyan-500/40 bg-surface-card/70 backdrop-blur-md p-6 sm:p-10 shadow-card text-center relative overflow-hidden animate-fade-in">
+      <div class="max-w-2xl mx-auto space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-300 mx-auto flex items-center justify-center shadow-sm">
+          <app-icon name="target" [size]="32" />
+        </div>
+        <h3 class="text-lg sm:text-2xl font-black text-text-primary">
+          {{ langService.isArabic() ? 'لم تقم بإجراء امتحان تحديد المستوى بعد' : 'Placement Assessment Not Completed Yet' }}
+        </h3>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-lg mx-auto">
+          {{ langService.isArabic()
+            ? 'ابدأ التقييم الآن لاكتشاف نقاط قوتك وخطة دراستك مع م/ هبة عبدالوهاب.'
+            : 'Take the diagnostic assessment now to discover your strengths and personalized study plan with Eng. Heba.' }}
+        </p>
+        <div class="pt-2">
+          <a
+            routerLink="/placement-test"
+            class="btn-spider-primary inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-black text-xs sm:text-sm shadow-brand-glow hover:opacity-95 active:scale-95 transition-all"
+          >
+            <app-icon name="target" [size]="18" />
+            <span>{{ langService.isArabic() ? 'بدء امتحان تحديد المستوى الآن' : 'Start Placement Assessment Now' }}</span>
+          </a>
+        </div>
+      </div>
     </div>
   }
 

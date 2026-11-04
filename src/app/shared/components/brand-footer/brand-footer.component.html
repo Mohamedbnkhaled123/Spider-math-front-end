@@ -108,15 +108,59 @@
             ? 'فريق الدعم متاح للرد على استفسارات الطلاب وأولياء الأمور طوال أيام الأسبوع.'
             : 'Dedicated support for student onboarding and inquiries 7 days a week.' }}
         </p>
-        <a
-          href="https://wa.me/201000000000"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors"
-        >
-          <app-icon name="whatsapp" [size]="16" />
-          <span>WhatsApp Helpdesk</span>
-        </a>
+        @if (cleanWhatsappNumber()) {
+          <a
+            [href]="'https://wa.me/' + cleanWhatsappNumber()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors mb-4"
+          >
+            <app-icon name="whatsapp" [size]="16" />
+            <span>WhatsApp Helpdesk</span>
+          </a>
+        }
+
+        <!-- Dynamic Social Channels from CMS (Only rendered if configured) -->
+        <div class="flex items-center gap-2 pt-1">
+          @if (contactChannels()?.facebook_url) {
+            <a
+              [href]="contactChannels()?.facebook_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border hover:border-cyan-400 text-text-secondary hover:text-cyan-400 flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Facebook Page"
+              title="Facebook"
+            >
+              <app-icon name="facebook" [size]="16" />
+            </a>
+          }
+
+          @if (contactChannels()?.youtube_channel_url) {
+            <a
+              [href]="contactChannels()?.youtube_channel_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border hover:border-red-500 text-text-secondary hover:text-red-500 flex items-center justify-center transition-colors shadow-sm"
+              aria-label="YouTube Channel"
+              title="YouTube"
+            >
+              <app-icon name="youtube" [size]="16" />
+            </a>
+          }
+
+          @if (contactChannels()?.telegram_url) {
+            <a
+              [href]="contactChannels()?.telegram_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-xl bg-surface-card border border-surface-border hover:border-sky-400 text-text-secondary hover:text-sky-400 flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Telegram Channel"
+              title="Telegram"
+            >
+              <app-icon name="send" [size]="16" />
+            </a>
+          }
+        </div>
       </div>
 
     </div>

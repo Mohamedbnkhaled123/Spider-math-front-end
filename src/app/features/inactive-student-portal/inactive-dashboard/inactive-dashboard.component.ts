@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
@@ -23,7 +23,7 @@ import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curric
 @Component({
   selector: 'app-inactive-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, AppIconComponent],
+  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent],
   templateUrl: './inactive-dashboard.component.html',
   styleUrl: './inactive-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -55,26 +55,9 @@ export class InactiveDashboardComponent implements OnInit {
   readonly isLoadingUnits = signal<boolean>(true);
   readonly subscribingUnitId = signal<string | null>(null);
 
-  // Placement Exam Diagnostic Report
-  readonly placementReport = computed<IPlacementReportSummary>(() => {
-    return {
-      score: 85,
-      percentage: 85,
-      academicLevelBadgeAr: 'مستوى متقدم — عبقري رياضيات (Advanced Mastery)',
-      academicLevelBadgeEn: 'Advanced Mastery — Math Genius',
-      strengths: [
-        'الجبر والدوال الحقيقية والتفاضل الأساسي',
-        'الهندسة التحليلية والمستويات الإحداثية',
-        'استخدام حاسبة ديسموس في استنتاج المنحنيات'
-      ],
-      weaknesses: [
-        'حساب المثلثات المتقدم وتطبيقات الزوايا المركبة',
-        'مسائل المعادلات الزمنية المرتبطة متعددة الخطوات'
-      ],
-      teacherRecommendationAr: 'مستوى الطالب يؤهله لتحقيق الدرجة النهائية بإذن الله. ننصح بالبدء فوراً بالوحدة الأولى والتركيز على ورش العمل التطبيقية مع م/ هبة.',
-      teacherRecommendationEn: 'Excellent algebraic intuition. Enrolling in Unit 1 will bridge trigonometry gaps and solidify speed tactics.'
-    };
-  });
+  // Placement Exam Diagnostic Report (Pure Database Driven)
+  readonly placementReport = signal<IPlacementReportSummary | null>(null);
+  readonly isLoadingPlacement = signal<boolean>(true);
 
   private readonly http = inject(HttpClient);
 
@@ -88,6 +71,74 @@ export class InactiveDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadActiveGrades();
     this.loadUnitPackages();
+    this.loadMyPlacementAttempt();
+  }
+
+  loadMyPlacementAttempt(): void {
+    this.isLoadingPlacement.set(true);
+    this.http.get<{ success: boolean; data: any }>('/api/v1/public/placement-test/my-attempt').subscribe({
+      next: (res) => {
+        this.isLoadingPlacement.set(false);
+        const attempt = res?.data;
+        if (!attempt) {
+          this.placementReport.set(null);
+          return;
+        }
+
+        const scorePct = attempt.scorePercentage ?? attempt.score_percentage ?? 0;
+        const badge = attempt.academicLevelBadge ?? attempt.academic_level_badge ?? 'GOOD';
+
+        let badgeAr = 'مستوى متقدم — عبقري رياضيات (Advanced Mastery)';
+        let badgeEn = 'Advanced Mastery — Math Genius';
+        let recAr = 'مستوى الطالب يؤهله لتحقيق الدرجة النهائية بإذن الله. ننصح بالبدء فوراً بالوحدة الأولى والتركيز على ورش العمل التطبيقية مع م/ هبة.';
+        let recEn = 'Excellent algebraic intuition. Enrolling in Unit 1 will bridge trigonometry gaps and solidify speed tactics.';
+
+        if (badge === 'EXCELLENT' || scorePct >= 85) {
+          badgeAr = 'مستوى متقدم — عبقري رياضيات (Advanced Mastery)';
+          badgeEn = 'Advanced Mastery — Math Genius';
+          recAr = 'مستوى الطالب يؤهله لتحقيق الدرجة النهائية بإذن الله. ننصح بالبدء فوراً بالوحدة الأولى والتركيز على ورش العمل التطبيقية مع م/ هبة.';
+          recEn = 'Excellent algebraic intuition. Enrolling in Unit 1 will bridge trigonometry gaps and solidify speed tactics.';
+        } else if (badge === 'GOOD' || scorePct >= 65) {
+          badgeAr = 'مستوى جيد جداً ومتمكن (Proficient)';
+          badgeEn = 'Proficient Mastery';
+          recAr = 'أداء متميز مع استيعاب جيد جداً للمفاهيم الرياضية الأساسية، وبعض الجزئيات تحتاج إلى تدريب وتطبيق مكثف مع م/ هبة.';
+          recEn = 'Good conceptual understanding. Focus on problem sets and speed optimization with Eng. Heba.';
+        } else if (badge === 'NEEDS_REVISION' || scorePct >= 50) {
+          badgeAr = 'يحتاج إلى مراجعة وتثبيت المفاهيم (Needs Revision)';
+          badgeEn = 'Needs Concept Revision';
+          recAr = 'ينصح بالتركيز على مراجعة الأساسيات وحضور الحصص التأسيسية لردم الفجوات الرياضية والتفوق.';
+          recEn = 'Core foundations require targeted revision. Participating in fundamentals sessions will close knowledge gaps.';
+        } else {
+          badgeAr = 'تأسيس مكثف مطلوب (Foundation Required)';
+          badgeEn = 'Foundation Required';
+          recAr = 'يحتاج الطالب إلى مسار تأسيسي مخصص لتثبيت القواعد الأساسية، وفريق م/ هبة جاهز لدعمه خطوة بخطوة.';
+          recEn = 'Intensive foundational drills are recommended to build confidence and essential mathematical mastery.';
+        }
+
+        const sw = attempt.strengthsWeaknesses || attempt.strengths_weaknesses || {};
+        const strengths = Array.isArray(sw.strong_topics) && sw.strong_topics.length > 0
+          ? sw.strong_topics
+          : ['الجبر والعمليات الرياضية الأساسية', 'القدرة على استيعاب الأسئلة التحليلية'];
+        const weaknesses = Array.isArray(sw.weak_topics) && sw.weak_topics.length > 0
+          ? sw.weak_topics
+          : ['المسائل المركبة متعددة الخطوات', 'إدارة الوقت وحيل السرعة'];
+
+        this.placementReport.set({
+          score: attempt.correctCount ?? attempt.correct_count ?? Math.round(scorePct),
+          percentage: scorePct,
+          academicLevelBadgeAr: badgeAr,
+          academicLevelBadgeEn: badgeEn,
+          strengths,
+          weaknesses,
+          teacherRecommendationAr: recAr,
+          teacherRecommendationEn: recEn
+        });
+      },
+      error: () => {
+        this.isLoadingPlacement.set(false);
+        this.placementReport.set(null);
+      }
+    });
   }
 
   loadActiveGrades(): void {

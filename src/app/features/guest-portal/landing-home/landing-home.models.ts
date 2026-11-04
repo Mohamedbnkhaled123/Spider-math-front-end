@@ -2,8 +2,7 @@ import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curric
 import {
   ITeacherBio,
   IScheduleItem,
-  IPricingPackage,
-  ITestimonial
+  IPricingPackage
 } from '../../../core/services/public-discovery.models';
 
 export interface ILandingHomeState {
@@ -12,4 +11,4 @@ export interface ILandingHomeState {
   selectedTerm: AcademicTermCode;
 }
 
-export type { ITeacherBio, IScheduleItem, IPricingPackage, ITestimonial };
+export type { ITeacherBio, IScheduleItem, IPricingPackage };

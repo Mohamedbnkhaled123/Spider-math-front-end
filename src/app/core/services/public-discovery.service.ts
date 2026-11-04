@@ -192,12 +192,8 @@ export class PublicDiscoveryService {
             : (raw.pricing_packages && raw.pricing_packages.length > 0)
               ? raw.pricing_packages
               : fallback.pricingPackages,
-          testimonials: (raw.testimonials && raw.testimonials.length > 0)
-            ? raw.testimonials
-            : (raw.testimonials_items && raw.testimonials_items.length > 0)
-              ? raw.testimonials_items
-              : fallback.testimonials,
-          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || fallback.whatsappSupportNumber,
+          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || raw.contact_channels?.subscription_whatsapp || fallback.whatsappSupportNumber,
+          contactChannels: raw.contact_channels || raw.contactChannels || undefined,
           landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
         };
       }),
@@ -352,25 +348,7 @@ export class PublicDiscoveryService {
       `${this.apiBase}/public/placement-test/${attemptId}/unlock`,
       payload
     ).pipe(
-      map(res => res.data),
-      catchError(() => {
-        return of({
-          attemptId,
-          fullName: payload.fullName,
-          phone: payload.phone,
-          score: 85,
-          percentage: 85,
-          academicLevelBadgeAr: 'مستوى متقدم — عبقري رياضيات',
-          academicLevelBadgeEn: 'Advanced Mastery — Math Genius',
-          strengths: ['الجبر والدوال الخطية', 'الهندسة التحليلية', 'حل المعادلات من الدرجة الثانية'],
-          weaknesses: ['حساب المثلثات المتقدم', 'تطبيقات السرعة والتفاضل'],
-          whatsAppAlertUrl: `https://wa.me/201000000000?text=${encodeURIComponent('تم اجتياز اختبار تحديد المستوى بنجاح للطالب ' + payload.fullName)}`,
-          suggestedUnitPackages: [
-            { unitId: 'unit_1', title: 'الوحدة الأولى: الجبر والعمليات المتقدمة', priceEgp: 250 },
-            { unitId: 'unit_2', title: 'الوحدة الثانية: الهندسة الفراغية والتحليلية', priceEgp: 300 }
-          ]
-        });
-      })
+      map(res => res.data)
     );
   }
 
@@ -487,120 +465,11 @@ export class PublicDiscoveryService {
           ]
         }
       ],
-      testimonials: [
-        {
-          _id: 'test_1',
-          studentNameAr: 'أحمد محمود الشرقاوي',
-          studentNameEn: 'Ahmed M. El-Sharkawy',
-          curriculum: 'EGYPTIAN',
-          gradeLevel: 'الثانوية العامة (علمي رياضة)',
-          score: '٥٩.٥ / ٦٠ في الرياضيات البحتة',
-          quoteAr: 'بفضل الله ثم شرح م/ هبة وطريقة ربط المسائل وتوضيحها بديسموس، قدرت أضمن الدرجة النهائية في التفاضل والتكامل بدون أي توتر.',
-          quoteEn: 'Eng. Heba made calculus crystal clear. The Desmos graphing sessions gave me immense speed and accuracy in the final exam.',
-          academicYear: '2025 / 2026'
-        },
-        {
-          _id: 'test_2',
-          studentNameAr: 'سارة خالد الدوسري',
-          studentNameEn: 'Sarah Kh. Al-Dossary',
-          curriculum: 'GULF',
-          gradeLevel: 'الصف الحادي عشر (علمي)',
-          score: '٩٩٪ في الرياضيات المتقدمة',
-          quoteAr: 'المنصة ممتازة جداً، بنك الأسئلة والواجبات ساعدوني أفهم كل أفكار المنهج الخليجي والامتحانات التجريبية قبل موعد الامتحان بفترة كافية.',
-          quoteEn: 'The homework tracking and trial exams gave me complete confidence to score 99% in my Gulf curriculum advanced math exam.',
-          academicYear: '2025 / 2026'
-        },
-        {
-          _id: 'test_3',
-          studentNameAr: 'يوسف حسام الدين',
-          studentNameEn: 'Youssef H. El-Din',
-          curriculum: 'AMERICAN',
-          gradeLevel: 'Digital SAT',
-          score: '780 / 800 Math Score',
-          quoteAr: 'حيل ديسموس اللي م/ هبة علمتها لي وفرت أكثر من ثلث وقت السيكشن في اختبار الـ SAT! المنصة هي الأفضل بلا منازع.',
-          quoteEn: 'The Desmos shortcuts and Bluebook strategies were game changers. Jumped from 640 to 780 in just two months!',
-          academicYear: '2025 / 2026'
-        }
-      ],
-      whatsappSupportNumber: '+201000000000'
-    };
-  }
-
-  private getFallbackPlacementTest(
-    curriculum: CurriculumCode,
-    gradeLevel: string,
-    term: AcademicTermCode
-  ): IPlacementTestResponse {
-    return {
-      assessment_id: 'placement_' + curriculum + '_' + gradeLevel,
-      title: `امتحان تحديد المستوى التفاعلي — ${curriculum} (${gradeLevel})`,
-      curriculum,
-      grade_level: gradeLevel,
-      academic_term: term,
-      total_questions: 5,
-      time_limit_minutes: 15,
-      questions: [
-        {
-          question_id: 'q1',
-          question_text: 'إذا كانت د(س) = س² - ٤س + ٧، فإن القيمة الصغرى للدالة تساوي:',
-          points: 10,
-          has_desmos_calculator: true,
-          options: [
-            { option_id: 'o1', option_text: '٣ عند س = ٢' },
-            { option_id: 'o2', option_text: '٧ عند س = ٠' },
-            { option_id: 'o3', option_text: '-١ عند س = -٢' },
-            { option_id: 'o4', option_text: '٤ عند س = ١' }
-          ]
-        },
-        {
-          question_id: 'q2',
-          question_text: 'ما هو ميل المماس للمنحنى ص = س³ - ٣س + ٢ عند النقطة (١ ، ٠)؟',
-          points: 10,
-          has_desmos_calculator: true,
-          options: [
-            { option_id: 'o1', option_text: '٠ (مماس أفقي موازي لمحور السينات)' },
-            { option_id: 'o2', option_text: '٣' },
-            { option_id: 'o3', option_text: '-٣' },
-            { option_id: 'o4', option_text: '١' }
-          ]
-        },
-        {
-          question_id: 'q3',
-          question_text: 'مجموعة حل المعادلة: لو (س + ٣) + لو (س - ٣) = لو (١٦) في ح هي:',
-          points: 10,
-          has_desmos_calculator: false,
-          options: [
-            { option_id: 'o1', option_text: '{ ٥ } فقط' },
-            { option_id: 'o2', option_text: '{ ٥ ، -٥ }' },
-            { option_id: 'o3', option_text: '{ ٢٥ }' },
-            { option_id: 'o4', option_text: 'فاي (∅)' }
-          ]
-        },
-        {
-          question_id: 'q4',
-          question_text: 'مثلث أ ب جـ متساوي الأضلاع طول ضلعه ٦ سم، فإن مساحة سطحه تساوي:',
-          points: 10,
-          has_desmos_calculator: false,
-          options: [
-            { option_id: 'o1', option_text: '٩√٣ سم²' },
-            { option_id: 'o2', option_text: '١٨ سم²' },
-            { option_id: 'o3', option_text: '١٢√٣ سم²' },
-            { option_id: 'o4', option_text: '٣٦ سم²' }
-          ]
-        },
-        {
-          question_id: 'q5',
-          question_text: 'في النظام الدائري، الزاوية التي قياسها ٧٥° تكافئ بالراديان:',
-          points: 10,
-          has_desmos_calculator: true,
-          options: [
-            { option_id: 'o1', option_text: '٥π / ١٢' },
-            { option_id: 'o2', option_text: '٣π / ٤' },
-            { option_id: 'o3', option_text: 'π / ٦' },
-            { option_id: 'o4', option_text: '٧π / ١٢' }
-          ]
-        }
-      ]
+      whatsappSupportNumber: '',
+      contactChannels: {
+        subscription_whatsapp: '',
+        support_whatsapp: ''
+      }
     };
   }
 }

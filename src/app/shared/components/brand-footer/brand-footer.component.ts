@@ -1,10 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 
 @Component({
   selector: 'app-brand-footer',
@@ -17,7 +19,22 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class BrandFooterComponent {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
+  private readonly discoveryService = inject(PublicDiscoveryService);
+
   readonly currentYear = new Date().getFullYear();
+
+  // Dynamic Contact Channels from CMS
+  readonly landingData = toSignal(this.discoveryService.getLandingData(), { initialValue: null });
+
+  readonly contactChannels = computed(() => this.landingData()?.contactChannels);
+
+  readonly cleanWhatsappNumber = computed(() => {
+    const rawNumber = this.landingData()?.whatsappSupportNumber ||
+      this.contactChannels()?.support_whatsapp ||
+      this.contactChannels()?.subscription_whatsapp ||
+      '';
+    return rawNumber.replace(/[^0-9]/g, '');
+  });
 
   readonly homeRoute = computed(() => {
     const user = this.authService.currentUser();

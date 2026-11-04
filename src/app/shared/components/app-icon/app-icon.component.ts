@@ -68,7 +68,10 @@ export type AppIconName =
   | 'eye-off'
   | 'crown'
   | 'sliders'
-  | 'filter';
+  | 'filter'
+  | 'facebook'
+  | 'youtube'
+  | 'send';
 
 @Component({
   selector: 'app-icon',

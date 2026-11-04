@@ -65,17 +65,15 @@ export interface IPricingPackage {
   isPopular?: boolean;
 }
 
-export interface ITestimonial {
-  _id: string;
-  studentNameAr: string;
-  studentNameEn: string;
-  curriculum: CurriculumCode;
-  gradeLevel: string;
-  score: string;
-  quoteAr: string;
-  quoteEn: string;
-  avatarUrl?: string;
-  academicYear: string;
+export interface IContactChannels {
+  subscription_whatsapp?: string;
+  support_whatsapp?: string;
+  facebook_url?: string;
+  facebook_page?: string;
+  youtube_channel_url?: string;
+  youtube_channel?: string;
+  telegram_url?: string;
+  telegram_channel?: string;
 }
 
 export interface IPublicLandingData {
@@ -148,8 +146,8 @@ export interface IPublicLandingData {
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];
   pricingPackages: IPricingPackage[];
-  testimonials: ITestimonial[];
   whatsappSupportNumber: string;
+  contactChannels?: IContactChannels;
   landingUnitIds?: string[];
 }
 

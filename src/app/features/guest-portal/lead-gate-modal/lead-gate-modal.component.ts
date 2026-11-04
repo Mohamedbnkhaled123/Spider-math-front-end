@@ -99,10 +99,7 @@ export class LeadGateModalComponent {
   }
 
   triggerGoogleSignIn(): void {
-    // One-click Google sign-in autofill simulation
-    this.fullName.set('طالب متميز');
-    this.phone.set('+201012345678');
-    this.submitUnlock();
+    this.goToLogin();
   }
 
   proceedToRegistration(): void {
