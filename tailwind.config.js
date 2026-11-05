@@ -44,8 +44,11 @@ module.exports = {
         }
       },
       fontFamily: {
-        cairo: ['Cairo', 'Readex Pro', 'sans-serif'],
-        jakarta: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        tajawal: ['Tajawal', 'sans-serif'],
+        'ibm-arabic': ['IBM Plex Sans Arabic', 'sans-serif'],
+        cairo: ['IBM Plex Sans Arabic', 'Tajawal', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        jakarta: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace']
       },
       boxShadow: {
