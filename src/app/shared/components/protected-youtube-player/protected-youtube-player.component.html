@@ -28,7 +28,7 @@
   <!-- 4. Gamification 85% Threshold Celebration Pop-up (Animation 4.4) -->
   @if (isCelebrationVisible()) {
     <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
-      <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-spider text-white shadow-brand-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
+      <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl btn-gold-metallic shadow-gold-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
         <span class="text-xl animate-spark-twinkle">✦</span>
         <span>+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح</span>
       </div>
@@ -40,7 +40,7 @@
     <button
       type="button"
       (click)="togglePlay()"
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-player-controls w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-brand-primary/85 text-white flex items-center justify-center shadow-brand-glow hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white/20"
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-player-controls w-18 h-18 sm:w-20 sm:h-20 rounded-full btn-gold-metallic flex items-center justify-center shadow-gold-glow hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white/30"
       aria-label="Play Lecture Video"
     >
       <app-icon name="play" [size]="32" className="ml-1 rtl:mr-1 rtl:ml-0" />
@@ -60,7 +60,7 @@
     >
       <!-- Watched Progress Fill -->
       <div
-        class="h-full rounded-full bg-gradient-spider transition-all duration-100 relative"
+        class="h-full rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 transition-all duration-100 relative shadow-sm"
         [style.width]="progressPercentage() + '%'"
       >
         <!-- Scrub Head -->
@@ -69,7 +69,7 @@
 
       <!-- 85% Milestone Marker (Animation 4.4) -->
       <div
-        class="milestone-marker absolute top-1/2 -translate-y-1/2 w-2 h-4 rounded-sm bg-brand-accent shadow-sm z-10"
+        class="milestone-marker absolute top-1/2 -translate-y-1/2 w-2.5 h-4.5 rounded-sm bg-amber-400 shadow-gold-glow z-10"
         [style.left]="completionThresholdPct() + '%'"
         [title]="'Milestone: ' + completionThresholdPct() + '% for +50 XP'"
       >

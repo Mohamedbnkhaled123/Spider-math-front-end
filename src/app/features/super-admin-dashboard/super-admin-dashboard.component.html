@@ -30,7 +30,7 @@
   <!-- ========================================================================= -->
   <!-- Studio Main Layout: Sticky Sidebar Navigation (Right) + Content (Left)    -->
   <!-- ========================================================================= -->
-  <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col lg:flex-row gap-8 items-start">
+  <div class="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
 
     <!-- 1. Admin Analytics Shell (Sidebar, Notifications, Backup & Purge) -->
     <app-admin-analytics-shell
@@ -52,11 +52,11 @@
         <!-- TAB 1: Analytics & Urgent Operations -->
         @case ('analytics') {
           <section class="space-y-6 animate-fade-in">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-text-primary tracking-tight flex items-center gap-2 font-academic-serif">
                   <app-icon name="activity" [size]="20" className="text-brand-primary" />
-                  <span>لوحة الإحصائيات المركزية وغرفة العمليات</span>
+                  <span>لوحة الإحصائيات المركزية <span class="text-gold-accent">وغرفة العمليات</span> <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></span>
                 </h2>
                 <p class="text-xs text-text-secondary mt-0.5">
                   متابعة حركة الطلاب اللحظية، طلبات اعتماد الأجهزة الجديدة، والامتحانات بانتظار الاعتماد.
@@ -64,10 +64,10 @@
               </div>
 
               <!-- Quick Links -->
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <a
                   routerLink="/parent"
-                  class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <app-icon name="shield" [size]="14" className="text-brand-secondary" />
                   <span>معاينة بوابة ولي الأمر</span>
@@ -75,7 +75,7 @@
 
                 <a
                   routerLink="/student"
-                  class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <app-icon name="graduation-cap" [size]="14" className="text-brand-primary" />
                   <span>معاينة بوابة الطالب</span>
@@ -86,7 +86,7 @@
             <!-- Analytics Metric Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Pending Devices -->
-              <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">أجهزة بانتظار الاعتماد</span>
                   <span class="text-2xl font-black text-amber-500 font-mono mt-1 block">
@@ -99,10 +99,10 @@
               </div>
 
               <!-- Pending Grading -->
-              <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">امتحانات بانتظار التصحيح</span>
-                  <span class="text-2xl font-black text-brand-primary dark:text-brand-accent font-mono mt-1 block">
+                  <span class="text-2xl font-black text-gold-accent font-mono mt-1 block">
                     {{ analyticsSnapshot().pendingGradingCount }}
                   </span>
                 </div>
@@ -112,7 +112,7 @@
               </div>
 
               <!-- Registered Students -->
-              <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">إجمالي الطلاب المسجلين</span>
                   <span class="text-2xl font-black text-emerald-500 font-mono mt-1 block">
@@ -125,7 +125,7 @@
               </div>
 
               <!-- Leads CRM -->
-              <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex items-center justify-between">
+              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">(Leads) العملاء الجدد</span>
                   <span class="text-2xl font-black text-brand-secondary font-mono mt-1 block">
@@ -139,7 +139,7 @@
             </div>
 
             <!-- Urgent Action Center: Pending Device Queue -->
-            <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+            <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <app-icon name="bell" [size]="16" className="text-brand-accent" />

@@ -15,8 +15,8 @@
           </span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
-          لوحة المتابعة الأكاديمية اللحظية لأبنائك
+        <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
+          لوحة المتابعة الأكاديمية اللحظية <span class="text-gold-accent">لأبنائك</span> <span class="inline-flex items-center text-brand-gold ml-1"><svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.25"/></svg></span>
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
           رادار الحضور المباشر، نسب استكمال المحاضرات، ونتائج الواجبات والامتحانات مع الشرح العلاجي.
@@ -28,7 +28,7 @@
         <button
           type="button"
           (click)="openLinkModal()"
-          class="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 transition-all duration-200 shadow-brand-glow flex items-center gap-2 cursor-pointer"
+          class="px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold btn-gold-metallic shadow-gold-glow flex items-center gap-2 cursor-pointer hover:opacity-95 transition-all"
         >
           <app-icon name="user-plus" [size]="16" />
           <span>ربط طالب إضافي (HAxxxx)</span>
@@ -55,13 +55,13 @@
         <button
           type="button"
           (click)="selectChild(child.studentId)"
-          class="child-switcher-card text-left rtl:text-right p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden"
-          [class.border-brand-primary]="selectedChildId() === child.studentId"
-          [class.bg-brand-primary/[0.04]]="selectedChildId() === child.studentId"
-          [class.shadow-brand-glow]="selectedChildId() === child.studentId"
+                    class="child-switcher-card spider-rim-glass-card text-left rtl:text-right p-4 rounded-2xl transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden"
+          [class.border-2]="selectedChildId() === child.studentId"
+          [class.border-amber-400]="selectedChildId() === child.studentId"
+          [class.shadow-gold-glow]="selectedChildId() === child.studentId"
+          [class.border]="selectedChildId() !== child.studentId"
           [class.border-surface-border]="selectedChildId() !== child.studentId"
-          [class.bg-surface-card]="selectedChildId() !== child.studentId"
-          [class.hover:border-brand-accent/50]="selectedChildId() !== child.studentId"
+          [class.hover:border-gold-accent/40]="selectedChildId() !== child.studentId"
         >
           <div class="flex items-center gap-3.5 min-w-0">
             <!-- Student Avatar Initial -->
@@ -112,7 +112,7 @@
       <button
         type="button"
         (click)="openLinkModal()"
-        class="border-2 border-dashed border-surface-border hover:border-brand-accent p-4 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold text-text-secondary hover:text-brand-accent bg-surface-card/40 transition-all duration-200 cursor-pointer min-h-[72px]"
+        class="border-2 border-dashed border-gold-accent/30 hover:border-gold-accent p-4 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold text-text-secondary hover:text-gold-accent bg-surface-card/40 transition-all duration-200 cursor-pointer min-h-[72px]"
       >
         <app-icon name="plus" [size]="16" />
         <span>ربط طالب آخر</span>
@@ -128,7 +128,7 @@
       <app-child-academic-monitor [childId]="selectedChildId()" />
     </main>
   } @else {
-    <div class="p-12 rounded-3xl border border-surface-border bg-surface-card text-center max-w-xl mx-auto my-6">
+    <div class="p-12 rounded-3xl spider-rim-glass-card text-center max-w-xl mx-auto my-6">
       <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
         <app-icon name="user-plus" [size]="32" />
       </div>
@@ -139,7 +139,7 @@
       <button
         type="button"
         (click)="openLinkModal()"
-        class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all cursor-pointer"
+        class="px-5 py-2.5 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow transition-all cursor-pointer"
       >
         ربط طالب الآن
       </button>
@@ -151,7 +151,7 @@
   <!-- ========================================================================= -->
   @if (isLinkModalOpen()) {
     <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div class="modal-dialog w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl relative animate-scale-up">
+      <div class="modal-dialog w-full max-w-md rounded-3xl spider-rim-glass-card p-6 shadow-2xl relative animate-scale-up">
         <!-- Close Button -->
         <button
           type="button"
@@ -223,7 +223,7 @@
               type="button"
               (click)="submitLinkChild()"
               [disabled]="isLinking() || !linkHaCode()"
-              class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              class="px-5 py-2.5 rounded-xl text-xs font-bold btn-gold-metallic shadow-gold-glow disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 cursor-pointer"
             >
               @if (isLinking()) {
                 <app-icon name="loader" [size]="14" className="animate-spin" />

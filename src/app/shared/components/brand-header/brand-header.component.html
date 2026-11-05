@@ -127,11 +127,11 @@
         </a>
       }
 
-      <!-- Language Switcher (EN / عربي) -->
+      <!-- Language Switcher (EN / عربي) (Desktop md+) -->
       <button
         type="button"
         (click)="toggleLanguage()"
-        class="px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+        class="hidden md:flex px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
         title="Toggle Language / تغيير اللغة"
       >
@@ -139,11 +139,11 @@
         <span>{{ langService.isArabic() ? 'EN' : 'عربي' }}</span>
       </button>
 
-      <!-- Theme Switcher (Light / Dark) -->
+      <!-- Theme Switcher (Light / Dark) (Desktop md+) -->
       <button
         type="button"
         (click)="toggleTheme()"
-        class="p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 cursor-pointer"
+        class="hidden md:flex p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 items-center justify-center w-8 h-8 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
         [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
@@ -154,8 +154,8 @@
         }
       </button>
 
-      <!-- Notification Bell (Dropdown Trigger) -->
-      <div class="relative">
+      <!-- Notification Bell (Dropdown Trigger) (Desktop md+) -->
+      <div class="relative hidden md:block">
         <button
           type="button"
           (click)="toggleNotifications()"
@@ -297,7 +297,48 @@
 
   <!-- 4. Mobile Navigation Drawer / Dropdown -->
   @if (isMobileMenuOpen()) {
-    <div class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 animate-fade-in space-y-3">
+    <div class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 animate-fade-in space-y-4">
+      <!-- Mobile Controls Row: Language, Theme & Notifications -->
+      <div class="flex items-center justify-between pb-3 border-b border-surface-border/60">
+        <div class="flex items-center gap-2">
+          <!-- Mobile Language Toggle -->
+          <button
+            type="button"
+            (click)="toggleLanguage()"
+            class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-bg text-xs font-semibold text-text-primary flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all"
+          >
+            <app-icon name="globe" [size]="14" className="text-brand-gold" />
+            <span>{{ langService.isArabic() ? 'English' : 'العربية' }}</span>
+          </button>
+
+          <!-- Mobile Theme Toggle -->
+          <button
+            type="button"
+            (click)="toggleTheme()"
+            class="p-2 rounded-lg border border-surface-border bg-surface-bg text-xs text-text-primary flex items-center justify-center w-8 h-8 cursor-pointer shadow-sm active:scale-95 transition-all"
+            [title]="themeService.isDark() ? 'Light Mode' : 'Dark Mode'"
+          >
+            @if (themeService.isDark()) {
+              <app-icon name="sun" [size]="15" className="text-brand-gold" />
+            } @else {
+              <app-icon name="moon" [size]="15" className="text-brand-gold" />
+            }
+          </button>
+        </div>
+
+        <!-- Mobile Notification Bell Toggle -->
+        <button
+          type="button"
+          (click)="toggleNotifications()"
+          class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-bg text-xs font-semibold text-text-primary flex items-center gap-1.5 cursor-pointer shadow-sm relative active:scale-95 transition-all"
+        >
+          <app-icon name="bell" [size]="14" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold' : 'text-text-secondary'" />
+          <span>{{ langService.isArabic() ? 'الإشعارات' : 'Alerts' }}</span>
+          @if (notificationsService.unreadCount() > 0) {
+            <span class="w-2 h-2 rounded-full bg-feedback-danger animate-pulse"></span>
+          }
+        </button>
+      </div>
       @if (!authService.isAuthenticated()) {
         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
           <button

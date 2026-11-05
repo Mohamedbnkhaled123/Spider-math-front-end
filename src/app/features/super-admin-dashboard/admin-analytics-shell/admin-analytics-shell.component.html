@@ -1,4 +1,206 @@
-<aside class="w-full lg:w-72 shrink-0 rounded-3xl border border-surface-border bg-surface-card p-5 shadow-sm sticky top-24">
+<!-- ========================================================================= -->
+<!-- 1. MOBILE & TABLET COMMAND BAR (< 1024px): Compact Sticky Header & Horizontal Tabs -->
+<!-- ========================================================================= -->
+<div class="lg:hidden w-full mb-4 spider-rim-glass-card rounded-2xl p-3 sm:p-4 shadow-glass sticky top-20 z-30">
+  <!-- Top Bar: Title + Notification & Tools Buttons -->
+  <div class="flex items-center justify-between pb-2.5 border-b border-surface-border">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+      <h1 class="text-xs sm:text-sm font-bold text-text-primary font-academic-serif truncate">
+        غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span>
+      </h1>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Notification Bell -->
+      <button
+        type="button"
+        (click)="toggleNotifications()"
+        class="relative p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer"
+        title="الإشعارات المجمعة"
+      >
+        <app-icon name="bell" [size]="15" />
+        @if (batchedNotifications().length > 0) {
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white font-mono text-[8px] font-bold flex items-center justify-center animate-bounce">
+            {{ batchedNotifications().length }}
+          </span>
+        }
+      </button>
+
+      <!-- Operational Tools Toggle Button -->
+      <button
+        type="button"
+        (click)="toggleMobileTools()"
+        class="p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+        title="أدوات الصيانة والنسخ الاحتياطي"
+      >
+        <app-icon name="settings" [size]="14" />
+        <span class="hidden sm:inline">الأدوات</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Horizontal Scrollable Tab Bar with Thumb-Friendly Touch Drag -->
+  <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2.5 text-xs font-bold scroll-smooth">
+    <button
+      type="button"
+      (click)="selectTab('analytics')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'analytics'"
+      [class.text-slate-950]="activeTab() === 'analytics'"
+      [class.bg-surface-bg]="activeTab() !== 'analytics'"
+      [class.text-text-secondary]="activeTab() !== 'analytics'"
+      [class.border]="activeTab() !== 'analytics'"
+      [class.border-surface-border]="activeTab() !== 'analytics'"
+    >
+      <app-icon name="activity" [size]="13" />
+      <span>الإحصائيات</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('curriculum')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'curriculum'"
+      [class.text-slate-950]="activeTab() === 'curriculum'"
+      [class.bg-surface-bg]="activeTab() !== 'curriculum'"
+      [class.text-text-secondary]="activeTab() !== 'curriculum'"
+      [class.border]="activeTab() !== 'curriculum'"
+      [class.border-surface-border]="activeTab() !== 'curriculum'"
+    >
+      <app-icon name="book-open" [size]="13" />
+      <span>المناهج</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('assessments')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'assessments'"
+      [class.text-slate-950]="activeTab() === 'assessments'"
+      [class.bg-surface-bg]="activeTab() !== 'assessments'"
+      [class.text-text-secondary]="activeTab() !== 'assessments'"
+      [class.border]="activeTab() !== 'assessments'"
+      [class.border-surface-border]="activeTab() !== 'assessments'"
+    >
+      <app-icon name="award" [size]="13" />
+      <span>الامتحانات</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('grading')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'grading'"
+      [class.text-slate-950]="activeTab() === 'grading'"
+      [class.bg-surface-bg]="activeTab() !== 'grading'"
+      [class.text-text-secondary]="activeTab() !== 'grading'"
+      [class.border]="activeTab() !== 'grading'"
+      [class.border-surface-border]="activeTab() !== 'grading'"
+    >
+      <app-icon name="file-text" [size]="13" />
+      <span>التصحيح</span>
+      @if (analytics().pendingGradingCount > 0) {
+        <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500 text-white font-mono font-bold">
+          {{ analytics().pendingGradingCount }}
+        </span>
+      }
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('students')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'students'"
+      [class.text-slate-950]="activeTab() === 'students'"
+      [class.bg-surface-bg]="activeTab() !== 'students'"
+      [class.text-text-secondary]="activeTab() !== 'students'"
+      [class.border]="activeTab() !== 'students'"
+      [class.border-surface-border]="activeTab() !== 'students'"
+    >
+      <app-icon name="user" [size]="13" />
+      <span>الطلاب والأجهزة</span>
+      @if (analytics().registeredStudents > 0) {
+        <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-brand-primary/20 text-brand-primary font-mono font-bold">
+          {{ analytics().registeredStudents }}
+        </span>
+      }
+    </button>
+
+    <button
+      type="button"
+      (click)="selectTab('leads_cms')"
+      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
+      [class.text-slate-950]="activeTab() === 'leads_cms'"
+      [class.bg-surface-bg]="activeTab() !== 'leads_cms'"
+      [class.text-text-secondary]="activeTab() !== 'leads_cms'"
+      [class.border]="activeTab() !== 'leads_cms'"
+      [class.border-surface-border]="activeTab() !== 'leads_cms'"
+    >
+      <app-icon name="grid" [size]="13" />
+      <span>CMS والعملاء</span>
+    </button>
+  </div>
+
+  <!-- Mobile Quick Tools Tray -->
+  @if (isMobileToolsOpen()) {
+    <div class="mt-3 pt-3 border-t border-surface-border grid grid-cols-2 gap-2 animate-fade-in text-[11px]">
+      <button
+        type="button"
+        (click)="triggerBackup()"
+        [disabled]="isExporting()"
+        class="py-2 px-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+      >
+        <app-icon [name]="isExporting() ? 'loader' : 'upload-cloud'" [size]="13" [className]="isExporting() ? 'animate-spin' : 'text-brand-primary'" />
+        <span>نسخة احتياطية</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="triggerPurge()"
+        [disabled]="isPurging()"
+        class="py-2 px-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-500 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+      >
+        <app-icon name="trash" [size]="13" />
+        <span>تفريغ الواجبات</span>
+      </button>
+    </div>
+  }
+
+  <!-- Mobile Flyout Panel for Batched Notifications -->
+  @if (isNotificationsOpen()) {
+    <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
+      <div class="flex items-center justify-between pb-1.5 border-b border-surface-border/60">
+        <span class="text-xs font-bold text-text-primary">إشعارات التسليمات المجمعة</span>
+        <span class="text-[10px] text-text-muted">كل 5 حلول</span>
+      </div>
+
+      <div class="max-h-48 overflow-y-auto space-y-1.5 text-xs">
+        @for (item of batchedNotifications(); track item.id) {
+          <div class="p-2 rounded-xl border border-surface-border bg-surface-bg space-y-0.5">
+            <div class="flex items-center justify-between text-[11px] font-bold text-brand-primary">
+              <span>{{ item.curriculum }} • {{ item.gradeLevel }}</span>
+              <span class="text-[9px] text-text-muted">{{ item.timestamp }}</span>
+            </div>
+            <p class="text-[10px] text-text-primary leading-snug">
+              دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+            </p>
+          </div>
+        } @empty {
+          <div class="py-4 text-center text-xs text-text-muted">
+            لا توجد تنبيهات تسليمات مجمعة جديدة.
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. DESKTOP STICKY SIDEBAR (>= 1024px)                                     -->
+<!-- ========================================================================= -->
+<aside class="hidden lg:block w-72 shrink-0 rounded-3xl spider-rim-glass-card p-5 shadow-glass sticky top-24">
   
   <!-- Studio Header Badge -->
   <div class="pb-5 border-b border-surface-border mb-5">
@@ -50,8 +252,8 @@
       </div>
     </div>
 
-    <h1 class="text-sm font-bold text-text-primary">
-      غرفة عمليات م/ هبة عبدالوهاب
+    <h1 class="text-sm font-bold text-text-primary font-academic-serif">
+      غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span> <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span>
     </h1>
     <p class="text-[11px] text-text-muted mt-0.5">
       v2.2 الإشراف الأكاديمي والتحكم الكامل
@@ -65,8 +267,8 @@
       type="button"
       (click)="selectTab('analytics')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'analytics'"
-      [class.text-white]="activeTab() === 'analytics'"
+      [class.btn-gold-metallic]="activeTab() === 'analytics'"
+      [class.shadow-gold-glow]="activeTab() === 'analytics'"
       [class.text-text-secondary]="activeTab() !== 'analytics'"
       [class.hover:bg-surface-bg]="activeTab() !== 'analytics'"
     >
@@ -82,8 +284,8 @@
       type="button"
       (click)="selectTab('curriculum')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'curriculum'"
-      [class.text-white]="activeTab() === 'curriculum'"
+      [class.btn-gold-metallic]="activeTab() === 'curriculum'"
+      [class.shadow-gold-glow]="activeTab() === 'curriculum'"
       [class.text-text-secondary]="activeTab() !== 'curriculum'"
       [class.hover:bg-surface-bg]="activeTab() !== 'curriculum'"
     >
@@ -99,8 +301,8 @@
       type="button"
       (click)="selectTab('assessments')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'assessments'"
-      [class.text-white]="activeTab() === 'assessments'"
+      [class.btn-gold-metallic]="activeTab() === 'assessments'"
+      [class.shadow-gold-glow]="activeTab() === 'assessments'"
       [class.text-text-secondary]="activeTab() !== 'assessments'"
       [class.hover:bg-surface-bg]="activeTab() !== 'assessments'"
     >
@@ -116,8 +318,8 @@
       type="button"
       (click)="selectTab('grading')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'grading'"
-      [class.text-white]="activeTab() === 'grading'"
+      [class.btn-gold-metallic]="activeTab() === 'grading'"
+      [class.shadow-gold-glow]="activeTab() === 'grading'"
       [class.text-text-secondary]="activeTab() !== 'grading'"
       [class.hover:bg-surface-bg]="activeTab() !== 'grading'"
     >
@@ -127,7 +329,7 @@
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-rose-500]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
-        [class.text-white]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
+        [class.shadow-gold-glow]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
         [class.bg-surface-bg]="activeTab() !== 'grading' && analytics().pendingGradingCount === 0"
         [class.text-text-muted]="activeTab() !== 'grading' && analytics().pendingGradingCount === 0"
       >
@@ -140,8 +342,8 @@
       type="button"
       (click)="selectTab('students')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'students'"
-      [class.text-white]="activeTab() === 'students'"
+      [class.btn-gold-metallic]="activeTab() === 'students'"
+      [class.shadow-gold-glow]="activeTab() === 'students'"
       [class.text-text-secondary]="activeTab() !== 'students'"
       [class.hover:bg-surface-bg]="activeTab() !== 'students'"
     >
@@ -151,7 +353,7 @@
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-white/20]="activeTab() === 'students'"
-        [class.text-white]="activeTab() === 'students'"
+        [class.shadow-gold-glow]="activeTab() === 'students'"
         [class.bg-surface-bg]="activeTab() !== 'students'"
         [class.text-text-muted]="activeTab() !== 'students'"
       >
@@ -164,8 +366,8 @@
       type="button"
       (click)="selectTab('leads_cms')"
       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer"
-      [class.bg-brand-primary]="activeTab() === 'leads_cms'"
-      [class.text-white]="activeTab() === 'leads_cms'"
+      [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
+      [class.shadow-gold-glow]="activeTab() === 'leads_cms'"
       [class.text-text-secondary]="activeTab() !== 'leads_cms'"
       [class.hover:bg-surface-bg]="activeTab() !== 'leads_cms'"
     >
@@ -175,7 +377,7 @@
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-white/20]="activeTab() === 'leads_cms'"
-        [class.text-white]="activeTab() === 'leads_cms'"
+        [class.shadow-gold-glow]="activeTab() === 'leads_cms'"
         [class.bg-surface-bg]="activeTab() !== 'leads_cms'"
         [class.text-text-muted]="activeTab() !== 'leads_cms'"
       >

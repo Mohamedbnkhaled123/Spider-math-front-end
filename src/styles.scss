@@ -1,531 +1,674 @@
-// ==============================================================================
-// Spider Math Educational Platform — Master Luxury Academic Tokens (v2.3)
-// ==============================================================================
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root,
-[data-theme='light'],
-.light {
-  // Master Color Palette — Luxury Academic Parchment (Light Mode)
-  --surface-bg-primary: #FAF6EE;          // Warm Academic Cream Parchment
-  --surface-bg-secondary: #F3EDE0;        // Soft Ivory Parchment
-  --surface-bg-card: rgba(255, 252, 245, 0.82); // Frosted Glass Card
-  --surface-bg-elevated: #FFFFFF;
-  --surface-bg-modal: rgba(250, 246, 238, 0.94);
-  --surface-glass-header: rgba(250, 246, 238, 0.88);
-
-  // Text Hierarchy
-  --text-primary: #111629;                // Deep Academic Slate Ink
-  --text-secondary: #3E4559;              // Balanced Reading Charcoal
-  --text-muted: #6E7587;                  // Calm Editorial Slate
-
-  // Luxury Metallic Gold & Royal Violet Accents
-  --color-brand-gold: #C49A45;            // Academic Gold
-  --color-brand-gold-light: #DFB867;      // Champagne Shimmer
-  --color-brand-gold-dark: #9E7628;       // Deep Bronze
-  --color-brand-violet: #6B3FA0;          // Royal Amethyst Aura
-  --color-brand-primary: #C49A45;
-  --color-brand-secondary: #6B3FA0;
-  --color-brand-accent: #D4AF6A;
-  --color-brand-cyan: #0E7490;
-
-  // Signature Luxury Gradients
-  --gradient-gold-btn: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
-  --gradient-gold-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
-  --gradient-spider-math: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
-  --gradient-spider-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(196, 154, 69, 0.35), rgba(107, 63, 160, 0.25));
-
-  // Surfaces & Glassmorphism
-  --surface-border: rgba(196, 154, 69, 0.28);
-  --surface-border-glow: rgba(196, 154, 69, 0.65);
-  --surface-glass: rgba(250, 246, 238, 0.86);
-  --math-bg-stroke: rgba(17, 22, 41, 0.06);
-  --grid-pattern-color: rgba(196, 154, 69, 0.05);
-
-  // Backward compatibility alias tokens
-  --surface-bg: var(--surface-bg-primary);
-  --surface-card: var(--surface-bg-card);
-
-  // Status & Feedback
-  --color-success: #059669;
-  --color-warning: #D97706;
-  --color-danger: #DC2626;
-
-  // Shadows & Elevation
-  --shadow-card: 0 10px 30px -10px rgba(17, 22, 41, 0.08);
-  --shadow-brand-glow: 0 12px 28px -6px rgba(196, 154, 69, 0.22), 0 4px 14px -2px rgba(107, 63, 160, 0.15);
-
-  // Typography Families
-  --font-display-serif: 'Playfair Display', 'Amiri', 'Cairo', Georgia, serif;
-  --font-arabic: 'Cairo', 'Readex Pro', system-ui, -apple-system, sans-serif;
-  --font-english: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-.dark,
-[data-theme='dark'] {
-  // Master Color Palette — Deep Cosmic Midnight Academic Navy (Dark Mode)
-  --surface-bg-primary: #0D1226;          // Deep Cosmic Midnight Navy
-  --surface-bg-secondary: #131936;        // Royal Indigo Chamber
-  --surface-bg-card: rgba(24, 31, 62, 0.64); // Translucent Obsidian Glass
-  --surface-bg-elevated: #16203A;
-  --surface-bg-modal: rgba(16, 22, 46, 0.92);
-  --surface-glass-header: rgba(13, 18, 38, 0.85);
-
-  // Text Hierarchy
-  --text-primary: #F8F6F0;                // Warm Ivory Starlight
-  --text-secondary: #B8C0D4;              // Silver Sapphire Mist
-  --text-muted: #7E88A4;                  // Steel Navy
-
-  // Luxury Metallic Gold & Royal Violet Accents
-  --color-brand-gold: #D4AF6A;            // Luminous Champagne Gold
-  --color-brand-gold-light: #F0D596;      // Bright Radiance Gold
-  --color-brand-gold-dark: #A67E33;       // Antique Gold
-  --color-brand-violet: #7C4DFF;          // Cyber Violet Glow
-  --color-brand-primary: #D4AF6A;
-  --color-brand-secondary: #7C4DFF;
-  --color-brand-accent: #E5C378;
-  --color-brand-cyan: #38BDF8;
-
-  // Signature Luxury Gradients
-  --gradient-gold-btn: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
-  --gradient-gold-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
-  --gradient-spider-math: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
-  --gradient-spider-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(124, 77, 255, 0.35));
-
-  // Surfaces & Glassmorphism
-  --surface-border: rgba(212, 175, 106, 0.24);
-  --surface-border-glow: rgba(212, 175, 106, 0.75);
-  --surface-glass: rgba(13, 18, 38, 0.85);
-  --math-bg-stroke: rgba(255, 255, 255, 0.055);
-  --grid-pattern-color: rgba(212, 175, 106, 0.04);
-
-  // Backward compatibility alias tokens
-  --surface-bg: var(--surface-bg-primary);
-  --surface-card: var(--surface-bg-card);
-
-  // Status & Feedback
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-
-  // Shadows & Elevation
-  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65);
-  --shadow-brand-glow: 0 0 28px -4px rgba(212, 175, 106, 0.35), 0 0 18px -2px rgba(124, 77, 255, 0.25);
-
-  // Typography Families
-  --font-display-serif: 'Playfair Display', 'Amiri', 'Cairo', Georgia, serif;
-  --font-arabic: 'Cairo', 'Readex Pro', system-ui, -apple-system, sans-serif;
-  --font-english: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-// ==============================================================================
-// Z-Index Layering Contract (DRM, Watermarks & Floating Modals)
-// ==============================================================================
-.z-layer-grid { z-index: 1; }
-.z-layer-content { z-index: 10; }
-.z-layer-shield { z-index: 20; }          // .yt-security-shield
-.z-layer-watermark { z-index: 25; }       // <app-anti-tamper-watermark>
-.z-layer-player-controls { z-index: 30; } // Custom video player controls
-.z-layer-header { z-index: 40; }          // Sticky Navbar & Sync Banner
-.z-layer-modal { z-index: 50; }           // Desmos Calculator & Lead Gate
-
-// ==============================================================================
-// Global Typography & Direction Resets
-// ==============================================================================
-html {
-  scroll-behavior: smooth;
-  font-family: var(--font-english);
-  background-color: var(--surface-bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
-}
-
-html[dir="rtl"] {
-  font-family: var(--font-arabic);
-
-  // Mathematical vertical spacing guard for superscripts & fractions
-  p, span, h1, h2, h3, h4, h5, h6, label {
-    line-height: 1.7;
-  }
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  background-color: var(--surface-bg-primary);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-// Numerical & Formula Tabular Formatting
-.font-numeric,
-.tabular-numbers,
-code,
-.ha-code-badge {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-// ==============================================================================
-// Cartesian Coordinate Grid & Glassmorphism Utilities
-// ==============================================================================
-.bg-spider-coordinate-grid {
-  background-color: var(--surface-bg-primary);
-  background-image:
-    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
-  background-size: 36px 36px;
-}
-
-.glass-panel {
-  background: var(--surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--surface-border);
-}
-
-.glass-card {
-  background: var(--surface-bg-card);
-  border: 1px solid var(--surface-border);
-  box-shadow: var(--shadow-card);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
-
-  &:hover {
-    border-color: var(--surface-border-glow);
-    box-shadow: var(--shadow-brand-glow);
-    transform: translateY(-4px) scale(1.01);
-  }
-}
-
-.text-gradient-spider {
-  background: var(--gradient-spider-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.bg-gradient-spider {
-  background: var(--gradient-spider-math);
-}
-
-// ==============================================================================
-// Signature Keyframe Animations for Students Aged 10-16
-// ==============================================================================
-
-// 1. Floating Math Symbols
-@keyframes floatMathSymbol {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-12px) rotate(6deg);
-  }
-}
-
-// 2. Cartesian Web Node Pulse Glow (GPU Composited)
-@keyframes nodePulseGlow {
-  0% {
-    transform: scale(0.92);
-    opacity: 0.65;
-  }
-  100% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-// 3. 4-Point Star Spark Twinkle (✦) (GPU Composited)
-@keyframes sparkTwinkle {
-  0%, 100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scale(1.22) rotate(15deg);
-    opacity: 1;
-  }
-}
-
-.animate-float-math,
-.animate-spark-twinkle,
-.animate-node-glow,
-.polar-ring-spin {
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-}
-
-// 4. Infinity Symbol (∞) Vector Draw Animation
-@keyframes infinityDraw {
-  0% {
-    stroke-dashoffset: 240;
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-}
-
-// 5. Dynamic Grade Pill Cascade
-@keyframes pillCascadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(8px) scale(0.96);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-// 6. Gamified XP Badge Pop (85% Lecture Threshold Celebration)
-@keyframes xpBadgePop {
-  0% {
-    opacity: 0;
-    transform: translateY(14px) scale(0.7);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-6px) scale(1.1);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(-18px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-28px) scale(0.95);
-  }
-}
-
-// 7. Avatar XP Level Ring Pulse
-@keyframes xpRingPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(0, 242, 254, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
-  }
-}
-
-// 8. Leaderboard Podium Shimmer Sweep & Sonar Radar
-@keyframes shimmerSweep {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-// 9. Leaderboard Podium Rise (Animation 4.5)
-@keyframes podiumRise {
-  0% {
-    opacity: 0;
-    transform: translateY(35px) scale(0.95);
-  }
-  70% {
-    transform: translateY(-4px) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-podium-rise {
-  animation: podiumRise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-@keyframes sonarRadarPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-@keyframes timerUrgencyPulse {
-  0%, 100% {
-    border-color: rgba(239, 68, 68, 0.4);
-    box-shadow: 0 0 0 rgba(239, 68, 68, 0);
-  }
-  50% {
-    border-color: rgba(239, 68, 68, 0.95);
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
-  }
-}
-
-@keyframes questionSlideIn {
-  0% {
-    opacity: 0;
-    transform: translateX(12px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-// Animation Utility Classes
-.animate-float-math {
-  animation: floatMathSymbol 6s ease-in-out infinite;
-}
-
-.animate-spark-twinkle {
-  animation: sparkTwinkle 4s ease-in-out infinite;
-}
-
-.animate-node-glow {
-  animation: nodePulseGlow 3s ease-in-out infinite alternate;
-}
-
-.animate-sonar-pulse {
-  animation: sonarRadarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-.animate-timer-urgency {
-  animation: timerUrgencyPulse 1s ease-in-out infinite;
-}
-
-// Performance: Offscreen Layout and Style Skipping for TBT optimization
-.content-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 400px;
-}
-
-// ==============================================================================
-// Accessibility: Respect User Reduced Motion Preferences
-// ==============================================================================
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-
-// ==============================================================================
-// Luxury Academic Editorial Classes (Phase 0 Foundations)
-// ==============================================================================
-.font-academic-serif {
-  font-family: var(--font-display-serif);
-  letter-spacing: -0.015em;
-}
-
-.text-gold-accent {
-  background: var(--gradient-gold-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.btn-gold-metallic {
-  background: var(--gradient-gold-btn);
-  color: #111629 !important;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 15px -3px rgba(196, 154, 69, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px -4px rgba(196, 154, 69, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.65);
-    filter: brightness(1.06);
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.98);
-  }
-}
-
-.btn-ghost-academic {
-  background: var(--surface-bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--surface-border);
-  border-radius: 0.75rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--surface-border-glow);
-    background: var(--surface-bg-secondary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-brand-glow);
-  }
-}
-
-.spider-rim-glass-card {
-  position: relative;
-  background: var(--surface-bg-card);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border: 1px solid var(--surface-border);
-  border-radius: 1.5rem;
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(124, 77, 255, 0.5) 0%, transparent 40%, rgba(212, 175, 106, 0.4) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  &:hover {
-    border-color: var(--surface-border-glow);
-    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.4), 0 0 24px -2px rgba(212, 175, 106, 0.3);
-    transform: translateY(-4px);
-  }
-}
-
-.bg-chalkboard-math-layer {
-  position: relative;
-  background-color: var(--surface-bg-primary);
-  background-image: 
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' fill='none'%3E%3Cpath d='M80 680 C 220 680, 260 520, 320 520 C 380 520, 420 680, 560 680' stroke='%23C49A45' stroke-width='1.2' stroke-dasharray='4 4' opacity='0.08'/%3E%3Cpath d='M700 150 L 700 450 M 550 300 L 850 300' stroke='%23C49A45' stroke-width='1.2' opacity='0.07'/%3E%3Cpath d='M580 420 C 650 380, 720 220, 820 180' stroke='%23C49A45' stroke-width='1.5' opacity='0.08'/%3E%3Ctext x='120' y='240' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ex = (-b ± √(b² - 4ac)) / 2a%3C/text%3E%3Ctext x='780' y='640' font-family='serif' font-size='26' fill='%23C49A45' opacity='0.07'%3E∫ f(x) dx = F(x) + C%3C/text%3E%3Ctext x='950' y='220' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='180' y='460' font-family='serif' font-size='20' fill='%23C49A45' opacity='0.07'%3E∑ (1/n²) = π²/6%3C/text%3E%3C/svg%3E"),
-    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
-  background-size: 1200px 800px, 36px 36px, 36px 36px;
-  background-position: center top, left top, left top;
-}
+// ==============================================================================
+// Spider Math Educational Platform — Master Luxury Academic Tokens (v2.3)
+// ==============================================================================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root,
+[data-theme='light'],
+.light {
+  // Master Color Palette — Luxury Academic Parchment (Light Mode)
+  --surface-bg-primary: #FAF6EE;          // Warm Academic Cream Parchment
+  --surface-bg-secondary: #F3EDE0;        // Soft Ivory Parchment
+  --surface-bg-card: rgba(255, 252, 245, 0.82); // Frosted Glass Card
+  --surface-bg-elevated: #FFFFFF;
+  --surface-bg-modal: rgba(250, 246, 238, 0.94);
+  --surface-glass-header: rgba(250, 246, 238, 0.88);
+  // Text Hierarchy
+  --text-primary: #111629;                // Deep Academic Slate Ink
+  --text-secondary: #3E4559;              // Balanced Reading Charcoal
+  --text-muted: #6E7587;                  // Calm Editorial Slate
+  // Luxury Metallic Gold & Royal Violet Accents
+  --color-brand-gold: #C49A45;            // Academic Gold
+  --color-brand-gold-light: #DFB867;      // Champagne Shimmer
+  --color-brand-gold-dark: #9E7628;       // Deep Bronze
+  --color-brand-violet: #6B3FA0;          // Royal Amethyst Aura
+  --color-brand-primary: #C49A45;
+  --color-brand-secondary: #6B3FA0;
+  --color-brand-accent: #D4AF6A;
+  --color-brand-cyan: #0E7490;
+  // Signature Luxury Gradients
+  --gradient-gold-btn: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
+  --gradient-gold-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
+  --gradient-spider-math: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
+  --gradient-spider-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(196, 154, 69, 0.35), rgba(107, 63, 160, 0.25));
+  // Surfaces & Glassmorphism
+  --surface-border: rgba(196, 154, 69, 0.28);
+  --surface-border-glow: rgba(196, 154, 69, 0.65);
+  --surface-glass: rgba(250, 246, 238, 0.86);
+  --math-bg-stroke: rgba(17, 22, 41, 0.06);
+  --grid-pattern-color: rgba(196, 154, 69, 0.05);
+  // Backward compatibility alias tokens
+  --surface-bg: var(--surface-bg-primary);
+  --surface-card: var(--surface-bg-card);
+  // Status & Feedback
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  // Shadows & Elevation
+  --shadow-card: 0 10px 30px -10px rgba(17, 22, 41, 0.08);
+  --shadow-brand-glow: 0 12px 28px -6px rgba(196, 154, 69, 0.22), 0 4px 14px -2px rgba(107, 63, 160, 0.15);
+  // Typography Families
+  --font-display-serif: 'Playfair Display', 'Amiri', 'Cairo', Georgia, serif;
+  --font-arabic: 'Cairo', 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-english: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.dark,
+[data-theme='dark'] {
+  // Master Color Palette — Academic Light Navy (Exact Match to User Reference #101F3E / #162A4D)
+  --surface-bg-primary: #12142B;          // Exact Image 2 Academic Midnight Navy (#12142B)
+  --surface-bg-secondary: #181938;        // Exact Image 2 Chamber Navy (#181938)
+  --surface-bg-card: rgba(24, 25, 56, 0.65); // Translucent Sapphire-Amethyst Glass
+  --surface-bg-elevated: #1E2248;
+  --surface-bg-modal: rgba(18, 20, 43, 0.95);
+  --surface-glass-header: rgba(18, 20, 43, 0.88);
+  // Text Hierarchy
+  --text-primary: #F8F6F0;                // Warm Ivory Starlight
+  --text-secondary: #B8C0D4;              // Silver Sapphire Mist
+  --text-muted: #7E88A4;                  // Steel Navy
+  // Luxury Metallic Gold & Royal Violet Accents
+  --color-brand-gold: #D4AF6A;            // Luminous Champagne Gold
+  --color-brand-gold-light: #F0D596;      // Bright Radiance Gold
+  --color-brand-gold-dark: #A67E33;       // Antique Gold
+  --color-brand-violet: #7C4DFF;          // Cyber Violet Glow
+  --color-brand-primary: #D4AF6A;
+  --color-brand-secondary: #7C4DFF;
+  --color-brand-accent: #E5C378;
+  --color-brand-cyan: #38BDF8;
+  // Signature Luxury Gradients
+  --gradient-gold-btn: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
+  --gradient-gold-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
+  --gradient-spider-math: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
+  --gradient-spider-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(124, 77, 255, 0.35));
+  // Surfaces & Glassmorphism
+  --surface-border: rgba(212, 175, 106, 0.24);
+  --surface-border-glow: rgba(212, 175, 106, 0.75);
+  --surface-glass: rgba(13, 18, 38, 0.85);
+  --math-bg-stroke: rgba(255, 255, 255, 0.055);
+  --grid-pattern-color: rgba(212, 175, 106, 0.04);
+  // Backward compatibility alias tokens
+  --surface-bg: var(--surface-bg-primary);
+  --surface-card: var(--surface-bg-card);
+  // Status & Feedback
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  // Shadows & Elevation
+  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65);
+  --shadow-brand-glow: 0 0 28px -4px rgba(212, 175, 106, 0.35), 0 0 18px -2px rgba(124, 77, 255, 0.25);
+  // Typography Families
+  --font-display-serif: 'Playfair Display', 'Amiri', 'Cairo', Georgia, serif;
+  --font-arabic: 'Cairo', 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-english: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+// ==============================================================================
+// Z-Index Layering Contract (DRM, Watermarks & Floating Modals)
+// ==============================================================================
+.z-layer-grid { z-index: 1; }
+
+.z-layer-content { z-index: 10; }
+
+.z-layer-shield { z-index: 20; }          // .yt-security-shield
+.z-layer-watermark { z-index: 25; }       // <app-anti-tamper-watermark>
+.z-layer-player-controls { z-index: 30; } // Custom video player controls
+.z-layer-header { z-index: 40; }          // Sticky Navbar & Sync Banner
+.z-layer-modal { z-index: 50; }           // Desmos Calculator & Lead Gate
+// ==============================================================================
+// Global Typography & Direction Resets
+// ==============================================================================
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-english);
+  background-color: var(--surface-bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+html[dir="rtl"] {
+  font-family: var(--font-arabic);
+  // Mathematical vertical spacing guard for superscripts & fractions
+  p, span, h1, h2, h3, h4, h5, h6, label {
+    line-height: 1.7;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--surface-bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
+}
+
+// Numerical & Formula Tabular Formatting
+.font-numeric,
+.tabular-numbers,
+code,
+.ha-code-badge {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+// ==============================================================================
+// Cartesian Coordinate Grid & Glassmorphism Utilities
+// ==============================================================================
+.bg-spider-coordinate-grid {
+  background-color: var(--surface-bg-primary);
+  background-image:
+    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+}
+
+.glass-card {
+  background: var(--surface-bg-card);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  &:hover {
+    border-color: var(--surface-border-glow);
+    box-shadow: var(--shadow-brand-glow);
+    transform: translateY(-4px) scale(1.01);
+  }
+
+}
+
+.text-gradient-spider {
+  background: var(--gradient-spider-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-spider {
+  background: var(--gradient-spider-math);
+}
+
+// ==============================================================================
+// Signature Keyframe Animations for Students Aged 10-16
+// ==============================================================================
+// 1. Floating Math Symbols
+@keyframes floatMathSymbol {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(6deg);
+  }
+
+}
+
+// 2. Cartesian Web Node Pulse Glow (GPU Composited)
+@keyframes nodePulseGlow {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+}
+
+// 3. 4-Point Star Spark Twinkle (✦) (GPU Composited)
+@keyframes sparkTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.22) rotate(15deg);
+    opacity: 1;
+  }
+
+}
+
+.animate-float-math,
+.animate-spark-twinkle,
+.animate-node-glow,
+.polar-ring-spin {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+// 4. Infinity Symbol (∞) Vector Draw Animation
+@keyframes infinityDraw {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+}
+
+// 5. Dynamic Grade Pill Cascade
+@keyframes pillCascadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+}
+
+// 6. Gamified XP Badge Pop (85% Lecture Threshold Celebration)
+@keyframes xpBadgePop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.7);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.1);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translateY(-18px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.95);
+  }
+
+}
+
+// 7. Avatar XP Level Ring Pulse
+@keyframes xpRingPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 242, 254, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+  }
+
+}
+
+// 8. Leaderboard Podium Shimmer Sweep & Sonar Radar
+@keyframes shimmerSweep {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+
+}
+
+// 9. Leaderboard Podium Rise (Animation 4.5)
+@keyframes podiumRise {
+  0% {
+    opacity: 0;
+    transform: translateY(35px) scale(0.95);
+  }
+
+  70% {
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+}
+
+.animate-podium-rise {
+  animation: podiumRise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes sonarRadarPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+
+}
+
+@keyframes timerUrgencyPulse {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 rgba(239, 68, 68, 0);
+  }
+
+  50% {
+    border-color: rgba(239, 68, 68, 0.95);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+  }
+
+}
+
+@keyframes questionSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+}
+
+// Animation Utility Classes
+.animate-float-math {
+  animation: floatMathSymbol 6s ease-in-out infinite;
+}
+
+.animate-spark-twinkle {
+  animation: sparkTwinkle 4s ease-in-out infinite;
+}
+
+.animate-node-glow {
+  animation: nodePulseGlow 3s ease-in-out infinite alternate;
+}
+
+.animate-sonar-pulse {
+  animation: sonarRadarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-timer-urgency {
+  animation: timerUrgencyPulse 1s ease-in-out infinite;
+}
+
+// Performance: Offscreen Layout and Style Skipping for TBT optimization
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+// ==============================================================================
+// Accessibility: Respect User Reduced Motion Preferences
+// ==============================================================================
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+}
+
+// ==============================================================================
+// Luxury Academic Editorial Classes (Phase 0 Foundations)
+// ==============================================================================
+.font-academic-serif {
+  font-family: var(--font-display-serif);
+  letter-spacing: -0.015em;
+}
+
+.text-gold-accent {
+  background: var(--gradient-gold-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-gold-metallic {
+  background: var(--gradient-gold-btn);
+  color: #111629 !important;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 15px -3px rgba(196, 154, 69, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px -4px rgba(196, 154, 69, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+}
+
+.btn-ghost-academic {
+  background: var(--surface-bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:hover {
+    border-color: var(--surface-border-glow);
+    background: var(--surface-bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-brand-glow);
+  }
+
+}
+
+.spider-rim-glass-card {
+  position: relative;
+  background: var(--surface-bg-card);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--surface-border);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.5) 0%, transparent 40%, rgba(212, 175, 106, 0.4) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: var(--surface-border-glow);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.4), 0 0 24px -2px rgba(212, 175, 106, 0.3);
+    transform: translateY(-4px);
+  }
+
+}
+
+.bg-chalkboard-math-layer {
+  position: relative;
+  background-color: var(--surface-bg-primary);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' fill='none'%3E%3Cpath d='M80 680 C 220 680, 260 520, 320 520 C 380 520, 420 680, 560 680' stroke='%23C49A45' stroke-width='1.2' stroke-dasharray='4 4' opacity='0.08'/%3E%3Cpath d='M700 150 L 700 450 M 550 300 L 850 300' stroke='%23C49A45' stroke-width='1.2' opacity='0.07'/%3E%3Cpath d='M580 420 C 650 380, 720 220, 820 180' stroke='%23C49A45' stroke-width='1.5' opacity='0.08'/%3E%3Ctext x='120' y='240' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ex = (-b ± √(b² - 4ac)) / 2a%3C/text%3E%3Ctext x='780' y='640' font-family='serif' font-size='26' fill='%23C49A45' opacity='0.07'%3E∫ f(x) dx = F(x) + C%3C/text%3E%3Ctext x='950' y='220' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='180' y='460' font-family='serif' font-size='20' fill='%23C49A45' opacity='0.07'%3E∑ (1/n²) = π²/6%3C/text%3E%3C/svg%3E"),
+    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
+  background-size: 1200px 800px, 36px 36px, 36px 36px;
+  background-position: center top, left top, left top;
+}
+
+
+// =============================================================================
+// Signature Feathered Atmospheric Mascot Lighting Aura (Exact Match to Mockup Image 2)
+// Pure Continuous Easing, Zero Sharp Circle, Zero Hard Edges, Ultra-Soft Depth
+// =============================================================================
+.mascot-lighting-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 620px;
+  height: 620px;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible; // NEVER clip, ensuring 100% natural diffusion into background
+
+  // Layer 1: Core Violet/Amethyst Radiance (Directly Behind Spider Mascot)
+  .glow-core {
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(168, 108, 185, 0.70) 0%,
+      rgba(141, 94, 148, 0.50) 25%,
+      rgba(107, 74, 117, 0.30) 48%,
+      rgba(74, 53, 122, 0.12) 68%,
+      transparent 88%
+    );
+    filter: blur(40px);
+    -webkit-filter: blur(40px);
+  }
+
+  // Layer 2: Broad Ambient Violet/Indigo Cloud (Deep Atmospheric Base)
+  .glow-ambient {
+    position: absolute;
+    width: 620px;
+    height: 620px;
+    background: radial-gradient(
+      ellipse 62% 58% at 50% 48%,
+      rgba(120, 80, 140, 0.45) 0%,
+      rgba(90, 60, 115, 0.30) 28%,
+      rgba(60, 45, 100, 0.18) 52%,
+      rgba(30, 34, 72, 0.08) 72%,
+      transparent 90%
+    );
+    filter: blur(65px);
+    -webkit-filter: blur(65px);
+  }
+
+  // Layer 3: Subtle Warm Gold Rim Shimmer (Highlighting the Gold Legs & Open Book)
+  .glow-rim {
+    position: absolute;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(
+      circle at 62% 38%,
+      rgba(212, 160, 60, 0.28) 0%,
+      rgba(179, 128, 47, 0.15) 30%,
+      rgba(141, 94, 148, 0.08) 55%,
+      transparent 75%
+    );
+    filter: blur(45px);
+    -webkit-filter: blur(45px);
+  }
+
+  @media (max-width: 640px) {
+    width: 320px;
+    height: 320px;
+
+    .glow-core {
+      width: 220px;
+      height: 220px;
+      filter: blur(28px);
+    }
+    .glow-ambient {
+      width: 310px;
+      height: 310px;
+      filter: blur(45px);
+    }
+    .glow-rim {
+      width: 240px;
+      height: 240px;
+      filter: blur(30px);
+    }
+  }
+}
+
+.light .mascot-lighting-glow,
+[data-theme='light'] .mascot-lighting-glow {
+  .glow-core {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(192, 132, 252, 0.35) 0%,
+      rgba(168, 85, 247, 0.18) 35%,
+      rgba(124, 58, 237, 0.06) 55%,
+      transparent 75%
+    );
+    filter: blur(32px);
+  }
+
+  .glow-ambient {
+    background: radial-gradient(
+      ellipse 60% 55% at 50% 48%,
+      rgba(216, 180, 254, 0.22) 0%,
+      rgba(192, 132, 252, 0.12) 30%,
+      rgba(168, 85, 247, 0.05) 55%,
+      transparent 75%
+    );
+    filter: blur(55px);
+  }
+
+  .glow-rim {
+    background: radial-gradient(
+      circle at 65% 35%,
+      rgba(245, 208, 115, 0.20) 0%,
+      rgba(212, 175, 106, 0.08) 32%,
+      transparent 65%
+    );
+    filter: blur(35px);
+  }
+}

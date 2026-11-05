@@ -8,10 +8,10 @@
     ></div>
 
     <!-- Modal Box (Glassmorphic) -->
-    <div class="relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-glass overflow-hidden z-10 my-8">
+    <div class="spider-rim-glass-card relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-modal/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl overflow-hidden z-10 my-8">
       
       <!-- Ambient Lock Glow -->
-      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 bg-brand-primary/15 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 bg-brand-gold/20 rounded-full blur-2xl pointer-events-none"></div>
 
       <!-- Close Button -->
       <button
@@ -30,15 +30,15 @@
         <div class="text-center">
           
           <!-- Shield/Target Icon -->
-          <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-300 mx-auto flex items-center justify-center mb-4 shadow-sm">
+          <div class="w-16 h-16 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold mx-auto flex items-center justify-center mb-4 shadow-sm">
             <app-icon name="award" [size]="32" />
           </div>
 
-          <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-2">
+          <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary mb-2">
             {{ langService.isArabic() ? 'أحسنت! انتهى اختبارك بنجاح' : 'Assessment Completed Successfully!' }}
           </h3>
 
-          <div class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-text-primary text-xs sm:text-sm font-semibold mb-5 leading-relaxed">
+          <div class="p-4 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 text-text-primary text-xs sm:text-sm font-semibold mb-5 leading-relaxed">
             {{ langService.isArabic() 
               ? 'لمعرفة النتيجة ومعرفة نقاط القوة والضعف سجل دخول، وستتواصل معك المهندسة هبة عبدالوهاب شخصياً لمناقشة التقرير وخطة تطويرك الأكاديمي.'
               : 'To view your score and analyze strengths and weaknesses, please log in. Eng. Heba Abdel-Wahab will follow up with you directly.' }}
@@ -48,7 +48,7 @@
           <button
             type="button"
             (click)="goToLogin()"
-            class="w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 mb-3 cursor-pointer"
+            class="btn-gold-metallic w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mb-3 cursor-pointer"
           >
             <app-icon name="log-in" [size]="18" />
             <span>{{ langService.isArabic() ? 'تسجيل الدخول إلى المنصة (Login)' : 'Log In to View Results' }}</span>
@@ -108,7 +108,7 @@
             <button
               type="submit"
               [disabled]="isSubmitting()"
-              class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-surface-card border border-brand-primary text-brand-primary dark:text-brand-accent hover:bg-brand-primary/10 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 cursor-pointer"
+              class="btn-gold-metallic w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               @if (isSubmitting()) {
                 <app-icon name="refresh" [size]="16" className="animate-spin" />

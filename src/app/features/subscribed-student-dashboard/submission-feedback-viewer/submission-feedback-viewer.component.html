@@ -31,7 +31,7 @@
       <app-icon name="check-circle" [size]="14" />
       <span>تقرير الدرجات والتقييم الشخصي</span>
     </div>
-    <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
+    <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
       {{ feedback().assessmentTitleAr }}
     </h1>
   </div>
@@ -61,7 +61,7 @@
     <!-- ========================================================================= -->
     @if (!isPublished()) {
       <div class="space-y-8 animate-fade-in">
-        <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card shadow-glass text-center max-w-xl mx-auto my-6 animate-fade-in">
+        <div class="p-8 sm:p-12 rounded-3xl spider-rim-glass-card shadow-glass text-center max-w-xl mx-auto my-6 animate-fade-in">
           <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
             <app-icon name="clock" [size]="32" />
           </div>
@@ -161,7 +161,7 @@
       <div class="space-y-8 animate-fade-in">
         
         <!-- Overall Score Banner -->
-        <div class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div class="p-6 sm:p-8 rounded-3xl spider-rim-glass-card shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <span class="text-xs font-bold text-text-muted">الدرجة الإجمالية النهائية</span>
             <div class="flex items-baseline gap-3 mt-1">
@@ -217,7 +217,7 @@
 
         <!-- Teacher Feedback Quote Card -->
         @if (feedback().teacherFeedbackNotes; as notes) {
-          <div class="p-6 rounded-3xl border border-brand-accent/30 bg-brand-primary/5 shadow-sm relative overflow-hidden">
+          <div class="p-6 rounded-3xl spider-rim-glass-card border border-gold-accent/40 shadow-sm relative overflow-hidden">
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
                 <app-icon name="user" [size]="20" />

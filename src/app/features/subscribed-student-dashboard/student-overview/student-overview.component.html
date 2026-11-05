@@ -49,8 +49,8 @@
           </a>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
-          مرحباً بك، {{ authService.currentUser()?.full_name ?? 'طالب سبايدر ماث' }}
+        <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
+          مرحباً بك، <span class="text-gold-accent">{{ authService.currentUser()?.full_name ?? 'طالب سبايدر ماث' }}</span>
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
           تابع دروسك الهندسية، واطلع على إنجاز المحاضرات ودرجات الامتحانات المعتمدة.
@@ -148,7 +148,7 @@
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
     <!-- Card 1: Overall Lecture Completion Rate -->
-    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+    <div class="spider-rim-glass-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-text-secondary">إنجاز المحاضرات</span>
         <span class="p-2 rounded-xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent">
@@ -172,7 +172,7 @@
     </div>
 
     <!-- Card 2: XP Progress Ring -->
-    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between relative overflow-hidden">
+    <div class="spider-rim-glass-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-bold text-text-secondary">نقاط التميز (XP)</span>
         <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20 font-numeric">
@@ -189,9 +189,9 @@
             />
             <defs>
               <linearGradient id="xpRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#0066FF" />
-                <stop offset="50%" stop-color="#00E5FF" />
-                <stop offset="100%" stop-color="#FF007A" />
+                <stop offset="0%" stop-color="#C49A45" />
+                <stop offset="50%" stop-color="#E6C875" />
+                <stop offset="100%" stop-color="#7C3AED" />
               </linearGradient>
             </defs>
           </svg>
@@ -214,7 +214,7 @@
     </div>
 
     <!-- Card 3: Average Quiz Score -->
-    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+    <div class="spider-rim-glass-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-text-secondary">متوسط درجات الكويزات</span>
         <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -235,7 +235,7 @@
     </div>
 
     <!-- Card 4: Leaderboard Position -->
-    <div class="p-5 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col justify-between">
+    <div class="spider-rim-glass-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-text-secondary">لوحة الشرف</span>
         <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500">
@@ -318,7 +318,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           @for (unit of units(); track unit._id) {
-            <div class="unit-metric-card rounded-2xl border border-surface-border bg-surface-card p-5 shadow-sm hover:border-brand-accent/40 transition-all duration-200">
+            <div class="unit-metric-card rounded-2xl spider-rim-glass-card p-5 shadow-sm hover:border-gold-accent/40 transition-all duration-300 hover:-translate-y-1">
               <div class="flex items-start justify-between gap-3 mb-3">
                 <h4 class="text-sm font-bold text-text-primary leading-snug">
                   {{ unit.titleAr }}
@@ -434,7 +434,7 @@
     <!-- ========================================================================= -->
     <!-- 3. Lectures Progress Tracker (المحاضرات اللي شافها واللي لسه مشافهاش)       -->
     <!-- ========================================================================= -->
-    <section class="p-6 sm:p-8 rounded-3xl border border-surface-border bg-surface-card/80 shadow-sm space-y-6">
+    <section class="p-6 sm:p-8 rounded-3xl spider-rim-glass-card shadow-sm space-y-6">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-bold mb-2">
@@ -567,7 +567,7 @@
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
       <!-- Column A: Due Quizzes (الكويزات اللي عليه) -->
-      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 h-fit">
+      <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4 h-fit">
         <div>
           <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
             <div class="flex items-center gap-2">
@@ -709,7 +709,7 @@
                 } @else if (quiz.canStart !== false) {
                   <a
                     [routerLink]="quiz.assessmentUrl"
-                    class="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    class="w-full py-2.5 px-3 rounded-xl btn-gold-metallic font-extrabold text-xs shadow-gold-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <app-icon name="sparkles" [size]="14" />
                     <span>بدء حل الكويز الآن (+{{ quiz.xpReward }} XP)</span>
@@ -735,7 +735,7 @@
       </div>
 
       <!-- Column B: Graded Assessments & Teacher Feedback (درجات الطالب وتقييماته) -->
-      <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4 h-fit">
+      <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4 h-fit">
         <div>
           <div class="flex items-center justify-between mb-3 pb-3 border-b border-surface-border">
             <div class="flex items-center gap-2">
@@ -829,7 +829,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (unit of filteredUnits(); track unit._id) {
-          <div class="unit-card rounded-3xl border border-surface-border bg-surface-card p-6 shadow-card hover:border-brand-accent transition-all duration-300 flex flex-col justify-between group">
+          <div class="unit-card rounded-3xl spider-rim-glass-card p-6 shadow-card hover:border-gold-accent transition-all duration-300 flex flex-col justify-between group">
             <div>
               <div class="flex items-center justify-between mb-3">
                 <span class="px-2.5 py-1 rounded-full text-[11px] font-bold"
@@ -867,7 +867,7 @@
 
             <a
               [routerLink]="['/student/units', unit._id]"
-              class="w-full py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              class="w-full py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <app-icon name="book-open" [size]="16" />
               <span>دخول الوحدة وبدء المذاكرة</span>
@@ -888,14 +888,14 @@
   <!-- ========================================================================= -->
   <!-- 6. Animation 4.5: Leaderboard Podiums (لوحة الشرف والأوائل)                -->
   <!-- ========================================================================= -->
-  <section class="p-6 sm:p-10 rounded-3xl border border-surface-border bg-surface-card/60 shadow-glass">
+  <section class="p-6 sm:p-10 rounded-3xl spider-rim-glass-card shadow-glass">
     <div class="text-center max-w-xl mx-auto mb-8">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold mb-2">
         <app-icon name="award" [size]="14" />
         <span>لوحة الشرف والتفوق الأكاديمي</span>
       </div>
-      <h2 class="text-xl sm:text-3xl font-black text-text-primary">
-        أوائل دفعة الثانوية العامة (Spider Math Top Scorers)
+      <h2 class="text-xl sm:text-3xl font-black text-text-primary font-academic-serif">
+        أوائل دفعة سبايدر ماث • <span class="text-gold-accent">Hall of Fame</span> <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
       </h2>
       <p class="text-xs sm:text-sm text-text-secondary mt-1">
         التنافس مستمر وفق نقاط الـ XP المكتسبة من مشاهدة المحاضرات وحل الاختبارات.
@@ -903,73 +903,76 @@
     </div>
 
     @if (topThreePodium().length > 0) {
-      <!-- 3D Podiums Visual (Animation 4.5: Ranks 2, 1, 3) -->
-      <div class="podiums-container flex items-end justify-center gap-3 sm:gap-6 max-w-2xl mx-auto pt-8 pb-4">
+      <!-- Olympic 3-Card Podium (Matching Landing Phase 2.5) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-4xl mx-auto pt-6 pb-4">
         
-        <!-- Rank 2 (Silver) -->
+        <!-- Rank 2 (Silver / Left) -->
         @if (topThreePodium().length >= 2) {
-          <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.1s;">
-            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-slate-300 shadow-md flex items-center justify-center font-black text-slate-700 dark:text-slate-200 text-sm mb-3">
-              <app-icon name="award" [size]="24" className="text-slate-400" />
-              <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-800">
-                #2
-              </span>
+          <div class="spider-rim-glass-card rounded-3xl p-6 flex flex-col items-center text-center relative border border-slate-300/40 hover:-translate-y-1 transition-all duration-300">
+            <span class="absolute top-4 left-4 font-numeric font-black text-slate-400 text-sm">#2</span>
+            <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-300/20 text-slate-300 border border-slate-300/30">2nd</span>
+            
+            <div class="w-16 h-16 rounded-full border-2 border-slate-300 p-1 mb-3 bg-surface-card shadow-md">
+              <div class="w-full h-full rounded-full bg-slate-400/20 flex items-center justify-center font-bold text-slate-300">
+                <app-icon name="user" [size]="24" />
+              </div>
             </div>
-            <div class="text-center mb-2">
-              <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-                {{ topThreePodium()[1].studentName }}
-              </p>
-              <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-                {{ topThreePodium()[1].totalXp }} XP
+            <h4 class="text-sm font-bold text-text-primary truncate max-w-[160px] mb-1">
+              {{ topThreePodium()[1].studentName }}
+            </h4>
+            <p class="text-[11px] font-mono text-text-muted mb-4">{{ topThreePodium()[1].haCode }}</p>
+            
+            <div class="w-full p-2.5 rounded-xl bg-surface-bg/80 border border-surface-border text-center">
+              <span class="text-xs font-numeric font-bold text-slate-300">
+                {{ topThreePodium()[1].totalXp | number }} XP
               </span>
-            </div>
-            <div class="w-full h-28 rounded-t-2xl bg-gradient-to-t from-slate-300/40 to-slate-200/60 border border-slate-300/60 flex items-center justify-center">
-              <span class="font-numeric font-black text-lg text-slate-500">2nd</span>
             </div>
           </div>
         }
 
-        <!-- Rank 1 (Gold - Center & Highest Elevation) -->
-        <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise z-10" style="animation-delay: 0s;">
-          <app-icon name="crown" [size]="24" className="text-amber-400 mb-1" />
-          <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-surface-card border-2 border-amber-400 shadow-brand-glow flex items-center justify-center font-black text-amber-500 text-base mb-3">
-            <app-icon name="award" [size]="28" className="text-amber-500" />
-            <span class="absolute -bottom-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-amber-950 shadow-sm">
-              #1
-            </span>
+        <!-- Rank 1 (Gold Champion / Center & Elevated) -->
+        <div class="spider-rim-glass-card rounded-3xl p-7 flex flex-col items-center text-center relative border-2 border-amber-400/60 shadow-gold-glow md:-translate-y-4 hover:-translate-y-6 transition-all duration-300 z-10">
+          <div class="text-2xl mb-1"><span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></div>
+          <span class="absolute top-4 left-4 font-numeric font-black text-amber-400 text-base">#1</span>
+          <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-400 border border-amber-400/40">1st</span>
+          
+          <div class="w-20 h-20 rounded-full border-2 border-amber-400 p-1 mb-3 bg-surface-card shadow-gold-glow">
+            <div class="w-full h-full rounded-full bg-amber-400/20 flex items-center justify-center font-bold text-amber-400">
+              <app-icon name="award" [size]="32" />
+            </div>
           </div>
-          <div class="text-center mb-2">
-            <p class="text-xs font-bold text-text-primary truncate max-w-[140px]">
-              {{ topThreePodium()[0].studentName }}
-            </p>
-            <span class="text-xs font-numeric font-black text-amber-500">
-              {{ topThreePodium()[0].totalXp }} XP
+          <h4 class="text-base font-extrabold text-text-primary truncate max-w-[180px] mb-1">
+            {{ topThreePodium()[0].studentName }}
+          </h4>
+          <p class="text-xs font-mono text-gold-accent mb-4">{{ topThreePodium()[0].haCode }}</p>
+          
+          <div class="w-full p-3 rounded-xl bg-amber-400/10 border border-amber-400/30 text-center">
+            <span class="text-sm font-numeric font-black text-gold-accent">
+              {{ topThreePodium()[0].totalXp | number }} XP
             </span>
-          </div>
-          <div class="w-full h-40 rounded-t-2xl bg-gradient-to-t from-amber-400/40 via-amber-300/50 to-amber-200/70 border border-amber-400/60 shadow-lg flex items-center justify-center">
-            <span class="font-numeric font-black text-2xl text-amber-700 dark:text-amber-300">1st</span>
           </div>
         </div>
 
-        <!-- Rank 3 (Bronze) -->
+        <!-- Rank 3 (Bronze / Right) -->
         @if (topThreePodium().length >= 3) {
-          <div class="podium-step flex-1 flex flex-col items-center animate-podium-rise" style="animation-delay: 0.2s;">
-            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-card border-2 border-amber-700/60 shadow-md flex items-center justify-center font-black text-amber-700 text-sm mb-3">
-              <app-icon name="award" [size]="24" className="text-amber-700" />
-              <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-800 dark:text-amber-400">
-                #3
-              </span>
+          <div class="spider-rim-glass-card rounded-3xl p-6 flex flex-col items-center text-center relative border border-amber-700/40 hover:-translate-y-1 transition-all duration-300">
+            <span class="absolute top-4 left-4 font-numeric font-black text-amber-700 text-sm">#3</span>
+            <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-700/20 text-amber-700 border border-amber-700/30">3rd</span>
+            
+            <div class="w-16 h-16 rounded-full border-2 border-amber-700/60 p-1 mb-3 bg-surface-card shadow-md">
+              <div class="w-full h-full rounded-full bg-amber-700/20 flex items-center justify-center font-bold text-amber-700">
+                <app-icon name="user" [size]="24" />
+              </div>
             </div>
-            <div class="text-center mb-2">
-              <p class="text-xs font-bold text-text-primary truncate max-w-[120px]">
-                {{ topThreePodium()[2].studentName }}
-              </p>
-              <span class="text-[11px] font-numeric font-bold text-brand-secondary">
-                {{ topThreePodium()[2].totalXp }} XP
+            <h4 class="text-sm font-bold text-text-primary truncate max-w-[160px] mb-1">
+              {{ topThreePodium()[2].studentName }}
+            </h4>
+            <p class="text-[11px] font-mono text-text-muted mb-4">{{ topThreePodium()[2].haCode }}</p>
+            
+            <div class="w-full p-2.5 rounded-xl bg-surface-bg/80 border border-surface-border text-center">
+              <span class="text-xs font-numeric font-bold text-amber-700 dark:text-amber-500">
+                {{ topThreePodium()[2].totalXp | number }} XP
               </span>
-            </div>
-            <div class="w-full h-20 rounded-t-2xl bg-gradient-to-t from-amber-700/20 to-amber-600/30 border border-amber-700/40 flex items-center justify-center">
-              <span class="font-numeric font-black text-base text-amber-800 dark:text-amber-400">3rd</span>
             </div>
           </div>
         }
@@ -1007,7 +1010,7 @@
   <!-- ========================================================================= -->
   @if (isProfileModalOpen()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div class="w-full max-w-xl rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="w-full max-w-xl rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
 
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-4 border-b border-surface-border">

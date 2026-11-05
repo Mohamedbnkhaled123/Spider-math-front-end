@@ -1,7 +1,7 @@
 <section class="space-y-6 animate-fade-in">
   
   <!-- 1. Header & KPI Statistics Grid -->
-  <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-6">
+  <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
@@ -144,7 +144,7 @@
   @if (activeStudioTab() === 'SUBMISSIONS') {
     <div class="space-y-4">
       @for (sub of paginatedSubmissions(); track sub.id) {
-        <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm hover:border-brand-primary/30 transition-all">
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm hover:border-brand-primary/30 transition-all">
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
             <!-- Student & Assessment Identity -->
@@ -250,7 +250,7 @@
                 <button
                   type="button"
                   (click)="openGradingFromSubmission(sub)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <app-icon name="award" [size]="14" />
                   <span>تصحيح الـ Canvas</span>
@@ -323,7 +323,7 @@
   @if (activeStudioTab() === 'CANVAS') {
     <div class="space-y-4">
       @for (sub of pendingSubmissions(); track sub.id) {
-        <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div class="space-y-2">
             <div class="flex items-center gap-2">
               <span class="text-sm font-bold text-text-primary">{{ sub.studentName }}</span>
@@ -355,7 +355,7 @@
             <button
               type="button"
               (click)="openGrading(sub)"
-              class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+              class="px-5 py-2.5 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <app-icon name="award" [size]="15" />
               <span>بدء التصحيح في الـ Canvas</span>
@@ -688,7 +688,7 @@
           <button
             type="button"
             (click)="publishFinalGrade()"
-            class="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+            class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="16" />
             <span>اعتماد النتيجة وإرسال الإشعار للطالب وولي الأمر</span>

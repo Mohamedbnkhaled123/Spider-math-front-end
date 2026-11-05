@@ -42,6 +42,8 @@ export class AdminAnalyticsShellComponent {
 
   // Notification Flyout State
   readonly isNotificationsOpen = signal<boolean>(false);
+  // Mobile Quick Tools Drawer State
+  readonly isMobileToolsOpen = signal<boolean>(false);
 
   selectTab(tab: AdminTab): void {
     this.tabChange.emit(tab);
@@ -49,6 +51,10 @@ export class AdminAnalyticsShellComponent {
 
   toggleNotifications(): void {
     this.isNotificationsOpen.update((open) => !open);
+  }
+
+  toggleMobileTools(): void {
+    this.isMobileToolsOpen.update((open) => !open);
   }
 
   triggerBackup(): void {

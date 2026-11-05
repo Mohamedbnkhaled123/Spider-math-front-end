@@ -28,7 +28,7 @@
 
   <!-- Unit Title Headline -->
   <div class="mb-6">
-    <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight">
+    <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-academic-serif">
       {{ workspaceData().titleAr }}
     </h1>
     <p class="text-xs text-text-secondary mt-1">
@@ -86,7 +86,7 @@
         </div>
 
         <!-- Content Viewer Container -->
-        <div class="theater-screen rounded-3xl border border-surface-border bg-surface-card overflow-hidden shadow-card">
+        <div class="theater-screen rounded-3xl spider-rim-glass-card overflow-hidden shadow-2xl relative">
           @if (isLectureLocked()) {
             <!-- Locked State for Non-Subscribed Students -->
             <div class="relative w-full aspect-video min-h-[380px] bg-slate-950 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
@@ -174,7 +174,7 @@
         </div>
 
         <!-- Active Lecture Details & Quiz Card -->
-        <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary">
@@ -206,7 +206,7 @@
             } @else {
               <a
                 [routerLink]="['/student/assessments', asmId, 'attempt']"
-                class="px-5 py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                class="px-5 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
               >
                 <app-icon name="award" [size]="16" />
                 <span>ابدأ الواجب / الكويز</span>
@@ -218,7 +218,7 @@
       </div>
 
       <!-- Playlist & Lessons Navigation (4 Cols) -->
-      <div class="lg:col-span-4 rounded-3xl border border-surface-border bg-surface-card p-6 shadow-sm">
+      <div class="lg:col-span-4 rounded-3xl spider-rim-glass-card p-6 shadow-sm">
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-4">
           <div>
             <h3 class="text-sm font-black text-text-primary">
@@ -321,7 +321,7 @@
     <!-- Unit Assessments & Quizzes Section (Fix 3: Time Window & Attempt Strictness) -->
     <!-- ========================================================================= -->
     @if (workspaceData().assessments.length > 0) {
-      <div class="mt-10 rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-8 shadow-sm">
+      <div class="mt-10 rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-sm">
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">

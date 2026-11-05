@@ -45,7 +45,7 @@
       </a>
 
       <div>
-        <h1 class="text-base sm:text-lg font-black text-text-primary tracking-tight">
+        <h1 class="text-base sm:text-lg font-black text-text-primary tracking-tight font-academic-serif">
           {{ bundle().titleAr }}
         </h1>
       </div>
@@ -176,7 +176,7 @@
       <!-- ========================================================================= -->
       <!-- 4. Active Question Card (MCQ or Essay Homework)                           -->
       <!-- ========================================================================= -->
-      <div class="question-container rounded-3xl border border-surface-border bg-surface-card p-6 sm:p-10 shadow-card">
+      <div class="question-container rounded-3xl spider-rim-glass-card p-6 sm:p-10 shadow-2xl relative">
         
         <!-- Question Meta Info -->
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
@@ -208,15 +208,16 @@
               <div
                 (click)="selectOption(opt.optionIndex)"
                 class="mcq-option-card p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
-                [class.border-brand-accent]="isOptionSelected(opt.optionIndex)"
-                [class.bg-brand-primary/10]="isOptionSelected(opt.optionIndex)"
+                [class.border-amber-400]="isOptionSelected(opt.optionIndex)"
+                [class.bg-amber-400/10]="isOptionSelected(opt.optionIndex)"
+                [class.shadow-gold-glow]="isOptionSelected(opt.optionIndex)"
                 [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
                 [class.hover:border-brand-accent/50]="!isOptionSelected(opt.optionIndex)"
               >
                 <div
                   class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                  [class.border-brand-accent]="isOptionSelected(opt.optionIndex)"
-                  [class.bg-brand-accent]="isOptionSelected(opt.optionIndex)"
+                  [class.border-amber-400]="isOptionSelected(opt.optionIndex)"
+                  [class.bg-amber-400]="isOptionSelected(opt.optionIndex)"
                   [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
                 >
                   @if (isOptionSelected(opt.optionIndex)) {
@@ -378,7 +379,7 @@
                 type="button"
                 (click)="submitAssessment()"
                 [disabled]="isSubmitting() || unansweredCount() > 0"
-                class="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                class="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-sm btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 [title]="unansweredCount() > 0 ? 'يجب إجابة كافة الأسئلة أولاً لتتمكن من تسليم التقييم' : 'إنهاء وتسليم الإجابات'"
               >
                 @if (isSubmitting()) {
@@ -399,13 +400,13 @@
     <!-- ========================================================================= -->
     <!-- 5. Submission Completed Success Card                                      -->
     <!-- ========================================================================= -->
-    <div class="p-8 sm:p-12 rounded-3xl border border-surface-border bg-surface-card shadow-glass text-center max-w-xl mx-auto my-10 animate-fade-in">
+    <div class="p-8 sm:p-12 rounded-3xl spider-rim-glass-card shadow-glass text-center max-w-xl mx-auto my-10 animate-fade-in">
       <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-4">
         <app-icon name="check-circle" [size]="32" />
       </div>
 
-      <h2 class="text-2xl font-black text-text-primary mb-2">
-        تم تسليم التقييم بنجاح
+      <h2 class="text-2xl font-black text-text-primary mb-2 font-academic-serif">
+        تم تسليم التقييم <span class="text-gold-accent">بنجاح</span> <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
       </h2>
       <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-8">
         تم حفظ إجاباتك محلياً وتأمينها عبر درع Dexie.js وإرسالها للتصحيح واعتماد درجات الواجب من قِبل المهندسة هبة عبدالوهاب.
@@ -414,7 +415,7 @@
       <div class="flex flex-wrap items-center justify-center gap-4">
         <a
           [routerLink]="['/student/submissions', bundle().assessmentId, 'feedback']"
-          class="px-6 py-3 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
+          class="px-6 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
           <app-icon name="award" [size]="16" />
           <span>عرض تقرير التقييم وملاحظات المعلمة</span>

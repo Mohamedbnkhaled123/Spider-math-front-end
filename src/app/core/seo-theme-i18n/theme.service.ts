@@ -12,7 +12,7 @@ export class ThemeService {
   private readonly THEME_STORAGE_KEY = 'spider_math_theme';
 
   // Signals
-  readonly currentTheme = signal<AppTheme>('light');
+  readonly currentTheme = signal<AppTheme>('dark');
   readonly isDark = computed(() => this.currentTheme() === 'dark');
 
   constructor() {
@@ -52,14 +52,13 @@ export class ThemeService {
           return;
         }
 
-        // Check system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.setTheme(prefersDark ? 'dark' : 'light');
+        // Default to dark luxury academic theme as in official platform mockups
+        this.setTheme('dark');
       } catch {
-        this.setTheme('light');
+        this.setTheme('dark');
       }
     } else {
-      this.applyThemeToDom('light');
+      this.applyThemeToDom('dark');
     }
   }
 
