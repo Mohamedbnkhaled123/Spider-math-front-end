@@ -1,4 +1,4 @@
-<header class="header-glass-bar transition-colors duration-300 relative z-layer-header">
+<header class="header-glass-bar transition-colors duration-300 sticky top-0 z-layer-header w-full">
   
   <!-- Real Web Notifications Permission Request Banner -->
   @if (authService.isAuthenticated() && notificationsService.permissionStatus() === 'default' && !notificationsService.isPromptDismissed()) {

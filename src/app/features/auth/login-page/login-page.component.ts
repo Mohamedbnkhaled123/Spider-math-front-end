@@ -377,6 +377,9 @@ export class LoginPageComponent implements OnInit {
             full_name: data.user.fullName || data.user.full_name,
             email: data.user.email,
             phone: data.user.phone,
+            parent_phone: data.user.parentPhone || data.user.parent_phone,
+            country: data.user.country || 'EG',
+            avatar_url: data.user.avatarUrl || data.user.avatar_url,
             role: data.user.role || 'STUDENT',
             curriculum: data.user.curriculum,
             grade_level: data.user.gradeLevel || data.user.grade_level,
@@ -449,7 +452,25 @@ export class LoginPageComponent implements OnInit {
       next: (res) => {
         this.isSubmitting.set(false);
         if (res?.data?.token && res?.data?.user) {
-          this.authService.setSession(res.data.token, res.data.user);
+          const u = res.data.user;
+          const userPayload: IUserDto = {
+            _id: u._id || u.id,
+            student_ha_code: u.student_ha_code || u.studentCode,
+            full_name: u.full_name || u.fullName,
+            email: u.email,
+            phone: u.phone,
+            parent_phone: u.parent_phone || u.parentPhone,
+            country: u.country || 'EG',
+            avatar_url: u.avatar_url || u.avatarUrl,
+            role: u.role || 'STUDENT',
+            curriculum: u.curriculum,
+            grade_level: u.grade_level || u.gradeLevel,
+            academic_term: u.academic_term || u.academicTerm,
+            governorate: u.governorate,
+            total_xp: u.total_xp ?? u.totalXp ?? 0,
+            has_active_subscription: !!u.has_active_subscription
+          };
+          this.authService.setSession(res.data.token, userPayload);
           this.router.navigateByUrl('/student');
         } else {
           this.errorMessage.set('كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.');

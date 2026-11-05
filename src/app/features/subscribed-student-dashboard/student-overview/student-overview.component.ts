@@ -98,6 +98,8 @@ export class StudentOverviewComponent implements OnInit {
   readonly editCountry = signal<string>('EG');
   readonly editGovernorate = signal<string>('CAIRO');
   readonly editAvatarUrl = signal<string>('');
+  readonly isCustomUploadedAvatar = signal<boolean>(false);
+  readonly showParentPhoneLockNotice = signal<boolean>(false);
   readonly isSavingProfile = signal<boolean>(false);
   readonly profileErrorMessage = signal<string | null>(null);
   readonly profileSuccessMessage = signal<string | null>(null);
@@ -595,11 +597,14 @@ export class StudentOverviewComponent implements OnInit {
   openProfileModal(): void {
     const user = this.authService.currentUser();
     this.editFullName.set(user?.full_name || '');
-    this.editPhone.set(user?.phone || '');
-    this.editParentPhone.set(user?.parent_phone || '');
+    this.editPhone.set(user?.phone || (user as any)?.phone || '');
+    this.editParentPhone.set(user?.parent_phone || (user as any)?.parentPhone || '');
     this.editCountry.set(user?.country || 'EG');
     this.editGovernorate.set(user?.governorate || 'CAIRO');
-    this.editAvatarUrl.set(user?.avatar_url || this.presetAvatars[0].url);
+    const av = user?.avatar_url || (user as any)?.avatarUrl || this.presetAvatars[0].url;
+    this.editAvatarUrl.set(av);
+    this.isCustomUploadedAvatar.set(av.startsWith('data:image'));
+    this.showParentPhoneLockNotice.set(false);
     this.profileErrorMessage.set(null);
     this.profileSuccessMessage.set(null);
     this.isProfileModalOpen.set(true);
@@ -607,12 +612,63 @@ export class StudentOverviewComponent implements OnInit {
 
   closeProfileModal(): void {
     this.isProfileModalOpen.set(false);
+    this.showParentPhoneLockNotice.set(false);
     this.profileErrorMessage.set(null);
     this.profileSuccessMessage.set(null);
   }
 
   selectAvatar(url: string): void {
     this.editAvatarUrl.set(url);
+    this.isCustomUploadedAvatar.set(false);
+  }
+
+  onAvatarFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.profileErrorMessage.set('يرجى اختيار ملف صورة صالح (JPG أو PNG أو WebP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.profileErrorMessage.set('حجم الصورة كبير جداً، الحد الأقصى المسموح به هو 5 ميجابايت');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 300;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          this.editAvatarUrl.set(compressed);
+          this.isCustomUploadedAvatar.set(true);
+          this.profileErrorMessage.set(null);
+        }
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearCustomAvatar(): void {
+    this.isCustomUploadedAvatar.set(false);
+    this.editAvatarUrl.set(this.presetAvatars[0].url);
+  }
+
+  onParentPhoneClick(): void {
+    this.showParentPhoneLockNotice.set(true);
   }
 
   saveProfile(): void {

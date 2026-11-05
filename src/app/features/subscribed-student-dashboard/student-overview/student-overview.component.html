@@ -1055,7 +1055,7 @@
         <!-- Avatar Selection -->
         <div>
           <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-            الصورة الشخصية (اختر أفتار سبايدر ماث أو أدخل رابط صورتك):
+            الصورة الشخصية (اختر أفتار سبايدر ماث أو ارفع صورتك من الموبايل):
           </label>
           <div class="grid grid-cols-6 gap-2 mb-3">
             @for (av of presetAvatars; track av.id) {
@@ -1078,15 +1078,39 @@
             }
           </div>
 
-          <div class="relative">
+          <!-- Upload Photo from Mobile / Device (No URL input allowed) -->
+          <div class="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-2xl border border-surface-border bg-surface-bg/70">
             <input
-              type="url"
-              [ngModel]="editAvatarUrl()"
-              (ngModelChange)="editAvatarUrl.set($event)"
-              placeholder="أو ضع رابط صورة شخصية مخصصة (URL)"
-              dir="ltr"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
+              #avatarFileInput
+              type="file"
+              accept="image/*"
+              (change)="onAvatarFileSelected($event)"
+              class="hidden"
             />
+            <button
+              type="button"
+              (click)="avatarFileInput.click()"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-dashed border-brand-primary/50 hover:border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/15 text-brand-primary text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <app-icon name="camera" [size]="15" />
+              <span>رفع صورة من الموبايل أو جهازك</span>
+            </button>
+
+            @if (isCustomUploadedAvatar()) {
+              <div class="flex items-center gap-2 text-xs font-bold text-emerald-500">
+                <img [src]="editAvatarUrl()" alt="Custom Avatar" class="w-7 h-7 rounded-lg object-cover border border-emerald-500/40" />
+                <span>تم تجهيز صورتك بنجاح</span>
+                <button
+                  type="button"
+                  (click)="clearCustomAvatar()"
+                  class="text-rose-500 hover:underline text-[11px] cursor-pointer"
+                >
+                  (إلغاء)
+                </button>
+              </div>
+            } @else {
+              <span class="text-[11px] text-text-muted">يدعم صور JPG و PNG و WebP بحجم خفيف</span>
+            }
           </div>
         </div>
 
@@ -1109,19 +1133,24 @@
           <label for="editCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
             دولة الإقامة
           </label>
-          <select
-            id="editCountry"
-            [ngModel]="editCountry()"
-            (ngModelChange)="editCountry.set($event)"
-            class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
-          >
-            <option value="EG">جمهورية مصر العربية (+20)</option>
-            <option value="SA">المملكة العربية السعودية (+966)</option>
-            <option value="AE">الإمارات العربية المتحدة (+971)</option>
-            <option value="KW">دولة الكويت (+965)</option>
-            <option value="QA">دولة قطر (+974)</option>
-            <option value="OTHER">دولة أخرى</option>
-          </select>
+          <div class="relative">
+            <select
+              id="editCountry"
+              [ngModel]="editCountry()"
+              (ngModelChange)="editCountry.set($event)"
+              class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
+            >
+              <option value="EG">جمهورية مصر العربية (+20)</option>
+              <option value="SA">المملكة العربية السعودية (+966)</option>
+              <option value="AE">الإمارات العربية المتحدة (+971)</option>
+              <option value="KW">دولة الكويت (+965)</option>
+              <option value="QA">دولة قطر (+974)</option>
+              <option value="OTHER">دولة أخرى</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
+              <app-icon name="chevron-down" [size]="16" />
+            </div>
+          </div>
         </div>
 
         <!-- 3. Phone Numbers (Student & Parent) -->
@@ -1142,28 +1171,45 @@
           </div>
 
           <div>
-            <label for="editParentPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-              رقم هاتف ولي الأمر
-            </label>
-            <input
-              id="editParentPhone"
-              type="tel"
-              [ngModel]="editParentPhone()"
-              (ngModelChange)="editParentPhone.set($event)"
-              [placeholder]="editPhonePlaceholder()"
-              dir="ltr"
-              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary outline-none transition-all placeholder:text-text-muted"
-            />
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="editParentPhone" class="text-xs sm:text-sm font-extrabold text-text-primary">
+                رقم هاتف ولي الأمر
+              </label>
+              <span class="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                <app-icon name="lock" [size]="10" />
+                <span>مقفول (بموافقة المعلمة)</span>
+              </span>
+            </div>
+            <div class="relative">
+              <input
+                id="editParentPhone"
+                type="tel"
+                [ngModel]="editParentPhone()"
+                readonly
+                (click)="onParentPhoneClick()"
+                [placeholder]="editPhonePlaceholder()"
+                dir="ltr"
+                class="w-full px-4 py-3 pe-10 rounded-2xl border border-surface-border bg-surface-bg/60 text-text-muted text-sm font-mono font-bold outline-none cursor-not-allowed select-all"
+                title="تعديل رقم ولي الأمر يتطلب موافقة المعلمة"
+              />
+              <div class="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none text-amber-500">
+                <app-icon name="lock" [size]="14" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Parent Phone Warning Note -->
-        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
-          <app-icon name="alert-circle" [size]="15" className="text-amber-500 shrink-0 mt-0.5" />
-          <span class="leading-relaxed font-bold">
-            ملاحظة: يجب ألا يتطابق رقم ولي الأمر مع رقم الطالب لتفعيل إشعارات الرادار السوناري ومتابعة الدرجات.
-          </span>
-        </div>
+        @if (showParentPhoneLockNotice()) {
+          <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300 animate-fade-in">
+            <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
+            <div class="leading-relaxed">
+              <span class="font-extrabold block mb-0.5">تعديل رقم ولي الأمر:</span>
+              <span>
+                لحماية حساب الطالب وتفعيل إشعارات الرادار السوناري، لا يمكن تعديل رقم ولي الأمر مباشرة من هنا إلا بموافقة المعلمة هبة عياد أو طلب التحديث المباشر عبر الواتساب.
+              </span>
+            </div>
+          </div>
+        }
 
         <!-- 4. Governorate (if Egypt) -->
         @if (isEditEgypt()) {
@@ -1171,16 +1217,21 @@
             <label for="editGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
               المحافظة (داخل مصر)
             </label>
-            <select
-              id="editGovernorate"
-              [ngModel]="editGovernorate()"
-              (ngModelChange)="editGovernorate.set($event)"
-              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
-            >
-              @for (gov of egyptGovernorates; track gov.code) {
-                <option [value]="gov.code">{{ gov.name_ar }}</option>
-              }
-            </select>
+            <div class="relative">
+              <select
+                id="editGovernorate"
+                [ngModel]="editGovernorate()"
+                (ngModelChange)="editGovernorate.set($event)"
+                class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
+              >
+                @for (gov of egyptGovernorates; track gov.code) {
+                  <option [value]="gov.code">{{ gov.name_ar }}</option>
+                }
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
+                <app-icon name="chevron-down" [size]="16" />
+              </div>
+            </div>
           </div>
         }
 
