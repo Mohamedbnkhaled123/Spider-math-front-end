@@ -46,7 +46,7 @@
   "rewrites": [
     {
       "source": "/api/v1/:path*",
-      "destination": "https://spider-math-backend.vercel.app/api/v1/:path*"
+      "destination": "https://spider-math-back-end.vercel.app/api/v1/:path*"
     },
     {
       "source": "/(.*)",
