@@ -193,7 +193,13 @@ export class PublicDiscoveryService {
               ? raw.pricing_packages
               : fallback.pricingPackages,
           whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || raw.contact_channels?.subscription_whatsapp || fallback.whatsappSupportNumber,
-          contactChannels: raw.contact_channels || raw.contactChannels || undefined,
+          contactChannels: raw.contact_channels || raw.contactChannels || {
+            subscription_whatsapp: raw.supportWhatsapp || '',
+            support_whatsapp: raw.supportWhatsapp || '',
+            telegram_url: raw.supportTelegram || raw.telegram_url || '',
+            facebook_url: raw.facebookUrl || raw.facebook_url || '',
+            youtube_channel_url: raw.youtubeUrl || raw.youtube_channel_url || ''
+          },
           landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
         };
       }),

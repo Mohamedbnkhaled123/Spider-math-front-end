@@ -100,6 +100,9 @@ export interface CmsConfigAdminItem {
 
   // General & Contact
   supportWhatsapp?: string;
+  supportTelegram?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
   activeAcademicYear?: string;
   activeAcademicTerm?: 'TERM_1' | 'TERM_2';
   schedulesTable?: ScheduleRow[];

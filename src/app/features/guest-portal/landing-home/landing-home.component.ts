@@ -12,6 +12,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { CurriculumSelectorCardsComponent } from '../../../shared/components/curriculum-selector-cards/curriculum-selector-cards.component';
+import { ProtectedYoutubePlayerComponent } from '../../../shared/components/protected-youtube-player/protected-youtube-player.component';
 import { ICurriculumSelection } from '../../../shared/components/curriculum-selector-cards/curriculum-selector-cards.models';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
@@ -38,7 +39,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     CommonModule,
     RouterLink,
     AppIconComponent,
-    CurriculumSelectorCardsComponent
+    CurriculumSelectorCardsComponent,
+    ProtectedYoutubePlayerComponent
   ],
   templateUrl: './landing-home.component.html',
   styleUrl: './landing-home.component.scss',

@@ -5,8 +5,34 @@
 
 .academic-wordmark {
   font-family: var(--font-display-serif);
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ECC878 0%, #D4AF6A 40%, #B38634 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+:host-context([data-theme='light']) .academic-wordmark,
+:host-context(.light) .academic-wordmark {
+  background: linear-gradient(135deg, #9E6B15 0%, #C49A45 45%, #D4AF6A 70%, #8A5C10 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 1.5px rgba(196, 154, 69, 0.25));
+}
+
+:host-context([data-theme='dark']) .academic-wordmark,
+:host-context(.dark) .academic-wordmark {
+  background: linear-gradient(135deg, #FFF6DD 0%, #F5D77F 30%, #D4AF6A 65%, #C2933C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 10px rgba(212, 175, 106, 0.38));
 }
 
 .footer-pill-container {

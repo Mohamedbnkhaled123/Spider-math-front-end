@@ -890,18 +890,8 @@
           </div>
         </div>
 
-        <!-- Support Whatsapp, Academic Year & Active Term -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'رقم واتساب الدعم الفني والاستشارات' : 'Support & Consultations WhatsApp Number' }}</label>
-            <input
-              type="text"
-              [(ngModel)]="editableCms().supportWhatsapp"
-              placeholder="01012345678"
-              class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card font-mono font-bold text-text-primary"
-            />
-          </div>
-
+        <!-- Academic Year & Active Term -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
             <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العام الأكاديمي الفعّال' : 'Active Academic Year' }}</label>
             <input
@@ -941,6 +931,85 @@
               >
                 {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Official Contact & Social Media Channels (وسائل التواصل والدعم الأكاديمي) -->
+        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                <app-icon name="send" [size]="16" />
+              </div>
+              <div>
+                <h4 class="font-bold text-text-primary text-sm">{{ langService.isArabic() ? 'وسائل التواصل وقنوات الدعم المعتمدة' : 'Official Social & Contact Channels' }}</h4>
+                <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'تتحكم في أزرار التواصل المباشرة وأيقونات الـ Footer وروابط المتابعة للطلاب والزوار.' : 'Controls direct chat links and footer social icons across the platform.' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <!-- WhatsApp -->
+            <div class="p-4 rounded-xl border border-surface-border bg-surface-card space-y-1.5">
+              <label class="flex items-center gap-2 text-xs font-bold text-text-secondary">
+                <app-icon name="whatsapp" [size]="16" className="text-emerald-500" />
+                <span>{{ langService.isArabic() ? 'رقم واتساب الدعم والاستشارات' : 'WhatsApp Support Number' }}</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().supportWhatsapp"
+                placeholder="01012345678"
+                dir="ltr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary text-xs focus:outline-none focus:border-emerald-500"
+              />
+              <p class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'مثال: 01012345678 أو 201012345678+' : 'e.g.: 01012345678 or +201012345678' }}</p>
+            </div>
+
+            <!-- Telegram -->
+            <div class="p-4 rounded-xl border border-surface-border bg-surface-card space-y-1.5">
+              <label class="flex items-center gap-2 text-xs font-bold text-text-secondary">
+                <app-icon name="telegram" [size]="16" className="text-sky-400" />
+                <span>{{ langService.isArabic() ? 'قناة أو حساب تيليجرام الرسمي' : 'Official Telegram Link / Username' }}</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().supportTelegram"
+                placeholder="https://t.me/SpiderMath"
+                dir="ltr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary text-xs focus:outline-none focus:border-sky-400"
+              />
+              <p class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'رابط قناة تيليجرام أو المعرف (مثال: SpiderMath@ أو https://t.me/...)' : 'Telegram channel URL or handle (e.g. @SpiderMath or https://t.me/...)' }}</p>
+            </div>
+
+            <!-- Facebook -->
+            <div class="p-4 rounded-xl border border-surface-border bg-surface-card space-y-1.5">
+              <label class="flex items-center gap-2 text-xs font-bold text-text-secondary">
+                <app-icon name="facebook" [size]="16" className="text-blue-500" />
+                <span>{{ langService.isArabic() ? 'رابط صفحة فيسبوك' : 'Facebook Page URL' }}</span>
+              </label>
+              <input
+                type="url"
+                [(ngModel)]="editableCms().facebookUrl"
+                placeholder="https://facebook.com/SpiderMath"
+                dir="ltr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono text-text-primary text-xs focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <!-- YouTube -->
+            <div class="p-4 rounded-xl border border-surface-border bg-surface-card space-y-1.5">
+              <label class="flex items-center gap-2 text-xs font-bold text-text-secondary">
+                <app-icon name="youtube" [size]="16" className="text-red-500" />
+                <span>{{ langService.isArabic() ? 'رابط قناة يوتيوب الرسمية' : 'YouTube Channel URL' }}</span>
+              </label>
+              <input
+                type="url"
+                [(ngModel)]="editableCms().youtubeUrl"
+                placeholder="https://youtube.com/@SpiderMath"
+                dir="ltr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono text-text-primary text-xs focus:outline-none focus:border-red-500"
+              />
             </div>
           </div>
         </div>

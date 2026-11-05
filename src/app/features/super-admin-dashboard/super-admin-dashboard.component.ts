@@ -96,6 +96,9 @@ export class SuperAdminDashboardComponent implements OnInit {
     announcementBannerText: 'خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة',
     isAnnouncementActive: true,
     supportWhatsapp: '01012345678',
+    supportTelegram: '',
+    facebookUrl: '',
+    youtubeUrl: '',
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
     schedulesTable: [],
@@ -417,6 +420,9 @@ export class SuperAdminDashboardComponent implements OnInit {
             pricingSubtitleEn: raw.pricingSubtitleEn || raw.pricing_subtitle_en || current.pricingSubtitleEn,
 
             supportWhatsapp: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || '01012345678',
+            supportTelegram: raw.supportTelegram || raw.contact_channels?.telegram_url || '',
+            facebookUrl: raw.facebookUrl || raw.contact_channels?.facebook_url || '',
+            youtubeUrl: raw.youtubeUrl || raw.contact_channels?.youtube_channel_url || '',
             activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || '2026 / 2027',
             activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || current.activeAcademicTerm || 'TERM_1',
             schedulesTable: Array.isArray(raw.schedulesTable)

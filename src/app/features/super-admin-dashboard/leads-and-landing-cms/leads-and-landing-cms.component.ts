@@ -117,6 +117,9 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     pricingSubtitleEn: '',
 
     supportWhatsapp: '01012345678',
+    supportTelegram: '',
+    facebookUrl: '',
+    youtubeUrl: '',
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
     schedulesTable: [],

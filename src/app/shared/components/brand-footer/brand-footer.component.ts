@@ -36,6 +36,15 @@ export class BrandFooterComponent {
     return rawNumber.replace(/[^0-9]/g, '');
   });
 
+  readonly cleanTelegramUrl = computed(() => {
+    const raw = this.contactChannels()?.telegram_url || (this.landingData() as any)?.supportTelegram || '';
+    if (!raw) return '';
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('@')) return `https://t.me/${trimmed.substring(1)}`;
+    return `https://t.me/${trimmed}`;
+  });
+
   readonly homeRoute = computed(() => {
     const user = this.authService.currentUser();
     if (!user) return '/';

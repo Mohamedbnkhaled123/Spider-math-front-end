@@ -23,14 +23,16 @@
     ></div>
 
     <!-- 3. Dynamic Anti-Tamper Watermark Component (z-layer-watermark: 25) -->
-    <app-anti-tamper-watermark
-      [watermarkText]="watermarkText()"
-      [intervalSeconds]="7"
-      (tamperDetected)="onTamperDetected($event)"
-    />
+    @if (!isPublicHeroPromo()) {
+      <app-anti-tamper-watermark
+        [watermarkText]="watermarkText()"
+        [intervalSeconds]="7"
+        (tamperDetected)="onTamperDetected($event)"
+      />
+    }
 
     <!-- 4. Gamification 85% Threshold Celebration Pop-up (Animation 4.4) -->
-    @if (isCelebrationVisible()) {
+    @if (!isPublicHeroPromo() && isCelebrationVisible()) {
       <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
         <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl btn-gold-metallic shadow-gold-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
           <span class="text-xl animate-spark-twinkle">✦</span>

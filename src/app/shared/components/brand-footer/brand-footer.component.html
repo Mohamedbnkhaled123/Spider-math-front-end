@@ -13,7 +13,7 @@
           decoding="async"
           class="w-9 h-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
         />
-        <span class="academic-wordmark text-xl font-bold text-text-primary">
+        <span class="academic-wordmark text-xl font-bold">
           {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
         </span>
       </a>
@@ -51,6 +51,18 @@
               title="WhatsApp"
             >
               <app-icon name="whatsapp" [size]="16" />
+            </a>
+          }
+          @if (cleanTelegramUrl(); as tgUrl) {
+            <a
+              [href]="tgUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-sky-400 transition-colors"
+              aria-label="Telegram"
+              title="Telegram"
+            >
+              <app-icon name="telegram" [size]="16" />
             </a>
           }
           @if (contactChannels()?.youtube_channel_url) {

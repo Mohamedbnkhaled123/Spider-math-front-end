@@ -71,6 +71,7 @@ export type AppIconName =
   | 'filter'
   | 'facebook'
   | 'youtube'
+  | 'telegram'
   | 'send';
 
 @Component({

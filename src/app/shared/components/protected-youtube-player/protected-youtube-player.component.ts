@@ -53,7 +53,8 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly langService = inject(LangService);
 
   // Inputs
-  readonly lectureId = input.required<string>();
+  readonly lectureId = input<string>('hero-promo');
+  readonly isPublicHeroPromo = input<boolean>(false);
   readonly encryptedVideoId = input<string>(''); // Session video token or direct ID
   readonly videoDurationSec = input<number>(1800); // 30 minutes default
   readonly resumePositionSec = input<number>(0);
@@ -240,6 +241,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   onTamperDetected(event: ITamperEvent): void {
+    if (this.isPublicHeroPromo()) return;
     // Defense in depth: Immediately pause video playback and signal security violation
     if (this.ytPlayer) {
       this.ytPlayer.pauseVideo?.();
@@ -405,7 +407,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   public dispatchHeartbeat(forceCompleted?: boolean): void {
-    if (!this.lectureId() || !isPlatformBrowser(this.platformId)) return;
+    if (this.isPublicHeroPromo() || !this.lectureId() || !isPlatformBrowser(this.platformId)) return;
 
     const currentPlaybackSec = this.currentTimeSec();
     const isCompleted = forceCompleted ?? (this.watchPercentage() >= this.completionThresholdPct());
