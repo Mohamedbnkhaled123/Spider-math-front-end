@@ -60,24 +60,24 @@
 
 .dark,
 [data-theme='dark'] {
-  // Master Color Palette — Academic Light Navy (Exact Match to User Reference #101F3E / #162A4D)
-  --surface-bg-primary: #12142B;          // Exact Image 2 Academic Midnight Navy (#12142B)
-  --surface-bg-secondary: #181938;        // Exact Image 2 Chamber Navy (#181938)
-  --surface-bg-card: rgba(24, 25, 56, 0.65); // Translucent Sapphire-Amethyst Glass
-  --surface-bg-elevated: #1E2248;
-  --surface-bg-modal: rgba(18, 20, 43, 0.95);
-  --surface-glass-header: rgba(18, 20, 43, 0.88);
+  // Master Color Palette — Academic Pure Light Navy (Clean, Zero Purple/Violet)
+  --surface-bg-primary: #111D35;          // Clean Light Academic Navy
+  --surface-bg-secondary: #172644;        // Clear Navy Panel
+  --surface-bg-card: rgba(23, 38, 68, 0.72); // Frosted Pure Navy Glass
+  --surface-bg-elevated: #1D3056;        // Elevated Navy Surface
+  --surface-bg-modal: rgba(17, 29, 53, 0.96);
+  --surface-glass-header: rgba(17, 29, 53, 0.88);
   // Text Hierarchy
-  --text-primary: #F8F6F0;                // Warm Ivory Starlight
-  --text-secondary: #B8C0D4;              // Silver Sapphire Mist
-  --text-muted: #7E88A4;                  // Steel Navy
-  // Luxury Metallic Gold & Royal Violet Accents
+  --text-primary: #F8FAFC;                // Crisp Ivory Starlight
+  --text-secondary: #B8C7E0;              // Soft Silver-Cyan Mist
+  --text-muted: #7E92B5;                  // Steel Navy
+  // Luxury Metallic Gold & Azure Accents (Clean, Zero Purple)
   --color-brand-gold: #D4AF6A;            // Luminous Champagne Gold
   --color-brand-gold-light: #F0D596;      // Bright Radiance Gold
   --color-brand-gold-dark: #A67E33;       // Antique Gold
-  --color-brand-violet: #7C4DFF;          // Cyber Violet Glow
+  --color-brand-violet: #38BDF8;          // Azure / Sky Blue Accent
   --color-brand-primary: #D4AF6A;
-  --color-brand-secondary: #7C4DFF;
+  --color-brand-secondary: #0284C7;
   --color-brand-accent: #E5C378;
   --color-brand-cyan: #38BDF8;
   // Signature Luxury Gradients
@@ -85,13 +85,13 @@
   --gradient-gold-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
   --gradient-spider-math: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
   --gradient-spider-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(124, 77, 255, 0.35));
+  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(56, 189, 248, 0.25));
   // Surfaces & Glassmorphism
   --surface-border: rgba(212, 175, 106, 0.24);
   --surface-border-glow: rgba(212, 175, 106, 0.75);
-  --surface-glass: rgba(13, 18, 38, 0.85);
+  --surface-glass: rgba(17, 29, 53, 0.85);
   --math-bg-stroke: rgba(255, 255, 255, 0.055);
-  --grid-pattern-color: rgba(212, 175, 106, 0.04);
+  --grid-pattern-color: transparent;
   // Backward compatibility alias tokens
   --surface-bg: var(--surface-bg-primary);
   --surface-card: var(--surface-bg-card);
@@ -100,8 +100,8 @@
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
   // Shadows & Elevation
-  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65);
-  --shadow-brand-glow: 0 0 28px -4px rgba(212, 175, 106, 0.35), 0 0 18px -2px rgba(124, 77, 255, 0.25);
+  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.55);
+  --shadow-brand-glow: 0 0 28px -4px rgba(212, 175, 106, 0.35), 0 0 18px -2px rgba(56, 189, 248, 0.20);
   // Typography Families
   --font-arabic-heading: 'Tajawal', sans-serif;
   --font-arabic-body: 'IBM Plex Sans Arabic', sans-serif;
@@ -193,10 +193,7 @@ code,
 // ==============================================================================
 .bg-spider-coordinate-grid {
   background-color: var(--surface-bg-primary);
-  background-image:
-    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
-  background-size: 36px 36px;
+  background-image: none;
 }
 
 .glass-panel {
@@ -571,11 +568,9 @@ code,
   position: relative;
   background-color: var(--surface-bg-primary);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' fill='none'%3E%3Cpath d='M80 680 C 220 680, 260 520, 320 520 C 380 520, 420 680, 560 680' stroke='%23C49A45' stroke-width='1.2' stroke-dasharray='4 4' opacity='0.08'/%3E%3Cpath d='M700 150 L 700 450 M 550 300 L 850 300' stroke='%23C49A45' stroke-width='1.2' opacity='0.07'/%3E%3Cpath d='M580 420 C 650 380, 720 220, 820 180' stroke='%23C49A45' stroke-width='1.5' opacity='0.08'/%3E%3Ctext x='120' y='240' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ex = (-b ± √(b² - 4ac)) / 2a%3C/text%3E%3Ctext x='780' y='640' font-family='serif' font-size='26' fill='%23C49A45' opacity='0.07'%3E∫ f(x) dx = F(x) + C%3C/text%3E%3Ctext x='950' y='220' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='180' y='460' font-family='serif' font-size='20' fill='%23C49A45' opacity='0.07'%3E∑ (1/n²) = π²/6%3C/text%3E%3C/svg%3E"),
-    linear-gradient(to right, var(--grid-pattern-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-pattern-color) 1px, transparent 1px);
-  background-size: 1200px 800px, 36px 36px, 36px 36px;
-  background-position: center top, left top, left top;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' fill='none'%3E%3Cpath d='M80 680 C 220 680, 260 520, 320 520 C 380 520, 420 680, 560 680' stroke='%23C49A45' stroke-width='1.2' stroke-dasharray='4 4' opacity='0.08'/%3E%3Cpath d='M700 150 L 700 450 M 550 300 L 850 300' stroke='%23C49A45' stroke-width='1.2' opacity='0.07'/%3E%3Cpath d='M580 420 C 650 380, 720 220, 820 180' stroke='%23C49A45' stroke-width='1.5' opacity='0.08'/%3E%3Ctext x='120' y='240' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ex = (-b ± √(b² - 4ac)) / 2a%3C/text%3E%3Ctext x='780' y='640' font-family='serif' font-size='26' fill='%23C49A45' opacity='0.07'%3E∫ f(x) dx = F(x) + C%3C/text%3E%3Ctext x='950' y='220' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='180' y='460' font-family='serif' font-size='20' fill='%23C49A45' opacity='0.07'%3E∑ (1/n²) = π²/6%3C/text%3E%3C/svg%3E");
+  background-size: 1200px 800px;
+  background-position: center top;
 }
 
 
@@ -597,38 +592,36 @@ code,
   justify-content: center;
   overflow: visible; // NEVER clip, ensuring 100% natural diffusion into background
 
-  // Layer 1: Core Violet/Amethyst Radiance (Directly Behind Spider Mascot)
+  // Layer 1: Core Soft Azure/Navy Radiance (Clean Light Navy Glow Behind Spider Mascot)
   .glow-core {
     position: absolute;
-    width: 360px;
-    height: 360px;
+    width: 380px;
+    height: 380px;
     background: radial-gradient(
       circle at 50% 50%,
-      rgba(168, 108, 185, 0.70) 0%,
-      rgba(141, 94, 148, 0.50) 25%,
-      rgba(107, 74, 117, 0.30) 48%,
-      rgba(74, 53, 122, 0.12) 68%,
+      rgba(56, 140, 220, 0.35) 0%,
+      rgba(30, 95, 175, 0.22) 35%,
+      rgba(17, 45, 95, 0.10) 65%,
       transparent 88%
     );
-    filter: blur(40px);
-    -webkit-filter: blur(40px);
+    filter: blur(45px);
+    -webkit-filter: blur(45px);
   }
 
-  // Layer 2: Broad Ambient Violet/Indigo Cloud (Deep Atmospheric Base)
+  // Layer 2: Broad Ambient Navy Cloud (Pure Crisp Navy Diffusion)
   .glow-ambient {
     position: absolute;
     width: 620px;
     height: 620px;
     background: radial-gradient(
-      ellipse 62% 58% at 50% 48%,
-      rgba(120, 80, 140, 0.45) 0%,
-      rgba(90, 60, 115, 0.30) 28%,
-      rgba(60, 45, 100, 0.18) 52%,
-      rgba(30, 34, 72, 0.08) 72%,
+      ellipse 65% 60% at 50% 48%,
+      rgba(35, 85, 165, 0.22) 0%,
+      rgba(22, 60, 130, 0.14) 40%,
+      rgba(17, 29, 53, 0.05) 70%,
       transparent 90%
     );
-    filter: blur(65px);
-    -webkit-filter: blur(65px);
+    filter: blur(70px);
+    -webkit-filter: blur(70px);
   }
 
   // Layer 3: Subtle Warm Gold Rim Shimmer (Highlighting the Gold Legs & Open Book)
@@ -638,9 +631,9 @@ code,
     height: 440px;
     background: radial-gradient(
       circle at 62% 38%,
-      rgba(212, 160, 60, 0.28) 0%,
-      rgba(179, 128, 47, 0.15) 30%,
-      rgba(141, 94, 148, 0.08) 55%,
+      rgba(212, 175, 106, 0.22) 0%,
+      rgba(180, 140, 60, 0.12) 35%,
+      rgba(56, 140, 220, 0.06) 55%,
       transparent 75%
     );
     filter: blur(45px);
