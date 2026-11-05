@@ -32,6 +32,7 @@ import {
   IGradeLevelAvailability
 } from './curriculum-selector-cards.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 export type StageFilterType = 'ALL' | 'PRIMARY' | 'PREPARATORY' | 'SECONDARY';
@@ -48,6 +49,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly router = inject(Router);
   readonly langService = inject(LangService);
+  readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
 
   // Inputs
@@ -343,13 +345,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     const animate = () => {
       ctx.clearRect(0, 0, W, H);
       const time = performance.now() * 0.001;
+      const isDark = this.themeService.isDark();
 
-      // Draw the 4 Card-Connected Web Branches (No middle web, stretched to cards, muted lighting)
-      renderCardConnectedWeb(ctx, spiderOrigins, this.cardAnchorsDesktop, time, false);
+      // Draw the 4 Card-Connected Web Branches (No middle web, stretched to cards, high-contrast in light mode)
+      renderCardConnectedWeb(ctx, spiderOrigins, this.cardAnchorsDesktop, time, false, isDark);
 
       // Draw Subtle Card Anchor Flares
       for (const anchor of this.cardAnchorsDesktop) {
-        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y);
+        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
       }
 
       this.silkAnimFrameId = requestAnimationFrame(animate);
@@ -451,11 +454,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
       ctx.clearRect(0, 0, W, H);
       const time = performance.now() * 0.001;
+      const isDark = this.themeService.isDark();
 
-      renderCardConnectedWeb(ctx, spiderOrigins, cardAnchors, time, true);
+      renderCardConnectedWeb(ctx, spiderOrigins, cardAnchors, time, true, isDark);
 
       for (const anchor of cardAnchors) {
-        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y);
+        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
       }
 
       this.mobileAnimFrameId = requestAnimationFrame(animateMob);
@@ -761,9 +765,19 @@ function renderCardConnectedWeb(
   origins: { x: number; y: number }[],
   anchors: { x: number; y: number }[],
   time: number,
-  isMobile: boolean
+  isMobile: boolean,
+  isDark: boolean = true
 ): void {
   ctx.save();
+
+  // Soft subtle glow/shadow to ensure strands pop with clarity in both modes
+  if (!isDark) {
+    ctx.shadowColor = 'rgba(165, 110, 25, 0.28)';
+    ctx.shadowBlur = 3;
+  } else {
+    ctx.shadowColor = 'rgba(212, 175, 106, 0.20)';
+    ctx.shadowBlur = 2;
+  }
 
   // 4 Card Branches:
   // All rays converge DIRECTLY into the spider limbs (ZERO air gap on sides)
@@ -781,8 +795,10 @@ function renderCardConnectedWeb(
     for (let r = 0; r < ringRadii.length; r++) {
       const radius = ringRadii[r];
       const pulse = Math.sin(time * 1.2 + r * 0.9) * 1.3;
-      ctx.strokeStyle = r === 1 ? 'rgba(212, 175, 106, 0.32)' : 'rgba(212, 175, 106, 0.20)';
-      ctx.lineWidth = r === 1 ? 0.65 : 0.45;
+      ctx.strokeStyle = r === 1
+        ? (isDark ? 'rgba(212, 175, 106, 0.35)' : 'rgba(160, 105, 22, 0.85)')
+        : (isDark ? 'rgba(212, 175, 106, 0.22)' : 'rgba(175, 120, 30, 0.55)');
+      ctx.lineWidth = r === 1 ? (isDark ? 0.65 : 1.25) : (isDark ? 0.45 : 0.85);
       ctx.beginPath();
       ctx.arc(cx, cy, Math.max(10, radius + pulse), 0, Math.PI * 2);
       ctx.stroke();
@@ -844,8 +860,8 @@ function renderCardConnectedWeb(
   // =========================================================================
   // 1. Draw Inward-Scalloped Cross-Threads for each Branch with Fluid Wave Sway
   // =========================================================================
-  ctx.strokeStyle = 'rgba(212, 175, 106, 0.32)';
-  ctx.lineWidth = 0.55;
+  ctx.strokeStyle = isDark ? 'rgba(212, 175, 106, 0.35)' : 'rgba(160, 105, 20, 0.80)';
+  ctx.lineWidth = isDark ? 0.55 : 1.05;
 
   const ringT = isMobile ? [0.35, 0.65] : [0.22, 0.42, 0.62, 0.80];
 
@@ -888,14 +904,15 @@ function renderCardConnectedWeb(
         ctx.quadraticCurveTo(ctrlX, ctrlY, p2.x, p2.y);
         ctx.stroke();
 
-        // Subtle stationary silk node (0.85px) locked to intersection
-        ctx.fillStyle = 'rgba(255, 250, 235, 0.42)';
+        // Subtle stationary silk node locked to intersection
+        ctx.fillStyle = isDark ? 'rgba(255, 250, 235, 0.45)' : 'rgba(140, 85, 12, 0.95)';
+        const nodeRadius = isDark ? 0.85 : 1.35;
         ctx.beginPath();
-        ctx.arc(p1.x, p1.y, 0.85, 0, Math.PI * 2);
+        ctx.arc(p1.x, p1.y, nodeRadius, 0, Math.PI * 2);
         ctx.fill();
         if (r === rays.length - 2) {
           ctx.beginPath();
-          ctx.arc(p2.x, p2.y, 0.85, 0, Math.PI * 2);
+          ctx.arc(p2.x, p2.y, nodeRadius, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -905,8 +922,8 @@ function renderCardConnectedWeb(
   // =========================================================================
   // 2. Draw Fanning Web Spokes with Organic Harmonic Sway
   // =========================================================================
-  ctx.strokeStyle = 'rgba(212, 175, 106, 0.28)';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = isDark ? 'rgba(212, 175, 106, 0.28)' : 'rgba(170, 115, 25, 0.72)';
+  ctx.lineWidth = isDark ? 0.5 : 0.95;
 
   for (let b = 0; b < branches.length; b++) {
     const rays = branches[b];
@@ -947,8 +964,8 @@ function renderCardConnectedWeb(
       if (k === 0) ctx.moveTo(pt.x, pt.y);
       else ctx.lineTo(pt.x, pt.y);
     }
-    ctx.strokeStyle = 'rgba(240, 222, 175, 0.58)';
-    ctx.lineWidth = 0.75;
+    ctx.strokeStyle = isDark ? 'rgba(240, 222, 175, 0.62)' : 'rgba(145, 88, 12, 0.98)';
+    ctx.lineWidth = isDark ? 0.75 : 1.55;
     ctx.stroke();
 
     // --- Delicate Whispering Companion (Twinned Silk Effect) ---
@@ -959,39 +976,64 @@ function renderCardConnectedWeb(
       if (k === 0) ctx.moveTo(pt.x, pt.y);
       else ctx.lineTo(pt.x, pt.y);
     }
-    ctx.strokeStyle = 'rgba(212, 175, 106, 0.32)';
-    ctx.lineWidth = 0.4;
+    ctx.strokeStyle = isDark ? 'rgba(212, 175, 106, 0.35)' : 'rgba(175, 120, 28, 0.80)';
+    ctx.lineWidth = isDark ? 0.4 : 0.95;
     ctx.stroke();
   }
 
   ctx.restore();
 }
 
-function drawSubtleCardAnchorFlare(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+function drawSubtleCardAnchorFlare(ctx: CanvasRenderingContext2D, x: number, y: number, isDark: boolean = true): void {
   ctx.save();
 
-  // Dimmed, soft, subtle halo (reduced from 16px to 8px, opacity 0.35)
-  const grad = ctx.createRadialGradient(x, y, 0, x, y, 8);
-  grad.addColorStop(0, 'rgba(255, 250, 235, 0.55)');
-  grad.addColorStop(0.4, 'rgba(245, 215, 142, 0.35)');
-  grad.addColorStop(1, 'rgba(212, 175, 106, 0)');
+  if (isDark) {
+    // Dimmed, soft, subtle halo (reduced from 16px to 8px, opacity 0.35)
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, 8);
+    grad.addColorStop(0, 'rgba(255, 250, 235, 0.55)');
+    grad.addColorStop(0.4, 'rgba(245, 215, 142, 0.35)');
+    grad.addColorStop(1, 'rgba(212, 175, 106, 0)');
 
-  ctx.beginPath();
-  ctx.arc(x, y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
-  ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
 
-  // Subtle horizontal contact line (reduced from 22px to 10px, soft opacity)
-  ctx.beginPath();
-  ctx.ellipse(x, y, 10, 1.4, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(245, 225, 170, 0.45)';
-  ctx.fill();
+    // Subtle horizontal contact line
+    ctx.beginPath();
+    ctx.ellipse(x, y, 10, 1.4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(245, 225, 170, 0.45)';
+    ctx.fill();
 
-  // Subtle center pinhead point (soft 0.6 alpha)
-  ctx.beginPath();
-  ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-  ctx.fill();
+    // Subtle center pinhead point
+    ctx.beginPath();
+    ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+    ctx.fill();
+  } else {
+    // Light Mode: High-contrast warm amber-gold flare against ivory cards
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, 10);
+    grad.addColorStop(0, 'rgba(185, 125, 25, 0.70)');
+    grad.addColorStop(0.5, 'rgba(212, 165, 75, 0.35)');
+    grad.addColorStop(1, 'rgba(212, 175, 106, 0)');
+
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Prominent warm contact line
+    ctx.beginPath();
+    ctx.ellipse(x, y, 12, 1.8, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(160, 100, 18, 0.90)';
+    ctx.fill();
+
+    // Center pinhead point
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(130, 75, 8, 1)';
+    ctx.fill();
+  }
 
   ctx.restore();
 }

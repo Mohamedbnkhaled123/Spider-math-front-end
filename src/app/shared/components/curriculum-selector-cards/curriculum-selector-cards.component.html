@@ -20,15 +20,15 @@
         #spiderMascotDesktop
         src="/assets/branding/spider-mascot-curricula.webp"
         alt="Spider Math Curricula Guide"
-        width="440"
-        height="440"
-        class="w-64 sm:w-80 lg:w-[320px] relative z-20 mx-auto pointer-events-none select-none transition-all duration-300" [class.scale-75]="isTrackModalOpen()" [class.translate-y-6]="isTrackModalOpen()"
+        width="480"
+        height="480"
+        class="w-72 sm:w-96 lg:w-[440px] xl:w-[480px] h-auto object-contain relative z-20 mx-auto pointer-events-none select-none transition-all duration-300 drop-shadow-[0_20px_40px_rgba(0,0,0,0.30)] dark:drop-shadow-[0_20px_45px_rgba(0,0,0,0.70)]" [class.scale-75]="isTrackModalOpen()" [class.translate-y-6]="isTrackModalOpen()"
       />
     </div>
 
         @if (!isTrackModalOpen()) {
       <!-- Web silk breathing space between spider paws and cards -->
-      <div class="h-16 lg:h-20 pointer-events-none"></div>
+      <div class="h-10 lg:h-14 pointer-events-none"></div>
 
       <!-- Desktop 4 Cards Grid -->
     <div class="grid grid-cols-4 gap-5 relative z-20">
@@ -242,7 +242,7 @@
           >
             <div>
               <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
-                <h3 class="text-xs sm:text-base font-bold font-academic-serif text-white group-hover:text-amber-300 transition-colors leading-tight">
+                <h3 class="text-xs sm:text-base font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight">
                   {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
                 </h3>
                 <div class="shrink-0 text-brand-gold group-hover:scale-110 transition-transform">
@@ -261,14 +261,14 @@
                   }
                 </div>
               </div>
-              <p class="text-[11px] sm:text-xs font-semibold text-white/80 mb-1 leading-snug">
+              <p class="text-[11px] sm:text-xs font-semibold text-text-secondary dark:text-white/80 mb-1 leading-snug">
                 {{ getCurriculumSummary(curriculum.code) }}
               </p>
-              <p class="text-[10px] sm:text-xs text-white/60 leading-relaxed mb-3 hidden sm:block">
+              <p class="text-[10px] sm:text-xs text-text-muted dark:text-white/60 leading-relaxed mb-3 hidden sm:block">
                 {{ getCurriculumBranches(curriculum.code) }}
               </p>
             </div>
-            <div class="pt-2 sm:pt-3 border-t border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-brand-gold">
+            <div class="pt-2 sm:pt-3 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-gold-accent dark:text-brand-gold">
               <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
             </div>
           </div>
@@ -276,7 +276,7 @@
       </div>
 
       <!-- Center Spider Mascot (Prominent Scale & Centered Aura) -->
-      <div class="relative w-full h-36 sm:h-44 my-2 sm:my-3 flex items-center justify-center select-none">
+      <div class="relative w-full h-44 sm:h-52 my-2 sm:my-3 flex items-center justify-center select-none">
         <div class="mascot-lighting-glow pointer-events-none select-none" aria-hidden="true">
           <div class="glow-core"></div>
           <div class="glow-ambient"></div>
@@ -286,9 +286,9 @@
           #spiderMascotMobile
           src="/assets/branding/spider-mascot-curricula.webp"
           alt="Spider Math Curricula Guide"
-          width="320"
-          height="320"
-          class="w-44 sm:w-56 h-auto relative z-20 mx-auto pointer-events-none select-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.55)]"
+          width="360"
+          height="360"
+          class="w-52 sm:w-64 h-auto object-contain relative z-20 mx-auto pointer-events-none select-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.35)] dark:drop-shadow-[0_15px_30px_rgba(0,0,0,0.65)]"
         />
       </div>
 
@@ -301,7 +301,7 @@
           >
             <div>
               <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
-                <h3 class="text-xs sm:text-base font-bold font-academic-serif text-white group-hover:text-amber-300 transition-colors leading-tight">
+                <h3 class="text-xs sm:text-base font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight">
                   {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
                 </h3>
                 <div class="shrink-0 text-brand-gold group-hover:scale-110 transition-transform">
@@ -320,14 +320,14 @@
                   }
                 </div>
               </div>
-              <p class="text-[11px] sm:text-xs font-semibold text-white/80 mb-1 leading-snug">
+              <p class="text-[11px] sm:text-xs font-semibold text-text-secondary dark:text-white/80 mb-1 leading-snug">
                 {{ getCurriculumSummary(curriculum.code) }}
               </p>
-              <p class="text-[10px] sm:text-xs text-white/60 leading-relaxed mb-3 hidden sm:block">
+              <p class="text-[10px] sm:text-xs text-text-muted dark:text-white/60 leading-relaxed mb-3 hidden sm:block">
                 {{ getCurriculumBranches(curriculum.code) }}
               </p>
             </div>
-            <div class="pt-2 sm:pt-3 border-t border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-brand-gold">
+            <div class="pt-2 sm:pt-3 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-gold-accent dark:text-brand-gold">
               <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
             </div>
           </div>
