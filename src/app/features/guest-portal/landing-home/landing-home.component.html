@@ -941,7 +941,7 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-2xl font-black font-numeric text-text-primary/90">#2</span>
               <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 dark:bg-white/10 text-text-secondary border border-white/20 shadow-sm">
-                2nd
+                {{ langService.isArabic() ? 'المركز الثاني' : '2nd' }}
               </span>
             </div>
 
@@ -991,7 +991,7 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-3xl font-black font-numeric text-brand-gold">#1</span>
               <span class="px-3.5 py-1 rounded-full text-xs font-black bg-brand-gold/20 text-brand-gold border border-brand-gold/50 shadow-sm">
-                1st
+                {{ langService.isArabic() ? 'المركز الأول' : '1st' }}
               </span>
             </div>
 
@@ -1036,7 +1036,7 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-2xl font-black font-numeric text-amber-700 dark:text-amber-500">#3</span>
               <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-600/15 text-amber-700 dark:text-amber-400 border border-amber-600/30 shadow-sm">
-                3rd
+                {{ langService.isArabic() ? 'المركز الثالث' : '3rd' }}
               </span>
             </div>
 

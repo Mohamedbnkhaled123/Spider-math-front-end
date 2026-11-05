@@ -10,7 +10,7 @@
         class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
       >
         <app-icon name="arrow-right" [size]="14" />
-        <span>العودة للوحة الطالب</span>
+        <span>{{ langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard' }}</span>
       </a>
 
       <span class="text-xs text-text-muted">|</span>
@@ -21,7 +21,7 @@
       class="px-3 py-1 rounded-lg text-xs font-bold border"
       [ngClass]="isPublished() ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'"
     >
-      {{ isPublished() ? 'النتيجة معتمدة ومنشورة' : 'بانتظار تصحيح المعلمة' }}
+      {{ isPublished() ? (langService.isArabic() ? 'النتيجة معتمدة ومنشورة' : 'Result Certified & Published') : (langService.isArabic() ? 'بانتظار تصحيح المعلمة' : 'Awaiting Teacher Grading') }}
     </span>
   </div>
 
@@ -29,7 +29,7 @@
   <div class="mb-8">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-brand-primary/10 text-brand-primary mb-2">
       <app-icon name="check-circle" [size]="14" />
-      <span>تقرير الدرجات والتقييم الشخصي</span>
+      <span>{{ langService.isArabic() ? 'تقرير الدرجات والتقييم الشخصي' : 'Grades Report & Evaluation' }}</span>
     </div>
     <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
       {{ feedback().assessmentTitleAr }}
@@ -40,18 +40,18 @@
   @if (isLoading()) {
     <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card animate-pulse">
       <div class="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin mx-auto mb-4"></div>
-      <p class="text-sm font-bold text-text-secondary">جاري جلب تفاصيل النتيجة والتقييم...</p>
+      <p class="text-sm font-bold text-text-secondary">{{ langService.isArabic() ? 'جاري جلب تفاصيل النتيجة والتقييم...' : 'Loading result details and evaluation...' }}</p>
     </div>
   } @else if (loadError()) {
     <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card shadow-sm">
       <div class="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-4">
         <app-icon name="alert-triangle" [size]="32" />
       </div>
-      <h2 class="text-lg font-black text-text-primary mb-2">لا يوجد تسليم سابق لهذا الامتحان</h2>
+      <h2 class="text-lg font-black text-text-primary mb-2">{{ langService.isArabic() ? 'لا يوجد تسليم سابق لهذا الامتحان' : 'No previous submission found for this exam' }}</h2>
       <p class="text-xs text-text-secondary max-w-md mx-auto mb-6 leading-relaxed">{{ loadError() }}</p>
       <a routerLink="/student" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-bold shadow-md hover:opacity-95 transition-all">
         <app-icon name="arrow-right" [size]="14" />
-        <span>العودة للوحة الطالب</span>
+        <span>{{ langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard' }}</span>
       </a>
     </div>
   } @else {
@@ -67,15 +67,15 @@
           </div>
 
           <h2 class="text-xl font-black text-text-primary mb-2">
-            الامتحان قيد التصحيح والاعتماد
+            {{ langService.isArabic() ? 'الامتحان قيد التصحيح والاعتماد' : 'Exam is Under Review & Grading' }}
           </h2>
           <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-            تم استلام إجاباتك بنجاح، وتقوم المهندسة هبة عبدالوهاب حالياً بمراجعة وتصحيح خطوات الحل اليدوي وإضافة الملاحظات التوجيهية وروابط الشرح.
+            {{ langService.isArabic() ? 'تم استلام إجاباتك بنجاح، وتقوم المهندسة هبة عبدالوهاب حالياً بمراجعة وتصحيح خطوات الحل اليدوي وإضافة الملاحظات التوجيهية وروابط الشرح.' : 'Your answers have been received. Eng. Heba Abdel-Wahab is reviewing and grading manual solution steps.' }}
           </p>
 
           <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-muted">
             <app-icon name="shield" [size]="14" className="text-brand-accent" />
-            <span>سيتم إرسال إشعار فوري لك ولولي الأمر فور اعتماد النتيجة ورصد الدرجة</span>
+            <span>{{ langService.isArabic() ? 'سيتم إرسال إشعار فوري لك ولولي الأمر فور اعتماد النتيجة ورصد الدرجة' : 'Instant notification will be sent to you and your parent once grades are published.' }}</span>
           </span>
         </div>
 
@@ -86,11 +86,11 @@
               <div class="flex items-center gap-2">
                 <app-icon name="file-text" [size]="20" className="text-amber-500" />
                 <h3 class="text-base font-black text-text-primary">
-                  إجاباتك المسجلة في هذا التقييم (مسودة للمراجعة)
+                  {{ langService.isArabic() ? 'إجاباتك المسجلة في هذا التقييم (مسودة للمراجعة)' : 'Your Recorded Answers in this Assessment' }}
                 </h3>
               </div>
               <span class="text-xs font-bold text-text-muted font-numeric">
-                {{ feedback().questionsReview.length }} أسئلة
+                {{ feedback().questionsReview.length }} {{ langService.isArabic() ? 'أسئلة' : 'Questions' }}
               </span>
             </div>
 
@@ -99,10 +99,10 @@
                 <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
                   <div class="flex items-center justify-between">
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary">
-                      السؤال رقم {{ q.questionOrder }}
+                      {{ langService.isArabic() ? ('السؤال رقم ' + q.questionOrder) : ('Question #' + q.questionOrder) }}
                     </span>
                     <span class="text-xs font-bold text-text-muted font-numeric">
-                      {{ q.points }} درجة
+                      {{ langService.isArabic() ? (q.points + ' درجة') : (q.points + ' Pts') }}
                     </span>
                   </div>
 
@@ -112,15 +112,15 @@
 
                   @if (q.questionImageUrl) {
                     <div class="rounded-xl overflow-hidden border border-surface-border max-w-sm">
-                      <img [src]="q.questionImageUrl" alt="صورة السؤال" class="w-full h-auto object-contain" />
+                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain" />
                     </div>
                   }
 
                   @if (q.questionType === 'MCQ') {
                     <div class="p-3 rounded-xl bg-surface-card border border-surface-border text-xs">
-                      <span class="text-[11px] font-bold text-text-muted block mb-1">إجابتك المختارة:</span>
+                      <span class="text-[11px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'إجابتك المختارة:' : 'Your Selected Answer:' }}</span>
                       <span class="font-bold text-brand-primary dark:text-brand-accent">
-                        {{ q.studentAnswerText || 'لم يتم اختيار إجابة' }}
+                        {{ q.studentAnswerText || (langService.isArabic() ? 'لم يتم اختيار إجابة' : 'No answer selected') }}
                       </span>
                     </div>
                   }
@@ -132,7 +132,7 @@
                 <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
                   <h4 class="text-xs sm:text-sm font-black text-text-primary flex items-center gap-2">
                     <app-icon name="image" [size]="16" className="text-brand-primary" />
-                    <span>صور الحل اليدوي المرفوعة من كشكولك ({{ feedback().essaySolutionImages.length }} صور):</span>
+                    <span>{{ langService.isArabic() ? ('صور الحل اليدوي المرفوعة من كشكولك (' + feedback().essaySolutionImages.length + ' صور):') : ('Uploaded Solution Photos (' + feedback().essaySolutionImages.length + ' images):') }}</span>
                   </h4>
                   <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     @for (img of feedback().essaySolutionImages; track $index) {
@@ -140,10 +140,10 @@
                         (click)="openImagePreview(img.imageUrl)"
                         class="group relative aspect-video rounded-xl overflow-hidden border border-surface-border bg-black/5 hover:border-brand-primary transition-all cursor-pointer shadow-sm"
                       >
-                        <img [src]="img.imageUrl" alt="حل الطالب" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
+                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
                           <app-icon name="maximize" [size]="14" />
-                          <span>تكبير</span>
+                          <span>{{ langService.isArabic() ? 'تكبير' : 'Zoom' }}</span>
                         </div>
                       </div>
                     }
@@ -163,7 +163,7 @@
         <!-- Overall Score Banner -->
         <div class="p-6 sm:p-8 rounded-3xl spider-rim-glass-card shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <span class="text-xs font-bold text-text-muted">الدرجة الإجمالية النهائية</span>
+            <span class="text-xs font-bold text-text-muted">{{ langService.isArabic() ? 'الدرجة الإجمالية النهائية' : 'Final Total Score' }}</span>
             <div class="flex items-baseline gap-3 mt-1">
               <span class="text-4xl sm:text-5xl font-black font-numeric" [ngClass]="scoreTextClass()">
                 {{ feedback().finalTotalScore }}
@@ -177,7 +177,7 @@
             </div>
             @if (feedback().gradedAt) {
               <span class="text-[11px] text-text-muted mt-2 block font-numeric">
-                تاريخ الاعتماد: {{ feedback().gradedAt }}
+                {{ langService.isArabic() ? ('تاريخ الاعتماد: ' + feedback().gradedAt) : ('Graded on: ' + feedback().gradedAt) }}
               </span>
             }
           </div>
@@ -185,14 +185,14 @@
           <!-- Score Breakdown Cards -->
           <div class="flex items-center gap-3">
             <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
-              <span class="text-[10px] font-bold text-text-muted block mb-1">أسئلة الاختيار (MCQ)</span>
+              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'أسئلة الاختيار من متعدد' : 'Multiple Choice Questions (MCQ)' }}</span>
               <span class="text-base font-black font-numeric text-text-primary">
                 {{ feedback().mcqAutoScore }}
               </span>
             </div>
 
             <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
-              <span class="text-[10px] font-bold text-text-muted block mb-1">المسائل المقالية (Essay)</span>
+              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'المسائل المقالية' : 'Essay Questions' }}</span>
               <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
                 {{ feedback().essayManualScore }}
               </span>
@@ -207,10 +207,10 @@
               <app-icon name="check-circle" [size]="36" />
             </div>
             <h3 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
-              إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!
+              {{ langService.isArabic() ? 'إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!' : 'Perfect model answers with zero mistakes — Well done!' }}
             </h3>
             <p class="text-xs sm:text-sm text-text-secondary">
-              ما شاء الله! لقد حصلت على الدرجة النهائية كاملة في هذا الاختبار. استمر في هذا المستوى المتميز!
+              {{ langService.isArabic() ? 'ما شاء الله! لقد حصلت على الدرجة النهائية كاملة في هذا الاختبار. استمر في هذا المستوى المتميز!' : 'Congratulations! You achieved a perfect full score on this exam. Keep up the excellence!' }}
             </p>
           </div>
         }
@@ -226,10 +226,10 @@
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-black text-brand-primary dark:text-brand-accent">
-                    ملاحظات المشرف الأكاديمي: م/ هبة عبدالوهاب
+                    {{ langService.isArabic() ? 'ملاحظات المشرف الأكاديمي: م/ هبة عبدالوهاب' : 'Academic Supervisor Feedback: Eng. Heba Abdel-Wahab' }}
                   </span>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-secondary">
-                    توجيه مباشر
+                    {{ langService.isArabic() ? 'توجيه مباشر' : 'Direct Guidance' }}
                   </span>
                 </div>
                 <p class="text-xs sm:text-sm text-text-primary leading-relaxed">
@@ -249,10 +249,10 @@
               <app-icon name="clock" [size]="32" />
             </div>
             <h3 class="text-lg font-black text-text-primary">
-              انتهت المهلة المحددة لمراجعة أسئلة هذا التقييم المقالي (3 أيام)
+              {{ langService.isArabic() ? 'انتهت المهلة المحددة لمراجعة أسئلة هذا التقييم المقالي (3 أيام)' : 'Review period for this essay assessment has expired (3 days)' }}
             </h3>
             <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
-              وفقاً لضوابط منصة Spider Math، تتاح مراجعة تفاصيل الأسئلة المقالية وإجابات الطلاب والحلول النموذجية لمدة 3 أيام فقط من تاريخ اعتماد النتيجة. درجاتك المسجلة وتقييمك الإجمالي محفوظان في لوحتك الشخصية.
+              {{ langService.isArabic() ? 'وفقاً لضوابط منصة سبايدر ماث، تتاح مراجعة تفاصيل الأسئلة المقالية وإجابات الطلاب والحلول النموذجية لمدة 3 أيام فقط من تاريخ اعتماد النتيجة. درجاتك المسجلة وتقييمك الإجمالي محفوظان في لوحتك الشخصية.' : 'According to Spider Math platform policies, essay review is available for 3 days from grade certification date. Your final scores remain permanently saved.' }}
             </p>
             <div class="pt-2">
               <a
@@ -260,7 +260,7 @@
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary/90 transition-all shadow-md"
               >
                 <app-icon name="arrow-right" [size]="14" />
-                <span>العودة للوحة درجات الطالب</span>
+                <span>{{ langService.isArabic() ? 'العودة للوحة درجات الطالب' : 'Back to Student Grade Log' }}</span>
               </a>
             </div>
           </div>
@@ -271,11 +271,11 @@
               <div class="flex items-center gap-2.5">
                 <app-icon name="clock" [size]="18" className="text-amber-600 dark:text-amber-400 shrink-0" />
                 <span class="text-xs font-black">
-                  ملاحظة هامة: مراجعة هذا التقييم المقالي متاحة لمدة 3 أيام فقط من تاريخ الاعتماد ({{ remaining }}).
+                  {{ langService.isArabic() ? ('ملاحظة هامة: مراجعة هذا التقييم المقالي متاحة لمدة 3 أيام فقط من تاريخ الاعتماد (' + remaining + ').') : ('Important: Review for this assessment is available for 3 days from grading date (' + remaining + ').') }}
                 </span>
               </div>
               <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 shrink-0">
-                مراجعة نشطة
+                {{ langService.isArabic() ? 'مراجعة نشطة' : 'Active Review' }}
               </span>
             </div>
           }
@@ -289,7 +289,7 @@
             [ngClass]="activeReviewTab() === 'ALL_QUESTIONS' ? 'bg-brand-primary text-white shadow-md' : 'text-text-secondary hover:text-text-primary'"
           >
             <app-icon name="file-text" [size]="14" />
-            <span>مراجعة كافة الأسئلة ({{ totalQuestionsCount() }})</span>
+            <span>{{ langService.isArabic() ? ('مراجعة كافة الأسئلة (' + totalQuestionsCount() + ')') : ('Review All Questions (' + totalQuestionsCount() + ')') }}</span>
           </button>
 
           <button
@@ -299,7 +299,7 @@
             [ngClass]="activeReviewTab() === 'MISTAKES_ONLY' ? 'bg-feedback-danger text-white shadow-md' : 'text-text-secondary hover:text-text-primary'"
           >
             <app-icon name="alert-circle" [size]="14" />
-            <span>ملاحظات الأخطاء ({{ mistakesCount() }})</span>
+            <span>{{ langService.isArabic() ? ('ملاحظات الأخطاء (' + mistakesCount() + ')') : ('Mistake Cases (' + mistakesCount() + ')') }}</span>
           </button>
         </div>
 
@@ -311,10 +311,10 @@
             <div class="flex items-center justify-between pb-3 border-b border-surface-border">
               <h3 class="text-base font-black text-text-primary flex items-center gap-2">
                 <app-icon name="check-circle" [size]="18" className="text-emerald-500" />
-                <span>تحليل تفصيلي لجميع الأسئلة وإجاباتك المسجلة والحل النموذجي</span>
+                <span>{{ langService.isArabic() ? 'تحليل تفصيلي لجميع الأسئلة وإجاباتك المسجلة والحل النموذجي' : 'Detailed Analysis of Questions, Recorded Answers & Model Solutions' }}</span>
               </h3>
               <span class="text-xs font-bold text-text-muted font-numeric">
-                {{ feedback().questionsReview.length }} أسئلة
+                {{ feedback().questionsReview.length }} {{ langService.isArabic() ? 'أسئلة' : 'Questions' }}
               </span>
             </div>
 
@@ -325,10 +325,10 @@
                   <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-surface-border">
                     <div class="flex items-center gap-2">
                       <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary">
-                        السؤال رقم {{ q.questionOrder }}
+                        {{ langService.isArabic() ? ('السؤال رقم ' + q.questionOrder) : ('Question #' + q.questionOrder) }}
                       </span>
                       <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-bg border border-surface-border text-text-secondary">
-                        {{ q.questionType === 'MCQ' ? 'اختيار من متعدد' : 'مسألة مقالية مصورة' }}
+                        {{ q.questionType === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice') : (langService.isArabic() ? 'مسألة مقالية مصورة' : 'Essay Problem') }}
                       </span>
                     </div>
 
@@ -337,17 +337,17 @@
                       @if (q.isCorrect) {
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-numeric">
                           <app-icon name="check" [size]="14" />
-                          <span>+{{ q.awardedPoints }} / {{ q.points }} درجة (إجابة صحيحة)</span>
+                          <span>{{ langService.isArabic() ? ('+' + q.awardedPoints + ' / ' + q.points + ' درجة (إجابة صحيحة)') : ('+' + q.awardedPoints + ' / ' + q.points + ' Pts (Correct)') }}</span>
                         </span>
                       } @else {
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-numeric">
                           <app-icon name="x" [size]="14" />
-                          <span>0 / {{ q.points }} درجة (إجابة خاطئة)</span>
+                          <span>{{ langService.isArabic() ? ('0 / ' + q.points + ' درجة (إجابة خاطئة)') : ('0 / ' + q.points + ' Pts (Incorrect)') }}</span>
                         </span>
                       }
                     } @else {
                       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-brand-accent/10 text-brand-primary dark:text-brand-accent border border-brand-accent/20 font-numeric">
-                        <span>{{ q.awardedPoints !== undefined ? q.awardedPoints : 'قيد التقييم' }} / {{ q.points }} درجة</span>
+                        <span>{{ q.awardedPoints !== undefined ? q.awardedPoints : (langService.isArabic() ? 'قيد التقييم' : 'Under Review') }} / {{ q.points }} {{ langService.isArabic() ? 'درجة' : 'Pts' }}</span>
                       </span>
                     }
                   </div>
@@ -363,8 +363,8 @@
                       (click)="openImagePreview(qImg)"
                       class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
                     >
-                      <img [src]="qImg" alt="صورة السؤال" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
-                      <span class="text-[10px] text-text-muted mt-1 block text-center">اضغط لتكبير صورة المسألة</span>
+                      <img [src]="qImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
+                      <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'اضغط لتكبير صورة المسألة' : 'Click to zoom question image' }}</span>
                     </div>
                   }
 
@@ -397,7 +397,7 @@
                                       : 'bg-surface-border text-text-muted'
                               "
                             >
-                              {{ ['أ', 'ب', 'ج', 'د', 'هـ'][$index] || ($index + 1) }}
+                              {{ langService.isArabic() ? (['أ', 'ب', 'ج', 'د', 'هـ'][$index] || ($index + 1)) : (['A', 'B', 'C', 'D', 'E'][$index] || ($index + 1)) }}
                             </span>
                             <span>{{ opt }}</span>
                           </div>
@@ -406,17 +406,17 @@
                             @if ($index === q.studentSelectedOptionIndex && q.isCorrect) {
                               <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white shadow-xs">
                                 <app-icon name="check" [size]="12" />
-                                <span>إجابتك (صحيحة)</span>
+                                <span>{{ langService.isArabic() ? 'إجابتك (صحيحة)' : 'Your Answer (Correct)' }}</span>
                               </span>
                             } @else if ($index === q.studentSelectedOptionIndex && !q.isCorrect) {
                               <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-xs">
                                 <app-icon name="x" [size]="12" />
-                                <span>إجابتك (خاطئة)</span>
+                                <span>{{ langService.isArabic() ? 'إجابتك (خاطئة)' : 'Your Answer (Incorrect)' }}</span>
                               </span>
                             } @else if ($index === q.correctOptionIndex) {
                               <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                                 <app-icon name="check-circle" [size]="12" />
-                                <span>الإجابة النموذجية الصحيحة</span>
+                                <span>{{ langService.isArabic() ? 'الإجابة النموذجية الصحيحة' : 'Model Correct Answer' }}</span>
                               </span>
                             }
                           </div>
@@ -426,7 +426,7 @@
                       @if (q.studentSelectedOptionIndex === null || q.studentSelectedOptionIndex === undefined) {
                         <div class="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-xs text-amber-600 font-bold flex items-center gap-2">
                           <app-icon name="alert-circle" [size]="14" />
-                          <span>لم تقم باختيار أي إجابة لهذا السؤال أثناء أداء الامتحان.</span>
+                          <span>{{ langService.isArabic() ? 'لم تقم باختيار أي إجابة لهذا السؤال أثناء أداء الامتحان.' : 'No answer was selected for this question during exam.' }}</span>
                         </div>
                       }
                     </div>
@@ -437,7 +437,7 @@
                     <div class="mt-4 p-4 rounded-2xl bg-surface-bg border border-surface-border space-y-3">
                       <span class="text-xs font-bold text-text-primary block flex items-center gap-1.5">
                         <app-icon name="image" [size]="14" className="text-brand-primary" />
-                        <span>صور خطوات الحل المرفوعة من كشكولك:</span>
+                        <span>{{ langService.isArabic() ? 'صور خطوات الحل المرفوعة من كشكولك:' : 'Uploaded Solution Steps Photos:' }}</span>
                       </span>
                       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         @for (img of feedback().essaySolutionImages; track $index) {
@@ -445,10 +445,10 @@
                             (click)="openImagePreview(img.imageUrl)"
                             class="group relative aspect-video rounded-xl overflow-hidden border border-surface-border bg-black/5 hover:border-brand-primary transition-all cursor-pointer shadow-sm"
                           >
-                            <img [src]="img.imageUrl" alt="حل الطالب" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
+                            <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
                               <app-icon name="maximize" [size]="14" />
-                              <span>تكبير الصورة</span>
+                              <span>{{ langService.isArabic() ? 'تكبير الصورة' : 'Zoom Image' }}</span>
                             </div>
                           </div>
                         }
@@ -461,7 +461,7 @@
                     <div class="p-4 rounded-2xl bg-brand-primary/5 border border-brand-primary/20 space-y-1">
                       <span class="text-[11px] font-bold text-brand-primary dark:text-brand-accent flex items-center gap-1.5">
                         <app-icon name="shield" [size]="13" />
-                        <span>توجيه وملاحظة المعلمة هبة عبدالوهاب:</span>
+                        <span>{{ langService.isArabic() ? 'توجيه وملاحظة المعلمة هبة عبدالوهاب:' : 'Teacher Guidance & Feedback from Eng. Heba:' }}</span>
                       </span>
                       <p class="text-xs text-text-primary leading-relaxed font-medium">
                         {{ q.teacherNote }}
@@ -477,7 +477,7 @@
                       class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                     >
                       <app-icon name="play" [size]="14" />
-                      <span>شاهد فيديو الحل والشرح التفصيلي لهذا السؤال</span>
+                      <span>{{ langService.isArabic() ? 'شاهد فيديو الحل والشرح التفصيلي لهذا السؤال' : 'Watch Detailed Video Solution for this Question' }}</span>
                       <app-icon name="arrow-left" [size]="12" />
                     </button>
                   }
@@ -497,10 +497,10 @@
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-base font-black text-text-primary flex items-center gap-2">
                     <app-icon name="alert-circle" [size]="18" className="text-feedback-danger" />
-                    <span>تحليل الأسئلة التي تحتاج مراجعة والحلول النموذجية</span>
+                    <span>{{ langService.isArabic() ? 'تحليل الأسئلة التي تحتاج مراجعة والحلول النموذجية' : 'Analysis of Mistake Cases & Model Solutions' }}</span>
                   </h3>
                   <span class="text-xs font-bold text-text-muted font-numeric">
-                    {{ feedback().customMistakeCases.length }} ملاحظات
+                    {{ feedback().customMistakeCases.length }} {{ langService.isArabic() ? 'ملاحظات' : 'Notes' }}
                   </span>
                 </div>
 
@@ -509,9 +509,9 @@
                     <div class="p-6 rounded-3xl border border-surface-border bg-surface-card shadow-sm space-y-4">
                       <div class="flex items-center justify-between pb-3 border-b border-surface-border">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-feedback-danger/10 text-feedback-danger">
-                          السؤال رقم {{ mistake.questionOrder }}
+                          {{ langService.isArabic() ? ('السؤال رقم ' + mistake.questionOrder) : ('Question #' + mistake.questionOrder) }}
                         </span>
-                        <span class="text-xs font-bold text-text-muted">مراجعة الحل وتصحيح الخطأ</span>
+                        <span class="text-xs font-bold text-text-muted">{{ langService.isArabic() ? 'مراجعة الحل وتصحيح الخطأ' : 'Review Solution & Correction' }}</span>
                       </div>
 
                       <!-- Question Prompt Text -->
@@ -525,8 +525,8 @@
                           (click)="openImagePreview(mImg)"
                           class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
                         >
-                          <img [src]="mImg" alt="صورة السؤال" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
-                          <span class="text-[10px] text-text-muted mt-1 block text-center">اضغط لتكبير صورة المسألة</span>
+                          <img [src]="mImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
+                          <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'اضغط لتكبير صورة المسألة' : 'Click to zoom question image' }}</span>
                         </div>
                       }
 
@@ -535,13 +535,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           @if (mistake.studentAnswerText) {
                             <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20">
-                              <span class="text-[10px] font-bold text-rose-500 block mb-0.5">إجابتك المسجلة:</span>
+                              <span class="text-[10px] font-bold text-rose-500 block mb-0.5">{{ langService.isArabic() ? 'إجابتك المسجلة:' : 'Your Recorded Answer:' }}</span>
                               <span class="text-xs font-bold text-text-primary">{{ mistake.studentAnswerText }}</span>
                             </div>
                           }
                           @if (mistake.correctAnswerText) {
                             <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
-                              <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">الإجابة النموذجية الصحيحة:</span>
+                              <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">{{ langService.isArabic() ? 'الإجابة النموذجية الصحيحة:' : 'Model Correct Answer:' }}</span>
                               <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{{ mistake.correctAnswerText }}</span>
                             </div>
                           }
@@ -552,7 +552,7 @@
                       @if (mistake.errorNote) {
                         <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border">
                           <span class="text-[11px] font-bold text-brand-secondary block mb-1">
-                            توجيه وملاحظة المعلمة:
+                            {{ langService.isArabic() ? 'توجيه وملاحظة المعلمة:' : 'Teacher Guidance:' }}
                           </span>
                           <p class="text-xs text-text-secondary leading-relaxed">
                             {{ mistake.errorNote }}
@@ -568,7 +568,7 @@
                           class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                         >
                           <app-icon name="play" [size]="14" />
-                          <span>شاهد الحل النموذجي على يوتيوب (فيديو توضيحي)</span>
+                          <span>{{ langService.isArabic() ? 'شاهد الحل النموذجي على يوتيوب' : 'Watch Model Solution on YouTube' }}</span>
                           <app-icon name="arrow-left" [size]="12" />
                         </button>
                       }
@@ -580,10 +580,10 @@
               <div class="p-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 text-center space-y-2">
                 <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
                 <h4 class="text-sm font-black text-emerald-600 dark:text-emerald-400">
-                  لا توجد أخطاء مسجلة — جميع حلولك صحيحة ومتقنة!
+                  {{ langService.isArabic() ? 'لا توجد أخطاء مسجلة — جميع حلولك صحيحة ومتقنة!' : 'No mistakes recorded — All solutions are correct!' }}
                 </h4>
                 <p class="text-xs text-text-secondary">
-                  يمكنك مراجعة كافة الأسئلة وإجاباتك من تبويب "مراجعة كافة الأسئلة".
+                  {{ langService.isArabic() ? 'يمكنك مراجعة كافة الأسئلة وإجاباتك من تبويب "مراجعة كافة الأسئلة".' : 'You can review all questions and answers from the "Review All Questions" tab.' }}
                 </p>
               </div>
             }
@@ -610,7 +610,7 @@
         <div class="p-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
           <span class="text-xs font-bold text-text-primary flex items-center gap-2">
             <app-icon name="image" [size]="16" className="text-brand-primary" />
-            <span>معاينة الصورة بالحجم الكامل</span>
+            <span>{{ langService.isArabic() ? 'معاينة الصورة بالحجم الكامل' : 'Full Size Image Preview' }}</span>
           </span>
           <button
             type="button"
@@ -621,7 +621,7 @@
           </button>
         </div>
         <div class="p-4 overflow-auto flex items-center justify-center bg-black/20">
-          <img [src]="pUrl" alt="معاينة الصورة" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow-md" />
+          <img [src]="pUrl" [alt]="langService.isArabic() ? 'معاينة الصورة' : 'Image Preview'" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow-md" />
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { PreventContextCopyDirective } from '../../directives/prevent-context-copy.directive';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { IPdfPrintEvent } from './protected-pdf-canvas.models';
 
 declare global {
@@ -36,6 +37,7 @@ declare global {
 export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  readonly langService = inject(LangService);
 
   // Inputs
   readonly lectureId = input.required<string>();

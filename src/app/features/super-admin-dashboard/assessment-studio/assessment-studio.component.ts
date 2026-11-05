@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import {
@@ -67,6 +68,7 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssessmentStudioComponent implements OnInit {
+  readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();

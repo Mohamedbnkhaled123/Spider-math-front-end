@@ -14,10 +14,10 @@
           <img src="assets/branding/spider-mascot-nav.webp" alt="Spider Math" class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 object-contain drop-shadow-md">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-2">
             <app-icon name="user" [size]="14" />
-            <span>بيانات الطالب الموحدة</span>
+            <span>{{ langService.isArabic() ? 'بيانات الطالب الموحدة' : 'Unified Student Profile' }}</span>
           </div>
           <h2 class="font-academic-serif text-2xl sm:text-3xl font-black text-text-primary mb-2">
-            {{ langService.isArabic() ? 'استكمال بيانات الطالب وإصدار كود الـ HA' : 'Complete Profile & Issue Student HA Code' }}
+            {{ langService.isArabic() ? 'استكمال بيانات الطالب وإصدار كود HA' : 'Complete Profile & Issue Student HA Code' }}
           </h2>
           <p class="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto">
             {{ langService.isArabic() ? 'يرجى استكمال البيانات الأكاديمية بدقة لربط الحساب بالمنهج المناسب وتفعيل المتابعة مع ولي الأمر.' : 'Please provide accurate academic information to link your account to the correct curriculum track.' }}
@@ -36,7 +36,7 @@
               [ngModel]="fullName()"
               (ngModelChange)="fullName.set($event)"
               name="fullName"
-              placeholder="محمد أحمد إبراهيم"
+              [placeholder]="langService.isArabic() ? 'محمد أحمد إبراهيم' : 'Mohamed Ahmed Ibrahim'"
               required
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
             />

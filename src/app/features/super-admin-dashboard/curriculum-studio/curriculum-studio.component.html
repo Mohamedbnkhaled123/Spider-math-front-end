@@ -5,10 +5,10 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
-          استوديو المناهج الخماسي وإدارة الامتحانات الآمنة
+          {{ langService.isArabic() ? 'استوديو المناهج الخماسي وإدارة الامتحانات الآمنة' : 'Curriculum Studio & Protected Assessments' }}
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          إدارة الوحدات، المحاضرات المشفرة، وملفات الـ PDF، ومحرر الامتحانات مع الرفع المباشر لصور الأسئلة.
+          {{ langService.isArabic() ? 'إدارة الوحدات والمحاضرات المشفرة والملفات ومحرر الامتحانات مع الرفع المباشر لصور الأسئلة.' : 'Manage study units, encrypted lectures, PDFs, and exam editor with question image upload.' }}
         </p>
       </div>
 
@@ -19,7 +19,7 @@
           class="px-5 py-2.5 rounded-2xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
           <app-icon name="plus" [size]="15" />
-          <span>إضافة وحدة دراسية جديدة</span>
+          <span>{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</span>
         </button>
       </div>
     </div>
@@ -36,7 +36,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
           [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
         >
-          المنهج المصري
+          {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
         </button>
 
         <button
@@ -46,7 +46,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
           [class.text-white]="selectedCurriculum() === 'GULF'"
         >
-          المنهج الخليجي
+          {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
         </button>
 
         <button
@@ -56,7 +56,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
         >
-          IGCSE / البريطانية
+          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}
         </button>
 
         <button
@@ -66,23 +66,23 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
           [class.text-white]="selectedCurriculum() === 'AMERICAN'"
         >
-          SAT / الأمريكية
+          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}
         </button>
       </div>
 
       <!-- 2. Grade Level Dropdown & Status Indicator (4 cols) -->
       <div class="sm:col-span-4 space-y-1">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[10px] font-bold text-text-muted">الصف الدراسي:</span>
+          <span class="text-[10px] font-bold text-text-muted">{{ langService.isArabic() ? 'الصف الدراسي:' : 'Grade Level:' }}</span>
           @if (isGradeActive(selectedGrade())) {
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
               <app-icon name="check-circle" [size]="11" />
-              <span>مفعل للتدريس</span>
+              <span>{{ langService.isArabic() ? 'مفعل للتدريس' : 'Active for Teaching' }}</span>
             </span>
           } @else {
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
               <app-icon name="clock" [size]="11" />
-              <span>قريباً بإذن الله</span>
+              <span>{{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}</span>
             </span>
           }
         </div>
@@ -93,7 +93,7 @@
         >
           @for (grade of gradeOptions(); track grade.code) {
             <option [value]="grade.code">
-              {{ grade.titleAr }} ({{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }})
+              {{ (langService.isArabic() ? grade.titleAr : grade.titleEn) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
             </option>
           }
         </select>
@@ -110,7 +110,7 @@
           [class.shadow-sm]="selectedTerm() === 'TERM_1'"
           [class.text-text-muted]="selectedTerm() !== 'TERM_1'"
         >
-          الترم الأول
+          {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
         </button>
 
         <button
@@ -122,7 +122,7 @@
           [class.shadow-sm]="selectedTerm() === 'TERM_2'"
           [class.text-text-muted]="selectedTerm() !== 'TERM_2'"
         >
-          الترم الثاني
+          {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
         </button>
       </div>
 
@@ -136,10 +136,10 @@
         <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
         <div>
           <h3 class="text-sm font-black text-text-primary tracking-tight">
-            خريطة وتفعيل الصفوف الدراسية لجميع المناهج (Active Grades Studio)
+            {{ langService.isArabic() ? 'خريطة وتفعيل الصفوف الدراسية لجميع المناهج' : 'Active Grades Studio & Teaching Map' }}
           </h3>
           <p class="text-[11px] text-text-secondary mt-0.5">
-            حددي بنقرة واحدة الصفوف المتاحة للتدريس هذا العام في جميع المناهج الأربعة.
+            {{ langService.isArabic() ? 'حددي بنقرة واحدة الصفوف المتاحة للتدريس هذا العام في جميع المناهج الأربعة.' : 'One-click toggle for available teaching grades across all four curricula.' }}
           </p>
         </div>
       </div>
@@ -152,17 +152,17 @@
           class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
         >
           <app-icon name="check" [size]="14" />
-          <span>{{ isSavingActiveGrades() ? 'جارٍ الحفظ...' : 'حفظ واعتماد التفعيل' }}</span>
+          <span>{{ isSavingActiveGrades() ? (langService.isArabic() ? 'جارٍ الحفظ...' : 'Saving...') : (langService.isArabic() ? 'حفظ واعتماد التفعيل' : 'Save & Publish Active Grades') }}</span>
         </button>
 
         <button
           type="button"
           (click)="openGradesModal()"
           class="px-3 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-brand-primary transition-all flex items-center gap-1 cursor-pointer"
-          title="الاستوديو المتقدم لإضافة صفوف جديدة أو تعديل أسمائها وأكوادها"
+          [title]="langService.isArabic() ? 'الاستوديو المتقدم لإضافة صفوف جديدة أو تعديل أسمائها' : 'Advanced studio to add or edit grade levels'"
         >
           <app-icon name="edit" [size]="13" />
-          <span>إدارة متقدمة</span>
+          <span>{{ langService.isArabic() ? 'إدارة متقدمة' : 'Advanced Settings' }}</span>
         </button>
       </div>
     </div>
@@ -176,7 +176,7 @@
               {{ track.nameAr }}
             </span>
             <span class="text-[10px] font-bold text-text-muted">
-              {{ track.grades.length }} صفوف
+              {{ track.grades.length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
             </span>
           </div>
 
@@ -204,7 +204,7 @@
                   [class.bg-surface-bg]="!isGradeActive(grade.code)"
                   [class.text-text-muted]="!isGradeActive(grade.code)"
                 >
-                  {{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }}
+                  {{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }}
                 </span>
               </div>
             }
@@ -224,10 +224,10 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-                {{ unit.gradeLevel }} • {{ unit.term === 'TERM_1' ? 'الترم الأول' : 'الترم الثاني' }}
+                {{ unit.gradeLevel }} • {{ unit.term === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }}
               </span>
               <span class="text-xs font-numeric font-bold text-text-muted">
-                {{ unit.priceEgp }} ج.م
+                {{ unit.priceEgp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}
               </span>
             </div>
             <h3 class="text-base font-bold text-text-primary">
@@ -242,10 +242,10 @@
               type="button"
               (click)="openEditUnitModal(unit)"
               class="px-3 py-1.5 rounded-xl text-xs font-bold border border-brand-primary/40 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="تعديل اسم وسعر وبيانات الوحدة"
+              [title]="langService.isArabic() ? 'تعديل اسم وسعر وبيانات الوحدة' : 'Edit unit title, pricing, and details'"
             >
               <app-icon name="edit" [size]="13" />
-              <span>تعديل الوحدة</span>
+              <span>{{ langService.isArabic() ? 'تعديل الوحدة' : 'Edit Unit' }}</span>
             </button>
 
             <!-- Instant Publish Switch (Controls visibility to students) -->
@@ -261,7 +261,7 @@
               [class.text-text-muted]="!unit.isPublished"
             >
               <span class="w-2 h-2 rounded-full" [class.bg-emerald-500]="unit.isPublished" [class.bg-slate-400]="!unit.isPublished"></span>
-              <span>{{ unit.isPublished ? 'منشورة للطلاب' : 'مسودة (مخفية)' }}</span>
+              <span>{{ unit.isPublished ? (langService.isArabic() ? 'منشورة للطلاب' : 'Published to Students') : (langService.isArabic() ? 'مسودة (مخفية)' : 'Draft (Hidden)') }}</span>
             </button>
 
             <!-- Add Lecture -->
@@ -271,7 +271,7 @@
               class="px-3 py-1.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg hover:border-brand-primary text-text-primary transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <app-icon name="video" [size]="13" />
-              <span>+ محاضرة</span>
+              <span>{{ langService.isArabic() ? '+ محاضرة' : '+ Lecture' }}</span>
             </button>
 
             <!-- Delete Unit -->
@@ -279,7 +279,7 @@
               type="button"
               (click)="deleteUnit(unit)"
               class="p-2 rounded-xl text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
-              title="حذف الوحدة"
+              [title]="langService.isArabic() ? 'حذف الوحدة' : 'Delete unit'"
             >
               <app-icon name="trash" [size]="14" />
             </button>
@@ -289,7 +289,7 @@
         <!-- Lectures List in Unit -->
         <div class="space-y-2">
           <span class="text-[11px] font-bold text-text-muted block">
-            المحاضرات المتاحة بالوحدة ({{ unit.lectures.length }}):
+            {{ langService.isArabic() ? ('المحاضرات المتاحة بالوحدة (' + unit.lectures.length + '):') : ('Available Unit Lectures (' + unit.lectures.length + '):') }}
           </span>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -297,19 +297,19 @@
               <div class="p-3 rounded-2xl border border-surface-border bg-surface-bg flex items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-2.5 truncate">
                   <span class="font-mono text-brand-primary font-bold bg-brand-primary/10 px-2 py-0.5 rounded-lg text-[11px]">0{{ lec.order }}</span>
-                  <span class="truncate font-bold text-text-primary" [title]="lec.titleAr || ('محاضرة ' + lec.order)">
-                    {{ lec.titleAr || ('محاضرة ' + (lec.order || 1)) }}
+                  <span class="truncate font-bold text-text-primary" [title]="(langService.isArabic() ? lec.titleAr : lec.titleEn) || ((langService.isArabic() ? 'محاضرة ' : 'Lecture ') + lec.order)">
+                    {{ (langService.isArabic() ? lec.titleAr : lec.titleEn) || ((langService.isArabic() ? 'محاضرة ' : 'Lecture ') + (lec.order || 1)) }}
                   </span>
                 </div>
                 
                 <div class="flex items-center gap-2 shrink-0">
                   @if (lec.xpReward !== null && lec.xpReward !== undefined) {
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20" title="نقاط XP الممنوحة للطالب">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20" [title]="langService.isArabic() ? 'نقاط التميز الممنوحة للطالب' : 'XP Points awarded to student'">
                       +{{ lec.xpReward }} XP
                     </span>
                   } @else {
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-500/10 text-text-muted" title="لم يتم تحديد XP بعد">
-                      بدون XP
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-500/10 text-text-muted" [title]="langService.isArabic() ? 'لم يتم تحديد نقاط بعد' : 'No XP set yet'">
+                      {{ langService.isArabic() ? 'بدون نقاط' : 'No XP' }}
                     </span>
                   }
 
@@ -320,7 +320,7 @@
                     [class.bg-rose-500/10]="!lec.isPrintAllowed"
                     [class.text-rose-500]="!lec.isPrintAllowed"
                   >
-                    {{ lec.isPrintAllowed ? 'طباعة مسموحة' : 'الطباعة مقفلة' }}
+                    {{ lec.isPrintAllowed ? (langService.isArabic() ? 'طباعة مسموحة' : 'Print Allowed') : (langService.isArabic() ? 'الطباعة مقفلة' : 'Print Locked') }}
                   </span>
 
                   <!-- Prominent Edit Lecture Button -->
@@ -328,17 +328,17 @@
                     type="button"
                     (click)="openEditLectureModal(unit, lec)"
                     class="px-2.5 py-1 rounded-lg text-xs font-bold border border-brand-primary/30 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center gap-1 cursor-pointer"
-                    title="تعديل بيانات المحاضرة والروابط ونقاط XP"
+                    [title]="langService.isArabic() ? 'تعديل بيانات المحاضرة والروابط والنقاط' : 'Edit lecture details, links, and XP'"
                   >
                     <app-icon name="edit" [size]="12" />
-                    <span>تعديل</span>
+                    <span>{{ langService.isArabic() ? 'تعديل' : 'Edit' }}</span>
                   </button>
 
                   <button
                     type="button"
                     (click)="deleteLecture(unit, lec.id)"
                     class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
-                    title="حذف المحاضرة نهائياً"
+                    [title]="langService.isArabic() ? 'حذف المحاضرة نهائياً' : 'Delete lecture permanently'"
                   >
                     <app-icon name="trash" [size]="13" />
                   </button>
@@ -346,7 +346,7 @@
               </div>
             } @empty {
               <div class="text-[11px] text-text-muted italic py-1 col-span-2">
-                لا توجد محاضرات مضافة بعد. اضغط على "+ محاضرة" لإضافة روابط الشرح وملفات الـ PDF.
+                {{ langService.isArabic() ? 'لا توجد محاضرات مضافة بعد. اضغط على "+ محاضرة" لإضافة روابط الشرح والملفات.' : 'No lectures added yet. Click "+ Lecture" to add lesson videos and PDFs.' }}
               </div>
             }
           </div>
@@ -356,7 +356,7 @@
         <div class="pt-3 border-t border-surface-border space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-text-muted block">
-              الامتحانات والواجبات المنزلية ({{ unit.assessments.length }}):
+              {{ langService.isArabic() ? ('الامتحانات والواجبات المنزلية (' + unit.assessments.length + '):') : ('Assessments & Homework (' + unit.assessments.length + '):') }}
             </span>
 
             <button
@@ -365,7 +365,7 @@
               class="px-3 py-1 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 hover:bg-brand-primary/20 transition-all flex items-center gap-1 cursor-pointer"
             >
               <app-icon name="plus" [size]="12" />
-              <span>إضافة كويز / واجب / امتحان</span>
+              <span>{{ langService.isArabic() ? 'إضافة كويز / واجب / امتحان' : 'Add Quiz / Homework / Exam' }}</span>
             </button>
           </div>
 
@@ -376,17 +376,17 @@
                   @if (asm.type === 'HOMEWORK') {
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 flex items-center gap-1">
                       <app-icon name="edit" [size]="11" />
-                      <span>واجب منزلي (حل ورفع كشكول)</span>
+                      <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework (Upload Notebook)' }}</span>
                     </span>
                   } @else if (asm.type === 'COMPREHENSIVE_EXAM') {
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 flex items-center gap-1">
                       <app-icon name="award" [size]="11" />
-                      <span>امتحان شامل على الوحدة</span>
+                      <span>{{ langService.isArabic() ? 'امتحان شامل على الوحدة' : 'Unit Comprehensive Exam' }}</span>
                     </span>
                   } @else {
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 flex items-center gap-1">
                       <app-icon name="target" [size]="11" />
-                      <span>كويز تقييمي تفاعلي</span>
+                      <span>{{ langService.isArabic() ? 'كويز تقييمي تفاعلي' : 'Interactive Quiz' }}</span>
                     </span>
                   }
 
@@ -399,7 +399,7 @@
                   @if (asm.questions.length === 0) {
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1 animate-pulse">
                       <app-icon name="alert-triangle" [size]="11" />
-                      <span>فارغ من الأسئلة (مخفي عن الطلاب)</span>
+                      <span>{{ langService.isArabic() ? 'فارغ من الأسئلة (مخفي عن الطلاب)' : 'Empty (Hidden from Students)' }}</span>
                     </span>
                   }
 
@@ -410,12 +410,12 @@
 
                 <div class="flex items-center gap-3 text-[11px] text-text-muted mt-1">
                   <span [class.text-rose-500]="asm.questions.length === 0" [class.font-bold]="asm.questions.length === 0">
-                    {{ asm.questions.length > 0 ? (asm.questions.length + ' أسئلة') : 'لا توجد أسئلة مضافة بعد' }}
+                    {{ asm.questions.length > 0 ? (asm.questions.length + (langService.isArabic() ? ' أسئلة' : ' Questions')) : (langService.isArabic() ? 'لا توجد أسئلة مضافة بعد' : 'No questions added yet') }}
                   </span>
                   <span>•</span>
-                  <span>{{ asm.submissionsCount }} تسليمات سابقة من الطلاب</span>
+                  <span>{{ asm.submissionsCount }} {{ langService.isArabic() ? 'تسليمات سابقة من الطلاب' : 'Previous Student Submissions' }}</span>
                   <span>•</span>
-                  <span class="font-bold text-brand-primary">حاسبة: {{ asm.calculatorType }}</span>
+                  <span class="font-bold text-brand-primary">{{ langService.isArabic() ? 'حاسبة: ' : 'Calculator: ' }}{{ asm.calculatorType }}</span>
                 </div>
               </div>
 
@@ -426,14 +426,14 @@
                   class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <app-icon name="file-text" [size]="14" />
-                  <span>{{ asm.type === 'HOMEWORK' ? 'محرر أسئلة الواجب' : 'فتح محرر الامتحان والأسئلة' }}</span>
+                  <span>{{ asm.type === 'HOMEWORK' ? (langService.isArabic() ? 'محرر أسئلة الواجب' : 'Edit Homework Questions') : (langService.isArabic() ? 'فتح محرر الامتحان والأسئلة' : 'Open Exam Editor & Questions') }}</span>
                 </button>
 
                 <button
                   type="button"
                   (click)="deleteAssessment(unit, asm.id)"
                   class="p-2 rounded-xl text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
-                  title="حذف التقييم نهائياً"
+                  [title]="langService.isArabic() ? 'حذف التقييم نهائياً' : 'Delete assessment permanently'"
                 >
                   <app-icon name="trash" [size]="14" />
                 </button>
@@ -441,7 +441,7 @@
             </div>
           } @empty {
             <div class="text-[11px] text-text-muted italic py-1">
-              لا توجد امتحانات أو واجبات مضافة بعد بالوحدة. اضغط على "إضافة كويز / واجب / امتحان" لإضافة تقييم وتعيين أسئلته.
+              {{ langService.isArabic() ? 'لا توجد امتحانات أو واجبات مضافة بعد بالوحدة. اضغط على إضافة تقييم لتعيين أسئلته.' : 'No assessments or homework added yet. Click "Add Quiz / Homework / Exam" to create one.' }}
             </div>
           }
         </div>
@@ -450,9 +450,9 @@
     } @empty {
       <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
         <app-icon name="book-open" [size]="32" className="text-text-muted mx-auto" />
-        <h4 class="text-sm font-bold text-text-primary">لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً</h4>
+        <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً' : 'No packages or units registered for this grade yet.' }}</h4>
         <p class="text-xs text-text-secondary max-w-md mx-auto">
-          يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.
+          {{ langService.isArabic() ? 'يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.' : 'Create a new package instantly by clicking "Add New Unit" to attach lectures and exams.' }}
         </p>
         <button
           type="button"
@@ -460,7 +460,7 @@
           class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 cursor-pointer inline-flex items-center gap-1.5"
         >
           <app-icon name="plus" [size]="14" />
-          <span>إضافة وحدة دراسية جديدة</span>
+          <span>{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</span>
         </button>
       </div>
     }
@@ -473,34 +473,34 @@
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">إضافة وحدة دراسية جديدة</h3>
+          <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</h3>
           <button type="button" (click)="isUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">عنوان الوحدة بالعربية</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الوحدة بالعربية' : 'Unit Title (Arabic)' }}</label>
           <input
             type="text"
             [(ngModel)]="unitForm().titleAr"
-            placeholder="مثال: الوحدة الأولى: الهندسة الفراغية..."
+            [placeholder]="langService.isArabic() ? 'مثال: الوحدة الأولى: الهندسة الفراغية...' : 'e.g.: Unit 1: Solid Geometry...'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">اسم الوحدة بالإنجليزية (اختياري - للروابط الذكية)</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'اسم الوحدة بالإنجليزية (اختياري):' : 'Unit Title in English (Optional):' }}</label>
           <input
             type="text"
             [(ngModel)]="unitForm().titleEn"
-            placeholder="مثال: Unit 1: Solid Geometry..."
+            [placeholder]="langService.isArabic() ? 'مثال: Unit 1: Solid Geometry...' : 'e.g.: Unit 1: Solid Geometry...'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary dir-ltr text-left"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">سعر الوحدة بالجنيه المصري (EGP)</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'سعر الوحدة بالجنيه المصري' : 'Unit Price (EGP)' }}</label>
           <input
             type="number"
             [(ngModel)]="unitForm().priceEgp"
@@ -515,14 +515,14 @@
             (click)="isUnitModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
             (click)="saveUnitPackage()"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
           >
-            حفظ وإنشاء الوحدة
+            {{ langService.isArabic() ? 'حفظ وإنشاء الوحدة' : 'Save & Create Unit' }}
           </button>
         </div>
       </div>
@@ -538,7 +538,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <div class="flex items-center gap-2">
             <app-icon name="edit" [size]="18" className="text-brand-primary" />
-            <h3 class="text-sm font-black text-text-primary">تعديل بيانات الوحدة الدراسية</h3>
+            <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'تعديل بيانات الوحدة الدراسية' : 'Edit Study Unit' }}</h3>
           </div>
           <button type="button" (click)="isEditUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted cursor-pointer">
             <app-icon name="x" [size]="16" />
@@ -546,38 +546,38 @@
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">عنوان الوحدة بالعربية</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الوحدة بالعربية' : 'Unit Title (Arabic)' }}</label>
           <input
             type="text"
             [(ngModel)]="editUnitForm().titleAr"
-            placeholder="مثال: الوحدة الأولى: الهندسة الفراغية..."
+            [placeholder]="langService.isArabic() ? 'مثال: الوحدة الأولى: الهندسة الفراغية...' : 'e.g.: Unit 1: Solid Geometry...'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">اسم الوحدة بالإنجليزية (اختياري)</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'اسم الوحدة بالإنجليزية (اختياري)' : 'Unit Title in English (Optional)' }}</label>
           <input
             type="text"
             [(ngModel)]="editUnitForm().titleEn"
-            placeholder="مثال: Unit 1: Solid Geometry..."
+            [placeholder]="langService.isArabic() ? 'مثال: Unit 1: Solid Geometry...' : 'e.g.: Unit 1: Solid Geometry...'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary dir-ltr text-left"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">نوع الباقة</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نوع الباقة' : 'Package Type' }}</label>
           <select
             [(ngModel)]="editUnitForm().type"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
           >
-            <option value="STUDY_UNIT">وحدة شرح وتدريبات (Study Unit)</option>
-            <option value="REVISION_PACKAGE">باقة مراجعة نهائية (Revision Package)</option>
+            <option value="STUDY_UNIT">{{ langService.isArabic() ? 'وحدة شرح وتدريبات' : 'Study Unit & Lessons' }}</option>
+            <option value="REVISION_PACKAGE">{{ langService.isArabic() ? 'باقة مراجعة نهائية' : 'Final Revision Package' }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">سعر الوحدة بالجنيه المصري (EGP)</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'سعر الوحدة بالجنيه المصري' : 'Unit Price (EGP)' }}</label>
           <input
             type="number"
             [(ngModel)]="editUnitForm().priceEgp"
@@ -592,14 +592,14 @@
             (click)="isEditUnitModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
             (click)="saveEditedUnit()"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm cursor-pointer hover:opacity-95 transition-all"
           >
-            حفظ تعديل الوحدة
+            {{ langService.isArabic() ? 'حفظ تعديل الوحدة' : 'Save Unit Changes' }}
           </button>
         </div>
       </div>
@@ -613,25 +613,25 @@
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">إضافة محاضرة جديدة للوحدة</h3>
+          <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'إضافة محاضرة جديدة للوحدة' : 'Add New Lecture to Unit' }}</h3>
           <button type="button" (click)="isLectureModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">عنوان المحاضرة</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان المحاضرة' : 'Lecture Title' }}</label>
           <input
             type="text"
             [(ngModel)]="lectureForm().titleAr"
-            placeholder="مثال: 01 اشتقاق الدوال المثلثية وتطبيقات السلسلة"
+            [placeholder]="langService.isArabic() ? 'مثال: 01 اشتقاق الدوال المثلثية وتطبيقات السلسلة' : 'e.g.: 01 Trigonometric Derivatives & Applications'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            رابط فيديو الشرح غير المدرج (Unlisted YouTube URL للتشفير عبر AES-256-GCM)
+            {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج' : 'Unlisted YouTube Video URL (Encrypted)' }}
           </label>
           <input
             type="url"
@@ -643,24 +643,24 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            معرّف ملف الـ PDF على Google Drive (Drive File ID فقط بدون روابط ويب مفتوحة)
+            {{ langService.isArabic() ? 'معرّف ملف الشرح على جوجل درايف (المعرف فقط)' : 'Google Drive PDF File ID (ID Only)' }}
           </label>
           <input
             type="text"
             [(ngModel)]="lectureForm().googleDrivePdfFileId"
-            placeholder="مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+            [placeholder]="langService.isArabic() ? 'مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs' : 'e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            نقاط الـ XP الممنوحة للطالب عند إكمال المحاضرة (تحددها المعلمة) *
+            {{ langService.isArabic() ? 'نقاط التميز الممنوحة للطالب عند إكمال المحاضرة *' : 'XP Points awarded on completing lecture *' }}
           </label>
           <input
             type="number"
             [(ngModel)]="lectureForm().xpReward"
-            placeholder="أدخلي عدد نقاط الـ XP المخصصة للمحاضرة..."
+            [placeholder]="langService.isArabic() ? 'أدخلي عدد النقاط المخصصة للمحاضرة...' : 'Enter XP points awarded for lecture...'"
             min="0"
             required
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
@@ -669,8 +669,8 @@
 
         <div class="flex items-center justify-between p-3 rounded-2xl bg-surface-bg border border-surface-border">
           <div>
-            <span class="font-bold text-text-primary block">صلاحية طباعة الملزمة (PDF Print Permission)</span>
-            <span class="text-[11px] text-text-muted">تفعيل أو قفل إمكانية طباعة ملف الـ PDF للطالب</span>
+            <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'صلاحية طباعة الملزمة' : 'PDF Printing Permission' }}</span>
+            <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'تفعيل أو قفل إمكانية طباعة ملف الشرح للطالب' : 'Allow or lock PDF booklet printing for students' }}</span>
           </div>
           <button
             type="button"
@@ -683,7 +683,7 @@
             [class.text-rose-500]="!lectureForm().isPrintAllowed"
             [class.border-rose-500/30]="!lectureForm().isPrintAllowed"
           >
-            {{ lectureForm().isPrintAllowed ? 'الطباعة مسموحة' : 'الطباعة مقفلة' }}
+            {{ lectureForm().isPrintAllowed ? (langService.isArabic() ? 'الطباعة مسموحة' : 'Print Allowed') : (langService.isArabic() ? 'الطباعة مقفلة' : 'Print Locked') }}
           </button>
         </div>
 
@@ -691,19 +691,19 @@
         <div class="flex items-center justify-between p-3.5 rounded-2xl bg-surface-bg border border-surface-border">
           <div>
             <div class="flex items-center gap-1.5">
-              <span class="font-bold text-text-primary block">نوع إتاحة المحاضرة (Access Level)</span>
+              <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'نوع إتاحة المحاضرة' : 'Lecture Access Level' }}</span>
               @if (lectureForm().isFreeTrial) {
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  مجانية للجميع
+                  {{ langService.isArabic() ? 'مجانية للجميع' : 'Free for All' }}
                 </span>
               } @else {
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                  للمشتركين فقط
+                  {{ langService.isArabic() ? 'للمشتركين فقط' : 'Subscribers Only' }}
                 </span>
               }
             </div>
             <span class="text-[11px] text-text-muted mt-0.5 block">
-              {{ lectureForm().isFreeTrial ? 'متاحة لجميع الطلاب مجاناً حتى بدون اشتراك بالوحدة (تجربة تمهيدية)' : 'مقفلة وتتطلب اشتراكاً نشطاً في الوحدة لمشاهدة الفيديو والملزمة' }}
+              {{ lectureForm().isFreeTrial ? (langService.isArabic() ? 'متاحة لجميع الطلاب مجاناً حتى بدون اشتراك بالوحدة (تجربة تمهيدية)' : 'Free for all students without subscription (Trial lesson)') : (langService.isArabic() ? 'مقفلة وتتطلب اشتراكاً نشطاً في الوحدة لمشاهدة الفيديو والملزمة' : 'Locked: Requires active unit subscription to view') }}
             </span>
           </div>
           <button
@@ -719,10 +719,10 @@
           >
             @if (lectureForm().isFreeTrial) {
               <app-icon name="check" [size]="14" />
-              <span>مجانية (Free Trial)</span>
+              <span>{{ langService.isArabic() ? 'مجانية (تجربة تمهيدية)' : 'Free Trial' }}</span>
             } @else {
               <app-icon name="lock" [size]="14" />
-              <span>للمشتركين فقط</span>
+              <span>{{ langService.isArabic() ? 'للمشتركين فقط' : 'Subscribers Only' }}</span>
             }
           </button>
         </div>
@@ -733,14 +733,14 @@
             (click)="isLectureModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
             (click)="saveLecture()"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
           >
-            تشفير وحفظ المحاضرة
+            {{ langService.isArabic() ? 'تشفير وحفظ المحاضرة' : 'Encrypt & Save Lecture' }}
           </button>
         </div>
       </div>
@@ -757,7 +757,7 @@
           <div class="flex items-center gap-2">
             <app-icon name="edit" [size]="18" className="text-brand-primary" />
             <h3 class="font-black text-text-primary text-sm sm:text-base">
-              تعديل بيانات المحاضرة والروابط (Patch Lecture)
+              {{ langService.isArabic() ? 'تعديل بيانات المحاضرة والروابط' : 'Edit Lecture Details & Links' }}
             </h3>
           </div>
           <button type="button" (click)="isEditLectureModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
@@ -766,18 +766,18 @@
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">عنوان المحاضرة</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان المحاضرة' : 'Lecture Title' }}</label>
           <input
             type="text"
             [(ngModel)]="editLectureForm().titleAr"
-            placeholder="مثال: 01 اشتقاق الدوال المثلثية وتطبيقات السلسلة"
+            [placeholder]="langService.isArabic() ? 'مثال: 01 اشتقاق الدوال المثلثية وتطبيقات السلسلة' : 'e.g.: 01 Trigonometric Derivatives & Applications'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            رابط فيديو الشرح غير المدرج (Unlisted YouTube URL)
+            {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج' : 'Unlisted YouTube Video URL' }}
           </label>
           <input
             type="url"
@@ -789,24 +789,24 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            معرّف ملف الـ PDF على Google Drive (Drive File ID فقط بدون روابط ويب مفتوحة)
+            {{ langService.isArabic() ? 'معرّف ملف الشرح على جوجل درايف (المعرف فقط)' : 'Google Drive PDF File ID (ID Only)' }}
           </label>
           <input
             type="text"
             [(ngModel)]="editLectureForm().googleDrivePdfFileId"
-            placeholder="مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+            [placeholder]="langService.isArabic() ? 'مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs' : 'e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            نقاط الـ XP الممنوحة للطالب عند إكمال المحاضرة (تحددها المعلمة) *
+            {{ langService.isArabic() ? 'نقاط التميز الممنوحة للطالب عند إكمال المحاضرة *' : 'XP Points awarded on completing lecture *' }}
           </label>
           <input
             type="number"
             [(ngModel)]="editLectureForm().xpReward"
-            placeholder="أدخلي عدد نقاط الـ XP المخصصة للمحاضرة..."
+            [placeholder]="langService.isArabic() ? 'أدخلي عدد النقاط المخصصة للمحاضرة...' : 'Enter XP points awarded for lecture...'"
             min="0"
             required
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
@@ -815,8 +815,8 @@
 
         <div class="flex items-center justify-between p-3 rounded-2xl bg-surface-bg border border-surface-border">
           <div>
-            <span class="font-bold text-text-primary block">صلاحية طباعة الملزمة (PDF Print Permission)</span>
-            <span class="text-[11px] text-text-muted">تفعيل أو قفل إمكانية طباعة ملف الـ PDF للطالب</span>
+            <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'صلاحية طباعة الملزمة' : 'PDF Printing Permission' }}</span>
+            <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'تفعيل أو قفل إمكانية طباعة ملف الشرح للطالب' : 'Allow or lock PDF booklet printing for students' }}</span>
           </div>
           <button
             type="button"
@@ -829,7 +829,7 @@
             [class.text-rose-500]="!editLectureForm().isPrintAllowed"
             [class.border-rose-500/30]="!editLectureForm().isPrintAllowed"
           >
-            {{ editLectureForm().isPrintAllowed ? 'الطباعة مسموحة' : 'الطباعة مقفلة' }}
+            {{ editLectureForm().isPrintAllowed ? (langService.isArabic() ? 'الطباعة مسموحة' : 'Print Allowed') : (langService.isArabic() ? 'الطباعة مقفلة' : 'Print Locked') }}
           </button>
         </div>
 
@@ -837,19 +837,19 @@
         <div class="flex items-center justify-between p-3.5 rounded-2xl bg-surface-bg border border-surface-border">
           <div>
             <div class="flex items-center gap-1.5">
-              <span class="font-bold text-text-primary block">نوع إتاحة المحاضرة (Access Level)</span>
+              <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'نوع إتاحة المحاضرة' : 'Lecture Access Level' }}</span>
               @if (editLectureForm().isFreeTrial) {
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  مجانية للجميع
+                  {{ langService.isArabic() ? 'مجانية للجميع' : 'Free for All' }}
                 </span>
               } @else {
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                  للمشتركين فقط
+                  {{ langService.isArabic() ? 'للمشتركين فقط' : 'Subscribers Only' }}
                 </span>
               }
             </div>
             <span class="text-[11px] text-text-muted mt-0.5 block">
-              {{ editLectureForm().isFreeTrial ? 'متاحة لجميع الطلاب مجاناً حتى بدون اشتراك بالوحدة (تجربة تمهيدية)' : 'مقفلة وتتطلب اشتراكاً نشطاً في الوحدة لمشاهدة الفيديو والملزمة' }}
+              {{ editLectureForm().isFreeTrial ? (langService.isArabic() ? 'متاحة لجميع الطلاب مجاناً حتى بدون اشتراك بالوحدة (تجربة تمهيدية)' : 'Free for all students without subscription (Trial lesson)') : (langService.isArabic() ? 'مقفلة وتتطلب اشتراكاً نشطاً في الوحدة لمشاهدة الفيديو والملزمة' : 'Locked: Requires active unit subscription to view') }}
             </span>
           </div>
           <button
@@ -865,10 +865,10 @@
           >
             @if (editLectureForm().isFreeTrial) {
               <app-icon name="check" [size]="14" />
-              <span>مجانية (Free Trial)</span>
+              <span>{{ langService.isArabic() ? 'مجانية (تجربة تمهيدية)' : 'Free Trial' }}</span>
             } @else {
               <app-icon name="lock" [size]="14" />
-              <span>للمشتركين فقط</span>
+              <span>{{ langService.isArabic() ? 'للمشتركين فقط' : 'Subscribers Only' }}</span>
             }
           </button>
         </div>
@@ -879,14 +879,14 @@
             (click)="isEditLectureModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
             (click)="saveEditedLecture()"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm cursor-pointer"
           >
-            حفظ التعديلات في قاعدة البيانات
+            {{ langService.isArabic() ? 'حفظ التعديلات في قاعدة البيانات' : 'Save Changes to Database' }}
           </button>
         </div>
       </div>
@@ -905,7 +905,7 @@
           <div class="flex items-center gap-2">
             <app-icon name="file-text" [size]="18" className="text-brand-primary" />
             <h3 class="text-sm font-black text-text-primary">
-              محرر الامتحان الآمن: {{ asm.titleAr }}
+              {{ langService.isArabic() ? ('محرر الامتحان الآمن: ' + asm.titleAr) : ('Protected Assessment Editor: ' + (asm.titleEn || asm.titleAr)) }}
             </h3>
           </div>
 
@@ -926,10 +926,10 @@
               <app-icon name="alert-circle" [size]="18" className="shrink-0 mt-0.5" />
               <div>
                 <span class="font-black text-xs block mb-0.5">
-                  تنبيه التسليمات السابقة ({{ asm.submissionsCount }} تسليمات مسجلة)
+                  {{ langService.isArabic() ? ('تنبيه التسليمات السابقة (' + asm.submissionsCount + ' تسليمات مسجلة)') : ('Previous Submissions Notice (' + asm.submissionsCount + ' registered)') }}
                 </span>
                 <p class="leading-relaxed text-[11px]">
-                  تم تسجيل تسليمات سابقة لهذا التقييم من قِبل الطلاب. يمكنك إضافة أسئلة جديدة أو تعديل المسائل، وسيتم حفظ التعديلات وتحديث إجمالي درجات التقييم تلقائياً.
+                  {{ langService.isArabic() ? 'تم تسجيل تسليمات سابقة لهذا التقييم من قِبل الطلاب. يمكنك إضافة أسئلة جديدة أو تعديل المسائل، وسيتم حفظ التعديلات وتحديث إجمالي درجات التقييم تلقائياً.' : 'Student submissions exist for this assessment. Editing questions will update totals automatically.' }}
                 </p>
               </div>
             </div>
@@ -941,10 +941,10 @@
               <app-icon name="alert-circle" [size]="18" className="shrink-0 mt-0.5" />
               <div>
                 <span class="font-black text-xs block mb-0.5">
-                  تنبيه إعادة التصحيح التلقائي (Auto-Regrade Alert)
+                  {{ langService.isArabic() ? 'تنبيه إعادة التصحيح التلقائي' : 'Auto-Regrade Alert' }}
                 </span>
                 <p class="leading-relaxed">
-                  تعديل الإجابة النموذجية لأحد الأسئلة سيقوم تلقائياً بإعادة تصحيح إجابات كافة الطلاب الـ {{ asm.submissionsCount }} وتحديث تقارير درجاتهم ونقاط الـ XP وإشعار أولياء أمورهم!
+                  {{ langService.isArabic() ? ('تعديل الإجابة النموذجية لأحد الأسئلة سيقوم تلقائياً بإعادة تصحيح إجابات كافة الطلاب الـ ' + asm.submissionsCount + ' وتحديث تقارير درجاتهم وإشعار أولياء أمورهم!') : ('Modifying the model answer will automatically regrade all ' + asm.submissionsCount + ' student submissions and notify parents!') }}
                 </p>
               </div>
             </div>
@@ -956,10 +956,10 @@
               <app-icon name="alert-triangle" [size]="18" className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <div>
                 <span class="font-black text-xs block mb-0.5">
-                  تنبيه: لم يتم إضافة أي أسئلة لهذا التقييم بعد (Assessment Empty)
+                  {{ langService.isArabic() ? 'تنبيه: لم يتم إضافة أي أسئلة لهذا التقييم بعد' : 'Notice: No questions added to this assessment yet' }}
                 </span>
                 <p class="leading-relaxed text-[11px]">
-                  هذا التقييم محجوب تلقائياً ولن يظهر لأي طالب على المنصة حتى تقومي بإضافة سؤال واحد على الأقل والضغط على زر "اعتماد وحفظ إعدادات الامتحان" بالأسفل.
+                  {{ langService.isArabic() ? 'هذا التقييم محجوب تلقائياً ولن يظهر لأي طالب على المنصة حتى تقومي بإضافة سؤال واحد على الأقل والضغط على زر اعتماد وحفظ إعدادات الامتحان بالأسفل.' : 'This assessment is hidden until you add at least one question and save settings below.' }}
                 </p>
               </div>
             </div>
@@ -968,18 +968,18 @@
           <!-- Assessment Config -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">نوع الحاسبة المسموح بها</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نوع الحاسبة المسموح بها' : 'Allowed Calculator Type' }}</label>
               <select
                 [(ngModel)]="asm.calculatorType"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-primary focus:outline-none focus:border-brand-primary"
               >
-                <option value="NONE">بدون حاسبة (ممنوعة تماماً)</option>
-                <option value="DESMOS">آلة ديسموس البيانية فقط (Desmos Graphing)</option>
+                <option value="NONE">{{ langService.isArabic() ? 'بدون حاسبة' : 'No Calculator' }}</option>
+                <option value="DESMOS">{{ langService.isArabic() ? 'آلة ديسموس البيانية فقط' : 'Desmos Graphing Calculator Only' }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الزمن المتاح (بالدقائق)</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الزمن المتاح (بالدقائق)' : 'Duration (Minutes)' }}</label>
               <input
                 type="number"
                 [(ngModel)]="asm.durationMinutes"
@@ -990,13 +990,13 @@
             </div>
 
             <div>
-              <label class="block font-bold text-text-secondary mb-1">نقاط المكافأة الممنوحة (XP)</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نقاط التميز الممنوحة' : 'XP Points Awarded' }}</label>
               <input
                 type="number"
                 [(ngModel)]="asm.xpReward"
                 min="0"
                 step="5"
-                placeholder="تحددها المعلمة: 50 أو 100 XP"
+                [placeholder]="langService.isArabic() ? 'مثال: 50 أو 100 نقطة' : 'e.g.: 50 or 100 XP'"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg font-mono font-bold text-text-primary focus:outline-none focus:border-brand-primary"
               />
             </div>
@@ -1007,9 +1007,9 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <app-icon name="file-text" [size]="16" className="text-brand-primary" />
-                <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+                <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'ورقة القوانين والمفاهيم:' : 'Formulas & Reference Sheet:' }}</span>
               </div>
-              <span class="text-[11px] text-text-muted">اختياري</span>
+              <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'اختياري' : 'Optional' }}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -1022,7 +1022,7 @@
                 [class.text-brand-primary]="!isRefSheetActiveInCurriculum()"
                 [class.border-surface-border]="isRefSheetActiveInCurriculum()"
               >
-                بدون ورقة قوانين
+                {{ langService.isArabic() ? 'بدون ورقة قوانين' : 'No Reference Sheet' }}
               </button>
 
               <button
@@ -1034,14 +1034,14 @@
                 [class.text-amber-500]="isRefSheetActiveInCurriculum()"
                 [class.border-surface-border]="!isRefSheetActiveInCurriculum()"
               >
-                إرفاق ورقة قوانين (Reference)
+                {{ langService.isArabic() ? 'إرفاق ورقة قوانين' : 'Attach Reference Sheet' }}
               </button>
             </div>
 
             @if (isRefSheetActiveInCurriculum()) {
               <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                 <p class="text-[11px] text-text-secondary leading-relaxed">
-                  أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم (Reference) بجوار الآلة الحاسبة.
+                  {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم بجوار الآلة الحاسبة.' : 'Upload reference sheet image to display to students as a floating panel alongside calculator.' }}
                 </p>
 
                 @if (asm.referenceSheetUrl) {
@@ -1052,16 +1052,16 @@
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
-                      <span class="text-xs font-bold text-emerald-500 block">ورقة القوانين مفعلة ومرفقة بالامتحان</span>
+                      <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'ورقة القوانين مفعلة ومرفقة بالامتحان' : 'Reference sheet active and attached' }}</span>
                       <a [href]="asm.referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
-                        عرض الصورة بالحجم الكامل
+                        {{ langService.isArabic() ? 'عرض الصورة بالحجم الكامل' : 'View Full Image' }}
                       </a>
                     </div>
                     <button
                       type="button"
                       (click)="removeReferenceSheetInCurriculum()"
                       class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                      title="حذف ورقة القوانين"
+                      [title]="langService.isArabic() ? 'حذف ورقة القوانين' : 'Delete reference sheet'"
                     >
                       <app-icon name="trash" [size]="14" />
                     </button>
@@ -1069,7 +1069,7 @@
                 } @else {
                   <app-image-compressor-uploader
                     uploadTarget="question"
-                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    [buttonLabel]="langService.isArabic() ? 'رفع صورة ورقة القوانين' : 'Upload Reference Sheet Image'"
                     (imageUploaded)="onReferenceSheetUploadedInCurriculum($event)"
                   />
                 }
@@ -1080,24 +1080,24 @@
           <!-- Existing Questions List -->
           <div class="space-y-4">
             <span class="font-bold text-text-primary block text-sm">
-              أسئلة الامتحان الحالية ({{ asm.questions.length }}):
+              {{ langService.isArabic() ? ('أسئلة الامتحان الحالية (' + asm.questions.length + '):') : ('Current Exam Questions (' + asm.questions.length + '):') }}
             </span>
 
             @for (q of asm.questions; track q.order) {
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
                 <div class="flex items-center justify-between">
                   <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-                    سؤال رقم {{ q.order }} ({{ q.type }})
+                    {{ langService.isArabic() ? ('سؤال رقم ' + q.order + ' (' + q.type + ')') : ('Question #' + q.order + ' (' + q.type + ')') }}
                   </span>
                   
                   <div class="flex items-center gap-3">
-                    <span class="font-bold text-text-muted">{{ q.points }} درجات</span>
+                    <span class="font-bold text-text-muted">{{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }}</span>
                     <button
                       type="button"
                       (click)="deleteQuestion(q.order)"
                       class="text-rose-500 hover:underline text-[11px] cursor-pointer"
                     >
-                      حذف
+                      {{ langService.isArabic() ? 'حذف' : 'Delete' }}
                     </button>
                   </div>
                 </div>
@@ -1107,7 +1107,7 @@
                 </p>
 
                 @if (q.questionImageUrl) {
-                  <img [src]="q.questionImageUrl" alt="صورة السؤال" class="max-h-48 rounded-xl object-contain border border-surface-border" />
+                  <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question image'" class="max-h-48 rounded-xl object-contain border border-surface-border" />
                 }
 
                 @if (q.type === 'MCQ') {
@@ -1124,7 +1124,7 @@
                         @if (q.correctOptionIndex === $index) {
                           <span class="text-[10px] font-bold flex items-center gap-1">
                             <app-icon name="check" [size]="12" />
-                            <span>الإجابة الصحيحة</span>
+                            <span>{{ langService.isArabic() ? 'الإجابة الصحيحة' : 'Correct Answer' }}</span>
                           </span>
                         }
                       </div>
@@ -1138,24 +1138,24 @@
           <!-- Add New Question Box -->
           <div class="p-5 rounded-2xl border border-dashed border-brand-primary/30 bg-brand-primary/[0.02] space-y-4">
             <span class="font-bold text-brand-primary block text-xs">
-              إضافة سؤال جديد للامتحان (Direct Question Image Upload):
+              {{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان:' : 'Add New Question to Assessment:' }}
             </span>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">نوع السؤال</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نوع السؤال' : 'Question Type' }}</label>
                   <select
                     [ngModel]="newQuestionType()"
                     (ngModelChange)="newQuestionType.set($event)"
                     class="w-full px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card text-xs font-bold"
                   >
-                    <option value="MCQ">اختيار من متعدد (MCQ)</option>
-                    <option value="ESSAY">مسألة مقالية / حل يدوي (ESSAY)</option>
+                    <option value="MCQ">{{ langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice (MCQ)' }}</option>
+                    <option value="ESSAY">{{ langService.isArabic() ? 'مسألة مقالية أو حل يدوي' : 'Essay / Handwritten Problem' }}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">درجات السؤال</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'درجات السؤال' : 'Question Points' }}</label>
                   <input
                     type="number"
                     [ngModel]="newQuestionPoints()"
@@ -1167,12 +1167,12 @@
               </div>
 
               <div>
-                <label class="block font-bold text-text-secondary mb-1">نص السؤال الرياضي</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص السؤال الرياضي' : 'Problem Text Prompt' }}</label>
                 <textarea
                   rows="2"
                   [ngModel]="newQuestionTextAr()"
                   (ngModelChange)="newQuestionTextAr.set($event)"
-                  placeholder="اكتب منطوق المسألة أو التحدي الرياضي هنا..."
+                  [placeholder]="langService.isArabic() ? 'اكتب منطوق المسألة أو التحدي الرياضي هنا...' : 'Type problem statement or math question here...'"
                   class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs"
                 ></textarea>
               </div>
@@ -1180,7 +1180,7 @@
               <!-- Direct Device Image Uploader Embedding -->
               <div>
                 <label class="block font-bold text-text-secondary mb-1">
-                  رفع صورة السؤال مباشرة من جهاز المعلمة (spider-math-questions/):
+                  {{ langService.isArabic() ? 'رفع صورة السؤال مباشرة من جهاز المعلمة:' : 'Upload question image from device:' }}
                 </label>
                 <app-image-compressor-uploader
                   uploadTarget="question"
@@ -1192,7 +1192,7 @@
               <!-- Options for MCQ -->
               @if (newQuestionType() === 'MCQ') {
                 <div class="space-y-2">
-                  <span class="font-bold text-text-secondary block">خيارات السؤال الأربعة (إلزامية لسؤال الاختيار من متعدد):</span>
+                  <span class="font-bold text-text-secondary block">{{ langService.isArabic() ? 'خيارات السؤال الأربعة (إلزامية لسؤال الاختيار من متعدد):' : 'Four Options (Required for MCQ):' }}</span>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     @for (opt of newQuestionOptions(); track $index) {
                       <div class="flex items-center gap-2">
@@ -1206,7 +1206,7 @@
                           type="text"
                           [ngModel]="newQuestionOptions()[$index]"
                           (ngModelChange)="newQuestionOptions()[$index] = $event"
-                          [placeholder]="'الخيار ' + ($index + 1)"
+                          [placeholder]="langService.isArabic() ? ('الخيار ' + ($index + 1)) : ('Option ' + ($index + 1))"
                           class="flex-1 px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card text-xs"
                         />
                       </div>
@@ -1217,9 +1217,9 @@
                 <div class="p-3 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-start gap-2">
                   <app-icon name="alert-circle" [size]="15" className="text-brand-primary mt-0.5 shrink-0" />
                   <div class="text-xs">
-                    <span class="font-bold text-text-primary">سؤال مقالي / بياني (بدون اختيارات):</span>
+                    <span class="font-bold text-text-primary">{{ langService.isArabic() ? 'سؤال مقالي أو بياني (بدون اختيارات):' : 'Essay / Graphing Problem (No options):' }}</span>
                     <p class="text-text-secondary mt-0.5">
-                      لا يشترط إضافة اختيارات لهذا السؤال. سيقوم الطالب برفع صورة الحل من كاميرا الموبايل.
+                      {{ langService.isArabic() ? 'لا يشترط إضافة اختيارات لهذا السؤال. سيقوم الطالب برفع صورة الحل من كاميرا الموبايل.' : 'No options required for this question. Students upload their handwritten solution.' }}
                     </p>
                   </div>
                 </div>
@@ -1232,7 +1232,7 @@
                   class="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-brand-primary hover:bg-brand-secondary shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <app-icon name="plus" [size]="15" />
-                  <span>تأكيد إضافة السؤال للامتحان</span>
+                  <span>{{ langService.isArabic() ? 'تأكيد إضافة السؤال للامتحان' : 'Confirm Question Addition' }}</span>
                 </button>
               </div>
             </div>
@@ -1246,7 +1246,7 @@
             (click)="isAssessmentEditorOpen.set(false)"
             class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -1255,7 +1255,7 @@
             class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>اعتماد وحفظ إعدادات الامتحان</span>
+            <span>{{ langService.isArabic() ? 'اعتماد وحفظ إعدادات الامتحان' : 'Publish & Save Assessment Settings' }}</span>
           </button>
         </div>
 
@@ -1274,11 +1274,11 @@
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-brand-primary animate-pulse"></span>
               <h3 class="text-lg font-black text-text-primary tracking-tight flex items-center gap-2">
-                <span>مدير تفعيل الصفوف والمناهج الدراسية (Active Grades Studio)</span>
+                <span>{{ langService.isArabic() ? 'مدير تفعيل الصفوف والمناهج الدراسية' : 'Active Grades & Curricula Manager' }}</span>
               </h3>
             </div>
             <p class="text-xs text-text-secondary mt-1 max-w-2xl leading-relaxed">
-              حددي الصفوف والمراحل الدراسية التي ستقومين بتدريسها هذا العام في كل قسم. يمكنك إضافة صف جديد، تعديل اسمه وكوده، أو حذفه من أي قسم. الصفوف غير المفعلة ستظهر تلقائياً بحالة (قريباً بإذن الله Coming Soon) للطلاب.
+              {{ langService.isArabic() ? 'حددي الصفوف والمراحل الدراسية التي ستقومين بتدريسها هذا العام في كل قسم. يمكنك إضافة صف جديد، تعديل اسمه وكوده، أو حذفه من أي قسم. الصفوف غير المفعلة ستظهر تلقائياً بحالة قريباً للطلاب.' : 'Select teaching grades for this year. Inactive grades will automatically display as Coming Soon to students.' }}
             </p>
           </div>
 
@@ -1287,10 +1287,10 @@
               type="button"
               (click)="openAddGrade()"
               class="px-4 py-2 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
-              title="إضافة صف أو مرحلة دراسية لأي منهج"
+              [title]="langService.isArabic() ? 'إضافة صف أو مرحلة دراسية لأي منهج' : 'Add grade level to curriculum'"
             >
               <app-icon name="plus" [size]="14" />
-              <span>إضافة صف دراسي</span>
+              <span>{{ langService.isArabic() ? 'إضافة صف دراسي' : 'Add Grade Level' }}</span>
             </button>
 
             <button
@@ -1316,7 +1316,7 @@
                     {{ track.nameAr }}
                   </span>
                   <span class="text-[11px] font-bold text-text-muted">
-                    ({{ track.grades.length }} صفوف دراسية)
+                    ({{ track.grades.length }} {{ langService.isArabic() ? 'صفوف دراسية' : 'Grade Levels' }})
                   </span>
                 </div>
               </div>
@@ -1355,14 +1355,14 @@
                         [class.bg-amber-500/10]="!isGradeActive(grade.code)"
                         [class.text-amber-500]="!isGradeActive(grade.code)"
                         [class.border-amber-500/20]="!isGradeActive(grade.code)"
-                        title="انقري للتبديل بين مفعل للتدريس وقريباً"
+                        [title]="langService.isArabic() ? 'انقري للتبديل بين مفعل للتدريس وقريباً' : 'Toggle between Active and Coming Soon'"
                       >
                         @if (isGradeActive(grade.code)) {
                           <app-icon name="check-circle" [size]="12" />
-                          <span>مفعل للتدريس</span>
+                          <span>{{ langService.isArabic() ? 'مفعل للتدريس' : 'Active for Teaching' }}</span>
                         } @else {
                           <app-icon name="clock" [size]="12" />
-                          <span>قريباً</span>
+                          <span>{{ langService.isArabic() ? 'قريباً' : 'Soon' }}</span>
                         }
                       </button>
 
@@ -1371,7 +1371,7 @@
                         type="button"
                         (click)="openEditGrade(track.code, grade)"
                         class="p-1.5 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-brand-primary hover:border-brand-primary transition-all cursor-pointer"
-                        title="تعديل اسم أو كود هذا الصف"
+                        [title]="langService.isArabic() ? 'تعديل اسم أو كود هذا الصف' : 'Edit grade title or code'"
                       >
                         <app-icon name="edit" [size]="13" />
                       </button>
@@ -1381,7 +1381,7 @@
                         type="button"
                         (click)="deleteGrade(track.code, grade.code)"
                         class="p-1.5 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all cursor-pointer"
-                        title="حذف هذا الصف الدراسي نهائياً"
+                        [title]="langService.isArabic() ? 'حذف هذا الصف الدراسي نهائياً' : 'Delete grade permanently'"
                       >
                         <app-icon name="trash" [size]="13" />
                       </button>
@@ -1401,7 +1401,7 @@
             (click)="closeGradesModal()"
             class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -1411,7 +1411,7 @@
             class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>{{ isSavingActiveGrades() ? 'جارٍ الحفظ...' : 'تأكيد وحفظ كل التعديلات' }}</span>
+            <span>{{ isSavingActiveGrades() ? (langService.isArabic() ? 'جارٍ الحفظ...' : 'Saving...') : (langService.isArabic() ? 'تأكيد وحفظ كل التعديلات' : 'Confirm & Save All Changes') }}</span>
           </button>
         </div>
 
@@ -1427,7 +1427,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
             <app-icon name="sliders" [size]="16" className="text-brand-primary" />
-            <span>{{ gradeModal().mode === 'add' ? 'إضافة صف أو مرحلة دراسية' : 'تعديل بيانات الصف الدراسي' }}</span>
+            <span>{{ gradeModal().mode === 'add' ? (langService.isArabic() ? 'إضافة صف أو مرحلة دراسية' : 'Add Grade Level') : (langService.isArabic() ? 'تعديل بيانات الصف الدراسي' : 'Edit Grade Level') }}</span>
           </h3>
           <button
             type="button"
@@ -1441,24 +1441,24 @@
         <div class="space-y-4 text-xs">
           <!-- 1. Curriculum Track Selector Dropdown -->
           <div>
-            <label class="block font-bold text-text-secondary mb-1.5">المنهج الدراسي:</label>
+            <label class="block font-bold text-text-secondary mb-1.5">{{ langService.isArabic() ? 'المنهج الدراسي:' : 'Curriculum:' }}</label>
             <select
               [ngModel]="gradeModal().trackCode"
               (ngModelChange)="onModalCurriculumChange($event)"
               [disabled]="gradeModal().mode === 'edit'"
               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold text-xs focus:border-brand-primary outline-none disabled:opacity-60 cursor-pointer"
             >
-              <option value="EGYPTIAN">المنهج المصري</option>
-              <option value="GULF">المنهج الخليجي</option>
-              <option value="INTERNATIONAL">المناهج الدولية (IGCSE / British)</option>
-              <option value="AMERICAN">الدبلومة الأمريكية (SAT • EST • ACT)</option>
+              <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
+              <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
+              <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية (IGCSE)' : 'International Curricula (IGCSE / British)' }}</option>
+              <option value="AMERICAN">{{ langService.isArabic() ? 'الدبلومة الأمريكية (SAT)' : 'American Diploma (SAT / EST / ACT)' }}</option>
             </select>
           </div>
 
           <!-- 2. Grade Level Canonical Selector Dropdown (From 1st Primary to 3rd Secondary) -->
           <div>
             <label class="block font-bold text-text-secondary mb-1.5">
-              الصف أو المرحلة الدراسية (مدرجة رسمياً من الابتدائي للثانوي):
+              {{ langService.isArabic() ? 'الصف أو المرحلة الدراسية:' : 'Standard Grade Level:' }}
             </label>
             <select
               [ngModel]="gradeModal().selectedCanonicalCode"
@@ -1472,14 +1472,14 @@
               }
             </select>
             <p class="text-[10px] text-text-muted mt-1">
-              يتم اختيار الصف من القائمة القياسية لضمان التوافق التام مع تسجيل الطلاب وبنك الامتحانات بدون أي أخطاء.
+              {{ langService.isArabic() ? 'يتم اختيار الصف من القائمة القياسية لضمان التوافق التام مع تسجيل الطلاب وبنك الامتحانات بدون أي أخطاء.' : 'Select grade from canonical list to ensure full database consistency.' }}
             </p>
           </div>
 
           <!-- 3. Preview Selected Grade Info Card (Zero Underscore Display) -->
           <div class="p-3.5 rounded-2xl border border-brand-primary/20 bg-brand-primary/5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold text-brand-primary">بيانات الصف المعتمدة:</span>
+              <span class="text-[10px] font-bold text-brand-primary">{{ langService.isArabic() ? 'بيانات الصف المعتمدة:' : 'Approved Grade Details:' }}</span>
               <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-brand-primary/15 text-brand-primary">
                 {{ formatGradeDisplay(gradeModal().code, gradeModal().titleEn) }}
               </span>
@@ -1492,7 +1492,7 @@
           @if (gradeModal().mode === 'edit') {
             <div class="space-y-3 pt-2 border-t border-surface-border">
               <div>
-                <label class="block font-bold text-text-secondary mb-1">تخصيص الاسم بالعربية (اختياري):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'تخصيص الاسم بالعربية (اختياري):' : 'Custom Arabic Title (Optional):' }}</label>
                 <input
                   type="text"
                   [(ngModel)]="gradeModal().titleAr"
@@ -1500,7 +1500,7 @@
                 />
               </div>
               <div>
-                <label class="block font-bold text-text-secondary mb-1">تخصيص الاسم بالإنجليزية (اختياري):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'تخصيص الاسم بالإنجليزية (اختياري):' : 'Custom English Title (Optional):' }}</label>
                 <input
                   type="text"
                   [(ngModel)]="gradeModal().titleEn"
@@ -1517,7 +1517,7 @@
             (click)="closeGradeModal()"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-secondary font-bold text-xs cursor-pointer hover:bg-surface-card"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -1526,7 +1526,7 @@
             class="px-5 py-2 rounded-xl text-white font-bold text-xs bg-gradient-spider hover:opacity-95 transition-all cursor-pointer flex items-center gap-1.5"
           >
             <app-icon name="check" [size]="14" />
-            <span>{{ gradeModal().mode === 'add' ? 'إضافة الصف للقسم' : 'حفظ التعديلات' }}</span>
+            <span>{{ gradeModal().mode === 'add' ? (langService.isArabic() ? 'إضافة الصف للقسم' : 'Add Grade to Curriculum') : (langService.isArabic() ? 'حفظ التعديلات' : 'Save Changes') }}</span>
           </button>
         </div>
 
@@ -1596,7 +1596,7 @@
         <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
           <div>
             <h3 class="text-base font-black text-text-primary">
-              إضافة تقييم جديد للوحدة
+              {{ langService.isArabic() ? 'إضافة تقييم جديد للوحدة' : 'Add New Assessment to Unit' }}
             </h3>
             <p class="text-xs text-text-secondary mt-0.5">
               {{ activeUnitForAssessment()?.titleAr }}
@@ -1615,7 +1615,7 @@
         <div class="p-6 space-y-4 text-xs">
           <!-- Assessment Type Selection -->
           <div>
-            <label class="font-bold text-text-primary block mb-1.5">نوع التقييم المطلوب إنشاؤه:</label>
+            <label class="font-bold text-text-primary block mb-1.5">{{ langService.isArabic() ? 'نوع التقييم المطلوب إنشاؤه:' : 'Select Assessment Type to Create:' }}</label>
             <div class="grid grid-cols-3 gap-2">
               <!-- Quiz -->
               <button
@@ -1632,8 +1632,8 @@
                 [class.text-text-secondary]="newAssessmentForm().type !== 'QUIZ'"
               >
                 <app-icon name="target" [size]="18" />
-                <span class="font-black text-xs">كويز تقييمي</span>
-                <span class="text-[10px] text-text-muted leading-tight">Quiz تفاعلي سريع</span>
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'كويز تقييمي' : 'Interactive Quiz' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'اختبار تفاعلي سريع' : 'Fast Interactive Quiz' }}</span>
               </button>
 
               <!-- Homework -->
@@ -1651,8 +1651,8 @@
                 [class.text-text-secondary]="newAssessmentForm().type !== 'HOMEWORK'"
               >
                 <app-icon name="edit" [size]="18" />
-                <span class="font-black text-xs">واجب منزلي</span>
-                <span class="text-[10px] text-text-muted leading-tight">Homework حل ورفع كشكول</span>
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'حل ورفع كشكول' : 'Handwritten Solution Upload' }}</span>
               </button>
 
               <!-- Comprehensive Exam -->
@@ -1670,8 +1670,8 @@
                 [class.text-text-secondary]="newAssessmentForm().type !== 'COMPREHENSIVE_EXAM'"
               >
                 <app-icon name="award" [size]="18" />
-                <span class="font-black text-xs">امتحان شامل</span>
-                <span class="text-[10px] text-text-muted leading-tight">Exam على كامل الوحدة</span>
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'امتحان شامل' : 'Comprehensive Exam' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'على كامل الوحدة' : 'Full Unit Assessment' }}</span>
               </button>
             </div>
 
@@ -1679,7 +1679,7 @@
               <div class="mt-2.5 p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in">
                 <app-icon name="edit" [size]="14" className="shrink-0 mt-0.5" />
                 <span>
-                  <strong>ميزة الواجب المنزلي:</strong> يتيح للطلاب كتابة خطوات الحل يدوياً في كشكولهم وتصويره ورفعه مباشرة عبر كاميرا الهاتف، ويصلك في استوديو التصحيح الذكي لتصحيحه ووضع الدرجات والملاحظات.
+                  {{ langService.isArabic() ? 'ميزة الواجب المنزلي: يتيح للطلاب كتابة خطوات الحل يدوياً في كشكولهم وتصويره ورفعه مباشرة عبر كاميرا الهاتف، ويصلك في استوديو التصحيح الذكي لتصحيحه ووضع الدرجات والملاحظات.' : 'Homework Feature: Allows students to write steps by hand, take a photo via phone camera, and receive manual feedback in your grading studio.' }}
                 </span>
               </div>
             }
@@ -1688,13 +1688,13 @@
           <!-- Assessment Title -->
           <div>
             <label class="font-bold text-text-primary block mb-1">
-              {{ newAssessmentForm().type === 'HOMEWORK' ? 'عنوان الواجب المنزلي (بالعربية):' : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? 'عنوان الامتحان الشامل (بالعربية):' : 'عنوان الكويز التقييمي (بالعربية):') }}
+              {{ newAssessmentForm().type === 'HOMEWORK' ? (langService.isArabic() ? 'عنوان الواجب المنزلي (بالعربية):' : 'Homework Title (Arabic):') : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? (langService.isArabic() ? 'عنوان الامتحان الشامل (بالعربية):' : 'Exam Title (Arabic):') : (langService.isArabic() ? 'عنوان الكويز التقييمي (بالعربية):' : 'Quiz Title (Arabic):')) }}
             </label>
             <input
               type="text"
               [ngModel]="newAssessmentForm().titleAr"
               (ngModelChange)="newAssessmentForm().titleAr = $event"
-              [placeholder]="newAssessmentForm().type === 'HOMEWORK' ? 'مثال: واجب 01: مسائل وتطبيقات على الدرس الأول' : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? 'مثال: امتحان شامل محدد بوقت على كامل الوحدة' : 'مثال: كويز سريع ومراجعة بعد الدرس الأول')"
+              [placeholder]="newAssessmentForm().type === 'HOMEWORK' ? (langService.isArabic() ? 'مثال: واجب 01: مسائل وتطبيقات على الدرس الأول' : 'e.g.: Homework 01: Lesson 1 Applications') : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? (langService.isArabic() ? 'مثال: امتحان شامل محدد بوقت على كامل الوحدة' : 'e.g.: Comprehensive Unit Exam') : (langService.isArabic() ? 'مثال: كويز سريع ومراجعة بعد الدرس الأول' : 'e.g.: Quick Assessment Quiz'))"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
             />
           </div>
@@ -1704,10 +1704,10 @@
             <div class="flex items-center justify-between mb-1">
               <label class="font-bold text-text-primary flex items-center gap-1.5">
                 <app-icon name="sparkles" [size]="14" className="text-brand-primary" />
-                <span>نقاط الـ XP الممنوحة للطالب:</span>
+                <span>{{ langService.isArabic() ? 'نقاط التميز الممنوحة للطالب:' : 'XP Points Awarded to Student:' }}</span>
                 <span class="text-rose-500 font-bold">*</span>
               </label>
-              <span class="text-[11px] text-brand-primary font-bold">المعلمة هي من تحدد القيمة</span>
+              <span class="text-[11px] text-brand-primary font-bold">{{ langService.isArabic() ? 'المعلمة هي من تحدد القيمة' : 'Customized by Teacher' }}</span>
             </div>
             <input
               type="number"
@@ -1715,18 +1715,18 @@
               (ngModelChange)="newAssessmentForm().xpReward = $event"
               min="0"
               step="5"
-              placeholder="أدخلي عدد نقاط الـ XP (مثال: 50 أو 100 أو 150 XP)..."
+              [placeholder]="langService.isArabic() ? 'أدخلي عدد النقاط (مثال: 50 أو 100)...' : 'Enter XP points (e.g.: 50 or 100)...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary font-mono font-bold"
             />
             <p class="text-[10px] text-text-muted mt-1">
-              تمنح هذه النقاط فورياً للطالب عند إكمال التقييم أو تصحيح الواجب لرفع مستواه في المنصة ولوحة الشرف.
+              {{ langService.isArabic() ? 'تمنح هذه النقاط فورياً للطالب عند إكمال التقييم أو تصحيح الواجب لرفع مستواه في المنصة ولوحة الشرف.' : 'These points are awarded instantly upon submission or manual grading to elevate student leaderboard ranking.' }}
             </p>
           </div>
 
           <!-- Duration and Calculator -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="font-bold text-text-primary block mb-1">الزمن المتاح (بالدقائق):</label>
+              <label class="font-bold text-text-primary block mb-1">{{ langService.isArabic() ? 'الزمن المتاح (بالدقائق):' : 'Available Duration (Minutes):' }}</label>
               <input
                 type="number"
                 [ngModel]="newAssessmentForm().durationMinutes"
@@ -1736,19 +1736,19 @@
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary font-mono font-bold"
               />
               <span class="text-[10px] text-text-muted block mt-0.5">
-                {{ newAssessmentForm().type === 'HOMEWORK' ? 'يمكن تحديده بـ 60 دقيقة أو أكثر' : 'زمن المحاولة للاختبار' }}
+                {{ newAssessmentForm().type === 'HOMEWORK' ? (langService.isArabic() ? 'يمكن تحديده بـ 60 دقيقة أو أكثر' : 'Can be set to 60 mins or more') : (langService.isArabic() ? 'زمن المحاولة للاختبار' : 'Exam Attempt Duration') }}
               </span>
             </div>
 
             <div>
-              <label class="font-bold text-text-primary block mb-1">الآلة الحاسبة:</label>
+              <label class="font-bold text-text-primary block mb-1">{{ langService.isArabic() ? 'الآلة الحاسبة:' : 'Calculator:' }}</label>
               <select
                 [ngModel]="newAssessmentForm().calculatorType"
                 (ngModelChange)="newAssessmentForm().calculatorType = $event"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
               >
-                <option value="NONE">بدون حاسبة بيانية</option>
-                <option value="DESMOS">آلة ديسموس الهندسية (Desmos)</option>
+                <option value="NONE">{{ langService.isArabic() ? 'بدون حاسبة بيانية' : 'No Graphing Calculator' }}</option>
+                <option value="DESMOS">{{ langService.isArabic() ? 'آلة ديسموس البيانية' : 'Desmos Graphing Calculator' }}</option>
               </select>
             </div>
           </div>
@@ -1758,9 +1758,9 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <app-icon name="file-text" [size]="16" className="text-brand-primary" />
-                <span class="font-bold text-text-primary text-xs">ورقة القوانين والمفاهيم (Reference Sheet):</span>
+                <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'ورقة القوانين والمفاهيم:' : 'Formulas & Reference Sheet:' }}</span>
               </div>
-              <span class="text-[11px] text-text-muted">اختياري</span>
+              <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'اختياري' : 'Optional' }}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -1773,7 +1773,7 @@
                 [class.text-brand-primary]="!isRefSheetActiveInCreateAssessment()"
                 [class.border-surface-border]="isRefSheetActiveInCreateAssessment()"
               >
-                بدون ورقة قوانين
+                {{ langService.isArabic() ? 'بدون ورقة قوانين' : 'No Reference Sheet' }}
               </button>
 
               <button
@@ -1785,14 +1785,14 @@
                 [class.text-amber-500]="isRefSheetActiveInCreateAssessment()"
                 [class.border-surface-border]="!isRefSheetActiveInCreateAssessment()"
               >
-                إرفاق ورقة قوانين (Reference)
+                {{ langService.isArabic() ? 'إرفاق ورقة قوانين' : 'Attach Reference Sheet' }}
               </button>
             </div>
 
             @if (isRefSheetActiveInCreateAssessment()) {
               <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                 <p class="text-[11px] text-text-secondary leading-relaxed">
-                  أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم (Reference) بجوار الآلة الحاسبة.
+                  {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل هذا التقييم كزر عائم بجوار الآلة الحاسبة.' : 'Upload reference sheet image to display to students as a floating panel alongside calculator.' }}
                 </p>
 
                 @if (newAssessmentForm().referenceSheetUrl) {
@@ -1803,16 +1803,16 @@
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
-                      <span class="text-xs font-bold text-emerald-500 block">تم رفع ورقة القوانين بنجاح</span>
+                      <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'تم رفع ورقة القوانين بنجاح' : 'Reference sheet uploaded successfully' }}</span>
                       <a [href]="newAssessmentForm().referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
-                        عرض الصورة بالحجم الكامل
+                        {{ langService.isArabic() ? 'عرض الصورة بالحجم الكامل' : 'View Full Image' }}
                       </a>
                     </div>
                     <button
                       type="button"
                       (click)="removeReferenceSheetInCreateAssessment()"
                       class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                      title="حذف ورقة القوانين"
+                      [title]="langService.isArabic() ? 'حذف ورقة القوانين' : 'Delete reference sheet'"
                     >
                       <app-icon name="trash" [size]="14" />
                     </button>
@@ -1820,7 +1820,7 @@
                 } @else {
                   <app-image-compressor-uploader
                     uploadTarget="question"
-                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    [buttonLabel]="langService.isArabic() ? 'رفع صورة ورقة القوانين' : 'Upload Reference Sheet Image'"
                     (imageUploaded)="onReferenceSheetUploadedInCreateAssessment($event)"
                   />
                 }
@@ -1835,7 +1835,7 @@
             (click)="isCreateAssessmentModalOpen.set(false)"
             class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -1845,7 +1845,7 @@
           >
             <app-icon name="plus" [size]="14" />
             <span>
-              {{ newAssessmentForm().type === 'HOMEWORK' ? 'حفظ ونشر الواجب المنزلي' : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? 'حفظ ونشر الامتحان الشامل' : 'حفظ ونشر الكويز التقييمي') }}
+              {{ newAssessmentForm().type === 'HOMEWORK' ? (langService.isArabic() ? 'حفظ ونشر الواجب المنزلي' : 'Save & Publish Homework') : (newAssessmentForm().type === 'COMPREHENSIVE_EXAM' ? (langService.isArabic() ? 'حفظ ونشر الامتحان الشامل' : 'Save & Publish Exam') : (langService.isArabic() ? 'حفظ ونشر الكويز التقييمي' : 'Save & Publish Quiz')) }}
             </span>
           </button>
         </div>

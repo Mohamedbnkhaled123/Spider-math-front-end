@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { DeviceFingerprintService } from '../../../core/auth/device-fingerprint.service';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
   CANONICAL_CURRICULUM_TREE,
@@ -36,6 +37,7 @@ export class LoginPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
+  readonly langService = inject(LangService);
 
   // Active navigation tab
   readonly activeTab = signal<LoginTab>('student');

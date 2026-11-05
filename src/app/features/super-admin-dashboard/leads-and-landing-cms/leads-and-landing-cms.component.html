@@ -6,14 +6,14 @@
       <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
         <div>
           <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
-            سجل متابعة العملاء المحتملين (Leads CRM)
+            {{ langService.isArabic() ? 'سجل متابعة العملاء المحتملين' : 'Leads CRM Record' }}
           </h2>
           <p class="text-xs text-text-secondary mt-0.5">
-            الطلاب الذين أدوا امتحان تحديد المستوى أو سجلوا بياناتهم للتواصل عبر واتساب.
+            {{ langService.isArabic() ? 'الطلاب الذين أدوا امتحان تحديد المستوى أو سجلوا بياناتهم للتواصل عبر واتساب.' : 'Students who took the placement test or registered for WhatsApp consultation.' }}
           </p>
         </div>
         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-          {{ leadsList().length }} عملاء مسجلين
+          {{ leadsList().length }} {{ langService.isArabic() ? 'عملاء مسجلين' : 'Registered Leads' }}
         </span>
       </div>
 
@@ -21,13 +21,13 @@
         <table class="w-full text-right rtl:text-right text-xs">
           <thead class="bg-surface-card border-b border-surface-border text-text-muted font-bold">
             <tr>
-              <th class="p-4">الاسم</th>
-              <th class="p-4">المنهج والصف</th>
-              <th class="p-4">درجة التحديد</th>
-              <th class="p-4">رقم الطالب</th>
-              <th class="p-4">رقم ولي الأمر</th>
-              <th class="p-4">الحالة</th>
-              <th class="p-4 text-center">التواصل</th>
+              <th class="p-4">{{ langService.isArabic() ? 'الاسم' : 'Name' }}</th>
+              <th class="p-4">{{ langService.isArabic() ? 'المنهج والصف' : 'Curriculum & Grade' }}</th>
+              <th class="p-4">{{ langService.isArabic() ? 'درجة التحديد' : 'Placement Score' }}</th>
+              <th class="p-4">{{ langService.isArabic() ? 'رقم الطالب' : 'Student Phone' }}</th>
+              <th class="p-4">{{ langService.isArabic() ? 'رقم ولي الأمر' : 'Parent Phone' }}</th>
+              <th class="p-4">{{ langService.isArabic() ? 'الحالة' : 'Status' }}</th>
+              <th class="p-4 text-center">{{ langService.isArabic() ? 'التواصل' : 'Contact' }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-surface-border">
@@ -48,7 +48,7 @@
                     [class.bg-emerald-500/10]="lead.status === 'REGISTERED'"
                     [class.text-emerald-500]="lead.status === 'REGISTERED'"
                   >
-                    {{ lead.status === 'NEW' ? 'جديد' : lead.status === 'CONTACTED' ? 'تم التواصل' : 'مشترك رسمي' }}
+                    {{ lead.status === 'NEW' ? (langService.isArabic() ? 'جديد' : 'New') : lead.status === 'CONTACTED' ? (langService.isArabic() ? 'تم التواصل' : 'Contacted') : (langService.isArabic() ? 'مشترك رسمي' : 'Subscribed') }}
                   </span>
                 </td>
                 <td class="p-4 text-center">
@@ -59,14 +59,14 @@
                       class="px-3 py-1.5 rounded-xl font-bold text-[11px] text-white bg-emerald-600 hover:bg-emerald-700 transition-all inline-flex items-center gap-1 cursor-pointer shadow-sm"
                     >
                       <app-icon name="message-circle" [size]="13" />
-                      <span>واتساب</span>
+                      <span>{{ langService.isArabic() ? 'واتساب' : 'WhatsApp' }}</span>
                     </button>
                     @if (lead.status === 'NEW') {
                       <button
                         type="button"
                         (click)="setLeadStatus(lead, 'CONTACTED')"
                         class="p-1.5 rounded-lg border border-surface-border hover:bg-surface-card text-text-muted hover:text-text-primary text-[10px]"
-                        title="تحديث كـ تم التواصل"
+                        [title]="langService.isArabic() ? 'تحديث الحالة: تم التواصل' : 'Mark as Contacted'"
                       >
                         <app-icon name="check" [size]="12" />
                       </button>
@@ -77,7 +77,7 @@
             } @empty {
               <tr>
                 <td colspan="7" class="p-8 text-center text-xs text-text-muted">
-                  لا توجد طلبات Leads أو عملاء جدد مسجلين حالياً.
+                  {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
                 </td>
               </tr>
             }
@@ -95,13 +95,13 @@
       <div>
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 text-[11px] font-black mb-1.5">
           <app-icon name="sparkles" [size]="13" />
-          <span>التحكم الشامل في نصوص المنصة (CMS ثنائي اللغة)</span>
+          <span>{{ langService.isArabic() ? 'التحكم الشامل في نصوص المنصة' : 'Platform Bilingual Content Management (CMS)' }}</span>
         </div>
         <h3 class="text-lg sm:text-xl font-black text-text-primary tracking-tight">
-          محرر محتوى الصفحة الرئيسية (Landing Page CMS)
+          {{ langService.isArabic() ? 'محرر محتوى الصفحة الرئيسية' : 'Landing Page CMS Editor' }}
         </h3>
         <p class="text-xs text-text-secondary mt-0.5">
-          يمكنك تعديل كل حرف وكلمة تظهر للزوار في الواجهة الرئيسية بالعربية والإنجليزية مع الحفظ الفوري.
+          {{ langService.isArabic() ? 'يمكنك تعديل كل حرف وكلمة تظهر للزوار في الواجهة الرئيسية بالعربية والإنجليزية مع الحفظ الفوري.' : 'Edit platform text for visitors in both Arabic and English with instant publish.' }}
         </p>
       </div>
 
@@ -112,7 +112,7 @@
         class="px-5 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
       >
         <app-icon name="check" [size]="16" />
-        <span>حفظ ونشر التعديلات فورياً</span>
+        <span>{{ langService.isArabic() ? 'حفظ ونشر التعديلات فورياً' : 'Save & Publish Changes' }}</span>
       </button>
     </div>
 
@@ -130,7 +130,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'AR'"
       >
         <app-icon name="globe" [size]="14" />
-        <span>المحتوى العربي (Arabic)</span>
+        <span>{{ langService.isArabic() ? 'المحتوى العربي' : 'Arabic Content' }}</span>
       </button>
 
       <button
@@ -145,7 +145,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'EN'"
       >
         <app-icon name="globe" [size]="14" />
-        <span>المحتوى الإنجليزي (English)</span>
+        <span>{{ langService.isArabic() ? 'المحتوى الإنجليزي' : 'English Content' }}</span>
       </button>
 
       <button
@@ -160,7 +160,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'GENERAL'"
       >
         <app-icon name="settings" [size]="14" />
-        <span>الإعدادات العامة والميديا</span>
+        <span>{{ langService.isArabic() ? 'الإعدادات العامة والوسائط' : 'General & Media Settings' }}</span>
       </button>
 
       <button
@@ -175,7 +175,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'UNITS'"
       >
         <app-icon name="book-open" [size]="14" />
-        <span>الوحدات المعروضة لصفحة الهبوط ({{ editableCms().landingUnitIds?.length || 0 }})</span>
+        <span>{{ langService.isArabic() ? ('الوحدات المعروضة لصفحة الهبوط (' + (editableCms().landingUnitIds?.length || 0) + ')') : ('Showcased Landing Units (' + (editableCms().landingUnitIds?.length || 0) + ')') }}</span>
       </button>
     </div>
 
@@ -189,14 +189,14 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
           <div class="flex items-center gap-2 text-brand-primary font-black text-sm">
             <span>✦</span>
-            <h4>شريط الإعلانات العاجل (باللغة العربية)</h4>
+            <h4>{{ langService.isArabic() ? 'شريط الإعلانات العاجل' : 'Urgent Announcement Bar (Arabic)' }}</h4>
           </div>
           <div>
-            <label class="block font-bold text-text-secondary mb-1">نص الإعلان أو الخصم الذي يظهر بأعلى المنصة:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الإعلان أو الخصم الذي يظهر بأعلى المنصة:' : 'Banner Announcement Text (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().announcementBannerText"
-              placeholder="مثال: ✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول ✦"
+              [placeholder]="langService.isArabic() ? 'مثال: ✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول ✦' : 'e.g.: ✦ Limited discount on first term packages ✦'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold focus:outline-none focus:border-brand-primary"
             />
           </div>
@@ -206,56 +206,56 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="sparkles" [size]="16" />
-            <h4>الواجهة الرئيسية (Hero Section - عربي)</h4>
+            <h4>{{ langService.isArabic() ? 'الواجهة الرئيسية' : 'Hero Section (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">شارة / وسم الهيرو (Hero Badge):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة الواجهة الرئيسية:' : 'Hero Badge (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().heroBadgeAr"
-                placeholder="مثال: Spider Math✦ المنظومة الهندسية الرائدة"
+                [placeholder]="langService.isArabic() ? 'مثال: ✦ المنظومة الهندسية الرائدة' : 'e.g.: Spider Math ✦ Engineering Excellence'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">نص الزر الأول (Primary CTA):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الزر الأساسي:' : 'Primary Action Button (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().heroCtaPrimaryAr"
-                placeholder="مثال: اختار منهجك وابدأ الآن"
+                [placeholder]="langService.isArabic() ? 'مثال: اختار منهجك وابدأ الآن' : 'e.g.: Choose Your Curriculum & Start'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">العنوان الرئيسي الكبير (Headline):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان الرئيسي الكبير:' : 'Main Headline (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().heroHeadlineAr"
-              placeholder="العنوان الرئيسي للمنصة..."
+              [placeholder]="langService.isArabic() ? 'العنوان الرئيسي للمنصة...' : 'Platform main headline...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm"
             />
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي (Subheadline):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الوصف الفرعي:' : 'Subheadline (Arabic):' }}</label>
             <textarea
               rows="2"
               [(ngModel)]="editableCms().heroSubheadlineAr"
-              placeholder="الوصف التوضيحي تحت العنوان الرئيسي..."
+              [placeholder]="langService.isArabic() ? 'الوصف التوضيحي تحت العنوان الرئيسي...' : 'Subheadline description...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
             ></textarea>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">نص الزر الثاني (Secondary CTA):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الزر الثانوي:' : 'Secondary Action Button (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().heroCtaSecondaryAr"
-              placeholder="مثال: امتحان تحديد المستوى المجاني"
+              [placeholder]="langService.isArabic() ? 'مثال: امتحان تحديد المستوى المجاني' : 'e.g.: Free Placement Test'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
             />
           </div>
@@ -265,49 +265,49 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
-            <h4>قسم نبذة المعلمة ومؤهلاتها (Teacher Bio - عربي)</h4>
+            <h4>{{ langService.isArabic() ? 'قسم نبذة المعلمة ومؤهلاتها' : 'Teacher Profile & Bio (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">اسم المعلمة بالعربي:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'اسم المعلمة:' : 'Teacher Name (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().teacherNameAr"
-                placeholder="مثال: المهندسة / هبة عبدالوهاب"
+                [placeholder]="langService.isArabic() ? 'مثال: المهندسة / هبة عبدالوهاب' : 'e.g.: Eng. Heba Abdelwahab'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">اللقب والصفة المهنية:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'اللقب والصفة المهنية:' : 'Professional Title (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().teacherTitleAr"
-                placeholder="مثال: كبير محاضري الرياضيات للشهادات العامة والدولية"
+                [placeholder]="langService.isArabic() ? 'مثال: كبير محاضري الرياضيات للشهادات العامة والدولية' : 'e.g.: Senior Mathematics Lecturer'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">النبذة التعريفية المفصلة:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'النبذة التعريفية المفصلة:' : 'Detailed Bio (Arabic):' }}</label>
             <textarea
               rows="3"
               [(ngModel)]="editableCms().teacherBioAr"
-              placeholder="نبذة عن خبرة المعلمة في تدريس الرياضيات..."
+              [placeholder]="langService.isArabic() ? 'نبذة عن خبرة المعلمة في تدريس الرياضيات...' : 'Teacher background and experience...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
             ></textarea>
           </div>
 
           <!-- قائمة المؤهلات والإنجازات (عربي) -->
           <div class="space-y-2 pt-2">
-            <label class="block font-bold text-text-secondary">قائمة المؤهلات والإنجازات البارزة (Qualifications):</label>
+            <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'قائمة المؤهلات والإنجازات البارزة:' : 'Key Qualifications & Achievements (Arabic):' }}</label>
             <div class="flex gap-2">
               <input
                 type="text"
                 [(ngModel)]="newQualAr"
                 (keydown.enter)="addQualificationAr()"
-                placeholder="اكتب مؤهلاً جديداً واضغط إضافة أو Enter..."
+                [placeholder]="langService.isArabic() ? 'اكتب مؤهلاً جديداً واضغط إضافة...' : 'Type qualification and press Add...'"
                 class="flex-1 px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
               />
               <button
@@ -315,7 +315,7 @@
                 (click)="addQualificationAr()"
                 class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
               >
-                + إضافة مؤهل
+                {{ langService.isArabic() ? '+ إضافة مؤهل' : '+ Add Qualification' }}
               </button>
             </div>
 
@@ -331,7 +331,7 @@
                     (click)="removeQualificationAr($index)"
                     class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer"
                   >
-                    حذف
+                    {{ langService.isArabic() ? 'حذف' : 'Delete' }}
                   </button>
                 </div>
               }
@@ -339,11 +339,11 @@
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">نص زر التواصل المباشر عبر واتساب:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر التواصل المباشر عبر واتساب:' : 'WhatsApp CTA Button Text (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().teacherWhatsappCtaAr"
-              placeholder="مثال: تواصل مباشرة مع فريق م/ هبة عبر واتساب"
+              [placeholder]="langService.isArabic() ? 'مثال: تواصل مباشرة مع فريق م/ هبة عبر واتساب' : 'e.g.: Contact Eng. Heba team directly on WhatsApp'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
             />
           </div>
@@ -353,75 +353,75 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="target" [size]="16" />
-            <h4>قسم امتحان تحديد المستوى وتشخيص المهارات (Placement Test - عربي)</h4>
+            <h4>{{ langService.isArabic() ? 'قسم امتحان تحديد المستوى وتشخيص المهارات' : 'Placement Test Section (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة القسم:' : 'Section Badge (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().placementBadgeAr"
-                placeholder="مثال: اختبار تحديد المستوى وتشخيص المهارات الرياضية"
+                [placeholder]="langService.isArabic() ? 'مثال: اختبار تحديد المستوى وتشخيص المهارات الرياضية' : 'e.g.: Mathematics Placement & Skills Diagnostic'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">نص زر بدء الاختبار (CTA Button):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر بدء الاختبار:' : 'Start Test Button Text (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().placementCtaAr"
-                placeholder="مثال: ابدأ اختبار تحديد المستوى الآن"
+                [placeholder]="langService.isArabic() ? 'مثال: ابدأ اختبار تحديد المستوى الآن' : 'e.g.: Start Placement Test Now'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">العنوان الرئيسي للقسم (Headline):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان الرئيسي للقسم:' : 'Section Headline (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().placementHeadlineAr"
-              placeholder="العنوان المشجع على خوض الاختبار..."
+              [placeholder]="langService.isArabic() ? 'العنوان المشجع على خوض الاختبار...' : 'Engaging headline to take test...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black"
             />
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي التفصيلي (Subtitle):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الوصف الفرعي التفصيلي:' : 'Detailed Subtitle (Arabic):' }}</label>
             <textarea
               rows="2"
               [(ngModel)]="editableCms().placementSubtitleAr"
-              placeholder="وصف مميزات الاختبار التشخيصي..."
+              [placeholder]="langService.isArabic() ? 'وصف مميزات الاختبار التشخيصي...' : 'Diagnostic test description...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
             ></textarea>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الميزة الأولى (Feature 1):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الميزة الأولى:' : 'Feature 1 (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().placementFeature1Ar"
-                placeholder="مثال: تقييم ذكي ومباشر"
+                [placeholder]="langService.isArabic() ? 'مثال: تقييم ذكي ومباشر' : 'e.g.: Instant intelligent assessment'"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الميزة الثانية (Feature 2):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الميزة الثانية:' : 'Feature 2 (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().placementFeature2Ar"
-                placeholder="مثال: تقرير مفصل بنقاط القوة والضعف"
+                [placeholder]="langService.isArabic() ? 'مثال: تقرير مفصل بنقاط القوة والضعف' : 'e.g.: Detailed strengths and weaknesses report'"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الميزة الثالثة (Feature 3):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الميزة الثالثة:' : 'Feature 3 (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().placementFeature3Ar"
-                placeholder="مثال: متابعة شخصية من م/ هبة عبدالوهاب"
+                [placeholder]="langService.isArabic() ? 'مثال: متابعة شخصية من م/ هبة عبدالوهاب' : 'e.g.: 1-on-1 follow-up with Eng. Heba'"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
@@ -432,36 +432,36 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-emerald-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="book-open" [size]="16" />
-            <h4>قسم المناهج والمسارات الأكاديمية (Curriculum Section - عربي)</h4>
+            <h4>{{ langService.isArabic() ? 'قسم المناهج والمسارات الأكاديمية' : 'Curricula & Academic Tracks (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة القسم:' : 'Section Badge:' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().curriculumBadgeAr"
-                placeholder="مثال: المسارات الأكاديمية والمناهج"
+                [placeholder]="langService.isArabic() ? 'مثال: المسارات الأكاديمية والمناهج' : 'e.g.: Academic Curricula & Tracks'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">عنوان قسم المناهج (Title):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان قسم المناهج:' : 'Curricula Section Title (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().curriculumTitleAr"
-                placeholder="مثال: اختر منهجك الدراسي وابدأ رحلة التفوق"
+                [placeholder]="langService.isArabic() ? 'مثال: اختر منهجك الدراسي وابدأ رحلة التفوق' : 'e.g.: Choose your curriculum and start excellence'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">الوصف الفرعي لقسم المناهج (Subtitle):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الوصف الفرعي لقسم المناهج:' : 'Curricula Section Subtitle (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().curriculumSubtitleAr"
-              placeholder="مثال: مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي"
+              [placeholder]="langService.isArabic() ? 'مثال: مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة' : 'e.g.: Comprehensive curricula designed with highest quality'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
             />
           </div>
@@ -471,36 +471,36 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-amber-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="award" [size]="16" />
-            <h4>قسم الباقات والاشتراكات (Tuition Packages - عربي)</h4>
+            <h4>{{ langService.isArabic() ? 'قسم الباقات والاشتراكات' : 'Tuition Packages Section (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">شارة القسم (Badge):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة القسم:' : 'Section Badge:' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().pricingBadgeAr"
-                placeholder="مثال: الباقات الدراسية والمراجعات"
+                [placeholder]="langService.isArabic() ? 'مثال: الباقات الدراسية والمراجعات' : 'e.g.: Study Packages & Revisions'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">عنوان قسم الباقات والاشتراكات:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان قسم الباقات والاشتراكات:' : 'Tuition Packages Title (Arabic):' }}</label>
               <input
                 type="text"
                 [(ngModel)]="editableCms().pricingTitleAr"
-                placeholder="مثال: استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة"
+                [placeholder]="langService.isArabic() ? 'مثال: استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة' : 'e.g.: Invest in your academic future with top quality'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">وصف قسم الباقات والاشتراكات:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'وصف قسم الباقات والاشتراكات:' : 'Tuition Packages Description (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().pricingSubtitleAr"
-              placeholder="مثال: خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار"
+              [placeholder]="langService.isArabic() ? 'مثال: خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار' : 'e.g.: Flexible study plans and intensive final revisions'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
             />
           </div>
@@ -850,19 +850,19 @@
           <div class="flex items-center justify-between">
             <label class="font-bold text-text-primary flex items-center gap-2">
               <app-icon name="video" [size]="16" className="text-brand-accent" />
-              <span>رابط الفيديو التعريفي في واجهة المنصة (Hero Section Video)</span>
+              <span>{{ langService.isArabic() ? 'رابط الفيديو التعريفي في واجهة المنصة' : 'Hero Section Video Link' }}</span>
             </label>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-600">
-              فيديو عام غير محمي
+              {{ langService.isArabic() ? 'فيديو عام غير محمي' : 'Public Unprotected Video' }}
             </span>
           </div>
           <p class="text-[11px] text-text-muted leading-relaxed">
-            هذا الفيديو يظهر في الواجهة الرئيسية للموقع بدلاً من الصورة، ومتاح للمشاهدة المباشرة وتكبير الشاشة للزوار وأولياء الأمور بحرية دون حماية. يمكنك وضع رابط يوتيوب (فيديو أو Shorts) أو رابط فيديو مباشر.
+            {{ langService.isArabic() ? 'هذا الفيديو يظهر في الواجهة الرئيسية للموقع بدلاً من الصورة، ومتاح للمشاهدة المباشرة وتكبير الشاشة للزوار وأولياء الأمور بحرية دون حماية. يمكنك وضع رابط يوتيوب أو رابط فيديو مباشر.' : 'This video appears in the hero section instead of the static image, publicly viewable by visitors and parents.' }}
           </p>
           <input
             type="url"
             [(ngModel)]="editableCms().heroVideoUrl"
-            placeholder="مثال: https://www.youtube.com/watch?v=AOtzdDq7vrI أو https://youtu.be/..."
+            [placeholder]="langService.isArabic() ? 'مثال: رابط يوتيوب أو فيديو مباشر...' : 'e.g.: YouTube link or direct video URL...'"
             dir="ltr"
             class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-mono text-xs focus:outline-none focus:border-brand-primary"
           />
@@ -872,8 +872,8 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
           <div class="flex items-center justify-between">
             <div>
-              <label class="font-bold text-text-primary text-sm">حالة شريط الإعلانات العاجل أعلى المنصة</label>
-              <p class="text-[11px] text-text-secondary mt-0.5">يمكنك تشغيل أو إخفاء الشريط في أي وقت دون مسح نصوصه.</p>
+              <label class="font-bold text-text-primary text-sm">{{ langService.isArabic() ? 'حالة شريط الإعلانات العاجل أعلى المنصة' : 'Urgent Announcement Bar State' }}</label>
+              <p class="text-[11px] text-text-secondary mt-0.5">{{ langService.isArabic() ? 'يمكنك تشغيل أو إخفاء الشريط في أي وقت دون مسح نصوصه.' : 'Toggle ribbon visibility without clearing announcement text.' }}</p>
             </div>
             <button
               type="button"
@@ -885,7 +885,7 @@
               [class.bg-slate-500/10]="!editableCms().isAnnouncementActive"
               [class.text-slate-400]="!editableCms().isAnnouncementActive"
             >
-              {{ editableCms().isAnnouncementActive ? '✓ الشريط مفعّل حالياً' : '✕ الشريط معطّل ومخفي' }}
+              {{ editableCms().isAnnouncementActive ? (langService.isArabic() ? '✓ الشريط مفعّل حالياً' : '✓ Active & Visible') : (langService.isArabic() ? '✕ الشريط معطّل ومخفي' : '✕ Disabled & Hidden') }}
             </button>
           </div>
         </div>
@@ -893,7 +893,7 @@
         <!-- Support Whatsapp, Academic Year & Active Term -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
-            <label class="block font-bold text-text-secondary mb-1">رقم واتساب الدعم الفني والاستشارات</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'رقم واتساب الدعم الفني والاستشارات' : 'Support & Consultations WhatsApp Number' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().supportWhatsapp"
@@ -903,7 +903,7 @@
           </div>
 
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
-            <label class="block font-bold text-text-secondary mb-1">العام الأكاديمي الفعّال</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العام الأكاديمي الفعّال' : 'Active Academic Year' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().activeAcademicYear"
@@ -913,7 +913,7 @@
           </div>
 
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg">
-            <label class="block font-bold text-text-secondary mb-1">الفصل الدراسي النشط للمنصة</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الفصل الدراسي النشط للمنصة' : 'Active Academic Term' }}</label>
             <div class="flex items-center gap-2 mt-1">
               <button
                 type="button"
@@ -926,7 +926,7 @@
                 [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_1'"
                 [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_1'"
               >
-                الترم الأول (Term 1)
+                {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
               </button>
               <button
                 type="button"
@@ -939,7 +939,7 @@
                 [class.border-surface-border]="editableCms().activeAcademicTerm !== 'TERM_2'"
                 [class.text-text-secondary]="editableCms().activeAcademicTerm !== 'TERM_2'"
               >
-                الترم الثاني (Term 2)
+                {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
               </button>
             </div>
           </div>
@@ -959,10 +959,10 @@
           <div>
             <h4 class="font-black text-text-primary text-sm flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-              <span>الوحدات والمقررات المعروضة لزوار صفحة الهبوط (Landing Units)</span>
+              <span>{{ langService.isArabic() ? 'الوحدات والمقررات المعروضة لزوار صفحة الهبوط' : 'Showcased Landing Page Units' }}</span>
             </h4>
             <p class="text-[11px] text-text-secondary mt-0.5">
-              اختاري بنفسك الوحدات التي تظهر للزائر عند اختيار منهج معين من صفحة الهبوط، لعزل باقي الوحدات وإظهار المقررات المعتمدة فقط.
+              {{ langService.isArabic() ? 'اختاري بنفسك الوحدات التي تظهر للزائر عند اختيار منهج معين من صفحة الهبوط، لعزل باقي الوحدات وإظهار المقررات المعتمدة فقط.' : 'Select which units are visible to landing page visitors when a curriculum is selected.' }}
             </p>
           </div>
 
@@ -972,14 +972,14 @@
               (click)="selectAllUnitsForCurriculum()"
               class="px-3 py-1 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-[11px] font-bold text-text-secondary hover:text-brand-primary transition-all cursor-pointer"
             >
-              تحديد كل وحدات المنهج
+              {{ langService.isArabic() ? 'تحديد كل وحدات المنهج' : 'Select All Curriculum Units' }}
             </button>
             <button
               type="button"
               (click)="deselectAllUnitsForCurriculum()"
               class="px-3 py-1 rounded-xl border border-surface-border bg-surface-bg hover:border-rose-500/40 text-[11px] font-bold text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
             >
-              إلغاء تحديد الكل
+              {{ langService.isArabic() ? 'إلغاء تحديد الكل' : 'Deselect All' }}
             </button>
           </div>
         </div>
@@ -1012,7 +1012,7 @@
         <!-- Units Grid for Selected Curriculum -->
         @if (isLoadingUnits()) {
           <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center text-xs text-text-muted">
-            جاري تحميل الوحدات والمقررات...
+            {{ langService.isArabic() ? 'جاري تحميل الوحدات والمقررات...' : 'Loading units and courses...' }}
           </div>
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
@@ -1048,10 +1048,10 @@
                     <div class="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
                       <span class="font-bold text-text-secondary">{{ unit.grade_level }}</span>
                       <span>•</span>
-                      <span>{{ unit.package_type === 'FINAL_REVISION' ? 'مراجعة نهائية' : 'وحدة دراسية' }}</span>
+                      <span>{{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}</span>
                       @if (unit.price_egp) {
                         <span>•</span>
-                        <span class="font-bold text-brand-primary">{{ unit.price_egp }} ج.م</span>
+                        <span class="font-bold text-brand-primary">{{ unit.price_egp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}</span>
                       }
                     </div>
                   </div>
@@ -1064,12 +1064,12 @@
                   [class.bg-surface-bg]="!isUnitSelectedForLanding(unit._id)"
                   [class.text-text-muted]="!isUnitSelectedForLanding(unit._id)"
                 >
-                  {{ isUnitSelectedForLanding(unit._id) ? 'يظهر للزائر ✓' : 'مخفي' }}
+                  {{ isUnitSelectedForLanding(unit._id) ? (langService.isArabic() ? 'يظهر للزائر ✓' : 'Visible ✓') : (langService.isArabic() ? 'مخفي' : 'Hidden') }}
                 </span>
               </div>
             } @empty {
               <div class="col-span-2 p-8 rounded-2xl border border-dashed border-surface-border text-center text-text-muted text-xs bg-surface-bg/40">
-                لا توجد وحدات منشأة في المنصة لهذا المنهج حتى الآن. يمكنك إنشاء وحدات من قسم «استوديو المناهج».
+                {{ langService.isArabic() ? 'لا توجد وحدات منشأة في المنصة لهذا المنهج حتى الآن. يمكنك إنشاء وحدات من قسم «استوديو المناهج».' : 'No units created for this curriculum yet. You can create units in Curriculum Studio.' }}
               </div>
             }
           </div>
@@ -1081,7 +1081,7 @@
     <div class="pt-5 border-t border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="text-[11px] text-text-muted flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>جميع التعديلات يتم نشرها وتحديث الكاش تلقائياً في 0 ثانية فور الضغط على حفظ.</span>
+        <span>{{ langService.isArabic() ? 'جميع التعديلات يتم نشرها وتحديث الكاش تلقائياً فور الضغط على حفظ.' : 'All changes published and cache invalidated instantly on save.' }}</span>
       </div>
 
       <button
@@ -1090,7 +1090,7 @@
         class="px-8 py-3.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
       >
         <app-icon name="check" [size]="16" />
-        <span>حفظ ونشر التعديلات فورياً على المنصة</span>
+        <span>{{ langService.isArabic() ? 'حفظ ونشر التعديلات فورياً على المنصة' : 'Save & Publish Changes to Platform' }}</span>
       </button>
     </div>
 

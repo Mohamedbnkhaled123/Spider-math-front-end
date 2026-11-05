@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { CANONICAL_CURRICULUM_TREE } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
@@ -47,6 +48,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurriculumStudioComponent implements OnInit {
+  readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
 
   // Inputs

@@ -81,7 +81,7 @@
               type="button"
               (click)="toggleTimerVisibility()"
               class="p-1.5 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-card text-text-muted hover:text-text-primary transition-all shadow-sm cursor-pointer"
-              [title]="isTimerVisible() ? 'إخفاء مؤقت الوقت' : 'إظهار مؤقت الوقت'"
+              [title]="isTimerVisible() ? (langService.isArabic() ? 'إخفاء مؤقت الوقت' : 'Hide timer') : (langService.isArabic() ? 'إظهار مؤقت الوقت' : 'Show timer')"
             >
               <app-icon [name]="isTimerVisible() ? 'eye-off' : 'eye'" [size]="14" />
             </button>
@@ -103,10 +103,10 @@
               <div
                 (click)="toggleTimerVisibility()"
                 class="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-bg/60 hover:bg-surface-bg text-text-muted text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1.5"
-                title="انقر لإظهار مؤقت الوقت"
+                [title]="langService.isArabic() ? 'انقر لإظهار مؤقت الوقت' : 'Click to show timer'"
               >
                 <app-icon name="clock" [size]="12" />
-                <span>الوقت مخفي</span>
+                <span>{{ langService.isArabic() ? 'الوقت مخفي' : 'Timer Hidden' }}</span>
               </div>
             }
           </div>

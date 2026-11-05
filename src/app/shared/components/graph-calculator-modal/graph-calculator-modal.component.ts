@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AppIconComponent } from '../app-icon/app-icon.component';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { CalculatorModalFactory } from './calculator-modal.factory';
 import {
   CalculatorCoordinates,
@@ -43,6 +44,7 @@ import {
 })
 export class GraphCalculatorModalComponent implements OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
+  readonly langService = inject(LangService);
 
   // Inputs & Outputs
   readonly isOpen = model<boolean>(false);

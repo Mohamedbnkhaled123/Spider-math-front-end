@@ -34,7 +34,7 @@
       <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
         <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl btn-gold-metallic shadow-gold-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
           <span class="text-xl animate-spark-twinkle">✦</span>
-          <span>+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح</span>
+          <span>{{ langService.isArabic() ? '+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح' : '+50 XP ✦ Great job! Completed 85% of lecture' }}</span>
         </div>
       </div>
     }
@@ -62,7 +62,7 @@
       <div
         (click)="seek($event)"
         class="relative w-full h-4 flex items-center cursor-pointer mb-3 group/seek"
-        title="انقر للتقديم أو التأخير"
+        [title]="langService.isArabic() ? 'انقر للتقديم أو التأخير' : 'Click to seek'"
       >
         <!-- Background Track -->
         <div class="w-full h-1 sm:h-1.5 rounded-full bg-white/20 relative">
@@ -133,7 +133,7 @@
             }"
           >
             <span class="text-[#E5C47E]">●</span>
-            <span>{{ watchPercentage() }}% {{ 'مكتمل' }}</span>
+            <span>{{ watchPercentage() }}% {{ langService.isArabic() ? 'مكتمل' : 'Completed' }}</span>
           </div>
 
           <!-- Speed Selector Dropdown/Buttons -->

@@ -11,14 +11,18 @@
       <img src="assets/branding/spider-mascot-nav.webp" alt="Spider Math" class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 object-contain drop-shadow-md">
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-xs font-black mb-3 shadow-sm">
         <app-icon name="sparkles" [size]="14" />
-        <span>بوابة الصلاحيات وتسجيل الدخول الموحد</span>
+        <span>{{ langService.isArabic() ? 'بوابة الصلاحيات وتسجيل الدخول الموحد' : 'Unified Access & Authentication Portal' }}</span>
       </div>
 
       <h1 class="font-academic-serif text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
-        تسجيل الدخول إلى منصة <span class="text-gold-accent">سبايدر ماث</span>
+        @if (langService.isArabic()) {
+          تسجيل الدخول إلى منصة <span class="text-gold-accent">سبايدر ماث</span>
+        } @else {
+          Sign In to <span class="text-gold-accent">Spider Math</span> Platform
+        }
       </h1>
       <p class="text-xs sm:text-base text-text-secondary mt-2">
-        المنظومة التعليمية الهندسية لمادة الرياضيات — بإشراف المهندسة / هبة عبد الوهاب
+        {{ langService.isArabic() ? 'المنظومة التعليمية الهندسية لمادة الرياضيات — بإشراف المهندسة / هبة عبد الوهاب' : 'The Engineering Math Educational System — Under the Supervision of Eng. Heba Abdelwahab' }}
       </p>
     </div>
 
@@ -42,7 +46,7 @@
             [class.text-text-secondary]="activeTab() !== 'student'"
           >
             <app-icon name="graduation-cap" [size]="16" />
-            <span>بوابة الطالب</span>
+            <span>{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
           </button>
 
           <button
@@ -55,7 +59,7 @@
             [class.text-text-secondary]="activeTab() !== 'parent'"
           >
             <app-icon name="shield" [size]="16" />
-            <span>ولي الأمر</span>
+            <span>{{ langService.isArabic() ? 'ولي الأمر' : 'Parent Portal' }}</span>
           </button>
 
           <button
@@ -68,7 +72,7 @@
             [class.text-text-secondary]="activeTab() !== 'admin'"
           >
             <app-icon name="user" [size]="16" />
-            <span>إدارة المنصة</span>
+            <span>{{ langService.isArabic() ? 'إدارة المنصة' : 'Admin Studio' }}</span>
           </button>
         </div>
 
@@ -96,7 +100,7 @@
               [class.text-text-secondary]="studentAuthMode() !== 'login'"
             >
               <app-icon name="log-in" [size]="14" />
-              <span>تسجيل الدخول (للمسجلين)</span>
+              <span>{{ langService.isArabic() ? 'تسجيل الدخول (للمسجلين)' : 'Sign In (Registered)' }}</span>
             </button>
 
             <button
@@ -109,7 +113,7 @@
               [class.text-text-secondary]="studentAuthMode() !== 'signup'"
             >
               <app-icon name="sparkles" [size]="14" />
-              <span>إنشاء حساب جديد (طالب جديد)</span>
+              <span>{{ langService.isArabic() ? 'إنشاء حساب جديد (طالب جديد)' : 'Create Account (New Student)' }}</span>
             </button>
           </div>
 
@@ -128,7 +132,7 @@
                   @if (unregisteredGoogleEmail()) {
                     <div class="pt-2 border-t border-rose-500/20 flex flex-col gap-2">
                       <p class="text-[11px] text-text-secondary leading-tight">
-                        لم يتم العثور على حساب مسجل بهذا البريد. هل ترغب في تسجيل حساب طالب جديد الآن؟
+                        {{ langService.isArabic() ? 'لم يتم العثور على حساب مسجل بهذا البريد. هل ترغب في تسجيل حساب طالب جديد الآن؟' : 'No account found with this email. Would you like to create a new student account now?' }}
                       </p>
                       <button
                         type="button"
@@ -136,7 +140,7 @@
                         class="w-full py-2.5 px-3 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white font-extrabold text-xs shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <app-icon name="sparkles" [size]="14" />
-                        <span>إنشاء حساب جديد كطالب عبر Google الآن</span>
+                        <span>{{ langService.isArabic() ? 'إنشاء حساب جديد كطالب عبر Google الآن' : 'Create New Student Account with Google Now' }}</span>
                       </button>
                     </div>
                   }
@@ -146,7 +150,7 @@
               <!-- HA Code Input -->
               <div>
                 <label for="studentCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                  كود الطالب الفريد (HA Code)
+                  {{ langService.isArabic() ? 'كود الطالب الفريد (HA Code)' : 'Unique Student Code (HA Code)' }}
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -158,13 +162,13 @@
                     [ngModel]="studentHaCode()"
                     (ngModelChange)="studentHaCode.set($event)"
                     name="studentHaCode"
-                    placeholder="مثال: HA1001"
+                    [placeholder]="langService.isArabic() ? 'مثال: HA1001' : 'e.g. HA1001'"
                     dir="ltr"
                     class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
                   />
                 </div>
                 <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                  أدخل الكود المخصص لك المكوّن من حرفي HA متبوعاً بأرقامك (مثال: HA1001).
+                  {{ langService.isArabic() ? 'أدخل الكود المخصص لك المكوّن من حرفي HA متبوعاً بأرقامك (مثال: HA1001).' : 'Enter your designated code starting with HA followed by your digits (e.g. HA1001).' }}
                 </p>
               </div>
 
@@ -176,17 +180,17 @@
               >
                 @if (isSubmitting()) {
                   <app-icon name="loader" [size]="18" className="animate-spin" />
-                  <span>جاري التحقق من الكود...</span>
+                  <span>{{ langService.isArabic() ? 'جاري التحقق من الكود...' : 'Verifying code...' }}</span>
                 } @else {
                   <app-icon name="log-in" [size]="18" />
-                  <span>دخول بوابة الطالب بالكود</span>
+                  <span>{{ langService.isArabic() ? 'دخول بوابة الطالب بالكود' : 'Access Student Portal with Code' }}</span>
                 }
               </button>
 
               <!-- Divider -->
               <div class="relative my-4 flex items-center justify-center">
                 <div class="border-t border-surface-border w-full"></div>
-                <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">أو</span>
+                <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">{{ langService.isArabic() ? 'أو' : 'OR' }}</span>
               </div>
 
               <!-- Authentic Google Login Button (GIS Account Picker Popup) -->
@@ -199,7 +203,7 @@
                 >
                   @if (isGoogleAuthenticating()) {
                     <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
-                    <span>جاري التحقق عبر حساب Google...</span>
+                    <span>{{ langService.isArabic() ? 'جاري التحقق عبر حساب Google...' : 'Authenticating with Google...' }}</span>
                   } @else {
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
@@ -207,24 +211,24 @@
                       <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                       <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                     </svg>
-                    <span>تسجيل الدخول عبر Google (للطلاب المسجلين)</span>
+                    <span>{{ langService.isArabic() ? 'تسجيل الدخول عبر Google (للطلاب المسجلين)' : 'Sign In with Google (Registered Students)' }}</span>
                   }
                 </button>
                 <p class="text-[10px] text-text-muted text-center mt-1.5">
-                  يفتح نافذة Google الرسمية لاختيار حسابك المسجل مسبقاً في المنصة.
+                  {{ langService.isArabic() ? 'يفتح نافذة Google الرسمية لاختيار حسابك المسجل مسبقاً في المنصة.' : 'Opens official Google window to select your registered platform account.' }}
                 </p>
               </div>
 
               <!-- Switch to Sign Up Prompt -->
               <div class="pt-4 border-t border-surface-border text-center">
                 <p class="text-xs text-text-secondary">
-                  طالب جديد وترغب في التسجيل لأول مرة؟
+                  {{ langService.isArabic() ? 'طالب جديد وترغب في التسجيل لأول مرة؟' : 'New student looking to register for the first time?' }}
                   <button
                     type="button"
                     (click)="setStudentAuthMode('signup')"
-                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 cursor-pointer"
+                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 rtl:mr-1 rtl:ml-0 ltr:ml-1 ltr:mr-0 cursor-pointer"
                   >
-                    إنشاء حساب جديد كطالب
+                    {{ langService.isArabic() ? 'إنشاء حساب جديد كطالب' : 'Create a new student account' }}
                   </button>
                 </p>
               </div>
@@ -240,14 +244,14 @@
                 <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center gap-1.5 text-xs font-extrabold text-text-primary">
                     <app-icon name="sparkles" [size]="14" className="text-brand-primary dark:text-brand-accent" />
-                    <span>التسجيل السريع بحساب Google (اختياري)</span>
+                    <span>{{ langService.isArabic() ? 'التسجيل السريع بحساب Google (اختياري)' : 'Quick Registration with Google (Optional)' }}</span>
                   </div>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
-                    ضغطة واحدة
+                    {{ langService.isArabic() ? 'ضغطة واحدة' : 'One Click' }}
                   </span>
                 </div>
                 <p class="text-[11px] text-text-muted mb-3 leading-relaxed">
-                  يمكنك التسجيل مباشرة بحساب Google لتسهيل الدخول مستقبلاً بضغطة زر واحدة دون الحاجة لحفظ كلمات مرور.
+                  {{ langService.isArabic() ? 'يمكنك التسجيل مباشرة بحساب Google لتسهيل الدخول مستقبلاً بضغطة زر واحدة دون الحاجة لحفظ كلمات مرور.' : 'You can register directly with your Google account for seamless one-click logins in the future without passwords.' }}
                 </p>
 
                 @if (googleAuthErrorMessage()) {
@@ -265,7 +269,7 @@
                 >
                   @if (isGoogleAuthenticating()) {
                     <app-icon name="loader" [size]="16" className="animate-spin text-brand-primary" />
-                    <span>جاري فتح نافذة حسابات Google...</span>
+                    <span>{{ langService.isArabic() ? 'جاري فتح نافذة حسابات Google...' : 'Opening Google accounts window...' }}</span>
                   } @else {
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
@@ -273,7 +277,7 @@
                       <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                       <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                     </svg>
-                    <span>التسجيل والمتابعة بحساب Google</span>
+                    <span>{{ langService.isArabic() ? 'التسجيل والمتابعة بحساب Google' : 'Register & Continue with Google' }}</span>
                   }
                 </button>
               </div>
@@ -282,7 +286,7 @@
               <div class="relative my-2 flex items-center justify-center">
                 <div class="border-t border-surface-border w-full"></div>
                 <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">
-                  أو استمارة التسجيل المباشر بدون Google
+                  {{ langService.isArabic() ? 'أو استمارة التسجيل المباشر بدون Google' : 'OR Direct Registration without Google' }}
                 </span>
               </div>
 
@@ -292,7 +296,7 @@
                 <!-- 1. Full Name -->
                 <div>
                   <label for="regFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                    اسم الطالب ثلاثياً باللغة العربية
+                    {{ langService.isArabic() ? 'اسم الطالب ثلاثياً' : 'Student Full Name' }}
                   </label>
                   <div class="relative">
                     <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -304,7 +308,7 @@
                       [ngModel]="regFullName()"
                       (ngModelChange)="regFullName.set($event)"
                       name="regFullName"
-                      placeholder="مثال: عمر خالد المنشاوي"
+                      [placeholder]="langService.isArabic() ? 'مثال: عمر خالد المنشاوي' : 'e.g. Omar Khaled El-Minshawi'"
                       class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-text-muted"
                     />
                   </div>
@@ -314,10 +318,10 @@
                 <div>
                   <div class="flex items-center justify-between mb-1.5">
                     <label for="regEmail" class="block text-xs sm:text-sm font-extrabold text-text-primary">
-                      البريد الإلكتروني
+                      {{ langService.isArabic() ? 'البريد الإلكتروني' : 'Email Address' }}
                     </label>
                     <span class="text-[10px] font-bold text-text-muted bg-surface-bg px-2 py-0.5 rounded-full border border-surface-border">
-                      اختياري
+                      {{ langService.isArabic() ? 'اختياري' : 'Optional' }}
                     </span>
                   </div>
                   <div class="relative">
@@ -340,7 +344,7 @@
                 <!-- 3. Country Selector -->
                 <div>
                   <label for="regCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                    دولة الإقامة
+                    {{ langService.isArabic() ? 'دولة الإقامة' : 'Country of Residence' }}
                   </label>
                   <select
                     id="regCountry"
@@ -349,12 +353,12 @@
                     name="regCountry"
                     class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                   >
-                    <option value="EG">جمهورية مصر العربية (+20)</option>
-                    <option value="SA">المملكة العربية السعودية (+966)</option>
-                    <option value="AE">الإمارات العربية المتحدة (+971)</option>
-                    <option value="KW">دولة الكويت (+965)</option>
-                    <option value="QA">دولة قطر (+974)</option>
-                    <option value="OTHER">دولة أخرى</option>
+                    <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
+                    <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
+                    <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
+                    <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
+                    <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
+                    <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
                   </select>
                 </div>
 
@@ -362,7 +366,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label for="regPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      رقم هاتف الطالب (واتساب)
+                      {{ langService.isArabic() ? 'رقم هاتف الطالب (واتساب)' : 'Student Phone (WhatsApp)' }}
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -383,7 +387,7 @@
 
                   <div>
                     <label for="regParentPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      رقم هاتف ولي الأمر
+                      {{ langService.isArabic() ? 'رقم هاتف ولي الأمر' : 'Parent Phone Number' }}
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -407,14 +411,14 @@
                 <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300">
                   <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
                   <span class="leading-relaxed font-bold">
-                    تنبيه أمني هام: رقم ولي الأمر يجب أن يكون مختلفاً تماماً عن رقم هاتف الطالب لضمان تفعيل رادار المتابعة وإرسال التنبيهات.
+                    {{ langService.isArabic() ? 'تنبيه أمني هام: رقم ولي الأمر يجب أن يكون مختلفاً تماماً عن رقم هاتف الطالب لضمان تفعيل رادار المتابعة وإرسال التنبيهات.' : 'Important Security Notice: Parent phone must be strictly different from student phone to enable live sonar radar alerts.' }}
                   </span>
                 </div>
 
                 <!-- 5. Curriculum Selection -->
                 <div>
                   <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                    المسار والمنهج الدراسي
+                    {{ langService.isArabic() ? 'المسار والمنهج الدراسي' : 'Curriculum Track' }}
                   </label>
                   <div class="grid grid-cols-2 gap-2">
                     @for (curr of curriculumTree; track curr.code) {
@@ -428,7 +432,7 @@
                         [class.border-surface-border]="regCurriculum() !== curr.code"
                         [class.text-text-secondary]="regCurriculum() !== curr.code"
                       >
-                        {{ curr.titleAr }}
+                        {{ langService.isArabic() ? curr.titleAr : curr.titleEn }}
                       </button>
                     }
                   </div>
@@ -437,7 +441,7 @@
                 <!-- 6. Grade Selection -->
                 <div>
                   <label for="regGradeLevel" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                    الصف الدراسي
+                    {{ langService.isArabic() ? 'الصف الدراسي' : 'Academic Grade' }}
                   </label>
                   <select
                     id="regGradeLevel"
@@ -447,7 +451,7 @@
                     class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                   >
                     @for (grade of regAvailableGrades(); track grade.code) {
-                      <option [value]="grade.code">{{ grade.titleAr }}</option>
+                      <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : grade.titleEn }}</option>
                     }
                   </select>
                 </div>
@@ -456,7 +460,7 @@
                 @if (isRegEgypt()) {
                   <div>
                     <label for="regGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      المحافظة (داخل مصر)
+                      {{ langService.isArabic() ? 'المحافظة (داخل مصر)' : 'Governorate (Inside Egypt)' }}
                     </label>
                     <select
                       id="regGovernorate"
@@ -466,7 +470,7 @@
                       class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                     >
                       @for (gov of egyptGovernorates; track gov.code) {
-                        <option [value]="gov.code">{{ gov.name_ar }}</option>
+                        <option [value]="gov.code">{{ langService.isArabic() ? gov.name_ar : gov.name_en }}</option>
                       }
                     </select>
                   </div>
@@ -480,10 +484,10 @@
                 >
                   @if (isSubmitting()) {
                     <app-icon name="loader" [size]="18" className="animate-spin" />
-                    <span>جاري إنشاء الحساب وإصدار كود HA...</span>
+                    <span>{{ langService.isArabic() ? 'جاري إنشاء الحساب وإصدار كود HA...' : 'Creating account & generating HA Code...' }}</span>
                   } @else {
                     <app-icon name="sparkles" [size]="18" />
-                    <span>إنشاء حساب الطالب وإصدار كود HA</span>
+                    <span>{{ langService.isArabic() ? 'إنشاء حساب الطالب وإصدار كود HA' : 'Create Student Account & Issue HA Code' }}</span>
                   }
                 </button>
               </form>
@@ -491,13 +495,13 @@
               <!-- Switch to Login Prompt -->
               <div class="pt-4 border-t border-surface-border text-center">
                 <p class="text-xs text-text-secondary">
-                  لديك حساب بالفعل أو كود طالب سابق؟
+                  {{ langService.isArabic() ? 'لديك حساب بالفعل أو كود طالب سابق؟' : 'Already registered or have an existing HA code?' }}
                   <button
                     type="button"
                     (click)="setStudentAuthMode('login')"
-                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 cursor-pointer"
+                    class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 rtl:mr-1 rtl:ml-0 ltr:ml-1 ltr:mr-0 cursor-pointer"
                   >
-                    تسجيل الدخول إلى حسابك
+                    {{ langService.isArabic() ? 'تسجيل الدخول إلى حسابك' : 'Sign in to your account' }}
                   </button>
                 </p>
               </div>
@@ -512,7 +516,7 @@
           <form (ngSubmit)="submitParentLogin()" class="space-y-4">
             <div>
               <label for="parentPhoneInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                رقم هاتف ولي الأمر (المسجل لدى المنصة)
+                {{ langService.isArabic() ? 'رقم هاتف ولي الأمر (المسجل لدى المنصة)' : 'Parent Phone Number (Registered with Platform)' }}
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -524,7 +528,7 @@
                   [ngModel]="parentPhone()"
                   (ngModelChange)="parentPhone.set($event)"
                   name="parentPhone"
-                  placeholder="مثال: 01012345678"
+                  [placeholder]="langService.isArabic() ? 'مثال: 01012345678' : 'e.g. 01012345678'"
                   dir="ltr"
                   class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 outline-none transition-all placeholder:text-text-muted"
                 />
@@ -533,7 +537,7 @@
 
             <div>
               <label for="parentChildCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                كود الطالب المرتبط (HA Code)
+                {{ langService.isArabic() ? 'كود الطالب المرتبط (HA Code)' : 'Linked Student HA Code' }}
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -545,13 +549,13 @@
                   [ngModel]="parentStudentCode()"
                   (ngModelChange)="parentStudentCode.set($event)"
                   name="parentStudentCode"
-                  placeholder="مثال: HA1001"
+                  [placeholder]="langService.isArabic() ? 'مثال: HA1001' : 'e.g. HA1001'"
                   dir="ltr"
                   class="w-full pl-4 pr-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 outline-none transition-all placeholder:text-text-muted"
                 />
               </div>
               <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                كود ابنك المسجل في المنصة لمطابقة حسابه وتفعيل رادار السونار الحي.
+                {{ langService.isArabic() ? 'كود ابنك المسجل في المنصة لمطابقة حسابه وتفعيل رادار السونار الحي.' : 'Your student registered code to sync account and activate live sonar radar monitoring.' }}
               </p>
             </div>
 
@@ -563,10 +567,10 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="18" className="animate-spin" />
-                <span>جاري ربط حساب ولي الأمر...</span>
+                <span>{{ langService.isArabic() ? 'جاري ربط حساب ولي الأمر...' : 'Linking parent account...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="18" />
-                <span>دخول بوابة متابعة الأبناء</span>
+                <span>{{ langService.isArabic() ? 'دخول بوابة متابعة الأبناء' : 'Access Parent Monitoring Portal' }}</span>
               }
             </button>
 
@@ -574,7 +578,11 @@
             <div class="p-3.5 rounded-2xl bg-brand-secondary/5 border border-brand-secondary/20 flex items-start gap-3 mt-4">
               <app-icon name="activity" [size]="20" className="text-brand-secondary shrink-0 mt-0.5" />
               <p class="text-xs text-text-secondary leading-relaxed">
-                تتيح لك بوابة ولي الأمر الاطلاع الحي على <strong class="text-text-primary">رادار السونار الحي</strong>، ونسب حضور المحاضرات، وسجل الأخطاء المقالية بالفيديوهات التوضيحية الخاصة بالمهندسة هبة.
+                @if (langService.isArabic()) {
+                  تتيح لك بوابة ولي الأمر الاطلاع الحي على <strong class="text-text-primary">رادار السونار الحي</strong>، ونسب حضور المحاضرات، وسجل الأخطاء المقالية بالفيديوهات التوضيحية الخاصة بالمهندسة هبة.
+                } @else {
+                  The Parent Portal provides live access to <strong class="text-text-primary">Live Academic Sonar</strong>, lecture attendance rates, and written exam correction logs with video explanations by Eng. Heba.
+                }
               </p>
             </div>
           </form>
@@ -591,10 +599,10 @@
               </div>
               <div>
                 <h3 class="text-sm font-extrabold text-text-primary">
-                  إدارة المنصة المركزية — م. هبة عبد الوهاب
+                  {{ langService.isArabic() ? 'إدارة المنصة المركزية — م. هبة عبد الوهاب' : 'Central Platform Administration — Eng. Heba Abdelwahab' }}
                 </h3>
                 <p class="text-xs text-text-secondary mt-0.5">
-                  اعتماد الأجهزة الإضافية، تصحيح الأسئلة المقالية وإدارة بنك الأسئلة والاشتراكات.
+                  {{ langService.isArabic() ? 'اعتماد الأجهزة الإضافية، تصحيح الأسئلة المقالية وإدارة بنك الأسئلة والاشتراكات.' : 'Approve additional student devices, grade essay questions, and manage question bank & subscriptions.' }}
                 </p>
               </div>
             </div>
@@ -607,10 +615,10 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="18" className="animate-spin" />
-                <span>جاري فتح لوحة الإدارة...</span>
+                <span>{{ langService.isArabic() ? 'جاري فتح لوحة الإدارة...' : 'Opening Admin Studio...' }}</span>
               } @else {
                 <app-icon name="sparkles" [size]="18" />
-                <span>فتح استوديو الإدارة المركزية (Super Admin)</span>
+                <span>{{ langService.isArabic() ? 'فتح استوديو الإدارة المركزية (Super Admin)' : 'Open Central Admin Studio (Super Admin)' }}</span>
               }
             </button>
           </div>
@@ -618,14 +626,14 @@
 
         <!-- Guest Mode Link -->
         <div class="pt-4 mt-6 border-t border-surface-border flex items-center justify-between">
-          <span class="text-xs text-text-muted">تريد الاطلاع على المنصة كزائر؟</span>
+          <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'تريد الاطلاع على المنصة كزائر؟' : 'Explore platform as a guest?' }}</span>
           <button
             type="button"
             (click)="switchToGuest()"
             class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="arrow-right" [size]="14" />
-            <span>العودة للصفحة الرئيسية (Guest Mode)</span>
+            <span>{{ langService.isArabic() ? 'العودة للصفحة الرئيسية (Guest Mode)' : 'Return to Home Page (Guest Mode)' }}</span>
           </button>
         </div>
       </div>

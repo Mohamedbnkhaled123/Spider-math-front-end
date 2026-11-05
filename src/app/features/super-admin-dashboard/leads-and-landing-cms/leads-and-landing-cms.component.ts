@@ -12,6 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
   CmsConfigAdminItem,
@@ -35,6 +36,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LeadsAndLandingCmsComponent implements OnInit {
+  readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
 
   // Inputs

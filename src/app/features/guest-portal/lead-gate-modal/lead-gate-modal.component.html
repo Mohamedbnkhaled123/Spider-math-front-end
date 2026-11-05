@@ -51,7 +51,7 @@
             class="btn-gold-metallic w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mb-3 cursor-pointer"
           >
             <app-icon name="log-in" [size]="18" />
-            <span>{{ langService.isArabic() ? 'تسجيل الدخول إلى المنصة (Login)' : 'Log In to View Results' }}</span>
+            <span>{{ langService.isArabic() ? 'تسجيل الدخول إلى المنصة' : 'Log In to View Results' }}</span>
           </button>
 
           <!-- Divider -->
@@ -75,7 +75,7 @@
                   [ngModel]="fullName()"
                   (ngModelChange)="fullName.set($event)"
                   name="fullName"
-                  placeholder="محمد أحمد إبراهيم"
+                  [placeholder]="langService.isArabic() ? 'محمد أحمد إبراهيم' : 'Mohamed Ahmed Ibrahim'"
                   required
                   class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
                 />

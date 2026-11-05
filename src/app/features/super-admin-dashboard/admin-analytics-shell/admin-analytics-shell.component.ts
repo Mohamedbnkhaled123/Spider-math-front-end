@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   input,
   output,
-  signal
+  signal,
+  inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
   AdminTab,
   AnalyticsSnapshot,
@@ -29,6 +31,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminAnalyticsShellComponent {
+  readonly langService = inject(LangService);
   readonly activeTab = input.required<AdminTab>();
   readonly tabChange = output<AdminTab>();
 

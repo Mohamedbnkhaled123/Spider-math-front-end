@@ -10,7 +10,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { inject } from '@angular/core';
 import { AppIconComponent } from '../app-icon/app-icon.component';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 
 export interface CalendarDay {
   dayNumber: number;
@@ -36,6 +38,7 @@ export interface CalendarDay {
   ]
 })
 export class ScheduleAlarmPickerComponent implements ControlValueAccessor {
+  readonly langService = inject(LangService);
   // Two-way binding for ISO string or null
   readonly value = model<string | null>(null);
 

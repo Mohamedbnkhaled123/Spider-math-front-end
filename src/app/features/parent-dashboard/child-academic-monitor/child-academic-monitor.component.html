@@ -2,7 +2,9 @@
   @if (isLoading()) {
     <div class="flex flex-col items-center justify-center p-12 text-center">
       <app-icon name="loader" [size]="36" className="text-brand-accent animate-spin mb-3" />
-      <p class="text-sm text-text-secondary font-medium">جاري تحميل التقرير الأكاديمي الشامل للطالب...</p>
+      <p class="text-sm text-text-secondary font-medium">
+        {{ langService.isArabic() ? 'جاري تحميل التقرير الأكاديمي الشامل للطالب...' : 'Loading comprehensive academic report...' }}
+      </p>
     </div>
   } @else if (report(); as rep) {
     <!-- ========================================================================= -->
@@ -30,17 +32,17 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-xs font-black tracking-wide uppercase" [class.text-emerald-500]="rep.presence.isOnline" [class.text-text-muted]="!rep.presence.isOnline">
-                {{ rep.presence.isOnline ? 'نشاط حي مباشر الآن' : 'غير متصل حالياً' }}
+                {{ rep.presence.isOnline ? (langService.isArabic() ? 'نشاط حي مباشر الآن' : 'Live Active Now') : (langService.isArabic() ? 'غير متصل حالياً' : 'Currently Offline') }}
               </span>
               <span class="text-text-muted text-xs">•</span>
               <span class="text-xs font-mono font-bold text-text-secondary">
-                {{ rep.presence.isOnline ? rep.presence.lastActiveTextAr : ('آخر ظهور: ' + rep.presence.lastActiveTextAr) }}
+                {{ rep.presence.isOnline ? (langService.isArabic() ? rep.presence.lastActiveTextAr : (rep.presence.lastActiveTextEn || rep.presence.lastActiveTextAr)) : (langService.isArabic() ? ('آخر ظهور: ' + rep.presence.lastActiveTextAr) : ('Last seen: ' + (rep.presence.lastActiveTextEn || rep.presence.lastActiveTextAr))) }}
               </span>
             </div>
 
             <h2 class="text-base sm:text-lg font-bold text-text-primary flex items-center gap-2">
               <app-icon name="activity" [size]="18" className="text-brand-accent shrink-0" />
-              <span>{{ rep.presence.activityTextAr }}</span>
+              <span>{{ langService.isArabic() ? rep.presence.activityTextAr : (rep.presence.activityTextEn || rep.presence.activityTextAr) }}</span>
             </h2>
           </div>
         </div>
@@ -51,7 +53,9 @@
           <div class="px-4 py-2.5 rounded-2xl bg-surface-bg/80 border border-gold-accent/40 shadow-gold-glow flex items-center gap-2.5">
             <app-icon name="sparkles" [size]="18" className="text-amber-400" />
             <div>
-              <div class="text-[10px] text-text-muted font-bold">نقاط الخبرة XP</div>
+              <div class="text-[10px] text-text-muted font-bold">
+                {{ langService.isArabic() ? 'نقاط الخبرة XP' : 'XP Points' }}
+              </div>
               <div class="text-sm font-black font-mono text-gold-accent">
                 +{{ rep.totalXp | number }} XP
               </div>
@@ -62,7 +66,9 @@
           <div class="px-4 py-2.5 rounded-2xl bg-surface-bg border border-surface-border flex items-center gap-2.5">
             <app-icon name="award" [size]="18" className="text-feedback-success" />
             <div>
-              <div class="text-[10px] text-text-muted font-bold">إجمالي إنجاز المحاضرات</div>
+              <div class="text-[10px] text-text-muted font-bold">
+                {{ langService.isArabic() ? 'إجمالي إنجاز المحاضرات' : 'Overall Lecture Progress' }}
+              </div>
               <div class="text-sm font-black font-mono text-text-primary">
                 {{ rep.overallWatchPercentage }}%
               </div>
@@ -79,10 +85,10 @@
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
           <app-icon name="book-open" [size]="20" className="text-brand-primary dark:text-brand-accent" />
-          <span>متابعة إنجاز الوحدات الدراسية واشتراكات الفصل</span>
+          <span>{{ langService.isArabic() ? 'متابعة إنجاز الوحدات الدراسية واشتراكات الفصل' : 'Unit Progress & Term Subscriptions' }}</span>
         </h3>
         <span class="text-xs font-bold text-text-muted">
-          {{ rep.units.length }} وحدات مفعلة
+          {{ langService.isArabic() ? (rep.units.length + ' وحدات مفعلة') : (rep.units.length + ' Active Units') }}
         </span>
       </div>
 
@@ -91,7 +97,7 @@
           <div class="unit-metric-card rounded-2xl spider-rim-glass-card p-5 shadow-sm hover:border-gold-accent/40 transition-all duration-300 hover:-translate-y-1">
             <div class="flex items-start justify-between gap-3 mb-3">
               <h4 class="text-sm font-bold text-text-primary leading-snug">
-                {{ unit.unitTitleAr }}
+                {{ langService.isArabic() ? unit.unitTitleAr : (unit.unitTitleEn || unit.unitTitleAr) }}
               </h4>
               <span
                 class="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0"
@@ -100,14 +106,16 @@
                 [class.bg-rose-500/10]="unit.isExpired"
                 [class.text-rose-500]="unit.isExpired"
               >
-                {{ unit.isExpired ? 'الاشتراك منتهي' : 'ساري حتى ' + unit.subscriptionExpiresAt }}
+                {{ unit.isExpired ? (langService.isArabic() ? 'الاشتراك منتهي' : 'Subscription Expired') : (langService.isArabic() ? ('ساري حتى ' + unit.subscriptionExpiresAt) : ('Valid until ' + unit.subscriptionExpiresAt)) }}
               </span>
             </div>
 
             <!-- Watch Percentage Bar -->
             <div class="space-y-1.5 mb-4">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-text-secondary font-medium">نسبة المشاهدة والإتقان</span>
+                <span class="text-text-secondary font-medium">
+                  {{ langService.isArabic() ? 'نسبة المشاهدة والإتقان' : 'Watch & Mastery Rate' }}
+                </span>
                 <span class="font-mono font-black text-brand-primary dark:text-brand-accent">
                   {{ unit.watchPercentage }}%
                 </span>
@@ -124,10 +132,10 @@
             <div class="flex items-center justify-between pt-3 border-t border-surface-border text-xs text-text-secondary">
               <span class="flex items-center gap-1.5">
                 <app-icon name="video" [size]="14" className="text-brand-secondary" />
-                <span>المحاضرات المكتملة</span>
+                <span>{{ langService.isArabic() ? 'المحاضرات المكتملة' : 'Completed Lectures' }}</span>
               </span>
               <span class="font-mono font-bold text-text-primary">
-                {{ unit.completedLectures }} / {{ unit.totalLectures }} محاضرة
+                {{ langService.isArabic() ? (unit.completedLectures + ' / ' + unit.totalLectures + ' محاضرة') : (unit.completedLectures + ' / ' + unit.totalLectures + ' Lectures') }}
               </span>
             </div>
 
@@ -140,10 +148,10 @@
                 >
                   <span class="flex items-center gap-1.5">
                     <app-icon [name]="expandedUnitId() === unit.unitId ? 'chevron-up' : 'chevron-down'" [size]="14" />
-                    <span>{{ expandedUnitId() === unit.unitId ? 'إخفاء محاضرات الوحدة' : 'عرض المحاضرات والدروس (' + unit.lectures.length + ')' }}</span>
+                    <span>{{ expandedUnitId() === unit.unitId ? (langService.isArabic() ? 'إخفاء محاضرات الوحدة' : 'Hide Unit Lectures') : (langService.isArabic() ? ('عرض المحاضرات والدروس (' + unit.lectures.length + ')') : ('View Lectures & Lessons (' + unit.lectures.length + ')')) }}</span>
                   </span>
                   <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-bg border border-surface-border">
-                    {{ expandedUnitId() === unit.unitId ? 'طي' : 'تفاصيل' }}
+                    {{ expandedUnitId() === unit.unitId ? (langService.isArabic() ? 'طي' : 'Collapse') : (langService.isArabic() ? 'تفاصيل' : 'Details') }}
                   </span>
                 </button>
 
@@ -156,7 +164,7 @@
                             {{ lec.order }}
                           </span>
                           <div class="min-w-0">
-                            <span class="font-bold text-text-primary block truncate">{{ lec.titleAr }}</span>
+                            <span class="font-bold text-text-primary block truncate">{{ langService.isArabic() ? lec.titleAr : (lec.titleEn || lec.titleAr) }}</span>
                             <span class="text-[10px] text-text-muted font-mono">{{ formatDuration(lec.videoDurationSec) }}</span>
                           </div>
                         </div>
@@ -165,7 +173,7 @@
                           @if (lec.isCompleted) {
                             <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold flex items-center gap-1">
                               <app-icon name="check-circle" [size]="12" />
-                              <span>مكتملة</span>
+                              <span>{{ langService.isArabic() ? 'مكتملة' : 'Completed' }}</span>
                             </span>
                           } @else {
                             <span class="text-[11px] font-mono font-bold text-text-muted">
@@ -192,10 +200,10 @@
         <div>
           <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
             <app-icon name="award" [size]="20" className="text-brand-accent" />
-            <span>سجل نتائج الامتحانات والواجبات وتقارير التصحيح</span>
+            <span>{{ langService.isArabic() ? 'سجل نتائج الامتحانات والواجبات وتقارير التصحيح' : 'Exam & Homework Results & Correction Reports' }}</span>
           </h3>
           <p class="text-xs text-text-secondary mt-0.5">
-            عرض تفصيلي لدرجات الطالب مع ملاحظات المهندسة هبة عبد الوهاب وشرح فيديو لكل خطأ علاجي.
+            {{ langService.isArabic() ? 'عرض تفصيلي لدرجات الطالب مع ملاحظات المهندسة هبة عبد الوهاب وشرح فيديو لكل خطأ علاجي.' : 'Detailed review of scores with notes from Eng. Heba Abdel-Wahab and video explanations for mistakes.' }}
           </p>
         </div>
       </div>
@@ -207,10 +215,10 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-border">
               <div>
                 <span class="text-xs font-bold text-brand-secondary block mb-1">
-                  {{ sub.unitTitleAr }}
+                  {{ langService.isArabic() ? sub.unitTitleAr : (sub.unitTitleAr) }}
                 </span>
                 <h4 class="text-base font-bold text-text-primary">
-                  {{ sub.assessmentTitleAr }}
+                  {{ langService.isArabic() ? sub.assessmentTitleAr : (sub.assessmentTitleEn || sub.assessmentTitleAr) }}
                 </h4>
               </div>
 
@@ -219,16 +227,16 @@
                 @if (sub.isPendingReview) {
                   <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1.5">
                     <app-icon name="clock" [size]="14" />
-                    <span>تم التسليم — بانتظار تصحيح م/ هبة للمقالي</span>
+                    <span>{{ langService.isArabic() ? 'تم التسليم — بانتظار تصحيح م/ هبة للمقالي' : 'Submitted — Awaiting Teacher Essay Grading' }}</span>
                   </span>
                 } @else if (sub.isInProgress) {
                   <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-brand-primary animate-ping"></span>
-                    <span>قيد الحل الآن</span>
+                    <span>{{ langService.isArabic() ? 'قيد الحل الآن' : 'In Progress' }}</span>
                   </span>
                 } @else {
                   <div class="text-left rtl:text-right">
-                    <div class="text-[10px] text-text-muted font-bold">الدرجة النهائية</div>
+                    <div class="text-[10px] text-text-muted font-bold">{{ langService.isArabic() ? 'الدرجة النهائية' : 'Final Score' }}</div>
                     <div class="text-sm font-black font-mono text-text-primary">
                       {{ sub.finalTotalScore }} / {{ sub.maxScore }}
                     </div>
@@ -257,7 +265,7 @@
               <div class="mt-4 p-4 rounded-xl bg-surface-bg/80 border border-gold-accent/40 shadow-xs">
                 <div class="flex items-center gap-2 mb-1.5 text-xs font-black text-brand-primary dark:text-brand-accent">
                   <app-icon name="sparkles" [size]="14" />
-                  <span>توجيهات وملاحظات المهندسة هبة عبد الوهاب:</span>
+                  <span>{{ langService.isArabic() ? 'توجيهات وملاحظات المهندسة هبة عبد الوهاب:' : 'Guidance & Notes from Eng. Heba Abdel-Wahab:' }}</span>
                 </div>
                 <p class="text-xs sm:text-sm text-text-primary leading-relaxed font-medium">
                   {{ sub.teacherNote }}
@@ -270,7 +278,7 @@
               <div class="mt-5 space-y-3">
                 <h5 class="text-xs font-black text-rose-500 flex items-center gap-1.5">
                   <app-icon name="alert-circle" [size]="14" />
-                  <span>الأسئلة التي تحتاج لمراجعة دقيقة والحل النموذجي ({{ sub.mistakeCases.length }}):</span>
+                  <span>{{ langService.isArabic() ? ('الأسئلة التي تحتاج لمراجعة دقيقة والحل النموذجي (' + sub.mistakeCases.length + '):') : ('Questions Requiring Review & Model Solution (' + sub.mistakeCases.length + '):') }}</span>
                 </h5>
 
                 <div class="space-y-3">
@@ -278,7 +286,7 @@
                     <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div class="space-y-1">
                         <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-rose-500/10 text-rose-500 font-mono">
-                          السؤال رقم {{ m.questionOrder }}
+                          {{ langService.isArabic() ? ('السؤال رقم ' + m.questionOrder) : ('Question #' + m.questionOrder) }}
                         </span>
                         <p class="text-xs text-text-primary font-medium leading-relaxed">
                           {{ m.errorNote }}
@@ -292,7 +300,7 @@
                           class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-all duration-200 flex items-center gap-2 shrink-0 shadow-sm cursor-pointer"
                         >
                           <app-icon name="video" [size]="14" />
-                          <span>مشاهدة الحل على يوتيوب</span>
+                          <span>{{ langService.isArabic() ? 'مشاهدة الحل على يوتيوب' : 'Watch Solution on YouTube' }}</span>
                           <app-icon name="external-link" [size]="12" />
                         </button>
                       }
@@ -303,11 +311,11 @@
             } @else if (!sub.isPendingReview && !sub.isInProgress && sub.finalTotalScore === sub.maxScore && sub.maxScore > 0) {
               <div class="mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs font-bold text-emerald-500 flex items-center gap-2">
                 <app-icon name="check-circle" [size]="16" />
-                <span>إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!</span>
+                <span>{{ langService.isArabic() ? 'إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!' : 'Perfect model answers with zero mistakes — Excellent!' }}</span>
               </div>
             } @else if (!sub.isPendingReview && !sub.isInProgress) {
               <div class="mt-4 p-3 rounded-xl bg-surface-bg border border-surface-border text-xs text-text-muted text-center">
-                تم رصد الدرجة، ولا توجد ملاحظات أخطاء إضافية مسجلة.
+                {{ langService.isArabic() ? 'تم رصد الدرجة، ولا توجد ملاحظات أخطاء إضافية مسجلة.' : 'Score recorded with no additional mistake notes logged.' }}
               </div>
             }
           </div>
@@ -319,8 +327,12 @@
       <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
         <app-icon name="activity" [size]="32" />
       </div>
-      <h3 class="text-base font-bold text-text-primary mb-1">لا توجد تقارير دراسية متاحة بعد لهذا الطالب</h3>
-      <p class="text-xs text-text-secondary leading-relaxed">ستظهر هنا تفاصيل الحضور ونقاط الخبرة والدرجات فور بدء الطالب في مشاهدة المحاضرات وحل الامتحانات.</p>
+      <h3 class="text-base font-bold text-text-primary mb-1">
+        {{ langService.isArabic() ? 'لا توجد تقارير دراسية متاحة بعد لهذا الطالب' : 'No academic reports available yet for this student' }}
+      </h3>
+      <p class="text-xs text-text-secondary leading-relaxed">
+        {{ langService.isArabic() ? 'ستظهر هنا تفاصيل الحضور ونقاط الخبرة والدرجات فور بدء الطالب في مشاهدة المحاضرات وحل الامتحانات.' : 'Attendance details, XP points, and exam grades will appear here once the student starts watching lectures and solving assessments.' }}
+      </p>
     </div>
   }
 </div>

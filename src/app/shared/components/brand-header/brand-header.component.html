@@ -7,7 +7,7 @@
         <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping shrink-0"></span>
         <app-icon name="bell" [size]="16" className="text-brand-accent shrink-0" />
         <span class="font-bold leading-normal">
-          تفعيل إشعارات المتصفح: هل ترغب في استقبال تنبيهات تصحيح الواجبات والامتحانات والدروس الجديدة حتى عندما تكون خارج المنصة؟
+          {{ langService.isArabic() ? 'تفعيل إشعارات المتصفح: هل ترغب في استقبال تنبيهات تصحيح الواجبات والامتحانات والدروس الجديدة حتى عندما تكون خارج المنصة؟' : 'Browser Notifications: Enable instant alerts for homework grading, exam results, and new lessons even when outside the platform.' }}
         </span>
       </div>
       <div class="flex items-center gap-2 shrink-0">
@@ -17,14 +17,14 @@
           class="px-3 py-1.5 rounded-xl bg-white text-brand-primary font-black text-xs hover:bg-surface-bg shadow-sm transition-all cursor-pointer flex items-center gap-1"
         >
           <app-icon name="check" [size]="12" />
-          <span>السماح بالإشعارات</span>
+          <span>{{ langService.isArabic() ? 'السماح بالإشعارات' : 'Allow Notifications' }}</span>
         </button>
         <button
           type="button"
           (click)="dismissNotificationBanner()"
           class="px-2 py-1.5 rounded-xl text-white/80 hover:text-white text-xs transition-all cursor-pointer"
         >
-          لاحقاً
+          {{ langService.isArabic() ? 'لاحقاً' : 'Later' }}
         </button>
       </div>
     </div>
@@ -50,7 +50,7 @@
 
       <!-- Academic Wordmark -->
       <span class="academic-wordmark text-2xl font-bold">
-        Spider Math
+        {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
       </span>
     </a>
 
@@ -133,7 +133,7 @@
         (click)="toggleLanguage()"
         class="hidden md:flex px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
-        title="Toggle Language / تغيير اللغة"
+        [title]="langService.isArabic() ? 'التحويل إلى الإنجليزية' : 'Switch to Arabic'"
       >
         <app-icon name="globe" [size]="14" className="text-brand-gold" />
         <span>{{ langService.isArabic() ? 'EN' : 'عربي' }}</span>
@@ -145,7 +145,7 @@
         (click)="toggleTheme()"
         class="hidden md:flex p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 items-center justify-center w-8 h-8 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
-        [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        [title]="themeService.isDark() ? (langService.isArabic() ? 'الوضع الفاتح' : 'Switch to Light Mode') : (langService.isArabic() ? 'الوضع الليلي' : 'Switch to Dark Mode')"
       >
         @if (themeService.isDark()) {
           <app-icon name="sun" [size]="16" className="text-brand-gold hover:rotate-45 transition-transform duration-300" />
@@ -161,7 +161,7 @@
           (click)="toggleNotifications()"
           class="p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 relative cursor-pointer"
           [attr.aria-label]="langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Notifications'"
-          title="الإشعارات / Notifications"
+          [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
         >
           <app-icon name="bell" [size]="16" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold animate-spark-twinkle' : 'text-text-secondary'" />
           
@@ -247,7 +247,7 @@
               type="button"
               (click)="copyHaCode(haCode, $event)"
               class="ha-code-badge hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/40 text-xs font-bold text-brand-gold font-numeric shadow-sm hover:border-brand-gold transition-all cursor-pointer group"
-              title="نسخ كود الطالب / Copy HA Code"
+              [title]="langService.isArabic() ? 'نسخ كود الطالب' : 'Copy Student Code'"
             >
               <span>{{ haCode }}</span>
               <app-icon name="copy" [size]="12" className="text-brand-gold group-hover:scale-110 transition-transform" />
@@ -275,7 +275,7 @@
             type="button"
             (click)="logout()"
             class="p-1.5 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer"
-            title="تسجيل الخروج"
+            [title]="langService.isArabic() ? 'تسجيل الخروج' : 'Sign Out'"
           >
             <app-icon name="log-out" [size]="15" />
           </button>

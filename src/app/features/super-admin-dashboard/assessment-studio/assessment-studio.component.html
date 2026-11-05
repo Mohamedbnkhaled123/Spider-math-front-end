@@ -6,7 +6,7 @@
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
           <app-icon name="award" [size]="22" className="text-brand-primary" />
-          <span>قسم وبنك الامتحانات والكويزات (Assessment Studio)</span>
+          <span>{{ langService.isArabic() ? 'قسم وبنك الامتحانات والكويزات' : 'Assessment Studio & Exam Bank' }}</span>
         </h2>
       </div>
 
@@ -16,7 +16,7 @@
         class="px-5 py-2.5 rounded-2xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer self-start md:self-auto"
       >
         <app-icon name="plus" [size]="15" />
-        <span>إنشاء امتحان / كويز جديد</span>
+        <span>{{ langService.isArabic() ? 'إنشاء امتحان / كويز جديد' : 'Create New Assessment / Quiz' }}</span>
       </button>
     </div>
 
@@ -32,7 +32,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
           [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
         >
-          المنهج المصري
+          {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
         </button>
 
         <button
@@ -42,7 +42,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
           [class.text-white]="selectedCurriculum() === 'GULF'"
         >
-          المنهج الخليجي
+          {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
         </button>
 
         <button
@@ -52,7 +52,7 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
         >
-          IGCSE / البريطانية
+          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}
         </button>
 
         <button
@@ -62,23 +62,23 @@
           [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
           [class.text-white]="selectedCurriculum() === 'AMERICAN'"
         >
-          SAT / الأمريكية
+          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}
         </button>
       </div>
 
       <!-- 2. Grade Level Dropdown (4 cols) -->
       <div class="sm:col-span-4 space-y-1">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[10px] font-bold text-text-muted">الصف الدراسي المستهدف:</span>
+          <span class="text-[10px] font-bold text-text-muted">{{ langService.isArabic() ? 'الصف الدراسي المستهدف:' : 'Target Grade Level:' }}</span>
           @if (isGradeActive(selectedGrade())) {
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
               <app-icon name="check-circle" [size]="11" />
-              <span>مفعل للتدريس</span>
+              <span>{{ langService.isArabic() ? 'مفعل للتدريس' : 'Active for Teaching' }}</span>
             </span>
           } @else {
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
               <app-icon name="clock" [size]="11" />
-              <span>قريباً بإذن الله</span>
+              <span>{{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}</span>
             </span>
           }
         </div>
@@ -89,7 +89,7 @@
         >
           @for (grade of gradeOptions(); track grade.code) {
             <option [value]="grade.code">
-              {{ grade.titleAr }} ({{ isGradeActive(grade.code) ? 'مفعل' : 'قريباً' }})
+              {{ (langService.isArabic() ? grade.titleAr : grade.titleEn) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
             </option>
           }
         </select>
@@ -104,7 +104,7 @@
           [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
           [class.text-white]="selectedTerm() === 'TERM_1'"
         >
-          الترم الأول
+          {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
         </button>
 
         <button
@@ -114,7 +114,7 @@
           [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
           [class.text-white]="selectedTerm() === 'TERM_2'"
         >
-          الترم الثاني
+          {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
         </button>
       </div>
 
@@ -127,22 +127,22 @@
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-brand-primary"></span>
         <h3 class="text-sm font-black text-text-primary">
-          قائمة امتحانات الصف: <span class="text-brand-primary">{{ selectedGrade() }}</span>
+          {{ langService.isArabic() ? 'قائمة امتحانات الصف: ' : 'Assessments for: ' }}<span class="text-brand-primary">{{ selectedGrade() }}</span>
         </h3>
         <span class="text-xs text-text-muted">
-          ({{ scopedAssessments().length }} امتحانات)
+          ({{ scopedAssessments().length }} {{ langService.isArabic() ? 'امتحانات' : 'Assessments' }})
         </span>
       </div>
 
       <span class="text-xs text-text-secondary bg-surface-card px-3 py-1 rounded-full border border-surface-border">
-        عزل كامل: لا تظهر إلا لطلاب هذا الصف فقط
+        {{ langService.isArabic() ? 'عزل كامل: لا تظهر إلا لطلاب هذا الصف فقط' : 'Strict Isolation: Visible only to students of this grade' }}
       </span>
     </div>
 
     @if (isLoading()) {
       <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card space-y-3">
         <app-icon name="loader" [size]="28" className="animate-spin text-brand-primary mx-auto" />
-        <p class="text-xs text-text-muted">جارٍ تحميل بنك الامتحانات المخصصة...</p>
+        <p class="text-xs text-text-muted">{{ langService.isArabic() ? 'جارٍ تحميل بنك الامتحانات المخصصة...' : 'Loading scoped assessments bank...' }}</p>
       </div>
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -158,29 +158,29 @@
 
                 <div class="flex items-center gap-1.5">
                   @if (item.calculatorType === 'DESMOS') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" title="آلة ديسموس البيانية مفعلة">
-                      ديسموس
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" [title]="langService.isArabic() ? 'آلة ديسموس البيانية مفعلة' : 'Desmos Graphing Calculator Active'">
+                      {{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}
                     </span>
                   }
                   @if (item.referenceSheetUrl) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" title="ورقة قوانين ومفاهيم مرفقة مع الامتحان">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" [title]="langService.isArabic() ? 'ورقة قوانين ومفاهيم مرفقة مع الامتحان' : 'Reference Sheet Attached'">
                       <app-icon name="file-text" [size]="10" />
-                      <span>ورقة قوانين</span>
+                      <span>{{ langService.isArabic() ? 'ورقة قوانين' : 'Reference Sheet' }}</span>
                     </span>
                   }
                   @if (item.isPlacementTest) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" title="امتحان تحديد مستوى للزوار والطلاب الجدد">
-                      تحديد مستوى
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" [title]="langService.isArabic() ? 'امتحان تحديد مستوى للزوار والطلاب الجدد' : 'Placement Test for New Students'">
+                      {{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}
                     </span>
                   }
                   @if (item.isPublished) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
                       <app-icon name="check-circle" [size]="10" />
-                      <span>منشور</span>
+                      <span>{{ langService.isArabic() ? 'منشور' : 'Published' }}</span>
                     </span>
                   } @else {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted border border-surface-border">
-                      مسودة
+                      {{ langService.isArabic() ? 'مسودة' : 'Draft' }}
                     </span>
                   }
                 </div>
@@ -201,19 +201,19 @@
               <!-- Metric Pills -->
               <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-surface-border/60 text-center">
                 <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
-                  <span class="text-[9px] text-text-muted block">الأسئلة</span>
+                  <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الأسئلة' : 'Questions' }}</span>
                   <span class="text-xs font-bold text-text-primary font-mono">{{ item.questions.length }}</span>
                 </div>
                 <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
-                  <span class="text-[9px] text-text-muted block">الدرجة</span>
-                  <span class="text-xs font-bold text-emerald-500 font-mono">{{ item.totalPoints }} ن</span>
+                  <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الدرجة' : 'Score' }}</span>
+                  <span class="text-xs font-bold text-emerald-500 font-mono">{{ item.totalPoints }} {{ langService.isArabic() ? 'ن' : 'Pts' }}</span>
                 </div>
                 <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
-                  <span class="text-[9px] text-text-muted block">الزمن</span>
-                  <span class="text-xs font-bold text-text-primary font-mono">{{ item.durationMinutes }} د</span>
+                  <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الزمن' : 'Time' }}</span>
+                  <span class="text-xs font-bold text-text-primary font-mono">{{ item.durationMinutes }} {{ langService.isArabic() ? 'د' : 'min' }}</span>
                 </div>
                 <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
-                  <span class="text-[9px] text-text-muted block">النجاح</span>
+                  <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'النجاح' : 'Pass' }}</span>
                   <span class="text-xs font-bold text-brand-primary font-mono">{{ item.passPercentage }}%</span>
                 </div>
               </div>
@@ -221,9 +221,9 @@
               <!-- Attempts & Scheduling Badges -->
               <div class="space-y-1.5 text-[11px]">
                 <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-surface-bg border border-surface-border/50 text-text-secondary">
-                  <span class="font-bold">المحاولات المسموحة:</span>
+                  <span class="font-bold">{{ langService.isArabic() ? 'المحاولات المسموحة:' : 'Allowed Attempts:' }}</span>
                   <span class="font-mono font-bold text-text-primary">
-                    {{ item.maxAttempts >= 90 ? 'غير محدود' : item.maxAttempts + ' محاولة' }}
+                    {{ item.maxAttempts >= 90 ? (langService.isArabic() ? 'غير محدود' : 'Unlimited') : (item.maxAttempts + (langService.isArabic() ? ' محاولة' : ' Attempts')) }}
                   </span>
                 </div>
 
@@ -231,17 +231,17 @@
                   <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-0.5">
                     <div class="flex items-center gap-1.5 font-bold text-[10px]">
                       <app-icon name="calendar" [size]="12" />
-                      <span>جدولة التنزيل والإغلاق:</span>
+                      <span>{{ langService.isArabic() ? 'جدولة التنزيل والإغلاق:' : 'Publish & Close Schedule:' }}</span>
                     </div>
                     @if (item.availableFrom) {
                       <div class="text-[10px] flex items-center justify-between font-mono">
-                        <span>يفتح:</span>
+                        <span>{{ langService.isArabic() ? 'يفتح:' : 'Opens:' }}</span>
                         <span>{{ item.availableFrom | date:'dd/MM/yyyy, hh:mm a' }}</span>
                       </div>
                     }
                     @if (item.availableUntil) {
                       <div class="text-[10px] flex items-center justify-between font-mono">
-                        <span>يُغلق:</span>
+                        <span>{{ langService.isArabic() ? 'يُغلق:' : 'Closes:' }}</span>
                         <span>{{ item.availableUntil | date:'dd/MM/yyyy, hh:mm a' }}</span>
                       </div>
                     }
@@ -251,8 +251,8 @@
 
               @if (item.submissionsCount > 0) {
                 <div class="p-2 rounded-xl bg-brand-primary/5 border border-brand-primary/10 text-[11px] text-brand-primary flex items-center justify-between">
-                  <span>تسليمات الطلاب:</span>
-                  <span class="font-bold font-mono">{{ item.submissionsCount }} تسليم</span>
+                  <span>{{ langService.isArabic() ? 'تسليمات الطلاب:' : 'Student Submissions:' }}</span>
+                  <span class="font-bold font-mono">{{ item.submissionsCount }} {{ langService.isArabic() ? 'تسليم' : 'Submissions' }}</span>
                 </div>
               }
             </div>
@@ -264,20 +264,20 @@
                   type="button"
                   (click)="openEditor(item, 'SETTINGS')"
                   class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-text-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
-                  title="تعديل كافة إعدادات الامتحان والجدولة وعدد المحاولات"
+                  [title]="langService.isArabic() ? 'تعديل كافة إعدادات الامتحان والجدولة' : 'Edit assessment settings & schedule'"
                 >
                   <app-icon name="settings" [size]="13" className="text-brand-primary" />
-                  <span>الإعدادات والجدولة</span>
+                  <span>{{ langService.isArabic() ? 'الإعدادات والجدولة' : 'Settings & Schedule' }}</span>
                 </button>
 
                 <button
                   type="button"
                   (click)="openEditor(item, 'QUESTIONS')"
                   class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
-                  title="إدارة وبنك أسئلة هذا الامتحان"
+                  [title]="langService.isArabic() ? 'إدارة وبنك أسئلة هذا الامتحان' : 'Manage questions bank for this assessment'"
                 >
                   <app-icon name="edit" [size]="13" />
-                  <span>الأسئلة ({{ item.questions.length }})</span>
+                  <span>{{ langService.isArabic() ? ('الأسئلة (' + item.questions.length + ')') : ('Questions (' + item.questions.length + ')') }}</span>
                 </button>
               </div>
 
@@ -286,17 +286,17 @@
                   type="button"
                   (click)="togglePublish(item)"
                   class="flex-1 py-1.5 px-2.5 rounded-xl border border-surface-border hover:border-brand-primary text-xs font-bold text-text-secondary hover:text-text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  [title]="item.isPublished ? 'إلغاء النشر' : 'نشر للطلاب'"
+                  [title]="item.isPublished ? (langService.isArabic() ? 'إلغاء النشر' : 'Unpublish') : (langService.isArabic() ? 'نشر للطلاب' : 'Publish to Students')"
                 >
                   <app-icon [name]="item.isPublished ? 'lock' : 'check'" [size]="13" />
-                  <span>{{ item.isPublished ? 'إلغاء النشر' : 'نشر للطلاب' }}</span>
+                  <span>{{ item.isPublished ? (langService.isArabic() ? 'إلغاء النشر' : 'Unpublish') : (langService.isArabic() ? 'نشر للطلاب' : 'Publish') }}</span>
                 </button>
 
                 <button
                   type="button"
                   (click)="deleteAssessment(item)"
                   class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                  title="حذف الامتحان نهائياً"
+                  [title]="langService.isArabic() ? 'حذف الامتحان نهائياً' : 'Delete assessment permanently'"
                 >
                   <app-icon name="trash" [size]="14" />
                 </button>
@@ -310,10 +310,10 @@
               <app-icon name="file-text" [size]="24" />
             </div>
             <h4 class="text-sm font-bold text-text-primary">
-              لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً
+              {{ langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً' : 'No assessments available for this grade in this term.' }}
             </h4>
             <p class="text-xs text-text-muted max-w-sm mx-auto">
-              يمكنك الضغط على زر "+ إنشاء امتحان / كويز جديد" بالأعلى لتدشين كويز حصري لطلاب ({{ selectedGrade() }}).
+              {{ langService.isArabic() ? ('يمكنك الضغط على زر إنشاء امتحان جديد بالأعلى لتدشين كويز حصري لطلاب (' + selectedGrade() + ').') : ('Click "Create New Assessment" above to create a quiz for (' + selectedGrade() + ').') }}
             </p>
           </div>
         }
@@ -323,8 +323,8 @@
       @if (totalPages() > 1) {
         <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
           <div class="text-text-muted font-bold">
-            عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
-            <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} امتحان/كويز إجمالي)</span>
+            {{ langService.isArabic() ? 'عرض صفحة ' : 'Page ' }}<span class="text-text-primary font-mono font-black">{{ currentPage() }}</span>{{ langService.isArabic() ? ' من أصل ' : ' of ' }}<span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+            <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} {{ langService.isArabic() ? 'امتحان إجمالي' : 'Total Assessments' }})</span>
           </div>
 
           <div class="flex items-center gap-1.5 flex-wrap">
@@ -334,7 +334,7 @@
               [disabled]="currentPage() === 1"
               class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
             >
-              <span>السابق</span>
+              <span>{{ langService.isArabic() ? 'السابق' : 'Previous' }}</span>
             </button>
 
             @for (p of displayedPages(); track p) {
@@ -361,7 +361,7 @@
               [disabled]="currentPage() === totalPages()"
               class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
             >
-              <span>التالي</span>
+              <span>{{ langService.isArabic() ? 'التالي' : 'Next' }}</span>
             </button>
           </div>
         </div>
@@ -377,10 +377,10 @@
         <div class="p-4 sm:p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between shrink-0">
           <div>
             <h3 class="text-sm sm:text-base font-black text-text-primary">
-              + إنشاء امتحان أو كويز مخصص
+              {{ langService.isArabic() ? '+ إنشاء امتحان أو كويز مخصص' : '+ Create Custom Assessment / Quiz' }}
             </h3>
             <p class="text-[11px] sm:text-xs text-text-secondary mt-0.5">
-              مخصص حصرياً لـ ({{ createForm().gradeLevel }}) لن يظهر لأي صف دراسي آخر
+              {{ langService.isArabic() ? ('مخصص حصرياً لـ (' + createForm().gradeLevel + ') لن يظهر لأي صف دراسي آخر') : ('Scoped exclusively to (' + createForm().gradeLevel + '), isolated from other grades') }}
             </p>
           </div>
 
@@ -395,42 +395,42 @@
 
         <div class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           <div>
-            <label class="block font-bold text-text-secondary mb-1">عنوان الامتحان (بالعربية):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الامتحان (بالعربية):' : 'Assessment Title (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="createForm().titleAr"
-              placeholder="مثال: كويز التفاضل وتطبيقات القيم العظمى"
+              [placeholder]="langService.isArabic() ? 'مثال: كويز التفاضل وتطبيقات القيم العظمى' : 'e.g.: Calculus Applications Quiz'"
               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
             />
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">العنوان بالإنجليزية (اختياري):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان بالإنجليزية (اختياري):' : 'Assessment Title in English (Optional):' }}</label>
             <input
               type="text"
               [(ngModel)]="createForm().titleEn"
-              placeholder="مثال: Calculus Applications Quiz"
+              [placeholder]="langService.isArabic() ? 'مثال: Calculus Applications Quiz' : 'e.g.: Calculus Applications Quiz'"
               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
             />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">المنهج الدراسي:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المنهج الدراسي:' : 'Curriculum:' }}</label>
               <select
                 [ngModel]="createForm().curriculum"
                 (ngModelChange)="onCurriculumChangeInCreate($event)"
                 class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
               >
-                <option value="EGYPTIAN">المنهج المصري</option>
-                <option value="GULF">المنهج الخليجي</option>
-                <option value="INTERNATIONAL">IGCSE / البريطانية</option>
-                <option value="AMERICAN">SAT / الأمريكية</option>
+                <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
+                <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
+                <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الصف الدراسي (عزل كامل):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الصف الدراسي (عزل كامل):' : 'Grade Level (Strict Isolation):' }}</label>
               <select
                 [(ngModel)]="createForm().gradeLevel"
                 class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none"
@@ -444,18 +444,18 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label class="block font-bold text-text-secondary mb-1">الترم:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
               <select
                 [(ngModel)]="createForm().term"
                 class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
               >
-                <option value="TERM_1">الترم الأول</option>
-                <option value="TERM_2">الترم الثاني</option>
+                <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block font-bold text-text-secondary mb-1">المدة (بالدقائق):</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
               <input
                 type="number"
                 [(ngModel)]="createForm().durationMinutes"
@@ -466,7 +466,7 @@
             </div>
 
             <div>
-              <label class="block font-bold text-text-secondary mb-1">نسبة النجاح %:</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نسبة النجاح %:' : 'Pass Percentage %:' }}</label>
               <input
                 type="number"
                 [(ngModel)]="createForm().passPercentage"
@@ -478,7 +478,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">عدد المحاولات المسموح بها للطالب:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عدد المحاولات المسموح بها للطالب:' : 'Allowed Student Attempts:' }}</label>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
@@ -489,7 +489,7 @@
                 [class.text-brand-primary]="createForm().maxAttempts === 1"
                 [class.border-surface-border]="createForm().maxAttempts !== 1"
               >
-                محاولة واحدة
+                {{ langService.isArabic() ? 'محاولة واحدة' : '1 Attempt' }}
               </button>
               <button
                 type="button"
@@ -500,7 +500,7 @@
                 [class.text-brand-primary]="createForm().maxAttempts === 2"
                 [class.border-surface-border]="createForm().maxAttempts !== 2"
               >
-                محاولتان
+                {{ langService.isArabic() ? 'محاولتان' : '2 Attempts' }}
               </button>
               <button
                 type="button"
@@ -511,7 +511,7 @@
                 [class.text-brand-primary]="createForm().maxAttempts === 3"
                 [class.border-surface-border]="createForm().maxAttempts !== 3"
               >
-                3 محاولات
+                {{ langService.isArabic() ? '3 محاولات' : '3 Attempts' }}
               </button>
               <button
                 type="button"
@@ -522,7 +522,7 @@
                 [class.text-brand-primary]="createForm().maxAttempts >= 90"
                 [class.border-surface-border]="createForm().maxAttempts < 90"
               >
-                غير محدود
+                {{ langService.isArabic() ? 'غير محدود' : 'Unlimited' }}
               </button>
             </div>
           </div>
@@ -532,7 +532,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <app-icon name="calendar" [size]="16" className="text-brand-primary" />
-                <span class="font-bold text-text-primary text-xs">جدولة موعد تنزيل وإغلاق الامتحان:</span>
+                <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'جدولة موعد تنزيل وإغلاق الامتحان:' : 'Publish & Closing Schedule:' }}</span>
               </div>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input
@@ -540,32 +540,32 @@
                   [(ngModel)]="createForm().isScheduled"
                   class="accent-brand-primary w-4 h-4 cursor-pointer"
                 />
-                <span class="text-xs font-bold text-text-secondary">تفعيل الجدولة</span>
+                <span class="text-xs font-bold text-text-secondary">{{ langService.isArabic() ? 'تفعيل الجدولة' : 'Enable Schedule' }}</span>
               </label>
             </div>
 
             @if (createForm().isScheduled) {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
                 <app-schedule-alarm-picker
-                  label="موعد تنزيل / بدء الامتحان للطلاب:"
-                  placeholder="اضغطي لضبط تاريخ البدء وساعة المنبه..."
+                  [label]="langService.isArabic() ? 'موعد تنزيل / بدء الامتحان للطلاب:' : 'Assessment Start Date & Alarm:'"
+                  [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ البدء وساعة المنبه...' : 'Set start date and alarm time...'"
                   [(ngModel)]="createForm().availableFrom"
                 />
 
                 <app-schedule-alarm-picker
-                  label="موعد إغلاق الامتحان (الموعد النهائي):"
-                  placeholder="اضغطي لضبط تاريخ الإغلاق وساعة المنبه..."
+                  [label]="langService.isArabic() ? 'موعد إغلاق الامتحان (الموعد النهائي):' : 'Assessment Deadline & Alarm:'"
+                  [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ الإغلاق وساعة المنبه...' : 'Set deadline and alarm time...'"
                   [(ngModel)]="createForm().availableUntil"
                 />
               </div>
               <p class="text-[10px] text-text-muted">
-                * في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.
+                {{ langService.isArabic() ? '* في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.' : '* When scheduled, students cannot access the exam before start time, and it automatically closes at deadline.'  }}
               </p>
             }
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">آلة ديسموس البيانية (Desmos Mode):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'آلة ديسموس البيانية:' : 'Desmos Graphing Calculator Mode:' }}</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -576,7 +576,7 @@
                 [class.text-brand-primary]="createForm().calculatorType === 'NONE'"
                 [class.border-surface-border]="createForm().calculatorType !== 'NONE'"
               >
-                معطلة (اختبار جبري / يدوي)
+                {{ langService.isArabic() ? 'معطلة (اختبار جبري أو يدوي)' : 'Disabled (Algebraic / Manual Exam)' }}
               </button>
 
               <button
@@ -588,14 +588,14 @@
                 [class.text-cyan-600]="createForm().calculatorType === 'DESMOS'"
                 [class.border-surface-border]="createForm().calculatorType !== 'DESMOS'"
               >
-                مفعلة (ديسموس البيانية)
+                {{ langService.isArabic() ? 'مفعلة (ديسموس البيانية)' : 'Enabled (Desmos Graphing)'  }}
               </button>
             </div>
           </div>
 
           <!-- Reference Sheet (ورقة القوانين والمفاهيم الرياضية) -->
           <div>
-            <label class="block font-bold text-text-secondary mb-1">ورقة القوانين والمفاهيم (Reference Sheet):</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'ورقة القوانين والمفاهيم:' : 'Formulas & Reference Sheet:' }}</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -606,7 +606,7 @@
                 [class.text-brand-primary]="!isRefSheetActiveInCreate()"
                 [class.border-surface-border]="isRefSheetActiveInCreate()"
               >
-                بدون ورقة قوانين
+                {{ langService.isArabic() ? 'بدون ورقة قوانين' : 'No Reference Sheet'  }}
               </button>
 
               <button
@@ -618,14 +618,14 @@
                 [class.text-amber-500]="isRefSheetActiveInCreate()"
                 [class.border-surface-border]="!isRefSheetActiveInCreate()"
               >
-                إرفاق ورقة قوانين (Reference)
+                {{ langService.isArabic() ? 'إرفاق ورقة قوانين' : 'Attach Reference Sheet' }}
               </button>
             </div>
 
             @if (isRefSheetActiveInCreate()) {
               <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                 <p class="text-[11px] text-text-secondary leading-relaxed">
-                  أرفقي صورة ورقة القوانين المعتمدة (مثل ورقة مفاهيم SAT أو الوزارة) لتظهر للطالب أثناء حل الامتحان بجوار الآلة الحاسبة.
+                  {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان بجوار الآلة الحاسبة.' : 'Upload reference sheet image to display to students alongside calculator.' }}
                 </p>
 
                 @if (createForm().referenceSheetUrl) {
@@ -636,16 +636,16 @@
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
-                      <span class="text-xs font-bold text-emerald-500 block">تم رفع ورقة القوانين بنجاح</span>
+                      <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'تم رفع ورقة القوانين بنجاح' : 'Reference sheet uploaded successfully' }}</span>
                       <a [href]="createForm().referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
-                        عرض الصورة بالحجم الكامل
+                        {{ langService.isArabic() ? 'عرض الصورة بالحجم الكامل' : 'View Full Image'  }}
                       </a>
                     </div>
                     <button
                       type="button"
                       (click)="removeReferenceSheetInCreate()"
                       class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                      title="حذف ورقة القوانين"
+                      [title]="langService.isArabic() ? 'حذف ورقة القوانين' : 'Delete reference sheet'"
                     >
                       <app-icon name="trash" [size]="14" />
                     </button>
@@ -653,7 +653,7 @@
                 } @else {
                   <app-image-compressor-uploader
                     uploadTarget="question"
-                    buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                    [buttonLabel]="langService.isArabic() ? 'رفع صورة ورقة القوانين' : 'Upload Reference Sheet Image'"
                     (imageUploaded)="onReferenceSheetUploadedInCreate($event)"
                   />
                 }
@@ -662,7 +662,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">نوع الاختبار:</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نوع الاختبار:' : 'Assessment Type:' }}</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -673,7 +673,7 @@
                 [class.text-brand-primary]="!createForm().isPlacementTest"
                 [class.border-surface-border]="createForm().isPlacementTest"
               >
-                كويز / امتحان منهجي عادي
+                {{ langService.isArabic() ? 'كويز / امتحان منهجي عادي' : 'Standard Curriculum Quiz / Exam'  }}
               </button>
 
               <button
@@ -685,12 +685,12 @@
                 [class.text-purple-600]="createForm().isPlacementTest"
                 [class.border-surface-border]="!createForm().isPlacementTest"
               >
-                امتحان تحديد مستوى (Placement Test)
+                {{ langService.isArabic() ? 'امتحان تحديد مستوى' : 'Placement Diagnostic Test' }}
               </button>
             </div>
             @if (createForm().isPlacementTest) {
               <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
-                * سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار الرئيسية كاختبار تحديد مستوى معتمد لهذا الصف.
+                {{ langService.isArabic() ? '* سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار الرئيسية كاختبار تحديد مستوى معتمد لهذا الصف.' : '* This exam will automatically bind to the landing page as the placement test for this grade.' }}
               </p>
             }
           </div>
@@ -707,7 +707,7 @@
               type="button"
               (click)="createErrorMessage.set(null)"
               class="p-1 rounded-lg hover:bg-rose-500/15 text-rose-500 transition-colors cursor-pointer"
-              title="إغلاق التنبيه"
+              [title]="langService.isArabic() ? 'إغلاق التنبيه' : 'Dismiss alert'"
             >
               <app-icon name="x" [size]="14" />
             </button>
@@ -720,7 +720,7 @@
             (click)="closeCreateModal()"
             class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card text-text-secondary cursor-pointer text-center"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -730,7 +730,7 @@
             class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <app-icon name="plus" [size]="14" />
-            <span>{{ isSaving() ? 'جارٍ الإنشاء...' : 'إنشاء وحفظ الامتحان' }}</span>
+            <span>{{ isSaving() ? (langService.isArabic() ? 'جارٍ الإنشاء...' : 'Creating...') : (langService.isArabic() ? 'إنشاء وحفظ الامتحان' : 'Create & Save Assessment') }}</span>
           </button>
         </div>
 
@@ -751,11 +751,11 @@
                 {{ asm.gradeLevel }}
               </span>
               <h3 class="text-sm sm:text-base font-black text-text-primary">
-                تعديل وإدارة الامتحان: {{ asm.titleAr }}
+                {{ langService.isArabic() ? ('تعديل وإدارة الامتحان: ' + asm.titleAr) : ('Edit & Manage Assessment: ' + (asm.titleEn || asm.titleAr)) }}
               </h3>
             </div>
             <p class="text-[11px] sm:text-xs text-text-secondary mt-1">
-              المنهج: {{ asm.curriculum }} | الترم: {{ asm.term === 'TERM_1' ? 'الأول' : 'الثاني' }} | المدة: {{ asm.durationMinutes }} دقيقة | نسبة النجاح: {{ asm.passPercentage }}%
+              {{ langService.isArabic() ? ('المنهج: ' + asm.curriculum + ' | الترم: ' + (asm.term === 'TERM_1' ? 'الأول' : 'الثاني') + ' | المدة: ' + asm.durationMinutes + ' دقيقة | نسبة النجاح: ' + asm.passPercentage + '%') : ('Curriculum: ' + asm.curriculum + ' | Term: ' + (asm.term === 'TERM_1' ? '1' : '2') + ' | Duration: ' + asm.durationMinutes + ' mins | Pass: ' + asm.passPercentage + '%') }}
             </p>
           </div>
 
@@ -779,7 +779,7 @@
             [class.border-transparent]="editorActiveTab() !== 'SETTINGS'"
             [class.text-text-secondary]="editorActiveTab() !== 'SETTINGS'"
           >
-            <span>إعدادات وجدولة الامتحان</span>
+            <span>{{ langService.isArabic() ? 'إعدادات وجدولة الامتحان' : 'Assessment Settings & Schedule' }}</span>
           </button>
 
           <button
@@ -791,7 +791,7 @@
             [class.border-transparent]="editorActiveTab() !== 'QUESTIONS'"
             [class.text-text-secondary]="editorActiveTab() !== 'QUESTIONS'"
           >
-            <span>بنك الأسئلة والمسائل ({{ asm.questions.length }})</span>
+            <span>{{ langService.isArabic() ? ('بنك الأسئلة والمسائل (' + asm.questions.length + ')') : ('Questions Bank (' + asm.questions.length + ')') }}</span>
           </button>
         </div>
 
@@ -799,7 +799,7 @@
           <div class="p-4 bg-amber-500/10 border-b border-amber-500/20 text-amber-600 text-xs flex items-center gap-2">
             <app-icon name="alert-triangle" [size]="16" />
             <span>
-              تنبيه حماية التصحيح: هناك طلاب قاموا بتسليم حلولهم بالفعل! تعديل الإجابات النموذجية سيقوم بإعادة تصحيح كافة تسليمات الطلاب وتحديث سجل درجاتهم تلقائياً فور الحفظ.
+              {{ langService.isArabic() ? 'تنبيه حماية التصحيح: هناك طلاب قاموا بتسليم حلولهم بالفعل! تعديل الإجابات النموذجية سيقوم بإعادة تصحيح كافة تسليمات الطلاب وتحديث سجل درجاتهم تلقائياً فور الحفظ.' : 'Grading Protection Notice: Students have already submitted! Modifying model answers will trigger automatic regrading.' }}
             </span>
           </div>
         }
@@ -810,21 +810,21 @@
           @if (editorActiveTab() === 'SETTINGS') {
             <div class="space-y-4 animate-fade-in">
               <div>
-                <label class="block font-bold text-text-secondary mb-1">عنوان الامتحان (بالعربية):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الامتحان (بالعربية):' : 'Assessment Title (Arabic):' }}</label>
                 <input
                   type="text"
                   [(ngModel)]="asm.titleAr"
-                  placeholder="مثال: كويز التفاضل وتطبيقات القيم العظمى"
+                  [placeholder]="langService.isArabic() ? 'مثال: كويز التفاضل وتطبيقات القيم العظمى' : 'e.g.: Calculus Applications Quiz'"
                   class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-text-secondary mb-1">العنوان بالإنجليزية (اختياري):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان بالإنجليزية (اختياري):' : 'Assessment Title in English (Optional):' }}</label>
                 <input
                   type="text"
                   [(ngModel)]="asm.titleEn"
-                  placeholder="مثال: Calculus Applications Quiz"
+                  [placeholder]="langService.isArabic() ? 'مثال: Calculus Applications Quiz' : 'e.g.: Calculus Applications Quiz'"
                   class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                 />
               </div>
@@ -832,9 +832,9 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block font-bold text-text-secondary mb-1">
-                    <span>المنهج الدراسي:</span>
+                    <span>{{ langService.isArabic() ? 'المنهج الدراسي:' : 'Curriculum:' }}</span>
                     @if (asm.submissionsCount > 0) {
-                      <span class="text-rose-500 text-[10px] mr-1 font-normal">(مقفول لوجود تسليمات)</span>
+                      <span class="text-rose-500 text-[10px] mr-1 font-normal">{{ langService.isArabic() ? '(مقفول لوجود تسليمات)' : '(Locked: Submissions Exist)' }}</span>
                     }
                   </label>
                   <select
@@ -843,18 +843,18 @@
                     [disabled]="asm.submissionsCount > 0"
                     class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60"
                   >
-                    <option value="EGYPTIAN">المنهج المصري</option>
-                    <option value="GULF">المنهج الخليجي</option>
-                    <option value="INTERNATIONAL">IGCSE / البريطانية</option>
-                    <option value="AMERICAN">SAT / الأمريكية</option>
+                    <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
+                    <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
+                    <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                    <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
                   </select>
                 </div>
 
                 <div>
                   <label class="block font-bold text-text-secondary mb-1">
-                    <span>الصف الدراسي (عزل كامل):</span>
+                    <span>{{ langService.isArabic() ? 'الصف الدراسي (عزل كامل):' : 'Grade Level (Strict Isolation):' }}</span>
                     @if (asm.submissionsCount > 0) {
-                      <span class="text-rose-500 text-[10px] mr-1 font-normal">(مقفول لوجود تسليمات)</span>
+                      <span class="text-rose-500 text-[10px] mr-1 font-normal">{{ langService.isArabic() ? '(مقفول لوجود تسليمات)' : '(Locked: Submissions Exist)' }}</span>
                     }
                   </label>
                   <select
@@ -871,18 +871,18 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">الترم:</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
                   <select
                     [(ngModel)]="asm.term"
                     class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                   >
-                    <option value="TERM_1">الترم الأول</option>
-                    <option value="TERM_2">الترم الثاني</option>
+                    <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                    <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">المدة (بالدقائق):</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
                   <input
                     type="number"
                     [(ngModel)]="asm.durationMinutes"
@@ -893,7 +893,7 @@
                 </div>
 
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">نسبة النجاح %:</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نسبة النجاح %:' : 'Pass Percentage %:' }}</label>
                   <input
                     type="number"
                     [(ngModel)]="asm.passPercentage"
@@ -905,7 +905,7 @@
               </div>
 
               <div>
-                <label class="block font-bold text-text-secondary mb-1">عدد المحاولات المسموح بها للطالب:</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عدد المحاولات المسموح بها للطالب:' : 'Allowed Student Attempts:' }}</label>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     type="button"
@@ -916,7 +916,7 @@
                     [class.text-brand-primary]="asm.maxAttempts === 1"
                     [class.border-surface-border]="asm.maxAttempts !== 1"
                   >
-                    محاولة واحدة
+                    {{ langService.isArabic() ? 'محاولة واحدة' : '1 Attempt' }}
                   </button>
                   <button
                     type="button"
@@ -927,7 +927,7 @@
                     [class.text-brand-primary]="asm.maxAttempts === 2"
                     [class.border-surface-border]="asm.maxAttempts !== 2"
                   >
-                    محاولتان
+                    {{ langService.isArabic() ? 'محاولتان' : '2 Attempts' }}
                   </button>
                   <button
                     type="button"
@@ -938,7 +938,7 @@
                     [class.text-brand-primary]="asm.maxAttempts === 3"
                     [class.border-surface-border]="asm.maxAttempts !== 3"
                   >
-                    3 محاولات
+                    {{ langService.isArabic() ? '3 محاولات' : '3 Attempts' }}
                   </button>
                   <button
                     type="button"
@@ -949,7 +949,7 @@
                     [class.text-brand-primary]="asm.maxAttempts >= 90"
                     [class.border-surface-border]="asm.maxAttempts < 90"
                   >
-                    غير محدود
+                    {{ langService.isArabic() ? 'غير محدود' : 'Unlimited' }}
                   </button>
                 </div>
               </div>
@@ -959,7 +959,7 @@
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <app-icon name="calendar" [size]="16" className="text-brand-primary" />
-                    <span class="font-bold text-text-primary text-xs">جدولة موعد تنزيل وإغلاق الامتحان:</span>
+                    <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'جدولة موعد تنزيل وإغلاق الامتحان:' : 'Publish & Closing Schedule:' }}</span>
                   </div>
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input
@@ -967,32 +967,32 @@
                       [(ngModel)]="asm.isScheduled"
                       class="accent-brand-primary w-4 h-4 cursor-pointer"
                     />
-                    <span class="text-xs font-bold text-text-secondary">تفعيل الجدولة</span>
+                    <span class="text-xs font-bold text-text-secondary">{{ langService.isArabic() ? 'تفعيل الجدولة' : 'Enable Schedule' }}</span>
                   </label>
                 </div>
 
                 @if (asm.isScheduled) {
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
                     <app-schedule-alarm-picker
-                      label="موعد تنزيل / بدء الامتحان للطلاب:"
-                      placeholder="اضغطي لضبط تاريخ البدء وساعة المنبه..."
+                      [label]="langService.isArabic() ? 'موعد تنزيل / بدء الامتحان للطلاب:' : 'Assessment Start Date & Alarm:'"
+                      [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ البدء وساعة المنبه...' : 'Set start date and alarm time...'"
                       [(ngModel)]="asm.availableFrom"
                     />
 
                     <app-schedule-alarm-picker
-                      label="موعد إغلاق الامتحان (الموعد النهائي):"
-                      placeholder="اضغطي لضبط تاريخ الإغلاق وساعة المنبه..."
+                      [label]="langService.isArabic() ? 'موعد إغلاق الامتحان (الموعد النهائي):' : 'Assessment Deadline & Alarm:'"
+                      [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ الإغلاق وساعة المنبه...' : 'Set deadline and alarm time...'"
                       [(ngModel)]="asm.availableUntil"
                     />
                   </div>
                   <p class="text-[10px] text-text-muted">
-                    * في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.
+                    {{ langService.isArabic() ? '* في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.' : '* When scheduled, students cannot access the exam before start time, and it automatically closes at deadline.' }}
                   </p>
                 }
               </div>
 
               <div>
-                <label class="block font-bold text-text-secondary mb-1">آلة ديسموس البيانية (Desmos Mode):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'آلة ديسموس البيانية:' : 'Desmos Graphing Calculator Mode:' }}</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1003,7 +1003,7 @@
                     [class.text-brand-primary]="asm.calculatorType === 'NONE'"
                     [class.border-surface-border]="asm.calculatorType !== 'NONE'"
                   >
-                    معطلة (اختبار جبري / يدوي)
+                    {{ langService.isArabic() ? 'معطلة (اختبار جبري أو يدوي)' : 'Disabled (Algebraic / Manual Exam)' }}
                   </button>
 
                   <button
@@ -1015,14 +1015,14 @@
                     [class.text-cyan-600]="asm.calculatorType === 'DESMOS'"
                     [class.border-surface-border]="asm.calculatorType !== 'DESMOS'"
                   >
-                    مفعلة (ديسموس البيانية)
+                    {{ langService.isArabic() ? 'مفعلة (ديسموس البيانية)' : 'Enabled (Desmos Graphing)' }}
                   </button>
                 </div>
               </div>
 
               <!-- Reference Sheet (ورقة القوانين والمفاهيم الرياضية) -->
               <div>
-                <label class="block font-bold text-text-secondary mb-1">ورقة القوانين والمفاهيم (Reference Sheet):</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'ورقة القوانين والمفاهيم:' : 'Formulas & Reference Sheet:' }}</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1033,7 +1033,7 @@
                     [class.text-brand-primary]="!isRefSheetActiveInEditor()"
                     [class.border-surface-border]="isRefSheetActiveInEditor()"
                   >
-                    بدون ورقة قوانين
+                    {{ langService.isArabic() ? 'بدون ورقة قوانين' : 'No Reference Sheet' }}
                   </button>
 
                   <button
@@ -1045,14 +1045,14 @@
                     [class.text-amber-500]="isRefSheetActiveInEditor()"
                     [class.border-surface-border]="!isRefSheetActiveInEditor()"
                   >
-                    إرفاق ورقة قوانين (Reference)
+                    {{ langService.isArabic() ? 'إرفاق ورقة قوانين' : 'Attach Reference Sheet' }}
                   </button>
                 </div>
 
                 @if (isRefSheetActiveInEditor()) {
                   <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                     <p class="text-[11px] text-text-secondary leading-relaxed">
-                      أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان كزر عائم (Reference) بجوار الآلة الحاسبة دون مغادرة صفحة الحل.
+                      {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان كزر عائم بجوار الآلة الحاسبة دون مغادرة صفحة الحل.' : 'Upload reference sheet image to display to students as a floating panel alongside calculator.' }}
                     </p>
 
                     @if (asm.referenceSheetUrl) {
@@ -1063,16 +1063,16 @@
                           class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                         />
                         <div class="flex-1 min-w-0">
-                          <span class="text-xs font-bold text-emerald-500 block">ورقة القوانين مفعلة ومرفقة بالامتحان</span>
+                          <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'ورقة القوانين مفعلة ومرفقة بالامتحان' : 'Reference sheet active and attached' }}</span>
                           <a [href]="asm.referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
-                            عرض الصورة بالحجم الكامل
+                            {{ langService.isArabic() ? 'عرض الصورة بالحجم الكامل' : 'View Full Image' }}
                           </a>
                         </div>
                         <button
                           type="button"
                           (click)="removeReferenceSheetInEditor()"
                           class="p-2 rounded-xl border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                          title="حذف ورقة القوانين"
+                          [title]="langService.isArabic() ? 'حذف ورقة القوانين' : 'Delete reference sheet'"
                         >
                           <app-icon name="trash" [size]="14" />
                         </button>
@@ -1080,7 +1080,7 @@
                     } @else {
                       <app-image-compressor-uploader
                         uploadTarget="question"
-                        buttonLabel="رفع صورة ورقة القوانين / المرجع (WebP)"
+                        [buttonLabel]="langService.isArabic() ? 'رفع صورة ورقة القوانين' : 'Upload Reference Sheet Image'"
                         (imageUploaded)="onReferenceSheetUploadedInEditor($event)"
                       />
                     }
@@ -1089,7 +1089,7 @@
               </div>
 
               <div>
-                <label class="block font-bold text-text-secondary mb-1">نوع الاختبار:</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نوع الاختبار:' : 'Assessment Type:' }}</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1100,7 +1100,7 @@
                     [class.text-brand-primary]="!asm.isPlacementTest"
                     [class.border-surface-border]="asm.isPlacementTest"
                   >
-                    كويز / امتحان منهجي عادي
+                    {{ langService.isArabic() ? 'كويز / امتحان منهجي عادي' : 'Standard Curriculum Quiz / Exam' }}
                   </button>
 
                   <button
@@ -1112,12 +1112,12 @@
                     [class.text-purple-600]="asm.isPlacementTest"
                     [class.border-surface-border]="!asm.isPlacementTest"
                   >
-                    امتحان تحديد مستوى (Placement Test)
+                    {{ langService.isArabic() ? 'امتحان تحديد مستوى' : 'Placement Diagnostic Test' }}
                   </button>
                 </div>
                 @if (asm.isPlacementTest) {
                   <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
-                    * سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار كاختبار تحديد مستوى لهذا الصف.
+                    {{ langService.isArabic() ? '* سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار كاختبار تحديد مستوى لهذا الصف.' : '* This exam will automatically bind to the landing page as the placement test for this grade.' }}
                   </p>
                 }
               </div>
@@ -1133,7 +1133,7 @@
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <h4 class="font-black text-text-primary flex items-center gap-2">
                     <app-icon name="plus" [size]="14" className="text-brand-primary" />
-                    <span>إضافة سؤال جديد للامتحان</span>
+                    <span>{{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان' : 'Add New Question to Assessment' }}</span>
                   </h4>
 
                   <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -1145,7 +1145,7 @@
                       [class.text-white]="newQuestionType() === 'MCQ'"
                       [class.bg-surface-card]="newQuestionType() !== 'MCQ'"
                     >
-                      اختيار من متعدد (MCQ)
+                      {{ langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice (MCQ)' }}
                     </button>
 
                     <button
@@ -1156,25 +1156,25 @@
                       [class.text-white]="newQuestionType() === 'ESSAY'"
                       [class.bg-surface-card]="newQuestionType() !== 'ESSAY'"
                     >
-                      مسألة بيانية / مقالية
+                      {{ langService.isArabic() ? 'مسألة بيانية أو مقالية' : 'Essay / Graphing Problem' }}
                     </button>
                   </div>
                 </div>
 
                 <!-- Question Text -->
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">نص المسألة الرياضية:</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Math Problem Question Text:' }}</label>
                   <textarea
                     rows="2"
                     [(ngModel)]="newQuestionTextAr"
-                    placeholder="اكتبي نص المسألة أو رأس السؤال هنا..."
+                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا...' : 'Type problem text or equation prompt here...'"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                   ></textarea>
                 </div>
 
                 <!-- Question Image Uploader Component (WebP Auto-Compression) -->
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">صورة المسألة (اختياري - يتم ضغطها وتحويلها إلى WebP):</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'صورة المسألة (اختياري):' : 'Question Image (Optional):' }}</label>
                   <app-image-compressor-uploader
                     [uploadTarget]="'question'"
                     [existingImageUrl]="newQuestionImageUrl()"
@@ -1186,7 +1186,7 @@
                 @if (newQuestionType() === 'MCQ') {
                   <div class="space-y-2 pt-2 border-t border-surface-border">
                     <label class="block font-bold text-text-secondary">
-                      الاختيارات الأربعة (إلزامية لسؤال الاختيار من متعدد - حددي الدائرة بجانب الإجابة الصحيحة):
+                      {{ langService.isArabic() ? 'الاختيارات الأربعة (إلزامية لسؤال الاختيار من متعدد - حددي الدائرة بجانب الإجابة الصحيحة):' : 'Four Options (Required for MCQ - select radio for correct answer):' }}
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       @for (opt of newQuestionOptions(); track $index) {
@@ -1197,13 +1197,13 @@
                             [checked]="newQuestionCorrectIndex() === $index"
                             (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
                             class="accent-brand-primary cursor-pointer w-4 h-4"
-                            title="تحديد كإجابة صحيحة"
+                            [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
                           />
                           <input
                             type="text"
                             [value]="opt"
                             (input)="updateOption($index, $any($event.target).value)"
-                            [placeholder]="'الخيار (' + ($index + 1) + ')'"
+                            [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
                             class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none"
                           />
                         </div>
@@ -1215,9 +1215,9 @@
                   <div class="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-start gap-2.5">
                     <app-icon name="alert-circle" [size]="16" className="text-brand-primary mt-0.5 shrink-0" />
                     <div class="text-xs">
-                      <span class="font-bold text-text-primary">مسألة مقالية / بيانية (بدون اختيارات):</span>
+                      <span class="font-bold text-text-primary">{{ langService.isArabic() ? 'مسألة مقالية أو بيانية (بدون اختيارات):' : 'Essay / Graphing Problem (No options):' }}</span>
                       <p class="text-text-secondary mt-0.5 leading-relaxed">
-                        هذا السؤال مقالي، لا يشترط إضافة اختيارات. يستطيع الطالب رفع صورة الحل بخط يده من كاميرا الموبايل كإجابة كاملة للمسألة لتصحيحها من المعلمة.
+                        {{ langService.isArabic() ? 'هذا السؤال مقالي، لا يشترط إضافة اختيارات. يستطيع الطالب رفع صورة الحل بخط يده من كاميرا الموبايل كإجابة كاملة للمسألة لتصحيحها من المعلمة.' : 'Essay question allows students to upload handwritten solution photos for manual teacher grading.' }}
                       </p>
                     </div>
                   </div>
@@ -1225,18 +1225,18 @@
 
                 <!-- YouTube Solution Video URL -->
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">رابط فيديو شرح الحل على يوتيوب (اختياري - يظهر للطالب عند الخطأ):</label>
+                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'رابط فيديو شرح الحل على يوتيوب (اختياري):' : 'YouTube Solution Video Link (Optional):' }}</label>
                   <input
                     type="url"
                     [(ngModel)]="newQuestionYoutubeUrl"
-                    placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..."
+                    [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... أو https://youtu.be/...' : 'https://www.youtube.com/watch?v=... or https://youtu.be/...'"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none dir-ltr text-left font-mono"
                   />
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
                   <div class="flex items-center gap-2">
-                    <label class="font-bold text-text-secondary">درجة السؤال:</label>
+                    <label class="font-bold text-text-secondary">{{ langService.isArabic() ? 'درجة السؤال:' : 'Question Points:' }}</label>
                     <input
                       type="number"
                       [(ngModel)]="newQuestionPoints"
@@ -1252,7 +1252,7 @@
                     class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-bold bg-brand-primary hover:bg-brand-secondary transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <app-icon name="plus" [size]="14" />
-                    <span>إدراج السؤال بالامتحان</span>
+                    <span>{{ langService.isArabic() ? 'إدراج السؤال بالامتحان' : 'Insert Question into Assessment' }}</span>
                   </button>
                 </div>
 
@@ -1261,7 +1261,7 @@
               <!-- Existing Questions List -->
               <div class="space-y-3">
                 <h4 class="font-black text-text-primary">
-                  الأسئلة الحالية بالامتحان ({{ asm.questions.length }} أسئلة):
+                  {{ langService.isArabic() ? ('الأسئلة الحالية بالامتحان (' + asm.questions.length + ' أسئلة):') : ('Current Assessment Questions (' + asm.questions.length + ' questions):') }}
                 </h4>
 
                 @for (q of asm.questions; track q.id) {
@@ -1272,10 +1272,10 @@
                           {{ q.order }}
                         </span>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted">
-                          {{ q.type === 'MCQ' ? 'اختيار من متعدد' : 'مسألة مقالية / بيانية' }}
+                          {{ q.type === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice') : (langService.isArabic() ? 'مسألة مقالية أو بيانية' : 'Essay / Graphing') }}
                         </span>
                         <span class="font-bold text-emerald-500 font-mono text-xs">
-                          {{ q.points }} درجات
+                          {{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }}
                         </span>
                       </div>
 
@@ -1283,7 +1283,7 @@
                         type="button"
                         (click)="deleteQuestion(q.order)"
                         class="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
-                        title="حذف السؤال"
+                        [title]="langService.isArabic() ? 'حذف السؤال' : 'Delete question'"
                       >
                         <app-icon name="trash" [size]="14" />
                       </button>
@@ -1294,7 +1294,7 @@
                     </p>
 
                     @if (q.questionImageUrl) {
-                      <img [src]="q.questionImageUrl" alt="صورة المسألة" class="max-h-48 rounded-xl border border-surface-border object-contain" />
+                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة المسألة' : 'Question image'" class="max-h-48 rounded-xl border border-surface-border object-contain" />
                     }
 
                     @if (q.type === 'MCQ') {
@@ -1311,7 +1311,7 @@
                             @if (q.correctOptionIndex === $index) {
                               <span class="text-[10px] font-bold flex items-center gap-1">
                                 <app-icon name="check" [size]="12" />
-                                <span>الإجابة الصحيحة</span>
+                                <span>{{ langService.isArabic() ? 'الإجابة الصحيحة' : 'Correct Answer' }}</span>
                               </span>
                             }
                           </div>
@@ -1321,7 +1321,7 @@
                   </div>
                 } @empty {
                   <div class="py-8 text-center text-text-muted">
-                    لا توجد أسئلة مدرجة في هذا الامتحان بعد. أضيفي السؤال الأول بالأعلى.
+                    {{ langService.isArabic() ? 'لا توجد أسئلة مدرجة في هذا الامتحان بعد. أضيفي السؤال الأول بالأعلى.' : 'No questions in this assessment yet. Add the first question above.' }}
                   </div>
                 }
               </div>
@@ -1341,7 +1341,7 @@
               type="button"
               (click)="editorErrorMessage.set(null)"
               class="p-1 rounded-lg hover:bg-rose-500/15 text-rose-500 transition-colors cursor-pointer"
-              title="إغلاق التنبيه"
+              [title]="langService.isArabic() ? 'إغلاق التنبيه' : 'Dismiss alert'"
             >
               <app-icon name="x" [size]="14" />
             </button>
@@ -1355,7 +1355,7 @@
             (click)="closeEditor()"
             class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card text-text-secondary cursor-pointer text-center"
           >
-            إغلاق
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
           </button>
 
           <button
@@ -1365,7 +1365,7 @@
             class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>{{ isSaving() ? 'جارٍ حفظ التعديلات...' : 'حفظ واعتماد التعديلات' }}</span>
+            <span>{{ isSaving() ? (langService.isArabic() ? 'جارٍ حفظ التعديلات...' : 'Saving...') : (langService.isArabic() ? 'حفظ واعتماد التعديلات' : 'Save & Publish Changes') }}</span>
           </button>
         </div>
 

@@ -15,7 +15,7 @@ export class LangService {
   private readonly LANG_STORAGE_KEY = 'spider_math_lang';
 
   // Signals
-  readonly currentLang = signal<SupportedLanguage>('en'); // English as default
+  readonly currentLang = signal<SupportedLanguage>('ar'); // Arabic as platform default
   readonly isRtl = computed(() => this.currentLang() === 'ar');
   readonly isArabic = computed(() => this.currentLang() === 'ar');
   readonly isEnglish = computed(() => this.currentLang() === 'en');
@@ -50,7 +50,7 @@ export class LangService {
   }
 
   private initializeLang(): void {
-    let initialLang: SupportedLanguage = 'en';
+    let initialLang: SupportedLanguage = 'ar';
 
     if (isPlatformBrowser(this.platformId)) {
       try {
@@ -59,7 +59,7 @@ export class LangService {
           initialLang = stored;
         }
       } catch {
-        initialLang = 'en';
+        initialLang = 'ar';
       }
     }
 

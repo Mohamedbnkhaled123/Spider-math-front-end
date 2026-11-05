@@ -7,7 +7,7 @@
     <div class="flex items-center gap-2 min-w-0">
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
       <h1 class="text-xs sm:text-sm font-bold text-text-primary font-academic-serif truncate">
-        غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span>
+        @if (langService.isArabic()) { غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span> } @else { Operations Studio of <span class="text-gold-accent">Eng. Heba Abdel-Wahab</span> }
       </h1>
     </div>
 
@@ -17,7 +17,7 @@
         type="button"
         (click)="toggleNotifications()"
         class="relative p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer"
-        title="الإشعارات المجمعة"
+        [title]="langService.isArabic() ? 'الإشعارات المجمعة' : 'Batched Notifications'"
       >
         <app-icon name="bell" [size]="15" />
         @if (batchedNotifications().length > 0) {
@@ -32,10 +32,10 @@
         type="button"
         (click)="toggleMobileTools()"
         class="p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
-        title="أدوات الصيانة والنسخ الاحتياطي"
+        [title]="langService.isArabic() ? 'أدوات الصيانة والنسخ الاحتياطي' : 'Maintenance & Backup Tools'"
       >
         <app-icon name="settings" [size]="14" />
-        <span class="hidden sm:inline">الأدوات</span>
+        <span class="hidden sm:inline">{{ langService.isArabic() ? 'الأدوات' : 'Tools' }}</span>
       </button>
     </div>
   </div>
@@ -54,7 +54,7 @@
       [class.border-surface-border]="activeTab() !== 'analytics'"
     >
       <app-icon name="activity" [size]="13" />
-      <span>الإحصائيات</span>
+      <span>{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
     </button>
 
     <button
@@ -69,7 +69,7 @@
       [class.border-surface-border]="activeTab() !== 'curriculum'"
     >
       <app-icon name="book-open" [size]="13" />
-      <span>المناهج</span>
+      <span>{{ langService.isArabic() ? 'المناهج' : 'Curricula' }}</span>
     </button>
 
     <button
@@ -84,7 +84,7 @@
       [class.border-surface-border]="activeTab() !== 'assessments'"
     >
       <app-icon name="award" [size]="13" />
-      <span>الامتحانات</span>
+      <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
     </button>
 
     <button
@@ -99,7 +99,7 @@
       [class.border-surface-border]="activeTab() !== 'grading'"
     >
       <app-icon name="file-text" [size]="13" />
-      <span>التصحيح</span>
+      <span>{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
       @if (analytics().pendingGradingCount > 0) {
         <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500 text-white font-mono font-bold">
           {{ analytics().pendingGradingCount }}
@@ -119,7 +119,7 @@
       [class.border-surface-border]="activeTab() !== 'students'"
     >
       <app-icon name="user" [size]="13" />
-      <span>الطلاب والأجهزة</span>
+      <span>{{ langService.isArabic() ? 'الطلاب والأجهزة' : 'Students & Devices' }}</span>
       @if (analytics().registeredStudents > 0) {
         <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-brand-primary/20 text-brand-primary font-mono font-bold">
           {{ analytics().registeredStudents }}
@@ -139,7 +139,7 @@
       [class.border-surface-border]="activeTab() !== 'leads_cms'"
     >
       <app-icon name="grid" [size]="13" />
-      <span>CMS والعملاء</span>
+      <span>{{ langService.isArabic() ? 'المحتوى والعملاء' : 'CMS & Leads' }}</span>
     </button>
   </div>
 
@@ -153,7 +153,7 @@
         class="py-2 px-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary flex items-center justify-center gap-1.5 font-bold cursor-pointer"
       >
         <app-icon [name]="isExporting() ? 'loader' : 'upload-cloud'" [size]="13" [className]="isExporting() ? 'animate-spin' : 'text-brand-primary'" />
-        <span>نسخة احتياطية</span>
+        <span>{{ langService.isArabic() ? 'نسخة احتياطية' : 'Backup' }}</span>
       </button>
 
       <button
@@ -163,7 +163,7 @@
         class="py-2 px-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-500 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
       >
         <app-icon name="trash" [size]="13" />
-        <span>تفريغ الواجبات</span>
+        <span>{{ langService.isArabic() ? 'تفريغ الواجبات' : 'Purge Homework' }}</span>
       </button>
     </div>
   }
@@ -172,8 +172,8 @@
   @if (isNotificationsOpen()) {
     <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
       <div class="flex items-center justify-between pb-1.5 border-b border-surface-border/60">
-        <span class="text-xs font-bold text-text-primary">إشعارات التسليمات المجمعة</span>
-        <span class="text-[10px] text-text-muted">كل 5 حلول</span>
+        <span class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'إشعارات التسليمات المجمعة' : 'Batched Submission Alerts' }}</span>
+        <span class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'كل 5 حلول' : 'Every 5 submissions' }}</span>
       </div>
 
       <div class="max-h-48 overflow-y-auto space-y-1.5 text-xs">
@@ -184,12 +184,16 @@
               <span class="text-[9px] text-text-muted">{{ item.timestamp }}</span>
             </div>
             <p class="text-[10px] text-text-primary leading-snug">
-              دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+              @if (langService.isArabic()) {
+                دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+              } @else {
+                New batch of <strong class="text-rose-500">{{ item.batchCount }} submissions</strong> in {{ item.assessmentTitle }}.
+              }
             </p>
           </div>
         } @empty {
           <div class="py-4 text-center text-xs text-text-muted">
-            لا توجد تنبيهات تسليمات مجمعة جديدة.
+            {{ langService.isArabic() ? 'لا توجد تنبيهات تسليمات مجمعة جديدة.' : 'No new batched submission alerts.' }}
           </div>
         }
       </div>
@@ -212,7 +216,7 @@
           type="button"
           (click)="toggleNotifications()"
           class="relative p-2 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-text-primary transition-all cursor-pointer"
-          title="مركز الإشعارات التراكمية (كل 5 تسليمات)"
+          [title]="langService.isArabic() ? 'مركز الإشعارات التراكمية (كل 5 تسليمات)' : 'Batched Notification Center (5 submissions per alert)'"
         >
           <app-icon name="bell" [size]="16" />
           @if (batchedNotifications().length > 0) {
@@ -226,8 +230,8 @@
         @if (isNotificationsOpen()) {
           <div class="absolute left-0 top-12 z-layer-modal w-72 rounded-2xl border border-surface-border bg-surface-card shadow-2xl p-4 space-y-3 animate-fade-in text-right rtl:text-right">
             <div class="flex items-center justify-between border-b border-surface-border pb-2">
-              <span class="text-xs font-bold text-text-primary">إشعارات التسليمات المجمعة</span>
-              <span class="text-[10px] text-text-muted">تجميع تلقائي (كل 5 حلول)</span>
+              <span class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'إشعارات التسليمات المجمعة' : 'Batched Submission Alerts' }}</span>
+              <span class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'تجميع تلقائي (كل 5 حلول)' : 'Batched auto (every 5 submissions)' }}</span>
             </div>
 
             <div class="max-h-60 overflow-y-auto space-y-2 text-xs">
@@ -238,12 +242,16 @@
                     <span class="text-[10px] text-text-muted">{{ item.timestamp }}</span>
                   </div>
                   <p class="text-[11px] text-text-primary">
-                    تم اكتمال دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+                    @if (langService.isArabic()) {
+                      تم اكتمال دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+                    } @else {
+                      New batch completed with <strong class="text-rose-500">{{ item.batchCount }} submissions</strong> in {{ item.assessmentTitle }}.
+                    }
                   </p>
                 </div>
               } @empty {
                 <div class="py-6 text-center text-xs text-text-muted">
-                  لا توجد تنبيهات تسليمات مجمعة جديدة.
+                  {{ langService.isArabic() ? 'لا توجد تنبيهات تسليمات مجمعة جديدة.' : 'No new batched submission alerts.' }}
                 </div>
               }
             </div>
@@ -253,15 +261,19 @@
     </div>
 
     <h1 class="text-sm font-bold text-text-primary font-academic-serif">
-      غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span> <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span>
+      @if (langService.isArabic()) {
+        غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span> <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span>
+      } @else {
+        Operations Studio of <span class="text-gold-accent">Eng. Heba Abdel-Wahab</span> <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span>
+      }
     </h1>
     <p class="text-[11px] text-text-muted mt-0.5">
-      v2.2 الإشراف الأكاديمي والتحكم الكامل
+      {{ langService.isArabic() ? 'الإشراف الأكاديمي والتحكم الكامل' : 'Academic Supervision & Full Control' }}
     </p>
   </div>
 
   <!-- Operational Nav Tabs -->
-  <nav class="space-y-1.5" aria-label="أقسام استوديو الإدارة المركزية">
+  <nav class="space-y-1.5" [attr.aria-label]="langService.isArabic() ? 'أقسام استوديو الإدارة المركزية' : 'Central Admin Studio Navigation'">
     <!-- 1. Analytics Shell -->
     <button
       type="button"
@@ -274,7 +286,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="activity" [size]="16" />
-        <span>لوحة الإحصائيات المركزية</span>
+        <span>{{ langService.isArabic() ? 'لوحة الإحصائيات المركزية' : 'Central Analytics Dashboard' }}</span>
       </div>
       <app-icon name="chevron-left" [size]="14" />
     </button>
@@ -291,7 +303,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="book-open" [size]="16" />
-        <span>استوديو المناهج والوحدات</span>
+        <span>{{ langService.isArabic() ? 'استوديو المناهج والوحدات' : 'Curriculum & Units Studio' }}</span>
       </div>
       <app-icon name="chevron-left" [size]="14" />
     </button>
@@ -308,7 +320,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="award" [size]="16" />
-        <span>قسم وبنك الامتحانات</span>
+        <span>{{ langService.isArabic() ? 'قسم وبنك الامتحانات' : 'Assessment & Question Bank' }}</span>
       </div>
       <app-icon name="chevron-left" [size]="14" />
     </button>
@@ -325,7 +337,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="file-text" [size]="16" />
-        <span>تسليمات الكويزات والتصحيح</span>
+        <span>{{ langService.isArabic() ? 'تسليمات الكويزات والتصحيح' : 'Quiz Submissions & Grading' }}</span>
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-rose-500]="activeTab() === 'grading' || analytics().pendingGradingCount > 0"
@@ -349,7 +361,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="user" [size]="16" />
-        <span>الطلاب والاشتراكات والأجهزة</span>
+        <span>{{ langService.isArabic() ? 'الطلاب والاشتراكات والأجهزة' : 'Students, Subscriptions & Devices' }}</span>
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-white/20]="activeTab() === 'students'"
@@ -373,7 +385,7 @@
     >
       <div class="flex items-center gap-2.5">
         <app-icon name="grid" [size]="16" />
-        <span>CMS وإدارة الـ Leads</span>
+        <span>{{ langService.isArabic() ? 'إدارة المحتوى والعملاء الجدد' : 'CMS & Leads Management' }}</span>
       </div>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-numeric font-bold"
         [class.bg-white/20]="activeTab() === 'leads_cms'"
@@ -397,7 +409,7 @@
       class="w-full py-2.5 px-3 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
     >
       <app-icon [name]="isExporting() ? 'loader' : 'upload-cloud'" [size]="14" [className]="isExporting() ? 'animate-spin' : 'text-brand-primary'" />
-      <span>{{ isExporting() ? 'جاري تجهيز النسخة...' : 'تحميل نسخة احتياطية (JSON)' }}</span>
+      <span>{{ isExporting() ? (langService.isArabic() ? 'جاري تجهيز النسخة...' : 'Preparing backup...') : (langService.isArabic() ? 'تحميل نسخة احتياطية كاملة' : 'Export Full Backup (JSON)') }}</span>
     </button>
 
     <!-- Purge Ephemeral Homework WebP Button -->
@@ -408,7 +420,7 @@
       class="w-full py-2 px-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-[11px] font-bold text-rose-500 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
     >
       <app-icon name="trash" [size]="13" />
-      <span>{{ isPurging() ? 'جاري تفريغ السيرفر...' : 'تفريغ صور واجبات الترم المنتهي' }}</span>
+      <span>{{ isPurging() ? (langService.isArabic() ? 'جاري تفريغ السيرفر...' : 'Purging server...') : (langService.isArabic() ? 'تفريغ صور واجبات الترم المنتهي' : 'Purge Ended Term Homework Images') }}</span>
     </button>
   </div>
 

@@ -6,11 +6,11 @@
       <div class="flex items-center gap-2">
         <app-icon name="shield" [size]="18" className="text-brand-primary" />
         <h3 class="text-sm font-black text-text-primary">
-          طابور الموافقة التراكمية على الأجهزة (Device Lock Queue - $push)
+          {{ langService.isArabic() ? 'طابور الموافقة التراكمية على الأجهزة' : 'Device Approval Queue' }}
         </h3>
       </div>
       <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">
-        {{ pendingDevices().length }} بانتظار الاعتماد
+        {{ pendingDevices().length }} {{ langService.isArabic() ? 'بانتظار الاعتماد' : 'Pending Approval' }}
       </span>
     </div>
 
@@ -26,7 +26,7 @@
               <span class="text-text-muted text-[11px]">• {{ dev.curriculum }}</span>
             </div>
             <p class="text-[11px] text-text-secondary mt-0.5 font-mono">
-              الجهاز الجديد: {{ dev.deviceInfo }} • IP: {{ dev.ipAddress }} • الطلب: {{ dev.requestedAt }}
+              {{ langService.isArabic() ? 'الجهاز الجديد: ' : 'New Device: ' }}{{ dev.deviceInfo }} • {{ langService.isArabic() ? 'عنوان بروتوكول الإنترنت: ' : 'IP: ' }}{{ dev.ipAddress }} • {{ langService.isArabic() ? 'الطلب: ' : 'Requested: ' }}{{ dev.requestedAt }}
             </p>
           </div>
 
@@ -35,22 +35,22 @@
               type="button"
               (click)="approveDevice(dev)"
               class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-sm"
-              title="إضافة الجهاز الجديد لمصفوفة الأجهزة المعتمدة دون مساس بالجهاز السابق"
+              [title]="langService.isArabic() ? 'إضافة الجهاز الجديد لقائمة الأجهزة المعتمدة' : 'Add new device to approved list'"
             >
-              + اعتماد الجهاز
+              {{ langService.isArabic() ? '+ اعتماد الجهاز' : '+ Approve Device' }}
             </button>
             <button
               type="button"
               (click)="rejectDevice(dev)"
               class="px-3 py-1.5 rounded-xl font-bold text-xs text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
-              رفض
+              {{ langService.isArabic() ? 'رفض' : 'Reject' }}
             </button>
           </div>
         </div>
       } @empty {
         <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
-          لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.
+          {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.' : 'No pending device requests — all devices approved and secured.' }}
         </div>
       }
     </div>
@@ -61,10 +61,10 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
-          إدارة حسابات الطلاب والمستخدمين والاشتراكات
+          {{ langService.isArabic() ? 'إدارة حسابات الطلاب والمستخدمين والاشتراكات' : 'Students, Users & Subscriptions Management' }}
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          تصنيف الحسابات (طلاب مشتركون، غير مشتركين، أولياء أمور، إدارة)، والبحث الفوري وتفعيل الوحدات المخصصة.
+          {{ langService.isArabic() ? 'تصنيف الحسابات (طلاب مشتركون، غير مشتركين، أولياء أمور، إدارة)، والبحث الفوري وتفعيل الوحدات المخصصة.' : 'Filter users (active, inactive, parents, admins), instant search, and activate custom unit access.' }}
         </p>
       </div>
 
@@ -74,7 +74,7 @@
           type="text"
           [ngModel]="searchQuery()"
           (ngModelChange)="onSearchChange($event)"
-          placeholder="بحث بالاسم، الكود، الهاتف، أو البريد..."
+          [placeholder]="langService.isArabic() ? 'بحث بالاسم، الكود، الهاتف، أو البريد...' : 'Search by name, HA code, phone, or email...'"
           class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
         />
         <span class="absolute right-3.5 top-3 text-text-muted">
@@ -96,7 +96,7 @@
         [class.text-text-secondary]="activeCategory() !== 'ALL'"
         [class.border-surface-border]="activeCategory() !== 'ALL'"
       >
-        <span>الكل</span>
+        <span>{{ langService.isArabic() ? 'الكل' : 'All' }}</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ALL'" [class.bg-surface-bg]="activeCategory() !== 'ALL'">
           {{ userCounts().all }}
         </span>
@@ -114,7 +114,7 @@
         [class.border-surface-border]="activeCategory() !== 'ACTIVE_STUDENTS'"
       >
         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span>طلاب باشتراك نشط</span>
+        <span>{{ langService.isArabic() ? 'طلاب باشتراك نشط' : 'Active Students' }}</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'ACTIVE_STUDENTS'">
           {{ userCounts().activeStudents }}
         </span>
@@ -132,7 +132,7 @@
         [class.border-surface-border]="activeCategory() !== 'INACTIVE_STUDENTS'"
       >
         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-        <span>طلاب غير مشتركين</span>
+        <span>{{ langService.isArabic() ? 'طلاب غير مشتركين' : 'Inactive Students' }}</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'INACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'INACTIVE_STUDENTS'">
           {{ userCounts().inactiveStudents }}
         </span>
@@ -150,7 +150,7 @@
         [class.border-surface-border]="activeCategory() !== 'PARENTS'"
       >
         <span class="w-2 h-2 rounded-full bg-teal-400"></span>
-        <span>أولياء الأمور</span>
+        <span>{{ langService.isArabic() ? 'أولياء الأمور' : 'Parents' }}</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'PARENTS'" [class.bg-surface-bg]="activeCategory() !== 'PARENTS'">
           {{ userCounts().parents }}
         </span>
@@ -168,7 +168,7 @@
         [class.border-surface-border]="activeCategory() !== 'ADMINS'"
       >
         <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-        <span>فريق الإدارة</span>
+        <span>{{ langService.isArabic() ? 'فريق الإدارة' : 'Admin Team' }}</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ADMINS'" [class.bg-surface-bg]="activeCategory() !== 'ADMINS'">
           {{ userCounts().admins }}
         </span>
@@ -180,13 +180,13 @@
       <table class="w-full text-right rtl:text-right text-xs">
         <thead class="bg-surface-bg border-b border-surface-border text-text-muted font-bold">
           <tr>
-            <th class="p-4">اسم الحساب / المستخدم</th>
-            <th class="p-4">الكود الفريد</th>
-            <th class="p-4">المنهج والصف</th>
-            <th class="p-4">الاشتراك</th>
-            <th class="p-4">نقاط الـ XP</th>
-            <th class="p-4">الأجهزة</th>
-            <th class="p-4 text-center">الإجراءات والتحكم</th>
+            <th class="p-4">{{ langService.isArabic() ? 'اسم الحساب / المستخدم' : 'Account Name / User' }}</th>
+            <th class="p-4">{{ langService.isArabic() ? 'الكود الفريد' : 'Unique Code' }}</th>
+            <th class="p-4">{{ langService.isArabic() ? 'المنهج والصف' : 'Curriculum & Grade' }}</th>
+            <th class="p-4">{{ langService.isArabic() ? 'الاشتراك' : 'Subscription' }}</th>
+            <th class="p-4">{{ langService.isArabic() ? 'نقاط التميز' : 'XP Points' }}</th>
+            <th class="p-4">{{ langService.isArabic() ? 'الأجهزة' : 'Devices' }}</th>
+            <th class="p-4 text-center">{{ langService.isArabic() ? 'الإجراءات والتحكم' : 'Actions & Control' }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-surface-border">
@@ -196,11 +196,11 @@
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-text-primary text-sm">{{ student.name }}</span>
                   @if (student.role === 'PARENT') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">ولي أمر</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">{{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}</span>
                   } @else if (student.role === 'SUPER_ADMIN') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">إدارة</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">{{ langService.isArabic() ? 'إدارة' : 'Admin' }}</span>
                   } @else {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">طالب</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">{{ langService.isArabic() ? 'طالب' : 'Student' }}</span>
                   }
                 </div>
                 <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
@@ -209,22 +209,22 @@
                     <span>• {{ student.phone }}</span>
                   }
                   @if (student.parentPhone) {
-                    <span class="text-brand-primary dark:text-brand-accent font-semibold">• ولي الأمر: {{ student.parentPhone }}</span>
+                    <span class="text-brand-primary dark:text-brand-accent font-semibold">• {{ langService.isArabic() ? 'ولي الأمر: ' : 'Parent: ' }}{{ student.parentPhone }}</span>
                   }
                 </div>
                 <div class="flex items-center gap-1.5 mt-1">
                   @if (student.isProfileCompleted === false) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                      بانتظار إكمال البيانات
+                      {{ langService.isArabic() ? 'بانتظار إكمال البيانات' : 'Incomplete Profile' }}
                     </span>
                   } @else {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 inline-flex items-center gap-1">
                       <app-icon name="check" [size]="11" />
-                      <span>مكتمل البيانات</span>
+                      <span>{{ langService.isArabic() ? 'مكتمل البيانات' : 'Profile Complete' }}</span>
                     </span>
                   }
                   @if (student.isLeaderboardHidden) {
-                    <span class="text-[10px] text-rose-500 font-normal mr-1">(مخفي من لوحة الشرف)</span>
+                    <span class="text-[10px] text-rose-500 font-normal mr-1">{{ langService.isArabic() ? '(مخفي من لوحة الشرف)' : '(Hidden from Hall of Fame)' }}</span>
                   }
                 </div>
               </td>
@@ -248,7 +248,7 @@
                   [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
                   [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
                 >
-                  {{ student.subscriptionStatus === 'ACTIVE' ? 'اشتراك نشط' : student.subscriptionStatus === 'FROZEN' ? 'مجمّد' : 'غير مشترك' }}
+                  {{ student.subscriptionStatus === 'ACTIVE' ? (langService.isArabic() ? 'اشتراك نشط' : 'Active Subscription') : student.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : (langService.isArabic() ? 'غير مشترك' : 'Inactive') }}
                 </span>
               </td>
 
@@ -270,7 +270,7 @@
                     (click)="openActivateModal(student)"
                     class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
                   >
-                    تفعيل وحدة
+                    {{ langService.isArabic() ? 'تفعيل وحدة' : 'Activate Unit' }}
                   </button>
 
                   <!-- Toggle Freeze / Unfreeze -->
@@ -280,7 +280,7 @@
                       (click)="updateStatus(student, 'FROZEN')"
                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-500/30 text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
                     >
-                      تجميد
+                      {{ langService.isArabic() ? 'تجميد' : 'Freeze' }}
                     </button>
                   } @else if (student.subscriptionStatus === 'FROZEN') {
                     <button
@@ -288,7 +288,7 @@
                       (click)="updateStatus(student, 'ACTIVE')"
                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
                     >
-                      إلغاء التجميد
+                      {{ langService.isArabic() ? 'إلغاء التجميد' : 'Unfreeze' }}
                     </button>
                   }
 
@@ -299,7 +299,7 @@
                       (click)="updateStatus(student, 'CANCELLED')"
                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     >
-                      إلغاء
+                      {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
                     </button>
                   }
 
@@ -308,7 +308,7 @@
                     type="button"
                     (click)="openXpModal(student, 50)"
                     class="px-2 py-1 rounded-lg text-[10px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
-                    title="منح بونص XP"
+                    [title]="langService.isArabic() ? 'منح نقاط إضافية' : 'Award Bonus XP'"
                   >
                     +XP
                   </button>
@@ -318,7 +318,7 @@
                     type="button"
                     (click)="openXpModal(student, -20)"
                     class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
-                    title="خصم XP"
+                    [title]="langService.isArabic() ? 'خصم نقاط' : 'Deduct XP'"
                   >
                     -XP
                   </button>
@@ -328,9 +328,9 @@
                     type="button"
                     (click)="toggleLeaderboard(student)"
                     class="px-2 py-1 rounded-lg text-[10px] font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-                    [title]="student.isLeaderboardHidden ? 'إظهار في لوحة الشرف' : 'إخفاء من لوحة الشرف'"
+                    [title]="student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show in Hall of Fame') : (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide from Hall of Fame')"
                   >
-                    {{ student.isLeaderboardHidden ? 'إظهار' : 'إخفاء' }}
+                    {{ student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار' : 'Show') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
                   </button>
 
                 </div>
@@ -339,7 +339,7 @@
           } @empty {
             <tr>
               <td colspan="7" class="p-8 text-center text-xs text-text-muted">
-                لا توجد نتائج مطابقة لبحثك.
+                {{ langService.isArabic() ? 'لا توجد نتائج مطابقة لبحثك.' : 'No results found matching your search.' }}
               </td>
             </tr>
           }
@@ -351,8 +351,8 @@
     @if (totalPages() > 1) {
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
         <div class="text-text-muted font-bold">
-          عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
-          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} طالب إجمالي)</span>
+          {{ langService.isArabic() ? 'عرض صفحة ' : 'Page ' }}<span class="text-text-primary font-mono font-black">{{ currentPage() }}</span>{{ langService.isArabic() ? ' من أصل ' : ' of ' }}<span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} {{ langService.isArabic() ? 'طالب إجمالي' : 'Total Students' }})</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -362,7 +362,7 @@
             [disabled]="currentPage() === 1"
             class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
           >
-            <span>السابق</span>
+            <span>{{ langService.isArabic() ? 'السابق' : 'Previous' }}</span>
           </button>
 
           @for (p of displayedPages(); track p) {
@@ -389,7 +389,7 @@
             [disabled]="currentPage() === totalPages()"
             class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
           >
-            <span>التالي</span>
+            <span>{{ langService.isArabic() ? 'التالي' : 'Next' }}</span>
           </button>
         </div>
       </div>
@@ -404,7 +404,7 @@
       <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary">
-            تفعيل وحدة دراسية للطالب: {{ student.name }} ({{ student.haCode }})
+            {{ langService.isArabic() ? ('تفعيل وحدة دراسية للطالب: ' + student.name + ' (' + student.haCode + ')') : ('Activate Study Unit for: ' + student.name + ' (' + student.haCode + ')') }}
           </h3>
           <button type="button" (click)="isActivateModalOpen.set(false)" class="p-1 rounded-lg text-text-muted hover:bg-surface-bg">
             <app-icon name="x" [size]="16" />
@@ -414,18 +414,18 @@
         <!-- Student Academic Track & Grade Info -->
         <div class="p-3 rounded-2xl bg-surface-bg border border-surface-border text-xs flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <span class="text-text-secondary">المسار والصف الدراسي:</span>
+            <span class="text-text-secondary">{{ langService.isArabic() ? 'المسار والصف الدراسي:' : 'Track & Grade Level:' }}</span>
             <span class="px-2.5 py-0.5 rounded-lg font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 font-mono">
               {{ student.curriculum }} — {{ student.gradeLevel }}
             </span>
           </div>
           <span class="text-[11px] text-text-muted">
-            يتم عرض الوحدات المطابقة لصف ومسار الطالب فقط منعاً للتداخل
+            {{ langService.isArabic() ? 'يتم عرض الوحدات المطابقة لصف ومسار الطالب فقط منعاً للتداخل' : 'Only units matching student grade & track are displayed.' }}
           </span>
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">اختر الوحدة المطابقة لصف الطالب ({{ student.curriculum }} - {{ student.gradeLevel }}):</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? ('اختر الوحدة المطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + '):') : ('Select Unit for Student (' + student.curriculum + ' - ' + student.gradeLevel + '):') }}</label>
           <select
             [ngModel]="activationUnitId()"
             (ngModelChange)="activationUnitId.set($event)"
@@ -433,17 +433,17 @@
           >
             @for (unit of studentMatchingUnits(); track (unit.id || unit._id)) {
               <option [value]="unit.id || unit._id">
-                {{ unit.titleAr || unit.title_ar }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} ج.م
+                {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}
               </option>
             } @empty {
-              <option value="" disabled selected>لا توجد وحدات مطابقة لصف الطالب ({{ student.curriculum }} - {{ student.gradeLevel }})</option>
+              <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units available matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
             }
           </select>
           @if (studentMatchingUnits().length === 0) {
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2 mt-2">
               <app-icon name="alert-circle" [size]="16" />
               <span>
-                تنبيه: لا توجد أي وحدات دراسية مسجلة حالياً لـ ({{ student.curriculum }} - {{ student.gradeLevel }}). لا يمكن تفعيل وحدات من صفوف أخرى لهذا الطالب منعاً للتداخل الأكاديمي. يمكنك إضافة وحدات لهذا الصف من تبويب استوديو المناهج.
+                {{ langService.isArabic() ? ('تنبيه: لا توجد أي وحدات دراسية مسجلة حالياً لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). لا يمكن تفعيل وحدات من صفوف أخرى لهذا الطالب منعاً للتداخل الأكاديمي. يمكنك إضافة وحدات لهذا الصف من تبويب استوديو المناهج.') : ('Notice: No study units are registered yet for (' + student.curriculum + ' - ' + student.gradeLevel + '). You can add units in Curriculum Studio.') }}
               </span>
             </div>
           }
@@ -451,7 +451,7 @@
 
         <!-- Subscription Scope (Full Unit vs Assessments Only) -->
         <div>
-          <label class="block font-bold text-text-secondary mb-1.5">نوع صلاحية التفعيل (نطاق وصول الطالب)</label>
+          <label class="block font-bold text-text-secondary mb-1.5">{{ langService.isArabic() ? 'نوع صلاحية التفعيل (نطاق وصول الطالب)' : 'Activation Permission Scope' }}</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <label
               class="flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all"
@@ -471,10 +471,10 @@
               <div class="space-y-0.5">
                 <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
                   <app-icon name="check-circle" [size]="13" className="text-cyan-500" />
-                  <span>الوحدة كاملة</span>
+                  <span>{{ langService.isArabic() ? 'الوحدة كاملة' : 'Full Unit' }}</span>
                 </div>
                 <p class="text-[10px] text-text-muted leading-relaxed">
-                  مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات
+                  {{ langService.isArabic() ? 'مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات' : 'Access all video lectures, explanatory PDFs, quizzes, and homework.' }}
                 </p>
               </div>
             </label>
@@ -497,10 +497,10 @@
               <div class="space-y-0.5">
                 <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
                   <app-icon name="shield" [size]="13" className="text-purple-500" />
-                  <span>كويزات واختبارات فقط</span>
+                  <span>{{ langService.isArabic() ? 'كويزات واختبارات فقط' : 'Quizzes & Exams Only' }}</span>
                 </div>
                 <p class="text-[10px] text-text-muted leading-relaxed">
-                  حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)
+                  {{ langService.isArabic() ? 'حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)' : 'Access assessments, quizzes, and homework only (no lecture videos).' }}
                 </p>
               </div>
             </label>
@@ -514,7 +514,7 @@
             (click)="isActivateModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted hover:bg-surface-card transition-all cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
@@ -524,9 +524,9 @@
           >
             @if (isActivatingUnit()) {
               <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              <span>جاري الحفظ...</span>
+              <span>{{ langService.isArabic() ? 'جاري الحفظ...' : 'Saving...' }}</span>
             } @else {
-              <span>تأكيد التفعيل الفوري</span>
+              <span>{{ langService.isArabic() ? 'تأكيد التفعيل الفوري' : 'Confirm Instant Activation' }}</span>
             }
           </button>
         </div>
@@ -542,7 +542,7 @@
       <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary">
-            تعديل نقاط الـ XP للطالب: {{ student.name }} ({{ student.haCode }})
+            {{ langService.isArabic() ? ('تعديل نقاط الطالب: ' + student.name + ' (' + student.haCode + ')') : ('Adjust XP for: ' + student.name + ' (' + student.haCode + ')') }}
           </h3>
           <button type="button" (click)="isXpModalOpen.set(false)" class="p-1 rounded-lg text-text-muted hover:bg-surface-bg">
             <app-icon name="x" [size]="16" />
@@ -551,7 +551,7 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            مقدار النقاط (موجب للبونص، سالب للخصم)
+            {{ langService.isArabic() ? 'مقدار النقاط (موجب للبونص، سالب للخصم)' : 'Points amount (positive for bonus, negative for deduction)' }}
           </label>
           <input
             type="number"
@@ -562,7 +562,7 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            سبب التعديل (سيظهر في سجل الإشعارات للطالب وولي أمره)
+            {{ langService.isArabic() ? 'سبب التعديل (سيظهر في سجل الإشعارات للطالب وولي أمره)' : 'Adjustment reason (appears in student and parent notification log)' }}
           </label>
           <input
             type="text"
@@ -577,14 +577,14 @@
             (click)="isXpModalOpen.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           <button
             type="button"
             (click)="submitXpAdjustment()"
             class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm"
           >
-            اعتماد وحفظ النقاط
+            {{ langService.isArabic() ? 'اعتماد وحفظ النقاط' : 'Save & Publish XP' }}
           </button>
         </div>
       </div>

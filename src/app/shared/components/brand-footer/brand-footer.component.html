@@ -14,7 +14,7 @@
           class="w-9 h-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
         />
         <span class="academic-wordmark text-xl font-bold text-text-primary">
-          Spider Math
+          {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
         </span>
       </a>
 
@@ -79,7 +79,7 @@
           }
         </div>
 
-        <span class="font-numeric">© {{ currentYear }} Spider Math. All rights reserved.</span>
+        <span class="font-numeric">© {{ currentYear }} {{ langService.isArabic() ? 'سبايدر ماث. جميع الحقوق محفوظة.' : 'Spider Math. All rights reserved.' }}</span>
       </div>
 
     </div>

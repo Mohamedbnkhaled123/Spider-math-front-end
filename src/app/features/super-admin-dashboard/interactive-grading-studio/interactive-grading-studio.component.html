@@ -6,7 +6,7 @@
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
           <app-icon name="award" [size]="22" className="text-brand-primary" />
-          <span>قسم وسجل تسليمات الكويزات والامتحانات</span>
+          <span>{{ langService.isArabic() ? 'قسم وسجل تسليمات الكويزات والامتحانات' : 'Quiz & Exam Submissions Log' }}</span>
         </h2>
       </div>
 
@@ -16,7 +16,7 @@
         class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-xs font-bold text-text-primary flex items-center gap-2 transition-all cursor-pointer self-start sm:self-auto"
       >
         <app-icon name="loader" [size]="14" [className]="isLoadingSubmissions() ? 'animate-spin' : ''" />
-        <span>تحديث السجل</span>
+        <span>{{ langService.isArabic() ? 'تحديث السجل' : 'Refresh Log' }}</span>
       </button>
     </div>
 
@@ -24,7 +24,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <!-- Total Submissions -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
-        <span class="text-[11px] font-bold text-text-muted block">إجمالي التسليمات</span>
+        <span class="text-[11px] font-bold text-text-muted block">{{ langService.isArabic() ? 'إجمالي التسليمات' : 'Total Submissions' }}</span>
         <span class="text-xl sm:text-2xl font-black text-brand-primary font-mono mt-0.5 block">
           {{ submissionStats().totalSubmissions }}
         </span>
@@ -32,7 +32,7 @@
 
       <!-- Published / Auto-Graded -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
-        <span class="text-[11px] font-bold text-emerald-600 block">مصححة ومعتمدة</span>
+        <span class="text-[11px] font-bold text-emerald-600 block">{{ langService.isArabic() ? 'مصححة ومعتمدة' : 'Graded & Published' }}</span>
         <span class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-0.5 block">
           {{ submissionStats().publishedCount }}
         </span>
@@ -40,7 +40,7 @@
 
       <!-- Pending Essay Review -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
-        <span class="text-[11px] font-bold text-amber-600 block">بانتظار تصحيح المقالي</span>
+        <span class="text-[11px] font-bold text-amber-600 block">{{ langService.isArabic() ? 'بانتظار تصحيح المقالي' : 'Pending Essay Grading' }}</span>
         <span class="text-xl sm:text-2xl font-black text-amber-600 font-mono mt-0.5 block">
           {{ submissionStats().pendingReviewCount }}
         </span>
@@ -48,7 +48,7 @@
 
       <!-- In Progress -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
-        <span class="text-[11px] font-bold text-blue-500 block">قيد الحل الآن</span>
+        <span class="text-[11px] font-bold text-blue-500 block">{{ langService.isArabic() ? 'قيد الحل الآن' : 'In Progress' }}</span>
         <span class="text-xl sm:text-2xl font-black text-blue-500 font-mono mt-0.5 block">
           {{ submissionStats().inProgressCount }}
         </span>
@@ -68,7 +68,7 @@
         [class.text-white]="activeStudioTab() === 'SUBMISSIONS'"
         [class.text-text-secondary]="activeStudioTab() !== 'SUBMISSIONS'"
       >
-        جميع تسليمات الكويزات ({{ allSubmissions().length }})
+        {{ langService.isArabic() ? ('جميع تسليمات الكويزات (' + allSubmissions().length + ')') : ('All Quiz Submissions (' + allSubmissions().length + ')') }}
       </button>
 
       <button
@@ -79,7 +79,7 @@
         [class.text-white]="activeStudioTab() === 'CANVAS'"
         [class.text-text-secondary]="activeStudioTab() !== 'CANVAS'"
       >
-        <span>تصحيح الواجبات اليدوية (الـ Canvas)</span>
+        <span>{{ langService.isArabic() ? 'تصحيح الواجبات اليدوية' : 'Interactive Canvas Grading' }}</span>
         @if (pendingSubmissions().length > 0) {
           <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-mono">
             {{ pendingSubmissions().length }}
@@ -101,7 +101,7 @@
             [class.text-brand-primary]="activeStatusFilter() === 'ALL'"
             [class.text-text-muted]="activeStatusFilter() !== 'ALL'"
           >
-            الكل
+            {{ langService.isArabic() ? 'الكل' : 'All' }}
           </button>
           <button
             type="button"
@@ -111,7 +111,7 @@
             [class.text-emerald-600]="activeStatusFilter() === 'PUBLISHED'"
             [class.text-text-muted]="activeStatusFilter() !== 'PUBLISHED'"
           >
-            معتمد
+            {{ langService.isArabic() ? 'معتمد' : 'Published' }}
           </button>
           <button
             type="button"
@@ -121,7 +121,7 @@
             [class.text-amber-600]="activeStatusFilter() === 'PENDING'"
             [class.text-text-muted]="activeStatusFilter() !== 'PENDING'"
           >
-            بانتظار المقالي
+            {{ langService.isArabic() ? 'بانتظار المقالي' : 'Pending Essay' }}
           </button>
         </div>
 
@@ -131,7 +131,7 @@
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="setSearchQuery($event)"
-            placeholder="بحث باسم الطالب أو الكود..."
+            [placeholder]="langService.isArabic() ? 'بحث باسم الطالب أو الكود...' : 'Search by name or HA Code...'"
             class="w-full px-3 py-1.5 pr-8 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:border-brand-primary focus:outline-none"
           />
           <app-icon name="target" [size]="14" className="absolute right-2.5 top-2.5 text-text-muted" />
@@ -170,19 +170,19 @@
                   {{ sub.assessmentTitle }}
                 </h3>
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-bg border border-surface-border text-text-secondary">
-                  محاولة رقم {{ sub.attemptNumber }}
+                  {{ langService.isArabic() ? ('محاولة رقم ' + sub.attemptNumber) : ('Attempt #' + sub.attemptNumber) }}
                 </span>
               </div>
 
               <div class="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                <span>تاريخ التسليم: <strong class="text-text-primary font-mono">{{ sub.submittedAt }}</strong></span>
+                <span>{{ langService.isArabic() ? 'تاريخ التسليم: ' : 'Submitted: ' }}<strong class="text-text-primary font-mono">{{ sub.submittedAt }}</strong></span>
                 @if (sub.elapsedTimeSec > 0) {
-                  <span>• المستغرق: <strong class="text-text-primary font-mono">{{ (sub.elapsedTimeSec / 60) | number:'1.0-1' }} دقيقة</strong></span>
+                  <span>• {{ langService.isArabic() ? 'المستغرق: ' : 'Elapsed: ' }}<strong class="text-text-primary font-mono">{{ (sub.elapsedTimeSec / 60) | number:'1.0-1' }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}</strong></span>
                 }
                 @if (sub.isSuspiciousFastSolve) {
                   <span class="text-rose-500 font-bold flex items-center gap-1">
                     <app-icon name="alert-circle" [size]="12" />
-                    <span>تسليم سريع مشبوه</span>
+                    <span>{{ langService.isArabic() ? 'تسليم سريع مشبوه' : 'Suspicious Fast Submission' }}</span>
                   </span>
                 }
               </div>
@@ -192,7 +192,7 @@
             <div class="flex flex-wrap items-center gap-3 shrink-0">
               <!-- Score Badge -->
               <div class="text-left rtl:text-right px-3 py-1.5 rounded-xl bg-surface-bg border border-surface-border">
-                <div class="text-[10px] text-text-muted font-bold">الدرجة النهائية</div>
+                <div class="text-[10px] text-text-muted font-bold">{{ langService.isArabic() ? 'الدرجة النهائية' : 'Final Score' }}</div>
                 <div class="text-sm font-black font-mono text-text-primary">
                   {{ sub.finalTotalScore }} / {{ sub.totalPoints }}
                   <span
@@ -219,7 +219,7 @@
                 [class.bg-blue-500/10]="sub.status === 'IN_PROGRESS'"
                 [class.text-blue-600]="sub.status === 'IN_PROGRESS'"
               >
-                {{ sub.status === 'PUBLISHED' ? 'معتمد ومنشور' : (sub.status === 'PENDING' ? 'بانتظار اعتماد المعلمة' : 'قيد الحل الآن') }}
+                {{ sub.status === 'PUBLISHED' ? (langService.isArabic() ? 'معتمد ومنشور' : 'Published') : (sub.status === 'PENDING' ? (langService.isArabic() ? 'بانتظار اعتماد المعلمة' : 'Pending Review') : (langService.isArabic() ? 'قيد الحل الآن' : 'In Progress')) }}
               </span>
 
               <!-- Action: Direct Teacher Approval Button if Pending -->
@@ -228,10 +228,10 @@
                   type="button"
                   (click)="approveSubmissionDirectly(sub)"
                   class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                  title="اعتماد النتيجة ونشرها فوراً للطالب وولي أمره"
+                  [title]="langService.isArabic() ? 'اعتماد النتيجة ونشرها فوراً للطالب وولي أمره' : 'Approve result and publish to student and parent'"
                 >
                   <app-icon name="check-circle" [size]="14" />
-                  <span>اعتماد ونشر النتيجة فوراً</span>
+                  <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة فوراً' : 'Approve & Publish Result Now' }}</span>
                 </button>
               }
 
@@ -242,7 +242,7 @@
                 class="px-4 py-2 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <app-icon name="file-text" [size]="14" />
-                <span>عرض تفاصيل الإجابات</span>
+                <span>{{ langService.isArabic() ? 'عرض تفاصيل الإجابات' : 'View Answer Details' }}</span>
               </button>
 
               <!-- Action: Grade Essay via Canvas if applicable -->
@@ -253,7 +253,7 @@
                   class="px-4 py-2 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <app-icon name="award" [size]="14" />
-                  <span>تصحيح الـ Canvas</span>
+                  <span>{{ langService.isArabic() ? 'تصحيح يدوي' : 'Grade Canvas' }}</span>
                 </button>
               }
             </div>
@@ -262,9 +262,9 @@
       } @empty {
         <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
           <app-icon name="award" [size]="36" className="text-text-muted mx-auto" />
-          <h4 class="text-sm font-bold text-text-primary">لا توجد تسليمات مسجلة بعد</h4>
+          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد تسليمات مسجلة بعد' : 'No recorded submissions yet' }}</h4>
           <p class="text-xs text-text-secondary max-w-md mx-auto">
-            ستظهر هنا فوراً كل تسليمات وإجابات الطلاب للكويزات والامتحانات والواجبات فور قيام الطالب بتسليم الامتحان.
+            {{ langService.isArabic() ? 'ستظهر هنا فوراً كل تسليمات وإجابات الطلاب للكويزات والامتحانات والواجبات فور قيام الطالب بتسليم الامتحان.' : 'Student quiz and exam submissions will appear here in real-time once submitted.' }}
           </p>
         </div>
       }
@@ -274,8 +274,8 @@
     @if (totalPages() > 1) {
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-4">
         <div class="text-text-muted font-bold">
-          عرض صفحة <span class="text-text-primary font-mono font-black">{{ currentPage() }}</span> من أصل <span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
-          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} تسليم إجمالي)</span>
+          {{ langService.isArabic() ? 'عرض صفحة ' : 'Page ' }}<span class="text-text-primary font-mono font-black">{{ currentPage() }}</span>{{ langService.isArabic() ? ' من أصل ' : ' of ' }}<span class="text-text-primary font-mono font-black">{{ totalPages() }}</span>
+          <span class="mr-2 text-[11px] text-text-secondary">({{ totalItems() }} {{ langService.isArabic() ? 'تسليم إجمالي' : 'Total' }})</span>
         </div>
 
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -285,7 +285,7 @@
             [disabled]="currentPage() === 1"
             class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
           >
-            <span>السابق</span>
+            <span>{{ langService.isArabic() ? 'السابق' : 'Previous' }}</span>
           </button>
 
           @for (p of displayedPages(); track p) {
@@ -312,7 +312,7 @@
             [disabled]="currentPage() === totalPages()"
             class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
           >
-            <span>التالي</span>
+            <span>{{ langService.isArabic() ? 'التالي' : 'Next' }}</span>
           </button>
         </div>
       </div>
@@ -349,7 +349,7 @@
               [class.bg-emerald-500/10]="sub.status === 'PUBLISHED'"
               [class.text-emerald-500]="sub.status === 'PUBLISHED'"
             >
-              {{ sub.status === 'PENDING' ? 'بانتظار التصحيح' : 'معتمد ومنشور' }}
+              {{ sub.status === 'PENDING' ? (langService.isArabic() ? 'بانتظار التصحيح' : 'Pending Grading') : (langService.isArabic() ? 'معتمد ومنشور' : 'Published') }}
             </span>
 
             <button
@@ -358,16 +358,16 @@
               class="px-5 py-2.5 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <app-icon name="award" [size]="15" />
-              <span>بدء التصحيح في الـ Canvas</span>
+              <span>{{ langService.isArabic() ? 'بدء التصحيح اليدوي' : 'Start Canvas Grading' }}</span>
             </button>
           </div>
         </div>
       } @empty {
         <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
           <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
-          <h4 class="text-sm font-bold text-text-primary">رائع! لا توجد واجبات مقالية معلقة بانتظار التصحيح حالياً</h4>
+          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'رائع! لا توجد واجبات مقالية معلقة بانتظار التصحيح حالياً' : 'Great! No pending essay homework awaiting grading.' }}</h4>
           <p class="text-xs text-text-secondary max-w-md mx-auto">
-            كافة إجابات وحلول الطلاب المقالية تم فحصها واعتماد درجاتها وإرسال إشعاراتها لأولياء الأمور بنجاح.
+            {{ langService.isArabic() ? 'كافة إجابات وحلول الطلاب المقالية تم فحصها واعتماد درجاتها وإرسال إشعاراتها لأولياء الأمور بنجاح.' : 'All student essay submissions have been reviewed, graded, and notified to parents.' }}
           </p>
         </div>
       }
@@ -391,7 +391,7 @@
               </span>
             </div>
             <p class="text-xs text-text-secondary mt-0.5">
-              تفاصيل إجابات تقييم: <strong class="text-brand-primary">{{ item.assessmentTitle }}</strong> • الدرجة: <strong class="text-emerald-600 font-mono">{{ item.finalTotalScore }} / {{ item.totalPoints }}</strong>
+              {{ langService.isArabic() ? 'تفاصيل إجابات تقييم: ' : 'Assessment Answer Details: ' }}<strong class="text-brand-primary">{{ item.assessmentTitle }}</strong> • {{ langService.isArabic() ? 'الدرجة: ' : 'Score: ' }}<strong class="text-emerald-600 font-mono">{{ item.finalTotalScore }} / {{ item.totalPoints }}</strong>
             </p>
           </div>
 
@@ -409,7 +409,7 @@
           @for (q of item.answers; track $index; let qIdx = $index) {
             <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-black text-brand-primary">السؤال رقم {{ qIdx + 1 }}</span>
+                <span class="text-xs font-black text-brand-primary">{{ langService.isArabic() ? ('السؤال رقم ' + (qIdx + 1)) : ('Question #' + (qIdx + 1)) }}</span>
                 <span
                   class="px-2.5 py-1 rounded-full text-xs font-bold font-numeric"
                   [class.bg-emerald-500/10]="q.isCorrect"
@@ -417,7 +417,7 @@
                   [class.bg-rose-500/10]="!q.isCorrect"
                   [class.text-rose-600]="!q.isCorrect"
                 >
-                  {{ q.isCorrect ? ('+ ' + q.pointsEarned + ' درجات (صحيح)') : ('0 / ' + q.points + ' (إجابة خاطئة)') }}
+                  {{ q.isCorrect ? (langService.isArabic() ? ('+ ' + q.pointsEarned + ' درجات (صحيح)') : ('+ ' + q.pointsEarned + ' Pts (Correct)')) : (langService.isArabic() ? ('0 / ' + q.points + ' (إجابة خاطئة)') : ('0 / ' + q.points + ' (Incorrect)')) }}
                 </span>
               </div>
 
@@ -457,13 +457,13 @@
                       @if (optIdx === q.correctOptionIndex) {
                         <span class="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                           <app-icon name="check" [size]="12" />
-                          <span>الإجابة النموذجية</span>
+                          <span>{{ langService.isArabic() ? 'الإجابة النموذجية' : 'Model Answer' }}</span>
                         </span>
                       }
                       @if (optIdx === q.selectedOptionIndex && optIdx !== q.correctOptionIndex) {
                         <span class="text-[10px] font-bold text-rose-600 flex items-center gap-1">
                           <app-icon name="x" [size]="12" />
-                          <span>إجابة الطالب</span>
+                          <span>{{ langService.isArabic() ? 'إجابة الطالب' : 'Student Answer' }}</span>
                         </span>
                       }
                     </div>
@@ -484,7 +484,7 @@
                 class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <app-icon name="check-circle" [size]="14" />
-                <span>اعتماد ونشر النتيجة للطالب وولي الأمر الآن</span>
+                <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة للطالب وولي الأمر الآن' : 'Publish Result to Student & Parent' }}</span>
               </button>
             }
           </div>
@@ -493,7 +493,7 @@
             (click)="closeAnswersInspector()"
             class="px-5 py-2 rounded-xl text-xs font-bold text-text-primary bg-surface-card border border-surface-border hover:bg-surface-border transition-all cursor-pointer"
           >
-            إغلاق
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
           </button>
         </div>
       </div>
@@ -512,7 +512,7 @@
           <div class="flex items-center gap-2.5">
             <app-icon name="award" [size]="18" className="text-brand-accent" />
             <h3 class="text-sm font-black text-text-primary">
-              استوديو تصحيح الحل اليدوي للطالب: {{ item.studentName }} ({{ item.haCode }})
+              {{ langService.isArabic() ? ('استوديو تصحيح الحل اليدوي للطالب: ' + item.studentName + ' (' + item.haCode + ')') : ('Interactive Essay Grading for: ' + item.studentName + ' (' + item.haCode + ')') }}
             </h3>
           </div>
 
@@ -537,7 +537,7 @@
                   type="button"
                   (click)="zoomOut()"
                   class="p-1.5 rounded-lg border border-surface-border bg-surface-card hover:border-brand-primary"
-                  title="تصغير (-)"
+                  [title]="langService.isArabic() ? 'تصغير (-)' : 'Zoom out (-)'"
                 >
                   -
                 </button>
@@ -546,7 +546,7 @@
                   type="button"
                   (click)="zoomIn()"
                   class="p-1.5 rounded-lg border border-surface-border bg-surface-card hover:border-brand-primary"
-                  title="تكبير (+)"
+                  [title]="langService.isArabic() ? 'تكبير (+)' : 'Zoom in (+)'"
                 >
                   +
                 </button>
@@ -560,16 +560,16 @@
                   class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <app-icon name="refresh" [size]="14" />
-                  <span>تدوير 90° ({{ canvasRotation() }}°)</span>
+                  <span>{{ langService.isArabic() ? ('تدوير 90° (' + canvasRotation() + '°)') : ('Rotate 90° (' + canvasRotation() + '°)') }}</span>
                 </button>
 
                 <button
                   type="button"
                   (click)="resetCanvasView()"
                   class="p-1.5 rounded-lg text-text-muted hover:text-text-primary"
-                  title="إعادة ضبط العرض"
+                  [title]="langService.isArabic() ? 'إعادة ضبط العرض' : 'Reset view'"
                 >
-                  إعادة ضبط
+                  {{ langService.isArabic() ? 'إعادة ضبط' : 'Reset' }}
                 </button>
               </div>
             </div>
@@ -585,12 +585,12 @@
               @if (item.studentAnswerImageWebp; as imgUrl) {
                 <img
                   [src]="imgUrl"
-                  alt="حل الطالب بخط اليد"
+                  [alt]="langService.isArabic() ? 'حل الطالب بخط اليد' : 'Student handwritten solution'"
                   class="max-h-full max-w-full object-contain pointer-events-none transition-transform duration-100"
                   [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px) scale(' + canvasZoom() + ') rotate(' + canvasRotation() + 'deg)'"
                 />
               } @else {
-                <div class="text-xs text-slate-400">لا توجد صورة حل مرفوعة في هذا التسليم.</div>
+                <div class="text-xs text-slate-400">{{ langService.isArabic() ? 'لا توجد صورة حل مرفوعة في هذا التسليم.' : 'No solution image uploaded in this submission.' }}</div>
               }
             </div>
           </div>
@@ -601,7 +601,7 @@
             <!-- Score Input -->
             <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border">
               <label class="block font-bold text-text-secondary mb-1">
-                الدرجة المقالية المستحقة (من {{ item.maxScore }})
+                {{ langService.isArabic() ? ('الدرجة المقالية المستحقة (من ' + item.maxScore + ')') : ('Essay Score Awarded (out of ' + item.maxScore + ')') }}
               </label>
               <input
                 type="number"
@@ -615,12 +615,12 @@
             <!-- General Teacher Note -->
             <div>
               <label class="block font-bold text-text-secondary mb-1">
-                ملاحظة المعلمة التوجيهية العامة:
+                {{ langService.isArabic() ? 'ملاحظة المعلمة التوجيهية العامة:' : 'General Teacher Guidance Note:' }}
               </label>
               <textarea
                 rows="2"
                 [(ngModel)]="item.generalTeacherNote"
-                placeholder="أحسنت يا بطل! خطوات الحل ممتازة..."
+                [placeholder]="langService.isArabic() ? 'أحسنت يا بطل! خطوات الحل ممتازة...' : 'Great job! Excellent solution steps...'"
                 class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs text-text-primary focus:outline-none focus:border-brand-primary leading-relaxed"
               ></textarea>
             </div>
@@ -630,41 +630,41 @@
               <div class="flex items-center justify-between">
                 <span class="font-bold text-rose-500 flex items-center gap-1">
                   <app-icon name="alert-circle" [size]="13" />
-                  <span>الأخطاء المرصودة وروابط يوتيوب:</span>
+                  <span>{{ langService.isArabic() ? 'الأخطاء المرصودة وروابط يوتيوب:' : 'Logged Mistake Cases & YouTube Links:' }}</span>
                 </span>
                 <button
                   type="button"
                   (click)="addMistakeCase()"
                   class="text-[11px] font-bold text-brand-primary dark:text-brand-accent hover:underline cursor-pointer"
                 >
-                  + إضافة خطأ
+                  {{ langService.isArabic() ? '+ إضافة خطأ' : '+ Add Mistake' }}
                 </button>
               </div>
 
               @for (mistake of item.mistakes; track $index) {
                 <div class="p-3.5 rounded-2xl border border-rose-500/20 bg-rose-500/[0.02] space-y-2">
                   <div class="flex items-center justify-between">
-                    <span class="font-bold text-rose-500 text-[10px]">خطأ رقم {{ $index + 1 }}</span>
+                    <span class="font-bold text-rose-500 text-[10px]">{{ langService.isArabic() ? ('خطأ رقم ' + ($index + 1)) : ('Mistake #' + ($index + 1)) }}</span>
                     <button
                       type="button"
                       (click)="removeMistakeCase($index)"
                       class="text-text-muted hover:text-rose-500 text-[10px] cursor-pointer"
                     >
-                      حذف
+                      {{ langService.isArabic() ? 'حذف' : 'Delete' }}
                     </button>
                   </div>
 
                   <input
                     type="text"
                     [(ngModel)]="mistake.errorNote"
-                    placeholder="الملاحظة العلاجية للخطأ..."
+                    [placeholder]="langService.isArabic() ? 'الملاحظة العلاجية للخطأ...' : 'Explanation note for mistake...'"
                     class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs text-text-primary"
                   />
 
                   <input
                     type="url"
                     [(ngModel)]="mistake.youtubeSolutionUrl"
-                    placeholder="رابط فيديو الحل النموذجي على يوتيوب..."
+                    [placeholder]="langService.isArabic() ? 'رابط فيديو الحل النموذجي على يوتيوب...' : 'YouTube solution video link...'"
                     class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs font-mono text-text-primary"
                   />
                 </div>
@@ -682,7 +682,7 @@
             (click)="isGradingModalOpen.set(false)"
             class="px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary transition-all cursor-pointer"
           >
-            إلغاء
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -691,7 +691,7 @@
             class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>اعتماد النتيجة وإرسال الإشعار للطالب وولي الأمر</span>
+            <span>{{ langService.isArabic() ? 'اعتماد النتيجة وإرسال الإشعار للطالب وولي الأمر' : 'Publish Result & Notify Student and Parent' }}</span>
           </button>
         </div>
 

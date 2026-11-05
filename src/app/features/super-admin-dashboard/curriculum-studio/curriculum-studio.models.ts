@@ -37,6 +37,7 @@ export interface AssessmentAdminItem {
   id: string;
   unitId: string;
   titleAr: string;
+  titleEn?: string;
   type?: AssessmentAdminType;
   calculatorType: CalculatorMode;
   durationMinutes: number;
@@ -50,6 +51,7 @@ export interface LectureAdminItem {
   id: string;
   order: number;
   titleAr: string;
+  titleEn?: string;
   youtubeUrl: string;
   encryptedVideoId: string;
   googleDrivePdfFileId: string;

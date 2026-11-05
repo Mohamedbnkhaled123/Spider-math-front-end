@@ -14,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import imageCompression from 'browser-image-compression';
 import { AppIconComponent } from '../app-icon/app-icon.component';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
   CloudinarySignatureResponse,
   CompressedImageItem,
@@ -44,11 +45,13 @@ import {
 export class ImageCompressorUploaderComponent implements OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  readonly langService = inject(LangService);
   private readonly apiBase = '/api/v1/assessments';
 
   // Input Target: 'question' or 'homework'
   readonly uploadTarget = input.required<UploadTarget>();
   readonly existingImageUrl = input<string | null>(null);
+  readonly buttonLabel = input<string>();
 
   // Outputs
   readonly imageUploaded = output<string>(); // Emits question_image_url

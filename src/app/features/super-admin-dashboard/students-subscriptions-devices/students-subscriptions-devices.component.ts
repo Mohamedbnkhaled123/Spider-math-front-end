@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
   PendingDeviceRequest,
@@ -35,6 +36,7 @@ let cachedAdminUnits: any[] | null = null;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StudentsSubscriptionsDevicesComponent implements OnInit {
+  readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
 
   // Inputs

@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
   GradingMistake,
   PendingEssayGrading,
@@ -46,6 +47,7 @@ let submissionsMemoryCache: SubmissionsMemoryCacheEntry | null = null;
 })
 export class InteractiveGradingStudioComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  readonly langService = inject(LangService);
 
   // Inputs & Outputs
   readonly pendingSubmissions = input.required<PendingEssayGrading[]>();
