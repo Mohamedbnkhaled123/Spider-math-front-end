@@ -630,36 +630,52 @@
           </p>
         </div>
 
-        <div class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs sm:text-sm text-start">
-              <thead class="bg-surface-bg border-b border-surface-border text-text-secondary uppercase text-[11px] font-bold">
-                <tr>
-                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الصف الدراسي' : 'Grade' }}</th>
-                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'اليوم' : 'Day' }}</th>
-                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الموعد' : 'Time' }}</th>
-                  <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'المادة / الموضوع' : 'Subject' }}</th>
+        <!-- Desktop Schedule Table -->
+        <div class="hidden sm:block max-w-4xl mx-auto overflow-hidden rounded-2xl border border-surface-border bg-surface-card shadow-sm">
+          <table class="w-full text-xs sm:text-sm text-start">
+            <thead class="bg-surface-bg border-b border-surface-border text-text-secondary uppercase text-[11px] font-bold">
+              <tr>
+                <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الصف الدراسي' : 'Grade' }}</th>
+                <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'اليوم' : 'Day' }}</th>
+                <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'الموعد' : 'Time' }}</th>
+                <th scope="col" class="py-3.5 px-4 text-start">{{ langService.isArabic() ? 'المادة / الموضوع' : 'Subject' }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-border font-medium">
+              @for (sched of schedulesList(); track $index) {
+                <tr class="hover:bg-surface-bg/50 transition-colors">
+                  <td class="py-3.5 px-4 font-bold text-text-primary">{{ sched.gradeLevel }}</td>
+                  <td class="py-3.5 px-4 text-text-secondary">{{ langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn }}</td>
+                  <td class="py-3.5 px-4 text-cyan-600 dark:text-cyan-400 font-numeric font-bold">{{ sched.timeSlot || '—' }}</td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
+                      {{ langService.isArabic() ? (sched.lectureTitleAr || sched.lectureSubject || 'محاضرة تفاعلية') : (sched.lectureTitleEn || sched.lectureSubject || 'Interactive Lecture') }}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody class="divide-y divide-surface-border font-medium">
-                @for (sched of schedulesList(); track $index) {
-                  <tr class="hover:bg-surface-bg/50 transition-colors">
-                    <td class="py-3.5 px-4 font-bold text-text-primary">{{ sched.gradeLevel }}</td>
-                    <td class="py-3.5 px-4 text-text-secondary">{{ langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn }}</td>
-                    <td class="py-3.5 px-4 text-cyan-600 dark:text-cyan-400 font-numeric font-bold">{{ sched.timeSlot || '—' }}</td>
-                    <td class="py-3.5 px-4">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
-                        {{ langService.isArabic() ? (sched.lectureTitleAr || sched.lectureSubject || 'محاضرة تفاعلية') : (sched.lectureTitleEn || sched.lectureSubject || 'Interactive Lecture') }}
+              }
+            </tbody>
+          </table>
+        </div>
 
-                      </span>
-                    </td>
-                  </tr>
-                }
-
-              </tbody>
-            </table>
-          </div>
-
+        <!-- Mobile Schedule Cards (Stacked, zero horizontal scrolling) -->
+        <div class="sm:hidden space-y-3 max-w-md mx-auto">
+          @for (sched of schedulesList(); track $index) {
+            <div class="p-4 rounded-2xl border border-surface-border bg-surface-card shadow-sm space-y-2">
+              <div class="flex items-center justify-between pb-2 border-b border-surface-border/60">
+                <span class="font-bold text-text-primary text-sm">{{ sched.gradeLevel }}</span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-brand-primary/10 text-brand-primary font-numeric">
+                  {{ sched.timeSlot || '—' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-text-secondary">
+                <span>{{ langService.isArabic() ? sched.dayOfWeekAr : sched.dayOfWeekEn }}</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
+                  {{ langService.isArabic() ? (sched.lectureTitleAr || sched.lectureSubject || 'محاضرة تفاعلية') : (sched.lectureTitleEn || sched.lectureSubject || 'Interactive Lecture') }}
+                </span>
+              </div>
+            </div>
+          }
         </div>
 
       </div>

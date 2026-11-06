@@ -35,44 +35,44 @@
       <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative">
 
         <!-- Tabs Navigation -->
-        <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-bg border border-surface-border mb-6">
+        <div class="flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-2xl bg-surface-bg border border-surface-border mb-6">
           <button
             type="button"
             (click)="setTab('student')"
-            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+            class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
             [class.bg-brand-gold]="activeTab() === 'student'" [class.text-slate-950]="activeTab() === 'student'"
             [class.text-white]="activeTab() === 'student'"
             [class.shadow-brand-glow]="activeTab() === 'student'"
             [class.text-text-secondary]="activeTab() !== 'student'"
           >
-            <app-icon name="graduation-cap" [size]="16" />
-            <span>{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
+            <app-icon name="graduation-cap" [size]="15" />
+            <span class="truncate">{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
           </button>
 
           <button
             type="button"
             (click)="setTab('parent')"
-            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+            class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
             [class.bg-brand-gold]="activeTab() === 'parent'" [class.text-slate-950]="activeTab() === 'parent'"
             [class.text-white]="activeTab() === 'parent'"
             [class.shadow-brand-glow]="activeTab() === 'parent'"
             [class.text-text-secondary]="activeTab() !== 'parent'"
           >
-            <app-icon name="shield" [size]="16" />
-            <span>{{ langService.isArabic() ? 'ولي الأمر' : 'Parent Portal' }}</span>
+            <app-icon name="shield" [size]="15" />
+            <span class="truncate">{{ langService.isArabic() ? 'ولي الأمر' : 'Parent Portal' }}</span>
           </button>
 
           <button
             type="button"
             (click)="setTab('admin')"
-            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+            class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
             [class.bg-brand-gold]="activeTab() === 'admin'" [class.text-slate-950]="activeTab() === 'admin'"
             [class.text-white]="activeTab() === 'admin'"
             [class.shadow-brand-glow]="activeTab() === 'admin'"
             [class.text-text-secondary]="activeTab() !== 'admin'"
           >
-            <app-icon name="user" [size]="16" />
-            <span>{{ langService.isArabic() ? 'إدارة المنصة' : 'Admin Studio' }}</span>
+            <app-icon name="user" [size]="15" />
+            <span class="truncate">{{ langService.isArabic() ? 'إدارة المنصة' : 'Admin Studio' }}</span>
           </button>
         </div>
 
@@ -93,27 +93,29 @@
             <button
               type="button"
               (click)="setStudentAuthMode('login')"
-              class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              class="flex-1 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0 text-center"
               [class.bg-brand-gold]="studentAuthMode() === 'login'" [class.text-slate-950]="studentAuthMode() === 'login'"
               [class.text-white]="studentAuthMode() === 'login'"
               [class.shadow-brand-glow]="studentAuthMode() === 'login'"
               [class.text-text-secondary]="studentAuthMode() !== 'login'"
             >
               <app-icon name="log-in" [size]="14" />
-              <span>{{ langService.isArabic() ? 'تسجيل الدخول (للمسجلين)' : 'Sign In (Registered)' }}</span>
+              <span class="truncate">{{ langService.isArabic() ? 'تسجيل الدخول' : 'Sign In' }}</span>
+              <span class="hidden sm:inline">{{ langService.isArabic() ? ' (للمسجلين)' : ' (Registered)' }}</span>
             </button>
 
             <button
               type="button"
               (click)="setStudentAuthMode('signup')"
-              class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              class="flex-1 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0 text-center"
               [class.bg-brand-gold]="studentAuthMode() === 'signup'" [class.text-slate-950]="studentAuthMode() === 'signup'"
               [class.text-white]="studentAuthMode() === 'signup'"
               [class.shadow-brand-glow]="studentAuthMode() === 'signup'"
               [class.text-text-secondary]="studentAuthMode() !== 'signup'"
             >
               <app-icon name="sparkles" [size]="14" />
-              <span>{{ langService.isArabic() ? 'إنشاء حساب جديد (طالب جديد)' : 'Create Account (New Student)' }}</span>
+              <span class="truncate">{{ langService.isArabic() ? 'حساب جديد' : 'Sign Up' }}</span>
+              <span class="hidden sm:inline">{{ langService.isArabic() ? ' (طالب جديد)' : ' (New Student)' }}</span>
             </button>
           </div>
 

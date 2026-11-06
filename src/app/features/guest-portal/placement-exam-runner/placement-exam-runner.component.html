@@ -260,13 +260,13 @@
 
     <!-- 4. Active Exam Running Viewport -->
     @else {
-      <!-- Question Stepper Palette -->
-      <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-surface-border/60 overflow-x-auto">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold text-text-muted">
+      <!-- Question Stepper Palette (Responsive wrapping, zero horizontal scroll) -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-surface-border/60">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-text-muted shrink-0">
             {{ langService.isArabic() ? 'الأسئلة:' : 'Questions:' }}
           </span>
-          <div class="flex items-center gap-1.5">
+          <div class="flex flex-wrap items-center gap-1.5">
             @for (q of examData()?.questions; track q.question_id; let idx = $index) {
               <button
                 type="button"

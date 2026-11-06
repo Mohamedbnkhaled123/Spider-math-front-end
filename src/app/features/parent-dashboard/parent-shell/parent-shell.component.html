@@ -156,8 +156,8 @@
   <!-- 4. Link Additional Child Modal (HAxxxx)                                   -->
   <!-- ========================================================================= -->
   @if (isLinkModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div class="modal-dialog w-full max-w-md rounded-3xl spider-rim-glass-card p-6 shadow-2xl relative animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div class="modal-dialog w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl spider-rim-glass-card p-5 sm:p-6 shadow-2xl relative animate-scale-up">
         <!-- Close Button -->
         <button
           type="button"

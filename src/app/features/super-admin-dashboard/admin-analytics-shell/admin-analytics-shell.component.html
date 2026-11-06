@@ -1,7 +1,7 @@
 <!-- ========================================================================= -->
 <!-- 1. MOBILE & TABLET COMMAND BAR (< 1024px): Compact Sticky Header & Horizontal Tabs -->
 <!-- ========================================================================= -->
-<div class="lg:hidden w-full mb-4 spider-rim-glass-card rounded-2xl p-3 sm:p-4 shadow-glass sticky top-20 z-30">
+<div class="lg:hidden w-full mb-4 spider-rim-glass-card rounded-2xl p-3 sm:p-4 shadow-glass sticky top-16 sm:top-20 z-30">
   <!-- Top Bar: Title + Notification & Tools Buttons -->
   <div class="flex items-center justify-between pb-2.5 border-b border-surface-border">
     <div class="flex items-center gap-2 min-w-0">
@@ -40,12 +40,12 @@
     </div>
   </div>
 
-  <!-- Horizontal Scrollable Tab Bar with Thumb-Friendly Touch Drag -->
-  <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2.5 text-xs font-bold scroll-smooth">
+  <!-- Responsive Grid Tab Bar (No horizontal scrolling, cleanly stacked on mobile) -->
+  <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-2.5 text-xs font-bold w-full">
     <button
       type="button"
       (click)="selectTab('analytics')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs"
       [class.btn-gold-metallic]="activeTab() === 'analytics'"
       [class.text-slate-950]="activeTab() === 'analytics'"
       [class.bg-surface-bg]="activeTab() !== 'analytics'"
@@ -53,14 +53,14 @@
       [class.border]="activeTab() !== 'analytics'"
       [class.border-surface-border]="activeTab() !== 'analytics'"
     >
-      <app-icon name="activity" [size]="13" />
-      <span>{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
+      <app-icon name="activity" [size]="14" />
+      <span class="truncate">{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
     </button>
 
     <button
       type="button"
       (click)="selectTab('curriculum')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs"
       [class.btn-gold-metallic]="activeTab() === 'curriculum'"
       [class.text-slate-950]="activeTab() === 'curriculum'"
       [class.bg-surface-bg]="activeTab() !== 'curriculum'"
@@ -68,14 +68,14 @@
       [class.border]="activeTab() !== 'curriculum'"
       [class.border-surface-border]="activeTab() !== 'curriculum'"
     >
-      <app-icon name="book-open" [size]="13" />
-      <span>{{ langService.isArabic() ? 'المناهج' : 'Curricula' }}</span>
+      <app-icon name="book-open" [size]="14" />
+      <span class="truncate">{{ langService.isArabic() ? 'المناهج' : 'Curricula' }}</span>
     </button>
 
     <button
       type="button"
       (click)="selectTab('assessments')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs"
       [class.btn-gold-metallic]="activeTab() === 'assessments'"
       [class.text-slate-950]="activeTab() === 'assessments'"
       [class.bg-surface-bg]="activeTab() !== 'assessments'"
@@ -83,14 +83,14 @@
       [class.border]="activeTab() !== 'assessments'"
       [class.border-surface-border]="activeTab() !== 'assessments'"
     >
-      <app-icon name="award" [size]="13" />
-      <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
+      <app-icon name="award" [size]="14" />
+      <span class="truncate">{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
     </button>
 
     <button
       type="button"
       (click)="selectTab('grading')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs relative"
       [class.btn-gold-metallic]="activeTab() === 'grading'"
       [class.text-slate-950]="activeTab() === 'grading'"
       [class.bg-surface-bg]="activeTab() !== 'grading'"
@@ -98,10 +98,17 @@
       [class.border]="activeTab() !== 'grading'"
       [class.border-surface-border]="activeTab() !== 'grading'"
     >
-      <app-icon name="file-text" [size]="13" />
-      <span>{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
+      <div class="relative">
+        <app-icon name="file-text" [size]="14" />
+        @if (analytics().pendingGradingCount > 0) {
+          <span class="sm:hidden absolute -top-1.5 -right-2.5 px-1 py-0.2 rounded-full text-[8px] bg-rose-500 text-white font-mono font-bold">
+            {{ analytics().pendingGradingCount }}
+          </span>
+        }
+      </div>
+      <span class="truncate">{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
       @if (analytics().pendingGradingCount > 0) {
-        <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500 text-white font-mono font-bold">
+        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500 text-white font-mono font-bold">
           {{ analytics().pendingGradingCount }}
         </span>
       }
@@ -110,7 +117,7 @@
     <button
       type="button"
       (click)="selectTab('students')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs"
       [class.btn-gold-metallic]="activeTab() === 'students'"
       [class.text-slate-950]="activeTab() === 'students'"
       [class.bg-surface-bg]="activeTab() !== 'students'"
@@ -118,19 +125,14 @@
       [class.border]="activeTab() !== 'students'"
       [class.border-surface-border]="activeTab() !== 'students'"
     >
-      <app-icon name="user" [size]="13" />
-      <span>{{ langService.isArabic() ? 'الطلاب والأجهزة' : 'Students & Devices' }}</span>
-      @if (analytics().registeredStudents > 0) {
-        <span class="px-1.5 py-0.5 rounded-full text-[9px] bg-brand-primary/20 text-brand-primary font-mono font-bold">
-          {{ analytics().registeredStudents }}
-        </span>
-      }
+      <app-icon name="user" [size]="14" />
+      <span class="truncate">{{ langService.isArabic() ? 'الطلاب' : 'Students' }}</span>
     </button>
 
     <button
       type="button"
       (click)="selectTab('leads_cms')"
-      class="px-3 py-1.5 rounded-xl transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+      class="px-2 py-2 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-1.5 w-full min-w-0 text-[11px] sm:text-xs"
       [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
       [class.text-slate-950]="activeTab() === 'leads_cms'"
       [class.bg-surface-bg]="activeTab() !== 'leads_cms'"
@@ -138,8 +140,8 @@
       [class.border]="activeTab() !== 'leads_cms'"
       [class.border-surface-border]="activeTab() !== 'leads_cms'"
     >
-      <app-icon name="grid" [size]="13" />
-      <span>{{ langService.isArabic() ? 'المحتوى والعملاء' : 'CMS & Leads' }}</span>
+      <app-icon name="grid" [size]="14" />
+      <span class="truncate">{{ langService.isArabic() ? 'المحتوى' : 'CMS' }}</span>
     </button>
   </div>
 

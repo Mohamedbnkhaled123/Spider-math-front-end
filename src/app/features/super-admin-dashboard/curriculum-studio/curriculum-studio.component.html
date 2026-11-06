@@ -28,13 +28,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 border-t border-surface-border items-center">
       
       <!-- 1. Curriculum Selector (5 cols) -->
-      <div class="sm:col-span-5 flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+      <div class="sm:col-span-5 grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
         <button
           type="button"
           (click)="selectCurriculum('EGYPTIAN')"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
           [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
+          [title]="langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum'"
         >
           {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
         </button>
@@ -42,9 +43,10 @@
         <button
           type="button"
           (click)="selectCurriculum('GULF')"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
           [class.text-white]="selectedCurriculum() === 'GULF'"
+          [title]="langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum'"
         >
           {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
         </button>
@@ -52,21 +54,23 @@
         <button
           type="button"
           (click)="selectCurriculum('INTERNATIONAL')"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
+          [title]="langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)'"
         >
-          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}
+          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British (IGCSE)' }}
         </button>
 
         <button
           type="button"
           (click)="selectCurriculum('AMERICAN')"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
           [class.text-white]="selectedCurriculum() === 'AMERICAN'"
+          [title]="langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)'"
         >
-          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}
+          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American (SAT)' }}
         </button>
       </div>
 

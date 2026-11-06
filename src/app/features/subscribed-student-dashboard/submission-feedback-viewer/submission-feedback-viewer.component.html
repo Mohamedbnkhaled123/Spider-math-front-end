@@ -183,15 +183,15 @@
           </div>
 
           <!-- Score Breakdown Cards -->
-          <div class="flex items-center gap-3">
-            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 w-full sm:w-auto">
+            <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
               <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'أسئلة الاختيار من متعدد' : 'Multiple Choice Questions (MCQ)' }}</span>
               <span class="text-base font-black font-numeric text-text-primary">
                 {{ feedback().mcqAutoScore }}
               </span>
             </div>
 
-            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center min-w-[120px]">
+            <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
               <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'المسائل المقالية' : 'Essay Questions' }}</span>
               <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
                 {{ feedback().essayManualScore }}

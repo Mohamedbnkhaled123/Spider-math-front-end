@@ -80,7 +80,7 @@
       <!-- Collapsible Body Section -->
       @if (!isCollapsed()) {
         <!-- Mathematical Function Presets Bar -->
-        <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex items-center gap-2 overflow-x-auto text-xs">
+        <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
           <span class="text-[11px] font-bold text-text-muted whitespace-nowrap">
             {{ langService.isArabic() ? 'رسم مباشر:' : 'Quick Plots:' }}
           </span>

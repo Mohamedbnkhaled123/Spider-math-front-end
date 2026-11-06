@@ -151,17 +151,17 @@
 
               <div class="space-y-3">
                 @for (dev of pendingDevices(); track dev.id) {
-                  <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div class="flex items-center gap-3">
+                  <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs min-w-0">
+                    <div class="flex items-center gap-3 min-w-0">
                       <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                         <app-icon name="lock" [size]="14" />
                       </div>
-                      <div>
+                      <div class="min-w-0">
                         <div class="flex items-center gap-2">
                           <span class="font-bold text-text-primary">{{ dev.studentName }}</span>
-                          <span class="font-mono text-[10px] text-brand-primary">({{ dev.haCode }})</span>
+                          <span class="font-mono text-[10px] text-brand-primary shrink-0">({{ dev.haCode }})</span>
                         </div>
-                        <span class="text-text-muted text-[11px] font-mono">
+                        <span class="text-text-muted text-[11px] font-mono break-all line-clamp-2 mt-0.5 block">
                           {{ dev.deviceInfo }} • {{ langService.isArabic() ? 'محاولة دخول من جهاز جديد' : 'New device login attempt' }}
                         </span>
                       </div>

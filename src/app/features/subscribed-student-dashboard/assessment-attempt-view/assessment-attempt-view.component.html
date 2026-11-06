@@ -150,7 +150,8 @@
         </a>
       </div>
     } @else if (currentQuestion(); as q) {
-      <div class="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+      <!-- Questions Palette (Responsive wrap, zero horizontal scroll) -->
+      <div class="flex flex-wrap items-center gap-2 mb-8 pb-2">
         <span class="text-xs font-bold text-text-muted ml-2">{{ langService.isArabic() ? 'الأسئلة:' : 'Questions:' }}</span>
         @for (item of bundle().questions; track item._id; let idx = $index) {
           <button

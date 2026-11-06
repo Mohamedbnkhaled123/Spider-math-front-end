@@ -59,11 +59,11 @@
   <!-- 2. Studio View Switcher & Filter Toolbar -->
   <div class="p-4 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
     <!-- View Tabs -->
-    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-surface-bg border border-surface-border self-start">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 p-1 rounded-xl bg-surface-bg border border-surface-border w-full sm:w-auto">
       <button
         type="button"
         (click)="activeStudioTab.set('SUBMISSIONS')"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+        class="px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer text-center justify-center flex items-center"
         [class.bg-brand-primary]="activeStudioTab() === 'SUBMISSIONS'"
         [class.text-white]="activeStudioTab() === 'SUBMISSIONS'"
         [class.text-text-secondary]="activeStudioTab() !== 'SUBMISSIONS'"
@@ -74,7 +74,7 @@
       <button
         type="button"
         (click)="activeStudioTab.set('CANVAS')"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+        class="px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center text-center gap-1.5"
         [class.bg-brand-primary]="activeStudioTab() === 'CANVAS'"
         [class.text-white]="activeStudioTab() === 'CANVAS'"
         [class.text-text-secondary]="activeStudioTab() !== 'CANVAS'"
@@ -126,7 +126,7 @@
         </div>
 
         <!-- Search Input -->
-        <div class="relative min-w-[200px]">
+        <div class="relative w-full sm:w-auto sm:min-w-[200px]">
           <input
             type="text"
             [ngModel]="searchQuery()"
@@ -531,7 +531,7 @@
           <!-- Column 1: Interactive Canvas Image Viewport (7 Cols) -->
           <div class="lg:col-span-7 flex flex-col gap-3">
             <!-- Canvas Controls Bar -->
-            <div class="flex items-center justify-between p-2 rounded-2xl bg-surface-bg border border-surface-border text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded-2xl bg-surface-bg border border-surface-border text-xs">
               <div class="flex items-center gap-1.5 font-numeric font-bold">
                 <button
                   type="button"
