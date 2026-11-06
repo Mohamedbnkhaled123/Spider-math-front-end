@@ -14,6 +14,16 @@
       <div #iframeMount class="w-full h-full"></div>
     </div>
 
+    <!-- 1.1 Facade Poster Thumbnail (Ensures zero third-party cookies on initial landing) -->
+    @if (!hasStarted() && thumbnailUrl()) {
+      <div
+        class="absolute inset-0 w-full h-full bg-cover bg-center z-10 transition-transform duration-700 pointer-events-none"
+        [style.background-image]="'url(' + thumbnailUrl() + ')'"
+      >
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0A0D18]/90 via-[#0A0D18]/40 to-transparent"></div>
+      </div>
+    }
+
     <!-- 2. Transparent Security Shield Overlay (z-layer-shield: 20) -->
     <!-- Blocks context menu, title clicks, and share button from YouTube iframe -->
     <div
@@ -101,6 +111,7 @@
             <button
               type="button"
               (click)="toggleMute()"
+              [attr.aria-label]="isMuted() || volume() === 0 ? 'Unmute sound' : 'Mute sound'"
               class="p-1.5 rounded-lg hover:bg-white/15 transition-colors cursor-pointer"
             >
               <app-icon [name]="isMuted() || volume() === 0 ? 'lock' : 'award'" [size]="14" />
@@ -112,6 +123,7 @@
               max="100"
               [value]="isMuted() ? 0 : volume()"
               (input)="onVolumeChange($event)"
+              aria-label="Volume slider"
               class="w-16 h-1 rounded-full bg-white/30 accent-[#E5C47E] cursor-pointer hidden sm:inline"
             />
           </div>

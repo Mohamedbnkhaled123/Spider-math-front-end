@@ -75,6 +75,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   // Playback Signals
   readonly isPlaying = signal<boolean>(false);
+  readonly hasStarted = signal<boolean>(false);
   readonly currentTimeSec = signal<number>(0);
   readonly duration = signal<number>(1800);
   readonly volume = signal<number>(100);
@@ -82,6 +83,12 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly playbackRate = signal<PlaybackRate>(1);
   readonly isFullscreen = signal<boolean>(false);
   readonly showControls = signal<boolean>(true);
+
+  // Computed Thumbnail for Facade
+  readonly thumbnailUrl = computed<string | null>(() => {
+    const videoId = this.resolveVideoId(this.encryptedVideoId());
+    return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : null;
+  });
 
   // 85% Gamification Celebration Signals (Animation 4.4)
   readonly isCelebrationVisible = signal<boolean>(false);
@@ -126,6 +133,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     effect(() => {
       const token = this.encryptedVideoId();
       if (!isPlatformBrowser(this.platformId)) return;
+      if (this.isPublicHeroPromo() && !this.hasStarted()) return;
       const newVideoId = this.resolveVideoId(token);
       if (!newVideoId) return;
 
@@ -149,7 +157,10 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     this.currentTimeSec.set(this.resumePositionSec());
 
     if (isPlatformBrowser(this.platformId)) {
-      this.initYouTubeIframe();
+      if (!this.isPublicHeroPromo()) {
+        this.hasStarted.set(true);
+        this.initYouTubeIframe();
+      }
     }
   }
 
@@ -162,6 +173,18 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   // Playback Controls
   // =========================================================================
   togglePlay(): void {
+    if (!this.hasStarted()) {
+      this.hasStarted.set(true);
+      const mountEl = this.iframeMount()?.nativeElement;
+      if (mountEl) {
+        if (window.YT && window.YT.Player) {
+          this.mountPlayer(mountEl, true);
+        } else {
+          this.initYouTubeIframe(true);
+        }
+      }
+      return;
+    }
     if (!this.ytPlayer) return;
     if (this.isPlaying()) {
       this.ytPlayer.pauseVideo?.();
@@ -251,14 +274,14 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================================
-  // YouTube IFrame API Initialization
+  // YouTube IFrame API Initialization (Privacy-Enhanced youtube-nocookie.com)
   // =========================================================================
-  private initYouTubeIframe(): void {
+  private initYouTubeIframe(autoPlay: boolean = false): void {
     const mountEl = this.iframeMount()?.nativeElement;
     if (!mountEl) return;
 
     const onReady = () => {
-      this.mountPlayer(mountEl);
+      this.mountPlayer(mountEl, autoPlay);
     };
 
     if (window.YT && window.YT.Player) {
@@ -278,7 +301,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private mountPlayer(mountEl: HTMLElement): void {
+  private mountPlayer(mountEl: HTMLElement, autoPlay: boolean = false): void {
     const videoId = this.resolveVideoId(this.encryptedVideoId());
     if (!videoId) {
       return;
@@ -292,9 +315,10 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     }
 
     this.ytPlayer = new window.YT.Player(mountEl, {
+      host: 'https://www.youtube-nocookie.com',
       videoId,
       playerVars: {
-        autoplay: 0,
+        autoplay: autoPlay ? 1 : 0,
         controls: 0,
         disablekb: 1,
         fs: 0,
@@ -313,6 +337,9 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           }
           if (this.resumePositionSec() > 0) {
             e.target.seekTo(this.resumePositionSec(), true);
+          }
+          if (autoPlay) {
+            e.target.playVideo();
           }
           const dur = e.target.getDuration();
           if (dur > 0) {
