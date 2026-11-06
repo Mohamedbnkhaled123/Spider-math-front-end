@@ -149,7 +149,7 @@
         <p class="text-xs text-text-muted">{{ langService.isArabic() ? 'جارٍ تحميل بنك الامتحانات المخصصة...' : 'Loading scoped assessments bank...' }}</p>
       </div>
     } @else {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         @for (item of paginatedAssessments(); track item.id) {
           <div class="p-5 rounded-3xl spider-rim-glass-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
             

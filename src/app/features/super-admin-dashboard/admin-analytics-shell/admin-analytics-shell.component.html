@@ -1,7 +1,7 @@
 <!-- ========================================================================= -->
-<!-- 1. MOBILE & TABLET COMMAND BAR (< 1024px): Compact Sticky Header & Horizontal Tabs -->
+<!-- 1. MOBILE & TABLET COMMAND BAR (< 1024px): Compact Relative Header & Tabs -->
 <!-- ========================================================================= -->
-<div class="lg:hidden w-full mb-4 spider-rim-glass-card rounded-2xl p-3 sm:p-4 shadow-glass sticky top-16 sm:top-20 z-30">
+<div class="lg:hidden w-full mb-6 spider-rim-glass-card rounded-2xl p-3 sm:p-4 shadow-glass relative bg-surface-card">
   <!-- Top Bar: Title + Notification & Tools Buttons -->
   <div class="flex items-center justify-between pb-2.5 border-b border-surface-border">
     <div class="flex items-center gap-2 min-w-0">
@@ -206,7 +206,7 @@
 <!-- ========================================================================= -->
 <!-- 2. DESKTOP STICKY SIDEBAR (>= 1024px)                                     -->
 <!-- ========================================================================= -->
-<aside class="hidden lg:block w-72 shrink-0 rounded-3xl spider-rim-glass-card p-5 shadow-glass sticky top-24">
+<aside class="hidden lg:block w-full rounded-3xl spider-rim-glass-card p-5 shadow-glass sticky top-24">
   
   <!-- Studio Header Badge -->
   <div class="pb-5 border-b border-surface-border mb-5">
@@ -290,7 +290,7 @@
         <app-icon name="activity" [size]="16" />
         <span>{{ langService.isArabic() ? 'لوحة الإحصائيات المركزية' : 'Central Analytics Dashboard' }}</span>
       </div>
-      <app-icon name="chevron-left" [size]="14" />
+      <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="14" />
     </button>
 
     <!-- 2. Curriculum Studio -->
@@ -307,7 +307,7 @@
         <app-icon name="book-open" [size]="16" />
         <span>{{ langService.isArabic() ? 'استوديو المناهج والوحدات' : 'Curriculum & Units Studio' }}</span>
       </div>
-      <app-icon name="chevron-left" [size]="14" />
+      <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="14" />
     </button>
 
     <!-- 2b. Dedicated Assessment Studio -->
@@ -324,7 +324,7 @@
         <app-icon name="award" [size]="16" />
         <span>{{ langService.isArabic() ? 'قسم وبنك الامتحانات' : 'Assessment & Question Bank' }}</span>
       </div>
-      <app-icon name="chevron-left" [size]="14" />
+      <app-icon [name]="langService.isArabic() ? 'chevron-left' : 'chevron-right'" [size]="14" />
     </button>
 
     <!-- 3. Interactive Grading Studio -->

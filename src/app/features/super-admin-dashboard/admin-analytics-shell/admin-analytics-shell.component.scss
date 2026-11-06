@@ -1,10 +1,16 @@
 :host {
   display: block;
   width: 100%;
-  max-width: 100%;
+
+  @media (min-width: 1024px) {
+    width: 18rem;
+    flex-shrink: 0;
+    align-self: stretch;
+  }
 }
 
 aside {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
