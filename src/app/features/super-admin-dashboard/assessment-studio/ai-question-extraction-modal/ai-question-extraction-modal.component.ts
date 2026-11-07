@@ -93,6 +93,22 @@ export class AiQuestionExtractionModalComponent {
   readonly activeSlicingQuestion = signal<IStagedQuestion | null>(null);
   readonly slicerInitialBox2d = signal<[number, number, number, number] | null>(null);
 
+  // Custom API Key Override State
+  readonly isApiKeyCollapsed = signal<boolean>(true);
+  readonly customApiKey = signal<string>('');
+
+  onCustomApiKeyChanged(value: string): void {
+    const trimmed = (value || '').trim();
+    this.customApiKey.set(trimmed);
+    if (isPlatformBrowser(this.platformId)) {
+      if (trimmed) {
+        localStorage.setItem('spider_math_gemini_api_key', trimmed);
+      } else {
+        localStorage.removeItem('spider_math_gemini_api_key');
+      }
+    }
+  }
+
   // Virtual Math Keyboard State
   readonly isMathKeyboardOpen = signal<boolean>(false);
   readonly activeMathKeyboardInput = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
@@ -105,6 +121,14 @@ export class AiQuestionExtractionModalComponent {
   });
 
   constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      const savedKey = localStorage.getItem('spider_math_gemini_api_key')?.trim() || '';
+      if (savedKey) {
+        this.customApiKey.set(savedKey);
+        this.isApiKeyCollapsed.set(false);
+      }
+    }
+
     effect(() => {
       const open = this.isOpen();
       const session = this.existingSession();
@@ -277,13 +301,18 @@ export class AiQuestionExtractionModalComponent {
     );
 
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         imageBase64: dataUrl,
         mimeType: 'image/webp',
         mode: this.extractionMode(),
         curriculum: this.curriculum(),
         gradeLevel: this.gradeLevel()
       };
+
+      const customKey = this.customApiKey().trim();
+      if (customKey) {
+        payload['apiKey'] = customKey;
+      }
 
       const res = await firstValueFrom(
         this.http.post<IAiExtractionBackendResponse>('/api/v1/assessments/ai-extract-questions', payload)
@@ -342,7 +371,11 @@ export class AiQuestionExtractionModalComponent {
       });
       this.currentStep.set('STAGING_REVIEW');
     } catch (err: any) {
-      const serverMsg = err?.error?.message || err?.message || 'Server error';
+      const serverMsg =
+        err?.error?.error?.message ||
+        err?.error?.message ||
+        err?.message ||
+        'Server error';
       this.errorMessage.set(
         this.langService.isArabic()
           ? `فشل استخراج الأسئلة: ${serverMsg}`

@@ -256,6 +256,60 @@
               </div>
             </div>
 
+            <!-- Optional Custom Gemini API Key -->
+            <div class="p-3.5 bg-surface-card border border-surface-border rounded-2xl">
+              <div
+                class="flex items-center justify-between cursor-pointer select-none"
+                (click)="isApiKeyCollapsed.set(!isApiKeyCollapsed())"
+              >
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                    <app-icon name="lock" [size]="14" />
+                  </div>
+                  <div>
+                    <span class="text-xs font-bold text-text-primary block">
+                      {{ langService.isArabic() ? 'مفتاح Gemini API مخصص (اختياري)' : 'Custom Gemini API Key (Optional)' }}
+                    </span>
+                    <span class="text-[10px] text-text-muted">
+                      {{ langService.isArabic() ? 'الخادم مزود بمفتاح ذكاء اصطناعي يعمل تلقائياً، يمكنك تخصيص مفتاحك هنا إذا رغبت' : 'The server has a working default key configured; you can override it here if desired' }}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-text-secondary hover:text-text-primary text-[10px] font-bold"
+                >
+                  {{ isApiKeyCollapsed() ? (langService.isArabic() ? 'تعديل' : 'Edit') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
+                </button>
+              </div>
+
+              @if (!isApiKeyCollapsed()) {
+                <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="password"
+                      [ngModel]="customApiKey()"
+                      (ngModelChange)="onCustomApiKeyChanged($event)"
+                      placeholder="AQ.Ab... or AIzaSy..."
+                      class="flex-1 px-3 py-1.5 text-xs bg-surface-bg border border-surface-border rounded-xl text-text-primary focus:border-amber-500 focus:outline-none font-mono"
+                    />
+                    @if (customApiKey()) {
+                      <button
+                        type="button"
+                        (click)="onCustomApiKeyChanged('')"
+                        class="px-3 py-1.5 text-[11px] rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20 font-bold transition-all cursor-pointer"
+                      >
+                        {{ langService.isArabic() ? 'مسح' : 'Clear' }}
+                      </button>
+                    }
+                  </div>
+                  <p class="text-[10px] text-text-muted">
+                    {{ langService.isArabic() ? 'يتم حفظ المفتاح محلياً في متصفحك واستخدامه تلقائياً في طلبات الاستخراج.' : 'The key is saved locally in your browser and used automatically for extraction requests.' }}
+                  </p>
+                </div>
+              }
+            </div>
+
             <!-- Continue Button -->
             @if (uploadedFile() || currentCanvas) {
               <div class="flex justify-end pt-2">
