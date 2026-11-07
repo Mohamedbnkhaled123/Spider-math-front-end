@@ -595,7 +595,18 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     if (quiz.isFree) {
       if (this.authService.isAuthenticated()) {
         this.closeTrackModal();
-        this.router.navigate(['/student/assessments', quiz.id]);
+        if (quiz.isPlacementTest) {
+          this.router.navigate(['/placement-test'], {
+            queryParams: {
+              curriculum: this.selectedCurriculumCode(),
+              gradeLevel: this.selectedGradeCode(),
+              term: this.selectedTermCode(),
+              testId: quiz.id
+            }
+          });
+        } else {
+          this.router.navigate(['/student/assessments', quiz.id]);
+        }
       } else {
         this.authGateActionMessage.set(
           this.langService.isArabic()
