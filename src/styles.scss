@@ -4,6 +4,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// KaTeX Mathematical Typesetting Stylesheet
+@import 'katex/dist/katex.min.css';
 :root,
 [data-theme='light'],
 .light {

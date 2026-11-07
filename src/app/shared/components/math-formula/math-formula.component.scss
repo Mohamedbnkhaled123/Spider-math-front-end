@@ -1,0 +1,35 @@
+:host {
+  display: inline;
+}
+
+.math-formula-host {
+  display: inline;
+  vertical-align: baseline;
+  line-height: inherit;
+}
+
+.math-plain-text {
+  display: inline;
+  white-space: pre-wrap;
+}
+
+.math-katex-token {
+  unicode-bidi: isolate;
+  direction: ltr;
+  text-align: left;
+
+  &--inline {
+    display: inline-block;
+    vertical-align: -0.1em;
+    margin: 0 0.15em;
+  }
+
+  &--block {
+    display: block;
+    margin: 0.75rem 0;
+    text-align: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0;
+  }
+}

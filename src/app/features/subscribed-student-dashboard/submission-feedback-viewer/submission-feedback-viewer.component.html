@@ -107,7 +107,7 @@
                   </div>
 
                   <h4 class="text-xs sm:text-sm font-bold text-text-primary leading-relaxed">
-                    {{ q.questionText }}
+                    <app-math-formula [text]="q.questionText" />
                   </h4>
 
                   @if (q.questionImageUrl) {
@@ -120,7 +120,11 @@
                     <div class="p-3 rounded-xl bg-surface-card border border-surface-border text-xs">
                       <span class="text-[11px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'إجابتك المختارة:' : 'Your Selected Answer:' }}</span>
                       <span class="font-bold text-brand-primary dark:text-brand-accent">
-                        {{ q.studentAnswerText || (langService.isArabic() ? 'لم يتم اختيار إجابة' : 'No answer selected') }}
+                        @if (q.studentAnswerText) {
+                          <app-math-formula [text]="q.studentAnswerText" />
+                        } @else {
+                          {{ langService.isArabic() ? 'لم يتم اختيار إجابة' : 'No answer selected' }}
+                        }
                       </span>
                     </div>
                   }
@@ -516,7 +520,7 @@
 
                       <!-- Question Prompt Text -->
                       <h4 class="text-xs sm:text-sm font-bold text-text-primary leading-relaxed">
-                        {{ mistake.questionPromptText }}
+                        <app-math-formula [text]="mistake.questionPromptText" />
                       </h4>
 
                       <!-- Question Image (if any) -->
@@ -536,13 +540,17 @@
                           @if (mistake.studentAnswerText) {
                             <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20">
                               <span class="text-[10px] font-bold text-rose-500 block mb-0.5">{{ langService.isArabic() ? 'إجابتك المسجلة:' : 'Your Recorded Answer:' }}</span>
-                              <span class="text-xs font-bold text-text-primary">{{ mistake.studentAnswerText }}</span>
+                              <span class="text-xs font-bold text-text-primary">
+                                <app-math-formula [text]="mistake.studentAnswerText" />
+                              </span>
                             </div>
                           }
                           @if (mistake.correctAnswerText) {
                             <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
                               <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">{{ langService.isArabic() ? 'الإجابة النموذجية الصحيحة:' : 'Model Correct Answer:' }}</span>
-                              <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">{{ mistake.correctAnswerText }}</span>
+                              <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                                <app-math-formula [text]="mistake.correctAnswerText" />
+                              </span>
                             </div>
                           }
                         </div>

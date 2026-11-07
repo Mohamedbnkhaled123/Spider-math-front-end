@@ -306,7 +306,7 @@
 
             <!-- Question Stem Text -->
             <h2 class="font-academic-serif text-lg sm:text-2xl font-black text-text-primary leading-relaxed mb-6">
-              {{ q.question_text }}
+              <app-math-formula [text]="q.question_text" />
             </h2>
 
             <!-- Optional Question Image -->
@@ -354,7 +354,7 @@
                       'text-text-primary': selectedAnswers()[q.question_id] !== optIdx
                     }"
                   >
-                    {{ opt.option_text }}
+                    <app-math-formula [text]="opt.option_text" />
                   </span>
                 </div>
               }

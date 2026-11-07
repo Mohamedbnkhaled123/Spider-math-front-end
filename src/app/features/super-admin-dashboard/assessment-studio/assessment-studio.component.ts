@@ -34,6 +34,8 @@ import {
  * Strict Grade-Level Isolation, and Custom In-App Decision Confirmation.
  */
 import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedule-alarm-picker/schedule-alarm-picker.component';
+import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
+import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
 
 /**
  * Timezone Drift Fix (Fix #2): Converts UTC/ISO timestamp to local input string (YYYY-MM-DDTHH:mm)
@@ -61,7 +63,9 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
     FormsModule,
     AppIconComponent,
     ImageCompressorUploaderComponent,
-    ScheduleAlarmPickerComponent
+    ScheduleAlarmPickerComponent,
+    MathFormulaComponent,
+    MathVirtualKeyboardComponent
   ],
   templateUrl: './assessment-studio.component.html',
   styleUrl: './assessment-studio.component.scss',
@@ -259,6 +263,15 @@ export class AssessmentStudioComponent implements OnInit {
   readonly newQuestionCorrectIndex = signal<number>(0);
   readonly newQuestionPoints = signal<number>(5);
   readonly newQuestionYoutubeUrl = signal<string>('');
+
+  // Math Virtual Keyboard Integration
+  readonly isMathKeyboardOpen = signal<boolean>(false);
+  readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
+
+  openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
+    this.mathKeyboardTarget.set(target);
+    this.isMathKeyboardOpen.set(true);
+  }
 
   ngOnInit(): void {
     this.loadTracksAndActiveGrades();

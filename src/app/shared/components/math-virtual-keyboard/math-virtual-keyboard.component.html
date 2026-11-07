@@ -1,0 +1,196 @@
+@if (isOpen()) {
+  <!-- Backdrop Overlay (Optional light click-off on desktop) -->
+  <div class="keyboard-backdrop fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] transition-opacity" (click)="close()"></div>
+
+  <!-- Docked Bottom Sheet Container -->
+  <aside
+    class="math-keyboard-sheet fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t border-x border-surface-border bg-surface-card backdrop-blur-2xl shadow-2xl p-3 sm:p-5 space-y-3 animate-slide-up max-h-[85vh] overflow-y-auto"
+    role="region"
+    aria-label="Math Virtual Keyboard"
+  >
+    <!-- Top Header & Action Controls Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-surface-border">
+      
+      <!-- Title & Live Math Icon -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold">
+          <app-icon name="calculator" [size]="18" />
+        </div>
+        <div>
+          <h3 class="text-xs sm:text-sm font-black text-text-primary">
+            {{ langService.isArabic() ? 'لوحة المفاتيح الرياضية (LaTeX)' : 'Virtual Math Keyboard (LaTeX)' }}
+          </h3>
+          <span class="text-[10px] text-text-muted">
+            {{ langService.isArabic() ? 'إدراج الرموز والمعادلات بسلاسة دون تشويش الاتجاه' : 'Insert formulas with bidirectional LTR isolation' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons: Prose Toggle & Close -->
+      <div class="flex items-center gap-2">
+        
+        <!-- User Requested Quick Toggle: Phone Soft Keyboard vs Virtual Math Keyboard -->
+        <button
+          type="button"
+          (click)="toggleNativeKeyboard()"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border"
+          [class.bg-brand-primary]="isNativeMobileKeyboardActive()"
+          [class.text-white]="isNativeMobileKeyboardActive()"
+          [class.border-brand-primary]="isNativeMobileKeyboardActive()"
+          [class.bg-surface-bg]="!isNativeMobileKeyboardActive()"
+          [class.text-text-secondary]="!isNativeMobileKeyboardActive()"
+          [class.border-surface-border]="!isNativeMobileKeyboardActive()"
+          [title]="langService.isArabic() ? 'التبديل بين كتابة النصوص العربية العادية والرموز الرياضية' : 'Toggle between native phone typing and math symbols'"
+        >
+          <app-icon name="phone" [size]="13" />
+          <span>
+            @if (isNativeMobileKeyboardActive()) {
+              {{ langService.isArabic() ? 'كيبورد الهاتف مفعّل' : 'Phone Keyboard Active' }}
+            } @else {
+              {{ langService.isArabic() ? 'كتابة نص عادي / كيبورد الهاتف' : 'Type Prose / Phone Keyboard' }}
+            }
+          </span>
+        </button>
+
+        <!-- Close / Done Button -->
+        <button
+          type="button"
+          (click)="close()"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-surface-bg hover:bg-surface-elevated text-text-primary border border-surface-border transition-all flex items-center gap-1 cursor-pointer"
+          [title]="langService.isArabic() ? 'إغلاق اللوحة' : 'Close keyboard'"
+        >
+          <app-icon name="check" [size]="14" />
+          <span>{{ langService.isArabic() ? 'تم' : 'Done' }}</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Live Equation Preview Strip -->
+    <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 min-h-[46px]">
+      <div class="flex-1 overflow-x-auto text-xs sm:text-sm text-text-primary dir-auto font-mono">
+        @if (previewFormula()) {
+          <app-math-formula [text]="previewFormula()" />
+        } @else {
+          <span class="text-text-muted italic text-[11px]">
+            {{ langService.isArabic() ? 'معاينة فورية للمعادلة أثناء الكتابة...' : 'Live formula preview strip...' }}
+          </span>
+        }
+      </div>
+
+      <button
+        type="button"
+        (click)="handleClear()"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
+        [title]="langService.isArabic() ? 'مسح المحتوى' : 'Clear all'"
+      >
+        {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
+      </button>
+    </div>
+
+    <!-- Category Tabs Switcher -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+      @for (tab of categoryTabs(); track tab.id) {
+        <button
+          type="button"
+          (click)="selectCategory(tab.id)"
+          (pointerdown)="preventFocusLoss($event)"
+          (touchstart)="preventFocusLoss($event)"
+          class="px-2.5 py-2 rounded-xl text-xs font-bold text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 truncate"
+          [class.bg-brand-primary]="activeCategory() === tab.id"
+          [class.text-white]="activeCategory() === tab.id"
+          [class.shadow-sm]="activeCategory() === tab.id"
+          [class.text-text-secondary]="activeCategory() !== tab.id"
+        >
+          <app-icon [name]="tab.icon" [size]="14" />
+          <span class="truncate">{{ langService.isArabic() ? tab.titleAr : tab.titleEn }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Tactile Keys Grid -->
+    <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5 sm:gap-2 max-h-56 overflow-y-auto p-1">
+      @for (key of visibleKeys(); track key.latex) {
+        <button
+          type="button"
+          (pointerdown)="preventFocusLoss($event)"
+          (touchstart)="preventFocusLoss($event)"
+          (click)="insertSymbol(key.latex, key.cursorOffset ?? 0)"
+          class="key-btn h-11 sm:h-12 rounded-xl border border-surface-border bg-surface-elevated hover:bg-brand-primary/10 hover:border-brand-primary/50 text-text-primary text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-150 select-none cursor-pointer active:scale-95 shadow-sm"
+          [attr.aria-label]="key.ariaLabel || key.latex"
+        >
+          <app-math-formula [text]="key.label" />
+        </button>
+      }
+    </div>
+
+    <!-- Utility & Action Keys Bar -->
+    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2 border-t border-surface-border">
+      
+      <!-- Inline Delimiter $..$ -->
+      <button
+        type="button"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        (click)="insertDelimiter('INLINE')"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+        [title]="langService.isArabic() ? 'إدراج صيغة رياضية مدمجة $..$' : 'Insert inline formula $..$'"
+      >
+        <span class="font-mono text-sm font-black">$..$</span>
+        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'مدمجة' : 'Inline' }}</span>
+      </button>
+
+      <!-- Block Delimiter $$..$$ -->
+      <button
+        type="button"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        (click)="insertDelimiter('BLOCK')"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+        [title]="langService.isArabic() ? 'إدراج معادلة سطرية منفصلة $$..$$' : 'Insert block formula $$..$$'"
+      >
+        <span class="font-mono text-sm font-black">$$..$$</span>
+        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'سطر منفصل' : 'Block' }}</span>
+      </button>
+
+      <!-- Space Key (Spans 2 columns on mobile) -->
+      <button
+        type="button"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        (click)="handleSpace()"
+        class="col-span-1 sm:col-span-2 h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+      >
+        <app-icon name="minus" [size]="14" />
+        <span>{{ langService.isArabic() ? 'مسافة' : 'Space' }}</span>
+      </button>
+
+      <!-- Backspace Key -->
+      <button
+        type="button"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        (click)="handleBackspace()"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-rose-500/10 hover:text-rose-500 text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+        [title]="langService.isArabic() ? 'حذف الرمز السابق' : 'Backspace'"
+      >
+        <app-icon name="arrow-left" [size]="14" />
+        <span>{{ langService.isArabic() ? 'حذف' : 'Del' }}</span>
+      </button>
+
+      <!-- Close Sheet Button -->
+      <button
+        type="button"
+        (click)="close()"
+        class="h-10 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all active:scale-95"
+      >
+        <app-icon name="check" [size]="14" />
+        <span>{{ langService.isArabic() ? 'إغلاق' : 'Close' }}</span>
+      </button>
+
+    </div>
+
+  </aside>
+}

@@ -192,7 +192,7 @@
 
         <!-- Question Text Prompt -->
         <h3 class="text-base sm:text-xl font-bold text-text-primary leading-relaxed mb-6">
-          {{ q.textAr }}
+          <app-math-formula [text]="q.textAr" />
         </h3>
 
         <!-- Optional Prompt Image (from Cloudinary permanent questions folder) -->
@@ -227,7 +227,7 @@
                 </div>
 
                 <span class="text-xs sm:text-sm font-bold text-text-primary">
-                  {{ opt.textAr }}
+                  <app-math-formula [text]="opt.textAr" />
                 </span>
               </div>
             }

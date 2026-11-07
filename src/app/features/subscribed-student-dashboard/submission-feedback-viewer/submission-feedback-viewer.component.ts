@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback-viewer.models';
 
@@ -28,7 +29,7 @@ import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback
 @Component({
   selector: 'app-submission-feedback-viewer',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, RouterLink, AppIconComponent, MathFormulaComponent],
   templateUrl: './submission-feedback-viewer.component.html',
   styleUrls: ['./submission-feedback-viewer.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

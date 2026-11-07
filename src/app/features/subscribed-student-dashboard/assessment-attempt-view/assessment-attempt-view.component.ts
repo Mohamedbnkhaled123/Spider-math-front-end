@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
+import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { QuizCacheService } from '../../../core/offline-db/quiz-cache.service';
 import { OfflineSyncQueueService } from '../../../core/offline-db/offline-sync-queue.service';
 import { spiderMathDb } from '../../../core/offline-db/spider-math-db';
@@ -40,7 +41,8 @@ import { AssessmentAttemptBundle, AssessmentQuestionItem } from './assessment-at
     RouterLink,
     AppIconComponent,
     GraphCalculatorModalComponent,
-    ImageCompressorUploaderComponent
+    ImageCompressorUploaderComponent,
+    MathFormulaComponent
   ],
   templateUrl: './assessment-attempt-view.component.html',
   styleUrls: ['./assessment-attempt-view.component.scss'],

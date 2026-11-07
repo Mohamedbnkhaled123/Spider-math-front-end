@@ -1167,11 +1167,23 @@
 
                 <!-- Question Text -->
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Math Problem Question Text:' }}</label>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Math Problem Question Text:' }}</label>
+                    <button
+                      type="button"
+                      (click)="openMathKeyboard(qTextArea)"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border border-brand-primary/20 flex items-center gap-1 cursor-pointer transition-all"
+                      [title]="langService.isArabic() ? 'فتح لوحة المفاتيح الرياضية لكتابة الرموز والمعادلات' : 'Open Math Virtual Keyboard'"
+                    >
+                      <app-icon name="calculator" [size]="13" />
+                      <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية (LaTeX)' : 'Math Keyboard' }}</span>
+                    </button>
+                  </div>
                   <textarea
+                    #qTextArea
                     rows="2"
                     [(ngModel)]="newQuestionTextAr"
-                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا...' : 'Type problem text or equation prompt here...'"
+                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... (يمكن كتابة $معادلة$)' : 'Type problem text or equation prompt here... (e.g. $x^2$)'"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                   ></textarea>
                 </div>
@@ -1200,16 +1212,25 @@
                             name="correctChoice"
                             [checked]="newQuestionCorrectIndex() === $index"
                             (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
-                            class="accent-brand-primary cursor-pointer w-4 h-4"
+                            class="accent-brand-primary cursor-pointer w-4 h-4 shrink-0"
                             [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
                           />
                           <input
+                            #optInput
                             type="text"
                             [value]="opt"
                             (input)="updateOption($index, $any($event.target).value)"
                             [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
-                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none"
+                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
                           />
+                          <button
+                            type="button"
+                            (click)="openMathKeyboard(optInput)"
+                            class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer shrink-0"
+                            [title]="langService.isArabic() ? 'إدراج رموز رياضية في هذا الخيار' : 'Insert math symbols into this option'"
+                          >
+                            <app-icon name="calculator" [size]="13" />
+                          </button>
                         </div>
                       }
                     </div>
@@ -1293,9 +1314,9 @@
                       </button>
                     </div>
 
-                    <p class="text-xs text-text-primary">
-                      {{ q.textAr }}
-                    </p>
+                    <div class="text-xs text-text-primary leading-relaxed">
+                      <app-math-formula [text]="q.textAr" />
+                    </div>
 
                     @if (q.questionImageUrl) {
                       <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة المسألة' : 'Question image'" class="max-h-48 rounded-xl border border-surface-border object-contain" />
@@ -1311,7 +1332,7 @@
                             [class.text-emerald-600]="q.correctOptionIndex === $index"
                             [class.border-surface-border]="q.correctOptionIndex !== $index"
                           >
-                            <span>{{ opt }}</span>
+                            <span><app-math-formula [text]="opt" /></span>
                             @if (q.correctOptionIndex === $index) {
                               <span class="text-[10px] font-bold flex items-center gap-1">
                                 <app-icon name="check" [size]="12" />
@@ -1430,5 +1451,11 @@
       </div>
     </div>
   }
+
+  <!-- Teacher Virtual Math Keyboard (Docked Bottom Sheet) -->
+  <app-math-virtual-keyboard
+    [(isOpen)]="isMathKeyboardOpen"
+    [targetInput]="mathKeyboardTarget()"
+  />
 
 </section>

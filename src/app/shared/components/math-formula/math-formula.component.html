@@ -1,0 +1,14 @@
+<span class="math-formula-host" [attr.dir]="dir()">
+  @for (token of safeTokens(); track $index) {
+    @if (token.type === 'TEXT') {
+      <span class="math-plain-text">{{ token.raw }}</span>
+    } @else {
+      <span
+        class="math-katex-token"
+        [class.math-katex-token--block]="token.type === 'BLOCK_MATH'"
+        [class.math-katex-token--inline]="token.type === 'INLINE_MATH'"
+        [innerHTML]="token.safeHtml"
+      ></span>
+    }
+  }
+</span>
