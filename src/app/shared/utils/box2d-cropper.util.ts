@@ -17,7 +17,8 @@ export interface IBox2dCropResult {
  */
 export function applyBoundingBoxPadding(
   box_2d: [number, number, number, number],
-  paddingRatio: number = 0.06
+  paddingRatio: number = 0.08,
+  minPadding: number = 12
 ): [number, number, number, number] {
   const [ymin, xmin, ymax, xmax] = box_2d;
   const normYmin = Math.min(ymin, ymax);
@@ -27,8 +28,8 @@ export function applyBoundingBoxPadding(
 
   const boxW = normXmax - normXmin;
   const boxH = normYmax - normYmin;
-  const padX = Math.max(8, Math.round(boxW * paddingRatio));
-  const padY = Math.max(8, Math.round(boxH * paddingRatio));
+  const padX = Math.max(minPadding, Math.round(boxW * paddingRatio));
+  const padY = Math.max(minPadding, Math.round(boxH * paddingRatio));
 
   return [
     Math.max(0, normYmin - padY),

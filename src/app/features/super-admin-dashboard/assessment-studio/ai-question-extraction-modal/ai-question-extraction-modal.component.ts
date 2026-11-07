@@ -340,17 +340,18 @@ export class AiQuestionExtractionModalComponent {
 
       // Process and auto-crop diagrams locally without uploading to Cloudinary
       const stagedList: IStagedQuestion[] = [];
+      const isTextOnlyMode = this.extractionMode() === 'TEXT_LATEX_ONLY';
 
       for (let i = 0; i < rawQuestions.length; i++) {
         const rawQ = rawQuestions[i];
         let localCropBlob: Blob | null = null;
         let localCropPreviewUrl: string | null = null;
-        let effectiveBox = rawQ.box_2d;
+        let effectiveBox = isTextOnlyMode ? undefined : rawQ.box_2d;
 
-        if (effectiveBox && this.currentCanvas && isPlatformBrowser(this.platformId)) {
+        if (effectiveBox && this.currentCanvas && isPlatformBrowser(this.platformId) && !isTextOnlyMode) {
           try {
-            // Apply generous safe margin padding (6%) so corner labels (A, B, C, D) are never cut off
-            effectiveBox = applyBoundingBoxPadding(effectiveBox, 0.06);
+            // Apply generous safe margin padding (8%, min 16 units) so corner labels (A, B, C, D) are never cut off
+            effectiveBox = applyBoundingBoxPadding(effectiveBox, 0.08, 16);
             const cropRes = await cropBoundingBoxToBlob(this.currentCanvas, effectiveBox);
             localCropBlob = cropRes.blob;
             localCropPreviewUrl = cropRes.dataUrl;
@@ -368,15 +369,16 @@ export class AiQuestionExtractionModalComponent {
           id: `staged_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}`,
           checked: true,
           pageNumber: this.currentPageNumber(),
+          pageDataUrl: dataUrl,
           question_text: rawQ.question_text || '',
           type: isActuallyMcq ? 'MCQ' : 'ESSAY',
           options: isActuallyMcq ? [...rawQ.options] : ['', '', '', ''],
           correct_option_index: rawQ.correct_option_index ?? 0,
           points: rawQ.points > 0 ? rawQ.points : 1,
-          has_geometry_diagram: Boolean(rawQ.has_geometry_diagram) || Boolean(effectiveBox),
-          box_2d: effectiveBox,
-          localCropBlob,
-          localCropPreviewUrl,
+          has_geometry_diagram: !isTextOnlyMode && (Boolean(rawQ.has_geometry_diagram) || Boolean(effectiveBox)),
+          box_2d: isTextOnlyMode ? undefined : effectiveBox,
+          localCropBlob: isTextOnlyMode ? null : localCropBlob,
+          localCropPreviewUrl: isTextOnlyMode ? null : localCropPreviewUrl,
           question_image_url: null
         });
       }
@@ -502,6 +504,7 @@ export class AiQuestionExtractionModalComponent {
           ? {
               ...item,
               has_geometry_diagram: true,
+              box_2d: result.box_2d || item.box_2d,
               localCropBlob: result.blob,
               localCropPreviewUrl: result.dataUrl,
               question_image_url: null

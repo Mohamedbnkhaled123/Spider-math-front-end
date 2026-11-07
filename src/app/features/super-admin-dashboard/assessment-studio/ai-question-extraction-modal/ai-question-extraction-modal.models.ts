@@ -11,6 +11,7 @@ export interface IStagedQuestion {
   id: string;
   checked: boolean;
   pageNumber?: number;
+  pageDataUrl?: string | null;
   question_text: string;
   type: 'MCQ' | 'ESSAY';
   options: string[];

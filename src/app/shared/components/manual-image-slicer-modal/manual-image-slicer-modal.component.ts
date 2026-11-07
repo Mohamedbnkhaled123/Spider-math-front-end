@@ -91,26 +91,30 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
       this.imageSrcUrl.set(source);
     }
 
-    // Ensure cropper initializes precisely when image is fully loaded
+    // Ensure cropper initializes precisely when image is fully loaded with robust polling
+    let attempts = 0;
+    const maxAttempts = 40; // 2 seconds total
+
     const checkAndInit = () => {
+      if (!this.isOpen()) return;
+      attempts++;
       const imgEl = this.cropperImage()?.nativeElement;
-      if (!imgEl) {
-        setTimeout(checkAndInit, 30);
+      if (!imgEl || !imgEl.complete || imgEl.naturalWidth === 0) {
+        if (attempts < maxAttempts) {
+          setTimeout(checkAndInit, 50);
+        } else if (imgEl && imgEl.naturalWidth > 0) {
+          this.initCropperInstance();
+        } else {
+          this.errorMessage.set(
+            this.langService.isArabic()
+              ? 'تعذر تحميل صورة الصفحة في أداة القص. يرجى المحاولة مرة أخرى.'
+              : 'Failed to load page image in slicer. Please retry.'
+          );
+        }
         return;
       }
-      if (imgEl.complete && imgEl.naturalWidth > 0) {
-        this.initCropperInstance();
-      } else {
-        imgEl.onload = () => {
-          imgEl.onload = null;
-          this.initCropperInstance();
-        };
-        setTimeout(() => {
-          if (!this.cropper && imgEl.naturalWidth > 0) {
-            this.initCropperInstance();
-          }
-        }, 300);
-      }
+
+      this.initCropperInstance();
     };
 
     setTimeout(checkAndInit, 30);
@@ -288,13 +292,26 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
         finalImageUrl = await uploadBlobToCloudinary(blob, 'question', this.http);
       }
 
+      // Compute normalized box_2d [ymin, xmin, ymax, xmax] (0..1000) for staging persistence
+      let box_2d: [number, number, number, number] | undefined = undefined;
+      const imgData = typeof this.cropper.getImageData === 'function' ? this.cropper.getImageData() : null;
+      const cropData = typeof this.cropper.getData === 'function' ? this.cropper.getData() : null;
+      if (imgData && imgData.naturalWidth > 0 && imgData.naturalHeight > 0 && cropData) {
+        const ymin = Math.max(0, Math.min(1000, Math.round((cropData.y / imgData.naturalHeight) * 1000)));
+        const xmin = Math.max(0, Math.min(1000, Math.round((cropData.x / imgData.naturalWidth) * 1000)));
+        const ymax = Math.max(0, Math.min(1000, Math.round(((cropData.y + cropData.height) / imgData.naturalHeight) * 1000)));
+        const xmax = Math.max(0, Math.min(1000, Math.round(((cropData.x + cropData.width) / imgData.naturalWidth) * 1000)));
+        box_2d = [ymin, xmin, ymax, xmax];
+      }
+
       this.sliceSaved.emit({
         imageUrl: finalImageUrl,
         blob,
         dataUrl,
         sizeKb,
         width: croppedCanvas.width,
-        height: croppedCanvas.height
+        height: croppedCanvas.height,
+        box_2d
       });
 
       // Close modal on successful save WITHOUT emitting cancelled

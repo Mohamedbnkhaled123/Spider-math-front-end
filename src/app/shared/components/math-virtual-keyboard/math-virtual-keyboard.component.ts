@@ -155,6 +155,37 @@ export class MathVirtualKeyboardComponent {
     this.valueChange.emit(nextValue);
   }
 
+  /**
+   * Inserts digits, decimals, and basic arithmetic symbols directly into target input
+   * without artificially wrapping every single digit into $...$ blocks.
+   * Works smoothly both within active math formulas and inside plain text questions/options.
+   */
+  insertNumeric(value: string): void {
+    const el = this.targetInput();
+    if (!el) {
+      this.previewFormula.update((prev) => prev + value);
+      return;
+    }
+
+    this.ensureReadonlySuppression(el);
+
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const currentValue = el.value;
+
+    const nextValue = currentValue.slice(0, start) + value + currentValue.slice(end);
+    el.value = nextValue;
+
+    const newCursorPos = start + value.length;
+    el.setSelectionRange(newCursorPos, newCursorPos);
+
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+
+    this.previewFormula.set(nextValue);
+    this.valueChange.emit(nextValue);
+  }
+
   insertDelimiter(type: 'INLINE' | 'BLOCK'): void {
     const el = this.targetInput();
     const delimiter = type === 'BLOCK' ? '$$  $$' : '$  $';

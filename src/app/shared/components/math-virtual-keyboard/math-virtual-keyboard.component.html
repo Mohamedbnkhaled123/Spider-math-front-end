@@ -101,7 +101,7 @@
             type="button"
             (pointerdown)="preventFocusLoss($event)"
             (touchstart)="preventFocusLoss($event)"
-            (click)="insertSymbol(num.value, 0)"
+            (click)="insertNumeric(num.value)"
             class="h-9 sm:h-10 rounded-xl border border-surface-border bg-surface-card hover:bg-brand-primary/15 hover:border-brand-primary/40 text-text-primary text-xs sm:text-sm font-black font-mono flex items-center justify-center transition-all duration-150 select-none cursor-pointer active:scale-95 shadow-sm"
             [attr.aria-label]="num.ariaLabel || num.label"
           >

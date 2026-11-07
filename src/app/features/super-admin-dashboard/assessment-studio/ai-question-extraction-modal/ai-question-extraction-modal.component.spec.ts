@@ -438,4 +438,39 @@ describe('AiQuestionExtractionModalComponent', () => {
     expect(component.stagedQuestions()[0].has_geometry_diagram).toBeFalse();
     expect(component.stagedQuestions()[0].localCropPreviewUrl).toBeNull();
   });
+
+  it('should update staged question with sliced diagram and normalized box_2d on sliceSaved', () => {
+    const q: IStagedQuestion = {
+      id: 'q_slice_test',
+      checked: true,
+      question_text: 'مسألة هندسية',
+      type: 'MCQ',
+      options: ['A', 'B'],
+      correct_option_index: 0,
+      points: 1,
+      has_geometry_diagram: false
+    };
+    component.stagedQuestions.set([q]);
+    component.openManualSlicerForQuestion(q);
+    expect(component.isSlicerOpen()).toBeTrue();
+    expect(component.activeSlicingQuestion()?.id).toBe('q_slice_test');
+
+    const mockBlob = new Blob(['mock-slice'], { type: 'image/webp' });
+    component.onSliceSaved({
+      imageUrl: 'data:image/webp;base64,newcrop',
+      dataUrl: 'data:image/webp;base64,newcrop',
+      blob: mockBlob,
+      sizeKb: 45,
+      width: 250,
+      height: 200,
+      box_2d: [150, 150, 450, 550]
+    });
+
+    expect(component.isSlicerOpen()).toBeFalse();
+    expect(component.activeSlicingQuestion()).toBeNull();
+    const updated = component.stagedQuestions()[0];
+    expect(updated.has_geometry_diagram).toBeTrue();
+    expect(updated.localCropPreviewUrl).toBe('data:image/webp;base64,newcrop');
+    expect(updated.box_2d).toEqual([150, 150, 450, 550]);
+  });
 });

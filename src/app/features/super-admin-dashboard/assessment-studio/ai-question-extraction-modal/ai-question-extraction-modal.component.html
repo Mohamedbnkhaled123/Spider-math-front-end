@@ -750,10 +750,10 @@
   <app-manual-image-slicer-modal
     [isOpen]="isSlicerOpen()"
     (isOpenChange)="isSlicerOpen.set($event)"
-    [imageSource]="currentDataUrl() || currentCanvas"
+    [imageSource]="activeSlicingQuestion()?.pageDataUrl || currentDataUrl() || currentCanvas"
     [initialBox2d]="slicerInitialBox2d()"
     [uploadToCloudinary]="false"
-    modalTitle="تعديل مساحة القص للرسم الهندسي"
+    [modalTitle]="activeSlicingQuestion()?.has_geometry_diagram ? (langService.isArabic() ? 'تعديل مساحة القص للرسم الهندسي' : 'Fine-tune Crop Area') : (langService.isArabic() ? 'إرفاق وتحديد رسم هندسي من الصفحة' : 'Attach & Slice Diagram from Page')"
     (sliceSaved)="onSliceSaved($event)"
     (cancelled)="onSlicerCancelled()"
   />
@@ -769,7 +769,7 @@
   <!-- DELETE / REMOVE CONFIRMATION DIALOG MODAL -->
   @if (confirmationDialog(); as dialog) {
     <div
-      class="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
       (click)="closeConfirmation()"
     >
       <div

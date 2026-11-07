@@ -12,4 +12,5 @@ export interface ISliceResult {
   sizeKb: number;
   width: number;
   height: number;
+  box_2d?: [number, number, number, number];
 }

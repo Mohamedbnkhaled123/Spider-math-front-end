@@ -67,8 +67,10 @@ describe('MathVirtualKeyboardComponent', () => {
     fixture.componentRef.setInput('isOpen', true);
     fixture.detectChanges();
 
-    component.insertSymbol('5');
-    expect(inputEl.value).toBe('x = $5$');
+    component.insertNumeric('5');
+    component.insertNumeric('0');
+    expect(inputEl.value).toBe('x = 50');
+    expect(component.previewFormula()).toBe('x = 50');
   });
 
   it('should auto-wrap in $...$ when inserting symbol outside math mode', () => {
