@@ -15,6 +15,30 @@ export interface IMathSymbolKey {
   category: MathKeyboardCategory;
 }
 
+export interface INumericKey {
+  label: string;
+  value: string;
+  ariaLabel?: string;
+}
+
+export const NUMERIC_KEYPAD_KEYS: INumericKey[] = [
+  { label: '1', value: '1', ariaLabel: 'Digit 1' },
+  { label: '2', value: '2', ariaLabel: 'Digit 2' },
+  { label: '3', value: '3', ariaLabel: 'Digit 3' },
+  { label: '4', value: '4', ariaLabel: 'Digit 4' },
+  { label: '5', value: '5', ariaLabel: 'Digit 5' },
+  { label: '6', value: '6', ariaLabel: 'Digit 6' },
+  { label: '7', value: '7', ariaLabel: 'Digit 7' },
+  { label: '8', value: '8', ariaLabel: 'Digit 8' },
+  { label: '9', value: '9', ariaLabel: 'Digit 9' },
+  { label: '0', value: '0', ariaLabel: 'Digit 0' },
+  { label: '.', value: '.', ariaLabel: 'Decimal point' },
+  { label: ',', value: ',', ariaLabel: 'Comma' },
+  { label: '+', value: '+', ariaLabel: 'Plus' },
+  { label: '-', value: '-', ariaLabel: 'Minus' },
+  { label: '=', value: '=', ariaLabel: 'Equals' }
+];
+
 export interface IMathCategoryTab {
   id: MathKeyboardCategory;
   titleAr: string;

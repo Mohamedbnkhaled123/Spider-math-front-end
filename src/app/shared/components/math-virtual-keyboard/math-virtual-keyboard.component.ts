@@ -18,7 +18,8 @@ import {
   MathKeyboardCategory,
   MATH_CATEGORY_TABS,
   MATH_KEYBOARD_KEYS,
-  IMathSymbolKey
+  IMathSymbolKey,
+  NUMERIC_KEYPAD_KEYS
 } from './math-virtual-keyboard.models';
 
 /**
@@ -55,6 +56,7 @@ export class MathVirtualKeyboardComponent {
 
   // Computed lists
   readonly categoryTabs = computed(() => MATH_CATEGORY_TABS);
+  readonly numericKeys = computed(() => NUMERIC_KEYPAD_KEYS);
   readonly visibleKeys = computed(() =>
     MATH_KEYBOARD_KEYS.filter((key) => key.category === this.activeCategory())
   );

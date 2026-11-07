@@ -11,6 +11,34 @@ export interface IBox2dCropResult {
 }
 
 /**
+ * Expands a normalized bounding box [ymin, xmin, ymax, xmax] (0..1000)
+ * by a safety breathing margin (default 6%, min 8 units) clamped to [0, 1000].
+ * This guarantees geometry diagrams never cut off perimeter vertices (e.g. A, B, C, D) or labels.
+ */
+export function applyBoundingBoxPadding(
+  box_2d: [number, number, number, number],
+  paddingRatio: number = 0.06
+): [number, number, number, number] {
+  const [ymin, xmin, ymax, xmax] = box_2d;
+  const normYmin = Math.min(ymin, ymax);
+  const normYmax = Math.max(ymin, ymax);
+  const normXmin = Math.min(xmin, xmax);
+  const normXmax = Math.max(xmin, xmax);
+
+  const boxW = normXmax - normXmin;
+  const boxH = normYmax - normYmin;
+  const padX = Math.max(8, Math.round(boxW * paddingRatio));
+  const padY = Math.max(8, Math.round(boxH * paddingRatio));
+
+  return [
+    Math.max(0, normYmin - padY),
+    Math.max(0, normXmin - padX),
+    Math.min(1000, normYmax + padY),
+    Math.min(1000, normXmax + padX)
+  ];
+}
+
+/**
  * Crops a bounding box [ymin, xmin, ymax, xmax] (normalized 0..1000)
  * directly from an in-memory HTMLCanvasElement or HTMLImageElement
  * without uploading to Cloudinary.
@@ -19,7 +47,8 @@ export interface IBox2dCropResult {
  */
 export async function cropBoundingBoxToBlob(
   source: HTMLCanvasElement | HTMLImageElement,
-  box_2d: [number, number, number, number]
+  box_2d: [number, number, number, number],
+  paddingRatio: number = 0
 ): Promise<IBox2dCropResult> {
   const sourceWidth = source instanceof HTMLCanvasElement ? source.width : source.naturalWidth;
   const sourceHeight = source instanceof HTMLCanvasElement ? source.height : source.naturalHeight;
@@ -28,7 +57,8 @@ export async function cropBoundingBoxToBlob(
     throw new Error('Invalid source dimensions for box_2d cropping');
   }
 
-  const [ymin, xmin, ymax, xmax] = box_2d;
+  const effectiveBox = paddingRatio > 0 ? applyBoundingBoxPadding(box_2d, paddingRatio) : box_2d;
+  const [ymin, xmin, ymax, xmax] = effectiveBox;
 
   // Normalize coordinates in case AI returns inverted bounding coordinates
   const normYmin = Math.min(ymin, ymax);

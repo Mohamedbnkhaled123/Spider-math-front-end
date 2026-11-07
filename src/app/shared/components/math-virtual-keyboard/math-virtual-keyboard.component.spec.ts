@@ -54,6 +54,23 @@ describe('MathVirtualKeyboardComponent', () => {
     expect(component.activeCategory()).toBe('CALCULUS');
   });
 
+  it('should render numeric keys (0-9) and allow inserting digits into target input', () => {
+    expect(component.numericKeys().length).toBe(15);
+    expect(component.numericKeys().some(k => k.value === '7')).toBeTrue();
+    expect(component.numericKeys().some(k => k.value === '0')).toBeTrue();
+
+    inputEl.value = 'x = ';
+    inputEl.selectionStart = 4;
+    inputEl.selectionEnd = 4;
+
+    fixture.componentRef.setInput('targetInput', inputEl);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.detectChanges();
+
+    component.insertSymbol('5');
+    expect(inputEl.value).toBe('x = $5$');
+  });
+
   it('should auto-wrap in $...$ when inserting symbol outside math mode', () => {
     inputEl.value = 'أوجد ';
     inputEl.selectionStart = 5;

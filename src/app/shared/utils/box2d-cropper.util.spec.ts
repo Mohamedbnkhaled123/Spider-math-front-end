@@ -1,6 +1,21 @@
-import { cropBoundingBoxToBlob } from './box2d-cropper.util';
+import { cropBoundingBoxToBlob, applyBoundingBoxPadding } from './box2d-cropper.util';
 
 describe('box2d-cropper.util', () => {
+  it('should apply breathing margin padding to bounding box and clamp to 0..1000', () => {
+    // Box: [200, 200, 400, 400], width=200, height=200. 6% padding = 12 units
+    const padded = applyBoundingBoxPadding([200, 200, 400, 400], 0.06);
+    expect(padded[0]).toBe(188); // 200 - 12
+    expect(padded[1]).toBe(188); // 200 - 12
+    expect(padded[2]).toBe(412); // 400 + 12
+    expect(padded[3]).toBe(412); // 400 + 12
+
+    // Clamping at boundary: [0, 0, 990, 990]
+    const clamped = applyBoundingBoxPadding([0, 0, 990, 990], 0.1);
+    expect(clamped[0]).toBe(0);
+    expect(clamped[1]).toBe(0);
+    expect(clamped[2]).toBe(1000);
+    expect(clamped[3]).toBe(1000);
+  });
   it('should crop a bounding box accurately from an HTMLCanvasElement', async () => {
     // Create a 1000x1000 test canvas
     const canvas = document.createElement('canvas');

@@ -92,6 +92,7 @@ export class QuizCacheService implements OnDestroy {
           const sanitizedQuestions: CachedQuestion[] = questionsList.map((q: any, idx: number) => ({
             _id: q._id || `q_${idx}`,
             question_order: q.question_order ?? q.order ?? idx + 1,
+            question_type: q.question_type || q.questionType || q.type || ((q.options && q.options.length > 0) ? 'MCQ' : 'ESSAY'),
             question_text_ar: q.question_text_ar || q.question_text || q.textAr || '',
             question_text_en: q.question_text_en || q.textEn || '',
             question_image_url: q.question_image_url || q.questionImageUrl || null,

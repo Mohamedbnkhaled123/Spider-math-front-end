@@ -110,6 +110,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q1',
         checked: true,
         question_text: '$x^2 + 1 = 0$',
+        type: 'MCQ',
         options: ['1', '2', '3', '4'],
         correct_option_index: 0,
         points: 1,
@@ -119,6 +120,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q2',
         checked: true,
         question_text: '$\\int_0^1 x dx$',
+        type: 'MCQ',
         options: ['1/2', '1', '2', '0'],
         correct_option_index: 0,
         points: 2,
@@ -145,6 +147,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q1',
         checked: true,
         question_text: '$\\triangle ABC$',
+        type: 'MCQ',
         options: ['A', 'B', 'C', 'D'],
         correct_option_index: 1,
         points: 1,
@@ -173,6 +176,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q1',
         checked: true,
         question_text: 'Question 1',
+        type: 'ESSAY',
         options: [],
         correct_option_index: 0,
         points: 1,
@@ -182,6 +186,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q2',
         checked: true,
         question_text: 'Question 2',
+        type: 'ESSAY',
         options: [],
         correct_option_index: 0,
         points: 1,
@@ -204,6 +209,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q1',
         checked: true,
         question_text: 'Geometry question',
+        type: 'ESSAY',
         options: [],
         correct_option_index: 0,
         points: 2,
@@ -267,6 +273,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q1',
         checked: true,
         question_text: 'نص السؤال الأول $x$',
+        type: 'MCQ',
         options: ['1', '2', '3', '4'],
         correct_option_index: 0,
         points: 2,
@@ -276,6 +283,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q2',
         checked: false, // Unchecked: must NOT be inserted!
         question_text: 'نص السؤال الثاني',
+        type: 'ESSAY',
         options: [],
         correct_option_index: 0,
         points: 1,
@@ -345,6 +353,7 @@ describe('AiQuestionExtractionModalComponent', () => {
         id: 'q_test_idx',
         checked: true,
         question_text: 'MCQ with empty option',
+        type: 'MCQ',
         // Option 0 is empty, correct choice was originally Option 2 ("Choice C")
         options: ['', 'Choice B', 'Choice C', 'Choice D'],
         correct_option_index: 2,
@@ -361,5 +370,72 @@ describe('AiQuestionExtractionModalComponent', () => {
     expect(q.options).toEqual(['Choice B', 'Choice C', 'Choice D']);
     // "Choice C" is at index 1 in trimmed options, so correctOptionIndex must be 1!
     expect(q.options[q.correctOptionIndex]).toBe('Choice C');
+  });
+
+  it('should toggle question type between MCQ and ESSAY', () => {
+    const q: IStagedQuestion = {
+      id: 'q_toggle',
+      checked: true,
+      question_text: 'مسألة مقالية بدون خيارات',
+      type: 'MCQ',
+      options: ['A', 'B', 'C', 'D'],
+      correct_option_index: 0,
+      points: 2,
+      has_geometry_diagram: false
+    };
+    component.stagedQuestions.set([q]);
+
+    component.setQuestionType(component.stagedQuestions()[0], 'ESSAY');
+    expect(component.stagedQuestions()[0].type).toBe('ESSAY');
+
+    component.setQuestionType(component.stagedQuestions()[0], 'MCQ');
+    expect(component.stagedQuestions()[0].type).toBe('MCQ');
+  });
+
+  it('should show confirmation dialog before deleting question from staging', () => {
+    const q: IStagedQuestion = {
+      id: 'q_del',
+      checked: true,
+      question_text: 'سؤال للتجربة',
+      type: 'MCQ',
+      options: ['1', '2'],
+      correct_option_index: 0,
+      points: 1,
+      has_geometry_diagram: false
+    };
+    component.stagedQuestions.set([q]);
+
+    component.promptDeleteQuestion('q_del');
+    expect(component.confirmationDialog()).not.toBeNull();
+    expect(component.confirmationDialog()?.title).toContain('تأكيد حذف');
+
+    // Confirm deletion
+    component.confirmationDialog()?.onConfirm();
+    expect(component.stagedQuestions().length).toBe(0);
+    expect(component.confirmationDialog()).toBeNull();
+  });
+
+  it('should show confirmation dialog before removing cropped diagram', () => {
+    const q: IStagedQuestion = {
+      id: 'q_diag',
+      checked: true,
+      question_text: 'سؤال برسم',
+      type: 'MCQ',
+      options: ['1', '2'],
+      correct_option_index: 0,
+      points: 1,
+      has_geometry_diagram: true,
+      localCropPreviewUrl: 'data:image/webp;base64,diag'
+    };
+    component.stagedQuestions.set([q]);
+
+    component.promptRemoveCroppedImage(component.stagedQuestions()[0]);
+    expect(component.confirmationDialog()).not.toBeNull();
+    expect(component.confirmationDialog()?.title).toContain('الرسم الهندسي');
+
+    // Confirm diagram removal
+    component.confirmationDialog()?.onConfirm();
+    expect(component.stagedQuestions()[0].has_geometry_diagram).toBeFalse();
+    expect(component.stagedQuestions()[0].localCropPreviewUrl).toBeNull();
   });
 });

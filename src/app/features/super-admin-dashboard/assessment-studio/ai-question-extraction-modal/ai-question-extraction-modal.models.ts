@@ -12,6 +12,7 @@ export interface IStagedQuestion {
   checked: boolean;
   pageNumber?: number;
   question_text: string;
+  type: 'MCQ' | 'ESSAY';
   options: string[];
   correct_option_index: number;
   points: number;
@@ -20,6 +21,14 @@ export interface IStagedQuestion {
   localCropBlob?: Blob | null;
   localCropPreviewUrl?: string | null;
   question_image_url?: string | null;
+}
+
+export interface IConfirmationDialogState {
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  onConfirm: () => void;
 }
 
 export interface ICachedFileSession {

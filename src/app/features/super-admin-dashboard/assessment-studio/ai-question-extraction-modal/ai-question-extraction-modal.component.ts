@@ -22,14 +22,15 @@ import { PdfPageViewerComponent } from '../../../../shared/components/pdf-page-v
 import { IPdfPageRenderEvent } from '../../../../shared/components/pdf-page-viewer/pdf-page-viewer.models';
 import { ManualImageSlicerModalComponent } from '../../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
 import { ISliceResult } from '../../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
-import { cropBoundingBoxToBlob, uploadBlobToCloudinary } from '../../../../shared/utils/box2d-cropper.util';
+import { cropBoundingBoxToBlob, uploadBlobToCloudinary, applyBoundingBoxPadding } from '../../../../shared/utils/box2d-cropper.util';
 import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
 import { AssessmentQuestionItem } from '../assessment-studio.models';
 import {
   AiExtractionMode,
   IStagedQuestion,
   ICachedFileSession,
-  IAiExtractionBackendResponse
+  IAiExtractionBackendResponse,
+  IConfirmationDialogState
 } from './ai-question-extraction-modal.models';
 
 @Component({
@@ -87,6 +88,7 @@ export class AiQuestionExtractionModalComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly stagedQuestions = signal<IStagedQuestion[]>([]);
   readonly isInserting = signal<boolean>(false);
+  readonly confirmationDialog = signal<IConfirmationDialogState | null>(null);
 
   // Slicer Modal State for Staging
   readonly isSlicerOpen = signal<boolean>(false);
@@ -343,10 +345,13 @@ export class AiQuestionExtractionModalComponent {
         const rawQ = rawQuestions[i];
         let localCropBlob: Blob | null = null;
         let localCropPreviewUrl: string | null = null;
+        let effectiveBox = rawQ.box_2d;
 
-        if (rawQ.box_2d && this.currentCanvas && isPlatformBrowser(this.platformId)) {
+        if (effectiveBox && this.currentCanvas && isPlatformBrowser(this.platformId)) {
           try {
-            const cropRes = await cropBoundingBoxToBlob(this.currentCanvas, rawQ.box_2d);
+            // Apply generous safe margin padding (6%) so corner labels (A, B, C, D) are never cut off
+            effectiveBox = applyBoundingBoxPadding(effectiveBox, 0.06);
+            const cropRes = await cropBoundingBoxToBlob(this.currentCanvas, effectiveBox);
             localCropBlob = cropRes.blob;
             localCropPreviewUrl = cropRes.dataUrl;
           } catch (cropErr) {
@@ -354,16 +359,22 @@ export class AiQuestionExtractionModalComponent {
           }
         }
 
+        const validRawOptions = Array.isArray(rawQ.options)
+          ? rawQ.options.map((o) => (o || '').trim()).filter((o) => o.length > 0)
+          : [];
+        const isActuallyMcq = validRawOptions.length >= 2;
+
         stagedList.push({
           id: `staged_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}`,
           checked: true,
           pageNumber: this.currentPageNumber(),
           question_text: rawQ.question_text || '',
-          options: Array.isArray(rawQ.options) && rawQ.options.length > 0 ? [...rawQ.options] : ['', '', '', ''],
+          type: isActuallyMcq ? 'MCQ' : 'ESSAY',
+          options: isActuallyMcq ? [...rawQ.options] : ['', '', '', ''],
           correct_option_index: rawQ.correct_option_index ?? 0,
           points: rawQ.points > 0 ? rawQ.points : 1,
-          has_geometry_diagram: Boolean(rawQ.has_geometry_diagram),
-          box_2d: rawQ.box_2d,
+          has_geometry_diagram: Boolean(rawQ.has_geometry_diagram) || Boolean(effectiveBox),
+          box_2d: effectiveBox,
           localCropBlob,
           localCropPreviewUrl,
           question_image_url: null
@@ -411,8 +422,42 @@ export class AiQuestionExtractionModalComponent {
     );
   }
 
+  promptDeleteQuestion(id: string): void {
+    this.confirmationDialog.set({
+      title: this.langService.isArabic() ? 'تأكيد حذف السؤال' : 'Confirm Question Deletion',
+      message: this.langService.isArabic()
+        ? 'هل أنت متأكدة من رغبتك في استبعاد هذا السؤال من منطقة المراجعة؟ لن يتم إدراجه في الامتحان.'
+        : 'Are you sure you want to remove this question from staging? It will not be added to the assessment.',
+      confirmText: this.langService.isArabic() ? 'نعم، احذف السؤال' : 'Yes, Delete',
+      cancelText: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      onConfirm: () => {
+        this.deleteStagedQuestion(id);
+        this.confirmationDialog.set(null);
+      }
+    });
+  }
+
   deleteStagedQuestion(id: string): void {
     this.stagedQuestions.update((list) => list.filter((q) => q.id !== id));
+  }
+
+  promptRemoveCroppedImage(q: IStagedQuestion): void {
+    this.confirmationDialog.set({
+      title: this.langService.isArabic() ? 'تأكيد إزالة الرسم الهندسي' : 'Confirm Diagram Removal',
+      message: this.langService.isArabic()
+        ? 'هل أنت متأكدة من إزالة هذا الرسم الهندسي المقصوص من السؤال؟'
+        : 'Are you sure you want to remove the cropped diagram from this question?',
+      confirmText: this.langService.isArabic() ? 'نعم، إزالة الرسم' : 'Yes, Remove',
+      cancelText: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      onConfirm: () => {
+        this.removeCroppedImage(q);
+        this.confirmationDialog.set(null);
+      }
+    });
+  }
+
+  closeConfirmation(): void {
+    this.confirmationDialog.set(null);
   }
 
   removeCroppedImage(q: IStagedQuestion): void {
@@ -424,11 +469,21 @@ export class AiQuestionExtractionModalComponent {
               localCropBlob: null,
               localCropPreviewUrl: null,
               question_image_url: null,
+              has_geometry_diagram: false,
               box_2d: undefined
             }
           : item
       )
     );
+  }
+
+  setQuestionType(q: IStagedQuestion, type: 'MCQ' | 'ESSAY'): void {
+    q.type = type;
+    if (type === 'MCQ' && (!q.options || q.options.length === 0)) {
+      q.options = ['', '', '', ''];
+    }
+    this.stagedQuestions.update((list) => [...list]);
+    this.cdr.markForCheck();
   }
 
   openManualSlicerForQuestion(q: IStagedQuestion): void {
@@ -446,6 +501,7 @@ export class AiQuestionExtractionModalComponent {
         item.id === activeQ.id
           ? {
               ...item,
+              has_geometry_diagram: true,
               localCropBlob: result.blob,
               localCropPreviewUrl: result.dataUrl,
               question_image_url: null
@@ -456,6 +512,7 @@ export class AiQuestionExtractionModalComponent {
 
     this.isSlicerOpen.set(false);
     this.activeSlicingQuestion.set(null);
+    this.cdr.markForCheck();
   }
 
   onSlicerCancelled(): void {
@@ -516,15 +573,17 @@ export class AiQuestionExtractionModalComponent {
           q.question_image_url = finalImageUrl;
         }
 
-        const rawSelectedOptionText =
-          q.options && typeof q.correct_option_index === 'number'
-            ? (q.options[q.correct_option_index] || '').trim()
-            : '';
-        const validOptions = (q.options || []).map((o) => o.trim()).filter((o) => o.length > 0);
-        const isMcq = validOptions.length > 0;
+        const isMcq = q.type === 'MCQ';
+        const validOptions = isMcq
+          ? (q.options || []).map((o) => o.trim()).filter((o) => o.length > 0)
+          : [];
         let finalCorrectIndex = 0;
 
-        if (isMcq) {
+        if (isMcq && validOptions.length > 0) {
+          const rawSelectedOptionText =
+            q.options && typeof q.correct_option_index === 'number'
+              ? (q.options[q.correct_option_index] || '').trim()
+              : '';
           const mappedIdx = validOptions.indexOf(rawSelectedOptionText);
           finalCorrectIndex =
             mappedIdx !== -1
@@ -535,7 +594,7 @@ export class AiQuestionExtractionModalComponent {
         finalQuestions.push({
           id: `q_ai_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
           order: 0, // Sequentially assigned by AssessmentStudio parent
-          type: isMcq ? 'MCQ' : 'ESSAY',
+          type: q.type,
           textAr: q.question_text.trim() || (finalImageUrl ? 'سؤال مصور من الملف' : ''),
           questionImageUrl: finalImageUrl,
           options: validOptions,

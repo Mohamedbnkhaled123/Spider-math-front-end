@@ -1,10 +1,10 @@
 @if (isOpen()) {
   <!-- Backdrop Overlay (Optional light click-off on desktop) -->
-  <div class="keyboard-backdrop fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] transition-opacity" (click)="close()"></div>
+  <div class="keyboard-backdrop fixed inset-0 z-[140] bg-black/25 backdrop-blur-[2px] transition-opacity" (click)="close()"></div>
 
   <!-- Docked Bottom Sheet Container -->
   <aside
-    class="math-keyboard-sheet fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t border-x border-surface-border bg-surface-card backdrop-blur-2xl shadow-2xl p-3 sm:p-5 space-y-3 animate-slide-up max-h-[85vh] overflow-y-auto"
+    class="math-keyboard-sheet fixed bottom-0 left-0 right-0 z-[150] rounded-t-3xl border-t border-x border-surface-border bg-surface-card backdrop-blur-2xl shadow-2xl p-3 sm:p-5 space-y-3 animate-slide-up max-h-[85vh] overflow-y-auto"
     role="region"
     aria-label="Math Virtual Keyboard"
   >
@@ -88,6 +88,27 @@
       >
         {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
       </button>
+    </div>
+
+    <!-- Dedicated Numbers Keypad (Always Visible) -->
+    <div class="p-1.5 sm:p-2 rounded-2xl bg-surface-bg border border-surface-border space-y-1">
+      <div class="flex items-center justify-between px-1 text-[10px] font-bold text-text-muted">
+        <span>{{ langService.isArabic() ? 'الأرقام والعمليات الرياضية السريعة (0 - 9):' : 'Numeric Keypad (0 - 9 & Operators):' }}</span>
+      </div>
+      <div class="grid grid-cols-5 sm:grid-cols-15 gap-1 sm:gap-1.5">
+        @for (num of numericKeys(); track num.value) {
+          <button
+            type="button"
+            (pointerdown)="preventFocusLoss($event)"
+            (touchstart)="preventFocusLoss($event)"
+            (click)="insertSymbol(num.value, 0)"
+            class="h-9 sm:h-10 rounded-xl border border-surface-border bg-surface-card hover:bg-brand-primary/15 hover:border-brand-primary/40 text-text-primary text-xs sm:text-sm font-black font-mono flex items-center justify-center transition-all duration-150 select-none cursor-pointer active:scale-95 shadow-sm"
+            [attr.aria-label]="num.ariaLabel || num.label"
+          >
+            {{ num.label }}
+          </button>
+        }
+      </div>
     </div>
 
     <!-- Category Tabs Switcher -->

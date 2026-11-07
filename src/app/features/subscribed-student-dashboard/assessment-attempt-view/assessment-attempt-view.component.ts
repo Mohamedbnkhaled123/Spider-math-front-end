@@ -136,7 +136,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
             })),
             points: q.points || 1,
             requiresDesmos: !!q.requires_desmos,
-            type: (q.options && q.options.length > 0) ? 'MCQ' : 'ESSAY'
+            type: (q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' || !q.options || q.options.length === 0) ? 'ESSAY' : 'MCQ'
           }));
 
           this.bundle.set({

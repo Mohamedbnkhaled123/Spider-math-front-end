@@ -456,9 +456,31 @@
                           {{ langService.isArabic() ? ('ص ' + q.pageNumber) : ('p. ' + q.pageNumber) }}
                         </span>
                       }
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted">
-                        {{ q.options.length > 0 ? (langService.isArabic() ? 'اختيار من متعدد' : 'MCQ') : (langService.isArabic() ? 'سؤال مقالي' : 'Essay') }}
-                      </span>
+                      <!-- Question Type Toggle Pill -->
+                      <div class="flex items-center rounded-xl bg-surface-bg p-0.5 border border-surface-border">
+                        <button
+                          type="button"
+                          (click)="setQuestionType(q, 'MCQ')"
+                          class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                          [class.bg-brand-primary]="q.type === 'MCQ'"
+                          [class.text-white]="q.type === 'MCQ'"
+                          [class.text-text-muted]="q.type !== 'MCQ'"
+                        >
+                          <app-icon name="check-circle" [size]="12" />
+                          <span>{{ langService.isArabic() ? 'اختيار من متعدد' : 'MCQ' }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setQuestionType(q, 'ESSAY')"
+                          class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                          [class.bg-brand-primary]="q.type === 'ESSAY'"
+                          [class.text-white]="q.type === 'ESSAY'"
+                          [class.text-text-muted]="q.type !== 'ESSAY'"
+                        >
+                          <app-icon name="edit" [size]="12" />
+                          <span>{{ langService.isArabic() ? 'سؤال مقالي' : 'Essay' }}</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -475,10 +497,10 @@
                         />
                       </div>
 
-                      <!-- Delete Question from Staging -->
+                      <!-- Delete Question from Staging with Confirmation Dialog -->
                       <button
                         type="button"
-                        (click)="deleteStagedQuestion(q.id)"
+                        (click)="promptDeleteQuestion(q.id)"
                         class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
                         [title]="langService.isArabic() ? 'استبعاد هذا السؤال' : 'Remove this question'"
                       >
@@ -547,7 +569,7 @@
 
                           <button
                             type="button"
-                            (click)="removeCroppedImage(q)"
+                            (click)="promptRemoveCroppedImage(q)"
                             class="p-1 rounded-lg text-text-muted hover:text-rose-500 transition-all cursor-pointer"
                             [title]="langService.isArabic() ? 'حذف الرسم المرفق' : 'Remove diagram'"
                           >
@@ -579,8 +601,8 @@
                     </div>
                   }
 
-                  <!-- MCQ Options with Live KaTeX & Radio Correct Selector -->
-                  @if (q.options && q.options.length > 0) {
+                  <!-- MCQ Options vs Essay Display -->
+                  @if (q.type === 'MCQ') {
                     <div class="space-y-2 pt-2 border-t border-surface-border">
                       <label class="font-bold text-text-secondary text-[11px] block">
                         {{ langService.isArabic() ? 'خيارات الإجابة (حددي الإجابة الصحيحة بالضغط على الدائرة):' : 'Answer Options (Select correct choice radio):' }}
@@ -634,6 +656,19 @@
                             }
                           </div>
                         }
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Essay Mode Notice: Choices not required -->
+                    <div class="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-start gap-2.5 pt-2 border-t border-surface-border">
+                      <app-icon name="alert-circle" [size]="16" className="text-brand-primary mt-0.5 shrink-0" />
+                      <div class="text-xs">
+                        <span class="font-bold text-text-primary">
+                          {{ langService.isArabic() ? 'سؤال مقالي أو بياني (بدون اختيارات):' : 'Written / Essay Question (No options):' }}
+                        </span>
+                        <p class="text-text-secondary mt-0.5 leading-relaxed text-[11px]">
+                          {{ langService.isArabic() ? 'هذا السؤال مقالي، لا يشترط إضافة اختيارات. يستطيع الطالب كتابة خطوات الحل أو التقاط ورفع صورة كشكول الحل بالكاميرا كإجابة معتمدة لتصحيحها من المعلمة.' : 'Essay question allows students to write steps or upload handwritten solution photos for manual teacher grading.' }}
+                        </p>
                       </div>
                     </div>
                   }
@@ -715,7 +750,7 @@
   <app-manual-image-slicer-modal
     [isOpen]="isSlicerOpen()"
     (isOpenChange)="isSlicerOpen.set($event)"
-    [imageSource]="currentCanvas || currentDataUrl()"
+    [imageSource]="currentDataUrl() || currentCanvas"
     [initialBox2d]="slicerInitialBox2d()"
     [uploadToCloudinary]="false"
     modalTitle="تعديل مساحة القص للرسم الهندسي"
@@ -730,5 +765,45 @@
     [targetInput]="activeMathKeyboardInput()"
     (valueChange)="onMathKeyboardValueChange($event)"
   />
+
+  <!-- DELETE / REMOVE CONFIRMATION DIALOG MODAL -->
+  @if (confirmationDialog(); as dialog) {
+    <div
+      class="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      (click)="closeConfirmation()"
+    >
+      <div
+        class="w-full max-w-md rounded-2xl bg-surface-card border border-rose-500/30 p-5 shadow-2xl space-y-4 animate-scale-up"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center shrink-0">
+            <app-icon name="alert-triangle" [size]="20" />
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-text-primary">{{ dialog.title }}</h4>
+            <p class="text-xs text-text-muted mt-0.5 leading-relaxed">{{ dialog.message }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-border">
+          <button
+            type="button"
+            (click)="closeConfirmation()"
+            class="px-4 py-2 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold text-xs transition-all cursor-pointer"
+          >
+            {{ dialog.cancelText }}
+          </button>
+          <button
+            type="button"
+            (click)="dialog.onConfirm()"
+            class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs transition-all cursor-pointer shadow-sm"
+          >
+            {{ dialog.confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 }
 

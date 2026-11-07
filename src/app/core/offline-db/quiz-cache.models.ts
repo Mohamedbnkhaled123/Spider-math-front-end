@@ -16,6 +16,7 @@ export interface CachedQuestionOption {
 export interface CachedQuestion {
   _id: string;
   question_order: number;
+  question_type?: string;
   question_text_ar: string;
   question_text_en: string;
   question_image_url?: string;
