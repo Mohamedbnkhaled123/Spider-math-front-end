@@ -1132,15 +1132,52 @@
           <!-- TAB 2: QUESTIONS BANK -->
           @if (editorActiveTab() === 'QUESTIONS') {
             <div class="space-y-6 animate-fade-in">
-              <!-- Add Question Card -->
-              <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-4">
+              <!-- Question Composer Card (Add / Edit) -->
+              <div
+                id="questionComposerSection"
+                class="p-4 sm:p-5 rounded-2xl border space-y-4 transition-all duration-200"
+                [class.border-surface-border]="!editingQuestionId()"
+                [class.bg-surface-bg/50]="!editingQuestionId()"
+                [class.border-amber-500]="editingQuestionId()"
+                [class.bg-amber-500/5]="editingQuestionId()"
+                [class.ring-2]="editingQuestionId()"
+                [class.ring-amber-500/20]="editingQuestionId()"
+              >
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <h4 class="font-black text-text-primary flex items-center gap-2">
-                    <app-icon name="plus" [size]="14" className="text-brand-primary" />
-                    <span>{{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان' : 'Add New Question to Assessment' }}</span>
-                  </h4>
+                  <div class="flex items-center gap-2">
+                    <h4
+                      class="font-black flex items-center gap-2 text-sm"
+                      [class.text-amber-500]="editingQuestionId()"
+                      [class.text-text-primary]="!editingQuestionId()"
+                    >
+                      @if (editingQuestionId()) {
+                        <app-icon name="edit" [size]="16" className="text-amber-500" />
+                        <span>{{ langService.isArabic() ? 'تعديل السؤال الحالي بالامتحان' : 'Edit Question in Assessment' }}</span>
+                      } @else {
+                        <app-icon name="plus" [size]="16" className="text-brand-primary" />
+                        <span>{{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان' : 'Add New Question to Assessment' }}</span>
+                      }
+                    </h4>
+                    @if (editingQuestionId()) {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                        {{ langService.isArabic() ? 'وضع التعديل' : 'Edit Mode' }}
+                      </span>
+                    }
+                  </div>
 
                   <div class="flex items-center gap-2 w-full sm:w-auto">
+                    @if (editingQuestionId()) {
+                      <button
+                        type="button"
+                        (click)="cancelQuestionEdit()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 transition-all cursor-pointer flex items-center gap-1"
+                        [title]="langService.isArabic() ? 'إلغاء التعديل والعودة لإضافة سؤال جديد' : 'Cancel edit and return to add mode'"
+                      >
+                        <app-icon name="x" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'إلغاء التعديل' : 'Cancel Edit' }}</span>
+                      </button>
+                    }
+
                     <button
                       type="button"
                       (click)="newQuestionType.set('MCQ')"
@@ -1186,6 +1223,19 @@
                     [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... (يمكن كتابة $معادلة$)' : 'Type problem text or equation prompt here... (e.g. $x^2$)'"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                   ></textarea>
+
+                  <!-- Real-time Live KaTeX preview while typing question text -->
+                  @if (newQuestionTextAr().trim()) {
+                    <div class="mt-2 p-3 rounded-xl border border-brand-primary/25 bg-brand-primary/5 space-y-1.5 animate-fade-in">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-brand-primary">
+                        <app-icon name="eye" [size]="13" />
+                        <span>{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-surface-bg/90 border border-surface-border text-xs text-text-primary leading-relaxed overflow-x-auto">
+                        <app-math-formula [text]="newQuestionTextAr()" />
+                      </div>
+                    </div>
+                  }
                 </div>
 
                 <!-- Question Image Uploader Component (WebP Auto-Compression) -->
@@ -1196,6 +1246,19 @@
                     [existingImageUrl]="newQuestionImageUrl()"
                     (imageUploaded)="onQuestionImageUploaded($event)"
                   />
+                  @if (newQuestionImageUrl()) {
+                    <div class="relative mt-2 inline-block">
+                      <img [src]="newQuestionImageUrl()" [alt]="langService.isArabic() ? 'صورة المسألة المرفقة' : 'Question image preview'" class="max-h-40 rounded-xl border border-surface-border object-contain bg-surface-bg p-1" />
+                      <button
+                        type="button"
+                        (click)="newQuestionImageUrl.set(null)"
+                        class="absolute -top-2 -start-2 p-1.5 rounded-full bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-md cursor-pointer"
+                        [title]="langService.isArabic() ? 'حذف صورة المسألة' : 'Remove question image'"
+                      >
+                        <app-icon name="trash" [size]="12" />
+                      </button>
+                    </div>
+                  }
                 </div>
 
                 <!-- MCQ 4 Choices Builder -->
@@ -1206,31 +1269,43 @@
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       @for (opt of newQuestionOptions(); track $index) {
-                        <div class="flex items-center gap-2 p-2 rounded-xl border border-surface-border bg-surface-card">
-                          <input
-                            type="radio"
-                            name="correctChoice"
-                            [checked]="newQuestionCorrectIndex() === $index"
-                            (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
-                            class="accent-brand-primary cursor-pointer w-4 h-4 shrink-0"
-                            [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
-                          />
-                          <input
-                            #optInput
-                            type="text"
-                            [value]="opt"
-                            (input)="updateOption($index, $any($event.target).value)"
-                            [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
-                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
-                          />
-                          <button
-                            type="button"
-                            (click)="openMathKeyboard(optInput)"
-                            class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer shrink-0"
-                            [title]="langService.isArabic() ? 'إدراج رموز رياضية في هذا الخيار' : 'Insert math symbols into this option'"
-                          >
-                            <app-icon name="calculator" [size]="13" />
-                          </button>
+                        <div class="flex flex-col gap-1.5 p-2 rounded-xl border border-surface-border bg-surface-card transition-all">
+                          <div class="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="correctChoice"
+                              [checked]="newQuestionCorrectIndex() === $index"
+                              (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
+                              class="accent-brand-primary cursor-pointer w-4 h-4 shrink-0"
+                              [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
+                            />
+                            <input
+                              #optInput
+                              type="text"
+                              [value]="opt"
+                              (input)="updateOption($index, $any($event.target).value)"
+                              [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
+                              class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
+                            />
+                            <button
+                              type="button"
+                              (click)="openMathKeyboard(optInput)"
+                              class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer shrink-0"
+                              [title]="langService.isArabic() ? 'إدراج رموز رياضية في هذا الخيار' : 'Insert math symbols into this option'"
+                            >
+                              <app-icon name="calculator" [size]="13" />
+                            </button>
+                          </div>
+
+                          <!-- Real-time Live KaTeX preview for option -->
+                          @if (opt.trim()) {
+                            <div class="px-2.5 py-1.5 rounded-lg bg-surface-bg border border-surface-border/70 text-xs text-text-primary flex items-center justify-between gap-2 overflow-x-auto">
+                              <span class="text-[10px] text-text-muted shrink-0">{{ langService.isArabic() ? 'معاينة فورية:' : 'Live Preview:' }}</span>
+                              <div class="flex-1 text-start ps-2 overflow-x-auto">
+                                <app-math-formula [text]="opt" />
+                              </div>
+                            </div>
+                          }
                         </div>
                       }
                     </div>
@@ -1271,14 +1346,36 @@
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    (click)="addQuestion()"
-                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-bold bg-brand-primary hover:bg-brand-secondary transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <app-icon name="plus" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'إدراج السؤال بالامتحان' : 'Insert Question into Assessment' }}</span>
-                  </button>
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    @if (editingQuestionId()) {
+                      <button
+                        type="button"
+                        (click)="cancelQuestionEdit()"
+                        class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-text-muted hover:text-text-primary bg-surface-bg hover:bg-surface-border/50 border border-surface-border font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <app-icon name="x" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'إلغاء التعديل' : 'Cancel Edit' }}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="saveQuestion()"
+                        class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-white font-bold bg-amber-500 hover:bg-amber-600 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
+                      >
+                        <app-icon name="check" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'حفظ تعديلات السؤال' : 'Save Question Changes' }}</span>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        (click)="saveQuestion()"
+                        class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-bold bg-brand-primary hover:bg-brand-secondary transition-all cursor-pointer flex items-center justify-center gap-1.5 text-xs"
+                      >
+                        <app-icon name="plus" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'إدراج السؤال بالامتحان' : 'Insert Question into Assessment' }}</span>
+                      </button>
+                    }
+                  </div>
                 </div>
 
               </div>
@@ -1290,7 +1387,13 @@
                 </h4>
 
                 @for (q of asm.questions; track q.id) {
-                  <div class="p-4 rounded-2xl border border-surface-border bg-surface-card space-y-3">
+                  <div
+                    class="p-4 rounded-2xl border bg-surface-card space-y-3 transition-all"
+                    [class.border-surface-border]="editingQuestionId() !== q.id"
+                    [class.border-amber-500]="editingQuestionId() === q.id"
+                    [class.ring-1]="editingQuestionId() === q.id"
+                    [class.ring-amber-500/30]="editingQuestionId() === q.id"
+                  >
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <span class="w-6 h-6 rounded-lg bg-surface-bg border border-surface-border flex items-center justify-center font-mono font-bold text-xs text-text-primary">
@@ -1302,16 +1405,38 @@
                         <span class="font-bold text-emerald-500 font-mono text-xs">
                           {{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }}
                         </span>
+                        @if (editingQuestionId() === q.id) {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
+                            {{ langService.isArabic() ? 'قيد التعديل' : 'Editing' }}
+                          </span>
+                        }
                       </div>
 
-                      <button
-                        type="button"
-                        (click)="deleteQuestion(q.order)"
-                        class="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
-                        [title]="langService.isArabic() ? 'حذف السؤال' : 'Delete question'"
-                      >
-                        <app-icon name="trash" [size]="14" />
-                      </button>
+                      <div class="flex items-center gap-1">
+                        <button
+                          type="button"
+                          (click)="editQuestion(q)"
+                          class="p-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-xs"
+                          [class.text-amber-500]="editingQuestionId() === q.id"
+                          [class.bg-amber-500/15]="editingQuestionId() === q.id"
+                          [class.text-text-muted]="editingQuestionId() !== q.id"
+                          [class.hover:text-amber-500]="editingQuestionId() !== q.id"
+                          [class.hover:bg-amber-500/10]="editingQuestionId() !== q.id"
+                          [title]="langService.isArabic() ? 'تعديل السؤال' : 'Edit question'"
+                        >
+                          <app-icon name="edit" [size]="14" />
+                          <span class="text-[11px] font-bold hidden sm:inline">{{ langService.isArabic() ? 'تعديل' : 'Edit' }}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          (click)="deleteQuestion(q.order)"
+                          class="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
+                          [title]="langService.isArabic() ? 'حذف السؤال' : 'Delete question'"
+                        >
+                          <app-icon name="trash" [size]="14" />
+                        </button>
+                      </div>
                     </div>
 
                     <div class="text-xs text-text-primary leading-relaxed">

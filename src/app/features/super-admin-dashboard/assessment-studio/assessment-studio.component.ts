@@ -263,6 +263,7 @@ export class AssessmentStudioComponent implements OnInit {
   readonly newQuestionCorrectIndex = signal<number>(0);
   readonly newQuestionPoints = signal<number>(5);
   readonly newQuestionYoutubeUrl = signal<string>('');
+  readonly editingQuestionId = signal<string | null>(null);
 
   // Math Virtual Keyboard Integration
   readonly isMathKeyboardOpen = signal<boolean>(false);
@@ -314,7 +315,7 @@ export class AssessmentStudioComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.isLoading.set(false);
-        const raw = res?.data || [];
+        const raw = Array.isArray(res?.data) ? res.data : [];
         const items: AssessmentItem[] = raw.map((a: any) => {
           const fromIso = a.available_from ? new Date(a.available_from).toISOString() : null;
           const untilIso = a.available_until ? new Date(a.available_until).toISOString() : null;
@@ -673,11 +674,7 @@ export class AssessmentStudioComponent implements OnInit {
     this.editorActiveTab.set(initialTab);
     this.editorErrorMessage.set(null);
     this.autoRegradeWarning.set(false);
-    this.newQuestionTextAr.set('');
-    this.newQuestionImageUrl.set(null);
-    this.newQuestionOptions.set(['', '', '', '']);
-    this.newQuestionCorrectIndex.set(0);
-    this.newQuestionPoints.set(5);
+    this.resetQuestionForm();
     this.isEditorOpen.set(true);
   }
 
@@ -685,6 +682,7 @@ export class AssessmentStudioComponent implements OnInit {
     this.editorErrorMessage.set(null);
     this.isEditorOpen.set(false);
     this.activeAssessment.set(null);
+    this.resetQuestionForm();
   }
 
   setEditorTab(tab: 'SETTINGS' | 'QUESTIONS'): void {
@@ -711,20 +709,81 @@ export class AssessmentStudioComponent implements OnInit {
 
   updateOption(index: number, value: string): void {
     this.newQuestionOptions.update((opts) => {
-      const copy = [...opts];
+      const copy = opts.length === 4 ? [...opts] : [...opts, '', '', ''].slice(0, 4);
       copy[index] = value;
       return copy;
     });
   }
 
-  addQuestion(): void {
+  resetQuestionForm(): void {
+    this.editingQuestionId.set(null);
+    this.newQuestionType.set('MCQ');
+    this.newQuestionTextAr.set('');
+    this.newQuestionImageUrl.set(null);
+    this.newQuestionOptions.set(['', '', '', '']);
+    this.newQuestionCorrectIndex.set(0);
+    this.newQuestionPoints.set(5);
+    this.newQuestionYoutubeUrl.set('');
+  }
+
+  editQuestion(q: AssessmentQuestionItem): void {
+    this.editorActiveTab.set('QUESTIONS');
+    this.editingQuestionId.set(q.id);
+    this.newQuestionType.set(q.type === 'ESSAY_PHOTO' ? 'ESSAY' : q.type);
+    this.newQuestionTextAr.set(q.textAr || '');
+    this.newQuestionImageUrl.set(q.questionImageUrl || null);
+    const opts = q.options && q.options.length === 4
+      ? [...q.options]
+      : (q.options?.length ? [...q.options, '', '', ''].slice(0, 4) : ['', '', '', '']);
+    this.newQuestionOptions.set(opts);
+    this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
+    this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
+    this.newQuestionYoutubeUrl.set(q.youtubeSolutionUrl || '');
+
+    if (typeof document !== 'undefined') {
+      setTimeout(() => {
+        const composerEl = document.getElementById('questionComposerSection');
+        if (composerEl) {
+          composerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    }
+
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `جاري تعديل السؤال رقم ${q.order}`
+        : `Editing Question #${q.order}`,
+      type: 'warning'
+    });
+  }
+
+  cancelQuestionEdit(): void {
+    this.resetQuestionForm();
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم إلغاء التعديل' : 'Edit cancelled',
+      type: 'warning'
+    });
+  }
+
+  saveQuestion(): void {
+    if (this.editingQuestionId()) {
+      this.updateExistingQuestion();
+    } else {
+      this.addQuestion();
+    }
+  }
+
+  updateExistingQuestion(): void {
     const asm = this.activeAssessment();
-    if (!asm) return;
+    const editId = this.editingQuestionId();
+    if (!asm || !editId) return;
 
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
       this.toastTriggered.emit({
-        text: 'يرجى كتابة نص السؤال أو رفع صورة المسألة الرياضية!',
+        text: this.langService.isArabic()
+          ? 'يرجى كتابة نص السؤال أو رفع صورة المسألة الرياضية!'
+          : 'Please enter question text or upload a problem image!',
         type: 'error'
       });
       return;
@@ -737,7 +796,9 @@ export class AssessmentStudioComponent implements OnInit {
       // 1. Check for empty options
       if (trimmedOpts.some((o) => !o)) {
         this.toastTriggered.emit({
-          text: 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.',
+          text: this.langService.isArabic()
+            ? 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.'
+            : 'Warning: Cannot leave any answer option empty! Please fill all 4 options.',
           type: 'error'
         });
         return;
@@ -747,23 +808,114 @@ export class AssessmentStudioComponent implements OnInit {
       const uniqueOpts = new Set(trimmedOpts);
       if (uniqueOpts.size < trimmedOpts.length) {
         this.toastTriggered.emit({
-          text: 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.',
+          text: this.langService.isArabic()
+            ? 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.'
+            : 'Warning: Answer options cannot be identical! Please provide distinct options.',
           type: 'error'
         });
         return;
       }
     }
 
+    const questionIndex = asm.questions.findIndex((q) => q.id === editId);
+    if (questionIndex === -1) {
+      this.resetQuestionForm();
+      return;
+    }
+
+    const existingQ = asm.questions[questionIndex];
+    const points = Math.max(1, Math.min(50, Number(this.newQuestionPoints()) || 5));
+    const updatedQ: AssessmentQuestionItem = {
+      ...existingQ,
+      type: this.newQuestionType(),
+      textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
+      questionImageUrl: this.newQuestionImageUrl(),
+      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
+      correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
+      points,
+      youtubeSolutionUrl: (this.newQuestionYoutubeUrl() || '').trim() || null
+    };
+
+    const nextQuestions = [...asm.questions];
+    nextQuestions[questionIndex] = updatedQ;
+
+    const updatedAsm: AssessmentItem = {
+      ...asm,
+      questions: nextQuestions,
+      totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
+    };
+    this.activeAssessment.set(updatedAsm);
+
+    if (asm.submissionsCount > 0) {
+      this.autoRegradeWarning.set(true);
+    }
+
+    this.resetQuestionForm();
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم حفظ تعديلات السؤال بنجاح!' : 'Question changes saved successfully!',
+      type: 'success'
+    });
+  }
+
+  addQuestion(): void {
+    if (this.editingQuestionId()) {
+      this.updateExistingQuestion();
+      return;
+    }
+
+    const asm = this.activeAssessment();
+    if (!asm) return;
+
+    const text = this.newQuestionTextAr().trim();
+    if (!text && !this.newQuestionImageUrl()) {
+      this.toastTriggered.emit({
+        text: this.langService.isArabic()
+          ? 'يرجى كتابة نص السؤال أو رفع صورة المسألة الرياضية!'
+          : 'Please enter question text or upload a problem image!',
+        type: 'error'
+      });
+      return;
+    }
+
+    if (this.newQuestionType() === 'MCQ') {
+      const rawOpts = this.newQuestionOptions();
+      const trimmedOpts = rawOpts.map((o) => (o || '').trim());
+
+      // 1. Check for empty options
+      if (trimmedOpts.some((o) => !o)) {
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.'
+            : 'Warning: Cannot leave any answer option empty! Please fill all 4 options.',
+          type: 'error'
+        });
+        return;
+      }
+
+      // 2. Check for duplicate options (CRITICAL REQUIREMENT)
+      const uniqueOpts = new Set(trimmedOpts);
+      if (uniqueOpts.size < trimmedOpts.length) {
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.'
+            : 'Warning: Answer options cannot be identical! Please provide distinct options.',
+          type: 'error'
+        });
+        return;
+      }
+    }
+
+    const points = Math.max(1, Math.min(50, Number(this.newQuestionPoints()) || 5));
     const newQ: AssessmentQuestionItem = {
       id: `q_${Date.now()}`,
       order: asm.questions.length + 1,
       type: this.newQuestionType(),
-      textAr: text || 'مسألة رياضية مصورة',
+      textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
       questionImageUrl: this.newQuestionImageUrl(),
       options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
-      points: this.newQuestionPoints(),
-      youtubeSolutionUrl: this.newQuestionYoutubeUrl().trim() || null
+      points,
+      youtubeSolutionUrl: (this.newQuestionYoutubeUrl() || '').trim() || null
     };
 
     const nextQuestions = [...asm.questions, newQ];
@@ -774,13 +926,11 @@ export class AssessmentStudioComponent implements OnInit {
     };
     this.activeAssessment.set(updatedAsm);
 
-    // Reset Form
-    this.newQuestionTextAr.set('');
-    this.newQuestionImageUrl.set(null);
-    this.newQuestionOptions.set(['', '', '', '']);
-    this.newQuestionCorrectIndex.set(0);
-    this.newQuestionYoutubeUrl.set('');
-    this.toastTriggered.emit({ text: 'تمت إضافة السؤال بنجاح!', type: 'success' });
+    this.resetQuestionForm();
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تمت إضافة السؤال بنجاح!' : 'Question added successfully!',
+      type: 'success'
+    });
   }
 
   deleteQuestion(order: number): void {
@@ -799,7 +949,15 @@ export class AssessmentStudioComponent implements OnInit {
       'تأكيد حذف السؤال',
       `هل أنت متأكدة من حذف السؤال رقم ${order} من هذا الامتحان؟`,
       () => {
-        const filtered = asm.questions.filter((q) => q.order !== order);
+        const deletedQuestion = asm.questions.find((q) => q.order === order);
+        if (deletedQuestion && deletedQuestion.id === this.editingQuestionId()) {
+          this.resetQuestionForm();
+        }
+
+        const filtered = asm.questions
+          .filter((q) => q.order !== order)
+          .map((q, idx) => ({ ...q, order: idx + 1 }));
+
         this.activeAssessment.set({
           ...asm,
           questions: filtered,

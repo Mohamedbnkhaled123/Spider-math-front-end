@@ -10,7 +10,7 @@ export type SupportedLanguage = 'en' | 'ar';
 export class LangService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly document = inject(DOCUMENT);
-  private readonly translocoService = inject(TranslocoService);
+  private readonly translocoService = inject(TranslocoService, { optional: true });
 
   private readonly LANG_STORAGE_KEY = 'spider_math_lang';
 
@@ -29,7 +29,7 @@ export class LangService {
    */
   setLanguage(lang: SupportedLanguage): void {
     this.currentLang.set(lang);
-    this.translocoService.setActiveLang(lang);
+    this.translocoService?.setActiveLang(lang);
     this.applyDocumentDirection(lang);
 
     if (isPlatformBrowser(this.platformId)) {
