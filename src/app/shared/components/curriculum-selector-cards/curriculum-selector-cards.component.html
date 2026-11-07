@@ -430,18 +430,17 @@
 
           <!-- Filter Tabs (GRADES step) -->
           @if (modalStep() === 'GRADES') {
-            <div class="inline-flex items-center p-1 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold self-start sm:self-auto backdrop-blur-md">
+            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md">
               <button
                 type="button"
                 (click)="setStageFilter('ALL')"
                 class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="activeStageFilter() === 'ALL'"
-                [class.border]="activeStageFilter() === 'ALL'"
-                [class.border-amber-400/50]="activeStageFilter() === 'ALL'"
-                [class.text-amber-200]="activeStageFilter() === 'ALL'"
+                [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
+                [class.text-slate-950]="activeStageFilter() === 'ALL'"
                 [class.font-bold]="activeStageFilter() === 'ALL'"
-                [class.shadow-[0_0_12px_rgba(245,208,115,0.2)]]="activeStageFilter() === 'ALL'"
-                [class.text-white/60]="activeStageFilter() !== 'ALL'"
+                [class.shadow-sm]="activeStageFilter() === 'ALL'"
+                [class.text-text-secondary]="activeStageFilter() !== 'ALL'"
+                [class.hover:text-text-primary]="activeStageFilter() !== 'ALL'"
               >
                 {{ langService.isArabic() ? 'جميع المراحل' : 'All Stages' }}
               </button>
@@ -449,13 +448,12 @@
                 type="button"
                 (click)="setStageFilter('PRIMARY')"
                 class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="activeStageFilter() === 'PRIMARY'"
-                [class.border]="activeStageFilter() === 'PRIMARY'"
-                [class.border-amber-400/50]="activeStageFilter() === 'PRIMARY'"
-                [class.text-amber-200]="activeStageFilter() === 'PRIMARY'"
+                [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
+                [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                 [class.font-bold]="activeStageFilter() === 'PRIMARY'"
-                [class.shadow-[0_0_12px_rgba(245,208,115,0.2)]]="activeStageFilter() === 'PRIMARY'"
-                [class.text-white/60]="activeStageFilter() !== 'PRIMARY'"
+                [class.shadow-sm]="activeStageFilter() === 'PRIMARY'"
+                [class.text-text-secondary]="activeStageFilter() !== 'PRIMARY'"
+                [class.hover:text-text-primary]="activeStageFilter() !== 'PRIMARY'"
               >
                 {{ langService.isArabic() ? 'الابتدائية' : 'Primary' }}
               </button>
@@ -463,13 +461,12 @@
                 type="button"
                 (click)="setStageFilter('PREPARATORY')"
                 class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="activeStageFilter() === 'PREPARATORY'"
-                [class.border]="activeStageFilter() === 'PREPARATORY'"
-                [class.border-amber-400/50]="activeStageFilter() === 'PREPARATORY'"
-                [class.text-amber-200]="activeStageFilter() === 'PREPARATORY'"
+                [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
+                [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                 [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
-                [class.shadow-[0_0_12px_rgba(245,208,115,0.2)]]="activeStageFilter() === 'PREPARATORY'"
-                [class.text-white/60]="activeStageFilter() !== 'PREPARATORY'"
+                [class.shadow-sm]="activeStageFilter() === 'PREPARATORY'"
+                [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
+                [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
               >
                 {{ langService.isArabic() ? 'الإعدادية' : 'Preparatory' }}
               </button>
@@ -477,13 +474,12 @@
                 type="button"
                 (click)="setStageFilter('SECONDARY')"
                 class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="activeStageFilter() === 'SECONDARY'"
-                [class.border]="activeStageFilter() === 'SECONDARY'"
-                [class.border-amber-400/50]="activeStageFilter() === 'SECONDARY'"
-                [class.text-amber-200]="activeStageFilter() === 'SECONDARY'"
+                [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
+                [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                 [class.font-bold]="activeStageFilter() === 'SECONDARY'"
-                [class.shadow-[0_0_12px_rgba(245,208,115,0.2)]]="activeStageFilter() === 'SECONDARY'"
-                [class.text-white/60]="activeStageFilter() !== 'SECONDARY'"
+                [class.shadow-sm]="activeStageFilter() === 'SECONDARY'"
+                [class.text-text-secondary]="activeStageFilter() !== 'SECONDARY'"
+                [class.hover:text-text-primary]="activeStageFilter() !== 'SECONDARY'"
               >
                 {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
               </button>
@@ -492,17 +488,17 @@
 
           <!-- Term Selector (UNITS step) -->
           @if (modalStep() === 'UNITS') {
-            <div class="inline-flex items-center p-1 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold backdrop-blur-md">
+            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md">
               <button
                 type="button"
                 (click)="selectTerm('TERM_1')"
                 class="px-4 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="selectedTermCode() === 'TERM_1'"
-                [class.border]="selectedTermCode() === 'TERM_1'"
-                [class.border-amber-400/50]="selectedTermCode() === 'TERM_1'"
-                [class.text-amber-200]="selectedTermCode() === 'TERM_1'"
+                [class.bg-brand-gold]="selectedTermCode() === 'TERM_1'"
+                [class.text-slate-950]="selectedTermCode() === 'TERM_1'"
                 [class.font-bold]="selectedTermCode() === 'TERM_1'"
-                [class.text-white/60]="selectedTermCode() !== 'TERM_1'"
+                [class.shadow-sm]="selectedTermCode() === 'TERM_1'"
+                [class.text-text-secondary]="selectedTermCode() !== 'TERM_1'"
+                [class.hover:text-text-primary]="selectedTermCode() !== 'TERM_1'"
               >
                 {{ langService.isArabic() ? 'الفصل الدراسي الأول' : 'Term 1' }}
               </button>
@@ -510,12 +506,12 @@
                 type="button"
                 (click)="selectTerm('TERM_2')"
                 class="px-4 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-amber-400/15]="selectedTermCode() === 'TERM_2'"
-                [class.border]="selectedTermCode() === 'TERM_2'"
-                [class.border-amber-400/50]="selectedTermCode() === 'TERM_2'"
-                [class.text-amber-200]="selectedTermCode() === 'TERM_2'"
+                [class.bg-brand-gold]="selectedTermCode() === 'TERM_2'"
+                [class.text-slate-950]="selectedTermCode() === 'TERM_2'"
                 [class.font-bold]="selectedTermCode() === 'TERM_2'"
-                [class.text-white/60]="selectedTermCode() !== 'TERM_2'"
+                [class.shadow-sm]="selectedTermCode() === 'TERM_2'"
+                [class.text-text-secondary]="selectedTermCode() !== 'TERM_2'"
+                [class.hover:text-text-primary]="selectedTermCode() !== 'TERM_2'"
               >
                 {{ langService.isArabic() ? 'الفصل الدراسي الثاني' : 'Term 2' }}
               </button>
@@ -537,7 +533,7 @@
                 <div>
                   <!-- Top Row: Grade Name & Math Operator Icon -->
                   <div class="flex items-start justify-between gap-2 mb-2">
-                    <h4 class="text-base sm:text-lg font-bold font-academic-serif text-white group-hover:text-amber-300 transition-colors">
+                    <h4 class="text-base sm:text-lg font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-brand-gold transition-colors">
                       {{ getGradeDisplayTitle(grade) }}
                     </h4>
                     <!-- Math Vector Art Icon -->
@@ -592,13 +588,13 @@
 
                   <!-- Stage Pill Badge -->
                   <div class="mb-2.5">
-                    <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
                       {{ getGradeStageLabel(grade) }}
                     </span>
                   </div>
 
                   <!-- Subtitle -->
-                  <p class="text-xs text-slate-300/80 leading-relaxed mb-5 font-normal">
+                  <p class="text-xs text-text-secondary dark:text-slate-300/80 leading-relaxed mb-5 font-normal">
                     {{ getGradeSubtitle(grade) }}
                   </p>
                 </div>
@@ -614,7 +610,7 @@
                     <button
                       type="button"
                       (click)="startPlacementExamForGrade(grade); $event.stopPropagation()"
-                      class="group-hover:underline flex items-center gap-1.5 text-amber-300 font-bold bg-transparent border-0 p-0 cursor-pointer text-xs"
+                      class="group-hover:underline flex items-center gap-1.5 text-brand-gold font-bold bg-transparent border-0 p-0 cursor-pointer text-xs"
                     >
                       <app-icon name="target" [size]="13" />
                       <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>

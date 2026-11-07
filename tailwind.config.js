@@ -12,6 +12,9 @@ module.exports = {
           'primary-hover': 'var(--color-brand-primary-hover)',
           secondary: 'var(--color-brand-secondary)',
           accent: 'var(--color-brand-accent)',
+          gold: 'var(--color-brand-gold)',
+          'gold-light': 'var(--color-brand-gold-light)',
+          'gold-dark': 'var(--color-brand-gold-dark)',
           magenta: 'var(--color-brand-magenta)',
           cobalt: 'var(--color-brand-cobalt)',
           // Direct hex constants from official logo

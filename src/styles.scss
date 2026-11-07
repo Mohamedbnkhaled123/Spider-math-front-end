@@ -24,27 +24,27 @@
   --text-primary: #111629;                // Deep Academic Slate Ink
   --text-secondary: #3E4559;              // Balanced Reading Charcoal
   --text-muted: #6E7587;                  // Calm Editorial Slate
-  // Luxury Metallic Gold & Royal Violet Accents
-  --color-brand-gold: #C49A45;            // Academic Gold
-  --color-brand-gold-light: #DFB867;      // Champagne Shimmer
-  --color-brand-gold-dark: #9E7628;       // Deep Bronze
+  // Luxury Metallic Gold & Royal Violet Accents — High Contrast Academic Mode
+  --color-brand-gold: #9E6F18;            // High-Contrast Deep Academic Gold/Bronze
+  --color-brand-gold-light: #B45309;      // Rich Amber Shimmer
+  --color-brand-gold-dark: #78350F;       // Deep Antique Bronze
   --color-brand-violet: #6B3FA0;          // Royal Amethyst Aura
-  --color-brand-primary: #C49A45;
+  --color-brand-primary: #9E6F18;
   --color-brand-secondary: #6B3FA0;
-  --color-brand-accent: #D4AF6A;
+  --color-brand-accent: #B45309;
   --color-brand-cyan: #0E7490;
-  // Signature Luxury Gradients
-  --gradient-gold-btn: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
-  --gradient-gold-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
-  --gradient-spider-math: linear-gradient(135deg, #E2C17A 0%, #C69C4E 50%, #A97E32 100%);
-  --gradient-spider-text: linear-gradient(90deg, #B58938 0%, #D4AF6A 50%, #9E7325 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(196, 154, 69, 0.35), rgba(107, 63, 160, 0.25));
+  // Signature Luxury Gradients (Deep Legible Contrast on Parchment)
+  --gradient-gold-btn: linear-gradient(135deg, #D97706 0%, #B45309 50%, #92400E 100%);
+  --gradient-gold-text: linear-gradient(90deg, #92400E 0%, #B45309 50%, #78350F 100%);
+  --gradient-spider-math: linear-gradient(135deg, #D97706 0%, #B45309 50%, #92400E 100%);
+  --gradient-spider-text: linear-gradient(90deg, #92400E 0%, #B45309 50%, #78350F 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(158, 111, 24, 0.45), rgba(107, 63, 160, 0.25));
   // Surfaces & Glassmorphism
-  --surface-border: rgba(196, 154, 69, 0.28);
-  --surface-border-glow: rgba(196, 154, 69, 0.65);
+  --surface-border: rgba(158, 111, 24, 0.32);
+  --surface-border-glow: rgba(158, 111, 24, 0.70);
   --surface-glass: rgba(250, 246, 238, 0.86);
   --math-bg-stroke: rgba(17, 22, 41, 0.06);
-  --grid-pattern-color: rgba(196, 154, 69, 0.05);
+  --grid-pattern-color: rgba(158, 111, 24, 0.05);
   // Backward compatibility alias tokens
   --surface-bg: var(--surface-bg-primary);
   --surface-card: var(--surface-bg-card);
@@ -580,10 +580,7 @@ code,
 .bg-chalkboard-math-layer {
   position: relative;
   background-color: var(--surface-bg-primary);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' fill='none'%3E%3Cpath d='M80 680 C 220 680, 260 520, 320 520 C 380 520, 420 680, 560 680' stroke='%23C49A45' stroke-width='1.2' stroke-dasharray='4 4' opacity='0.08'/%3E%3Cpath d='M700 150 L 700 450 M 550 300 L 850 300' stroke='%23C49A45' stroke-width='1.2' opacity='0.07'/%3E%3Cpath d='M580 420 C 650 380, 720 220, 820 180' stroke='%23C49A45' stroke-width='1.5' opacity='0.08'/%3E%3Ctext x='120' y='240' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ex = (-b ± √(b² - 4ac)) / 2a%3C/text%3E%3Ctext x='780' y='640' font-family='serif' font-size='26' fill='%23C49A45' opacity='0.07'%3E∫ f(x) dx = F(x) + C%3C/text%3E%3Ctext x='950' y='220' font-family='serif' font-size='22' fill='%23C49A45' opacity='0.07'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='180' y='460' font-family='serif' font-size='20' fill='%23C49A45' opacity='0.07'%3E∑ (1/n²) = π²/6%3C/text%3E%3C/svg%3E");
-  background-size: 1200px 800px;
-  background-position: center top;
+  background-image: none;
 }
 
 

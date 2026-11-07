@@ -8,11 +8,7 @@
 
     <!-- Header Section -->
     <div class="text-center max-w-2xl mx-auto mb-10">
-      <img src="assets/branding/spider-mascot-nav.webp" alt="Spider Math" class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 object-contain drop-shadow-md">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-xs font-black mb-3 shadow-sm">
-        <app-icon name="sparkles" [size]="14" />
-        <span>{{ langService.isArabic() ? 'بوابة الصلاحيات وتسجيل الدخول الموحد' : 'Unified Access & Authentication Portal' }}</span>
-      </div>
+      <img src="/assets/branding/spider-mascot-hero-book.webp" alt="Spider Math" class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 object-contain drop-shadow-md">
 
       <h1 class="font-academic-serif text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
         @if (langService.isArabic()) {
@@ -40,10 +36,11 @@
             type="button"
             (click)="setTab('student')"
             class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
-            [class.bg-brand-gold]="activeTab() === 'student'" [class.text-slate-950]="activeTab() === 'student'"
-            [class.text-white]="activeTab() === 'student'"
+            [class.bg-brand-gold]="activeTab() === 'student'"
+            [class.text-slate-950]="activeTab() === 'student'"
             [class.shadow-brand-glow]="activeTab() === 'student'"
             [class.text-text-secondary]="activeTab() !== 'student'"
+            [class.hover:text-text-primary]="activeTab() !== 'student'"
           >
             <app-icon name="graduation-cap" [size]="15" />
             <span class="truncate">{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
@@ -53,10 +50,11 @@
             type="button"
             (click)="setTab('parent')"
             class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
-            [class.bg-brand-gold]="activeTab() === 'parent'" [class.text-slate-950]="activeTab() === 'parent'"
-            [class.text-white]="activeTab() === 'parent'"
+            [class.bg-brand-gold]="activeTab() === 'parent'"
+            [class.text-slate-950]="activeTab() === 'parent'"
             [class.shadow-brand-glow]="activeTab() === 'parent'"
             [class.text-text-secondary]="activeTab() !== 'parent'"
+            [class.hover:text-text-primary]="activeTab() !== 'parent'"
           >
             <app-icon name="shield" [size]="15" />
             <span class="truncate">{{ langService.isArabic() ? 'ولي الأمر' : 'Parent Portal' }}</span>
@@ -66,10 +64,11 @@
             type="button"
             (click)="setTab('admin')"
             class="flex-1 min-w-0 py-2 sm:py-2.5 px-1 sm:px-3 rounded-xl text-[11px] sm:text-sm font-bold transition-all duration-200 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5"
-            [class.bg-brand-gold]="activeTab() === 'admin'" [class.text-slate-950]="activeTab() === 'admin'"
-            [class.text-white]="activeTab() === 'admin'"
+            [class.bg-brand-gold]="activeTab() === 'admin'"
+            [class.text-slate-950]="activeTab() === 'admin'"
             [class.shadow-brand-glow]="activeTab() === 'admin'"
             [class.text-text-secondary]="activeTab() !== 'admin'"
+            [class.hover:text-text-primary]="activeTab() !== 'admin'"
           >
             <app-icon name="user" [size]="15" />
             <span class="truncate">{{ langService.isArabic() ? 'إدارة المنصة' : 'Admin Studio' }}</span>
@@ -94,10 +93,11 @@
               type="button"
               (click)="setStudentAuthMode('login')"
               class="flex-1 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0 text-center"
-              [class.bg-brand-gold]="studentAuthMode() === 'login'" [class.text-slate-950]="studentAuthMode() === 'login'"
-              [class.text-white]="studentAuthMode() === 'login'"
+              [class.bg-brand-gold]="studentAuthMode() === 'login'"
+              [class.text-slate-950]="studentAuthMode() === 'login'"
               [class.shadow-brand-glow]="studentAuthMode() === 'login'"
               [class.text-text-secondary]="studentAuthMode() !== 'login'"
+              [class.hover:text-text-primary]="studentAuthMode() !== 'login'"
             >
               <app-icon name="log-in" [size]="14" />
               <span class="truncate">{{ langService.isArabic() ? 'تسجيل الدخول' : 'Sign In' }}</span>
@@ -108,10 +108,11 @@
               type="button"
               (click)="setStudentAuthMode('signup')"
               class="flex-1 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0 text-center"
-              [class.bg-brand-gold]="studentAuthMode() === 'signup'" [class.text-slate-950]="studentAuthMode() === 'signup'"
-              [class.text-white]="studentAuthMode() === 'signup'"
+              [class.bg-brand-gold]="studentAuthMode() === 'signup'"
+              [class.text-slate-950]="studentAuthMode() === 'signup'"
               [class.shadow-brand-glow]="studentAuthMode() === 'signup'"
               [class.text-text-secondary]="studentAuthMode() !== 'signup'"
+              [class.hover:text-text-primary]="studentAuthMode() !== 'signup'"
             >
               <app-icon name="sparkles" [size]="14" />
               <span class="truncate">{{ langService.isArabic() ? 'حساب جديد' : 'Sign Up' }}</span>

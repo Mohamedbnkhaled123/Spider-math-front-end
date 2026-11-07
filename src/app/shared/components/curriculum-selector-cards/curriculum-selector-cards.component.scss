@@ -217,6 +217,15 @@
   }
 
   .grade-glass-card {
+    h4 {
+      color: #111629 !important;
+    }
+    p {
+      color: #3E4559 !important;
+    }
+    svg {
+      color: #9E6F18 !important;
+    }
     background: 
       radial-gradient(120% 80% at 80% 0%, rgba(212, 175, 106, 0.12) 0%, transparent 80%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 246, 238, 0.92) 100%),
