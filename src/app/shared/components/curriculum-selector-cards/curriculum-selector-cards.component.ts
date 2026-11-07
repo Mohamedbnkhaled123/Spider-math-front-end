@@ -104,6 +104,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     );
   });
 
+  readonly whatsappSubscriptionUrl = computed<string>(() => {
+    const title = this.lockedContentTitle();
+    const phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    const msg = encodeURIComponent(
+      `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
+    );
+    return `https://wa.me/${phone}?text=${msg}`;
+  });
+
   readonly totalGradeQuizzesCount = computed<number>(() => {
     const data = this.gradeQuizzesData();
     const fromUnits = (data.units || []).reduce((sum, u) => sum + (u.quizzes?.length || 0), 0);
