@@ -37,11 +37,11 @@
   <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-surface-border">
     <div class="flex items-center gap-3">
       <a
-        [routerLink]="['/student/units', bundle().unitId]"
+        [routerLink]="returnToHome() ? '/' : (bundle().unitId ? ['/student/units', bundle().unitId] : '/student')"
         class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm shrink-0"
       >
         <app-icon name="arrow-right" [size]="14" />
-        <span>{{ langService.isArabic() ? 'مغادرة التقييم' : 'Leave Assessment' }}</span>
+        <span>{{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'مغادرة التقييم' : 'Leave Assessment') }}</span>
       </a>
 
       <div>
@@ -145,8 +145,8 @@
         <p class="text-xs text-text-secondary leading-relaxed mb-6">
           {{ langService.isArabic() ? 'تقوم المهندسة هبة عبد الوهاب بإعداد أسئلة هذا التقييم وإدراج المسائل والخيارات ونماذج الإجابة.' : 'Eng. Heba Abdel-Wahab is preparing questions and solutions for this assessment.' }}
         </p>
-        <a [routerLink]="bundle().unitId ? ['/student/units', bundle().unitId] : '/student'" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all">
-          {{ langService.isArabic() ? 'العودة لمحاضرات الوحدة' : 'Back to Unit Lectures' }}
+        <a [routerLink]="returnToHome() ? '/' : (bundle().unitId ? ['/student/units', bundle().unitId] : '/student')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all">
+          {{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'العودة لمحاضرات الوحدة' : 'Back to Unit Lectures') }}
         </a>
       </div>
     } @else if (currentQuestion(); as q) {
@@ -416,16 +416,17 @@
       <div class="flex flex-wrap items-center justify-center gap-4">
         <a
           [routerLink]="['/student/submissions', bundle().assessmentId, 'feedback']"
+          [queryParams]="returnToHome() ? { returnToHome: 'true' } : null"
           class="px-6 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
           <app-icon name="award" [size]="16" />
           <span>{{ langService.isArabic() ? 'عرض تقرير التقييم وملاحظات المعلمة' : 'View Assessment Report & Feedback' }}</span>
         </a>
         <a
-          [routerLink]="['/student/units', bundle().unitId]"
+          [routerLink]="returnToHome() ? '/' : (bundle().unitId ? ['/student/units', bundle().unitId] : '/student')"
           class="px-6 py-3 rounded-xl font-bold text-xs text-text-secondary border border-surface-border bg-surface-card hover:border-brand-accent transition-all"
         >
-          {{ langService.isArabic() ? 'العودة لمحاضرات الوحدة' : 'Back to Unit Lectures' }}
+          {{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'العودة لمحاضرات الوحدة' : 'Back to Unit Lectures') }}
         </a>
       </div>
     </div>

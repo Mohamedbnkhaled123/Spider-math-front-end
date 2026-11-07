@@ -572,6 +572,31 @@
             </div>
           </div>
 
+          <!-- Teacher Review Option -->
+          <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'مراجعة وتصحيح المعلمة:' : 'Teacher Review Requirement:' }}</span>
+                <span class="text-[11px] text-text-muted">
+                  {{ createForm().requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة تصحيح المعلمة واعتمادها قبل إعلانها للطالب' : 'Results await teacher review and approval') : (langService.isArabic() ? 'اعتماد النتيجة ونقاط الـ XP وإعلانها فورياً للطالب فور التسليم' : 'Instant auto-grading and immediate XP release') }}
+                </span>
+              </div>
+              <button
+                type="button"
+                (click)="createForm().requiresTeacherReview = !createForm().requiresTeacherReview"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                [class.bg-brand-primary]="createForm().requiresTeacherReview"
+                [class.bg-surface-border]="!createForm().requiresTeacherReview"
+              >
+                <span
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                  [class.translate-x-5]="createForm().requiresTeacherReview"
+                  [class.translate-x-0]="!createForm().requiresTeacherReview"
+                ></span>
+              </button>
+            </div>
+          </div>
+
           <!-- Scheduling Controls -->
           <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
             <div class="flex items-center justify-between">
@@ -1013,6 +1038,43 @@
                   </button>
                 </div>
               </div>
+
+              <!-- Review Requirement Option (Hides button completely if any essay question is present) -->
+              @if (hasEssayQuestions(asm)) {
+                <div class="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-2.5">
+                  <app-icon name="alert-triangle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
+                  <div class="text-xs">
+                    <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'يتطلب تصحيح المعلمة إجبارياً' : 'Mandatory Teacher Grading' }}</span>
+                    <p class="text-text-secondary mt-0.5 leading-relaxed">
+                      {{ langService.isArabic() ? 'يحتوي هذا الامتحان على أسئلة مقالية (حل يدوي)، لذا يجب أن تنتظر النتيجة تصحيح المعلمة واعتمادها في استوديو التصحيح ولا يمكن نشرها تلقائياً.' : 'This assessment contains essay questions requiring handwritten steps, so submissions must await teacher review and grading.' }}
+                    </p>
+                  </div>
+                </div>
+              } @else {
+                <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'اعتماد النتيجة ومراجعة المعلمة:' : 'Teacher Review & Approval:' }}</span>
+                      <span class="text-[11px] text-text-muted">
+                        {{ asm.requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة مراجعة واعتماد المعلمة قبل إعلانها للطالب' : 'Awaits teacher review before publishing') : (langService.isArabic() ? 'تصحيح تلقائي وإعلان فوري للنتيجة والـ XP للطالب بمجرد التسليم' : 'Instant auto-grading & immediate result release') }}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="asm.requiresTeacherReview = !asm.requiresTeacherReview"
+                      class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                      [class.bg-brand-primary]="asm.requiresTeacherReview"
+                      [class.bg-surface-border]="!asm.requiresTeacherReview"
+                    >
+                      <span
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                        [class.translate-x-5]="asm.requiresTeacherReview"
+                        [class.translate-x-0]="!asm.requiresTeacherReview"
+                      ></span>
+                    </button>
+                  </div>
+                </div>
+              }
 
               <!-- Scheduling Controls in Visual Editor -->
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">

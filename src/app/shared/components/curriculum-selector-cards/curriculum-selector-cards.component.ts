@@ -86,6 +86,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   // Curriculum Grade Quizzes & Accordion State
   readonly gradeQuizzesData = signal<IGradeQuizzesResponse>({ units: [], generalQuizzes: [] });
+  readonly pendingTargetUrl = signal<string | null>(null);
   readonly isLoadingGradeQuizzes = signal<boolean>(false);
   readonly expandedUnitAccordions = signal<Set<string>>(new Set());
 
@@ -611,6 +612,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           this.router.navigate(['/student/assessments', quiz.id]);
         }
       } else {
+        const targetUrl = quiz.isPlacementTest
+          ? `/placement-test?curriculum=${this.selectedCurriculumCode()}&gradeLevel=${this.selectedGradeCode()}&term=${this.selectedTermCode()}&testId=${quiz.id}`
+          : `/student/assessments/${quiz.id}?returnToHome=true`;
+        this.pendingTargetUrl.set(targetUrl);
         this.authGateActionMessage.set(
           this.langService.isArabic()
             ? 'سجل دخولك مجاناً لبدء هذا الكويز ومتابعة درجاتك وإجاباتك مع المعلمة'
@@ -631,6 +636,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         this.closeTrackModal();
         this.router.navigate(['/student/units', unitId], { queryParams: { lectureId: lec._id || lec.id } });
       } else {
+        const unitId = this.selectedUnitForPreview()?._id || this.selectedGradeCode();
+        const targetUrl = `/student/units/${unitId}?lectureId=${lec._id || lec.id}&returnToHome=true`;
+        this.pendingTargetUrl.set(targetUrl);
         this.authGateActionMessage.set(
           this.langService.isArabic()
             ? 'سجل دخولك مجاناً لمشاهدة هذه المحاضرة والملزمة المرفقة'
@@ -777,13 +785,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   goToLogin(): void {
+    const returnUrl = this.pendingTargetUrl();
     this.showAuthGateModal.set(false);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], returnUrl ? { queryParams: { returnUrl } } : undefined);
   }
 
   goToSignup(): void {
+    const returnUrl = this.pendingTargetUrl();
     this.showAuthGateModal.set(false);
-    this.router.navigate(['/login'], { queryParams: { mode: 'signup' } });
+    this.router.navigate(['/login'], { queryParams: { mode: 'signup', ...(returnUrl ? { returnUrl } : {}) } });
   }
 
   getGradeLabel(gradeCode?: string): string {

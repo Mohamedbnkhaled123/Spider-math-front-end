@@ -838,10 +838,10 @@
                             >
                               <div class="flex items-center gap-2 truncate">
                                 <span class="font-mono text-xs font-bold text-brand-gold bg-brand-gold/10 px-1.5 py-0.5 rounded">
-                                  0{{ unitGroup.orderIndex || 1 }}
+                                  {{ ($index + 1) < 10 ? '0' + ($index + 1) : ($index + 1) }}
                                 </span>
                                 <span class="text-xs font-bold text-text-primary truncate">
-                                  {{ langService.isArabic() ? unitGroup.titleAr : unitGroup.titleEn }}
+                                  {{ langService.isArabic() ? (unitGroup.titleAr || unitGroup.titleEn) : ((unitGroup.titleEn && unitGroup.titleEn.trim().toLowerCase() !== 'unit package') ? unitGroup.titleEn : (unitGroup.titleAr || unitGroup.titleEn)) }}
                                 </span>
                               </div>
 
@@ -914,7 +914,7 @@
                               <div class="flex items-center gap-2 truncate">
                                 <app-icon name="award" [size]="14" className="text-purple-400" />
                                 <span class="text-xs font-bold text-text-primary truncate">
-                                  {{ langService.isArabic() ? 'امتحانات عامة وشاملة' : 'General & Comprehensive Exams' }}
+                                  {{ langService.isArabic() ? 'كويزات واختبارات عامة' : 'General Practice Quizzes & Exams' }}
                                 </span>
                               </div>
                               <div class="flex items-center gap-2 shrink-0">

@@ -63,6 +63,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
   readonly activeQuestionIdx = signal<number>(0);
   readonly isSubmitting = signal<boolean>(false);
   readonly isSubmissionCompleted = signal<boolean>(false);
+  readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
 
   constructor() {
     // Auto-submit when time expires (urgencyState === 'EXPIRED') even if questions remain unanswered
@@ -343,7 +344,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
           await spiderMathDb.activeQuizzes.delete(this.bundle().assessmentId);
           this.isSubmissionCompleted.set(true);
           const subId = res?.data?.submissionId || this.bundle().assessmentId;
-          this.router.navigate(['/student/submissions', subId, 'feedback']);
+          const returnToHome = this.route.snapshot.queryParamMap.get('returnToHome') === 'true';
+          this.router.navigate(['/student/submissions', subId, 'feedback'], returnToHome ? { queryParams: { returnToHome: 'true' } } : undefined);
           return;
         } catch (onlineErr) {
           console.warn('Direct online submission failed, falling back to sync queue:', onlineErr);
@@ -361,7 +363,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
       );
 
       this.isSubmissionCompleted.set(true);
-      this.router.navigate(['/student/submissions', this.bundle().assessmentId, 'feedback']);
+      const returnToHome = this.route.snapshot.queryParamMap.get('returnToHome') === 'true';
+      this.router.navigate(['/student/submissions', this.bundle().assessmentId, 'feedback'], returnToHome ? { queryParams: { returnToHome: 'true' } } : undefined);
     } finally {
       this.isSubmitting.set(false);
     }

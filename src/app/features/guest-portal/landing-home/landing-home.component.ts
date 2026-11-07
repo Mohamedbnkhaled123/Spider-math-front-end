@@ -32,11 +32,14 @@ import {
   IGradeLevelMeta
 } from '../../../core/constants/curriculum-tree.constant';
 import { AuthService } from '../../../core/auth/auth.service';
+import { FormsModule } from '@angular/forms';
+import { TestimonialsService, TestimonialItem } from '../../../core/services/testimonials.service';
 @Component({
   selector: 'app-landing-home',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     AppIconComponent,
     CurriculumSelectorCardsComponent,
@@ -56,6 +59,21 @@ export class LandingHomeComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
+  private readonly testimonialsService = inject(TestimonialsService);
+
+  // Testimonials State
+  readonly testimonials = signal<TestimonialItem[]>([]);
+  readonly isLoadingTestimonials = signal<boolean>(false);
+  readonly isTestimonialModalOpen = signal<boolean>(false);
+  readonly isSubmittingTestimonial = signal<boolean>(false);
+  readonly testimonialReviewText = signal<string>('');
+  readonly testimonialRating = signal<number>(5);
+  readonly testimonialSubmitted = signal<boolean>(false);
+  readonly testimonialSubmitError = signal<string | null>(null);
+
+  readonly canSubmitTestimonial = computed<boolean>(() => {
+    return this.authService.isAuthenticated() && (this.authService.isStudent() || this.authService.isParent());
+  });
   // Authenticated Student State
   readonly isStudentLoggedIn = computed(() => this.authService.isAuthenticated() && this.authService.isStudent());
   readonly currentStudent = computed(() => this.authService.currentUser());
@@ -550,6 +568,8 @@ export class LandingHomeComponent implements OnInit {
       }
 
     });
+
+    this.loadTestimonials();
   }
 
   openPlacementModal(): void {
@@ -679,6 +699,101 @@ export class LandingHomeComponent implements OnInit {
       window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
     }
 
+  }
+
+  loadTestimonials(): void {
+    this.isLoadingTestimonials.set(true);
+    this.testimonialsService.getApprovedTestimonials().subscribe({
+      next: (res) => {
+        this.testimonials.set(res.data || []);
+        this.isLoadingTestimonials.set(false);
+      },
+      error: () => {
+        this.isLoadingTestimonials.set(false);
+      }
+    });
+  }
+
+  openTestimonialModal(): void {
+    if (!this.canSubmitTestimonial()) {
+      if (!this.authService.isAuthenticated()) {
+        this.router.navigate(['/login'], { queryParams: { returnUrl: '/#testimonials' } });
+      }
+      return;
+    }
+    this.testimonialReviewText.set('');
+    this.testimonialRating.set(5);
+    this.testimonialSubmitted.set(false);
+    this.testimonialSubmitError.set(null);
+    this.isTestimonialModalOpen.set(true);
+  }
+
+  closeTestimonialModal(): void {
+    this.isTestimonialModalOpen.set(false);
+  }
+
+  setRating(rating: number): void {
+    this.testimonialRating.set(rating);
+  }
+
+  submitTestimonial(): void {
+    const text = this.testimonialReviewText().trim();
+    if (!text || text.length < 5) {
+      this.testimonialSubmitError.set(
+        this.langService.isArabic()
+          ? 'يرجى كتابة رأيك بشكل واضح (5 أحرف على الأقل).'
+          : 'Please write a meaningful review (at least 5 characters).'
+      );
+      return;
+    }
+    this.isSubmittingTestimonial.set(true);
+    this.testimonialSubmitError.set(null);
+
+    this.testimonialsService.submitTestimonial({
+      review_text: text,
+      rating: this.testimonialRating()
+    }).subscribe({
+      next: () => {
+        this.isSubmittingTestimonial.set(false);
+        this.testimonialSubmitted.set(true);
+      },
+      error: (err) => {
+        this.isSubmittingTestimonial.set(false);
+        this.testimonialSubmitError.set(
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          (this.langService.isArabic() ? 'تعذر إرسال الرأي، يرجى المحاولة لاحقاً.' : 'Failed to submit review.')
+        );
+      }
+    });
+  }
+
+  formatStudentStage(rawStage?: string): string {
+    if (!rawStage) return '';
+    const replacements: Record<string, string> = {
+      'SEC_3': 'الصف الثالث الثانوي',
+      'SEC_2': 'الصف الثاني الثانوي',
+      'SEC_1': 'الصف الأول الثانوي',
+      'PREP_3': 'الصف الثالث الإعدادي',
+      'PREP_2': 'الصف الثاني الإعدادي',
+      'PREP_1': 'الصف الأول الإعدادي',
+      'GRADE_12': 'الصف الثاني عشر',
+      'GRADE_11': 'الصف الحادي عشر',
+      'GRADE_10': 'الصف العاشر',
+      'IGCSE_AL': 'A-Level',
+      'IGCSE_AS': 'AS-Level',
+      'IGCSE_OL': 'O-Level',
+      'SAT_MATH': 'SAT Math',
+      'EGYPTIAN': 'المنهج المصري',
+      'GULF': 'المنهج الخليجي',
+      'INTERNATIONAL': 'البريطانية (IGCSE)',
+      'AMERICAN': 'الأمريكية (SAT)'
+    };
+    let formatted = rawStage;
+    for (const [key, val] of Object.entries(replacements)) {
+      formatted = formatted.replace(new RegExp(`\\b${key}\\b`, 'g'), val);
+    }
+    return formatted;
   }
 
 }

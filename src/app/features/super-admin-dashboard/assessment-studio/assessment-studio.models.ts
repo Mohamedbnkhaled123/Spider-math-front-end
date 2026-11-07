@@ -44,6 +44,7 @@ export interface AssessmentItem {
   isPlacementTest: boolean;
   assessmentType?: string;
   isFree?: boolean;
+  requiresTeacherReview?: boolean;
   submissionsCount: number;
   questions: AssessmentQuestionItem[];
 }

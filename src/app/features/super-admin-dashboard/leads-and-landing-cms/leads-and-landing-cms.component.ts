@@ -18,6 +18,7 @@ import {
   CmsConfigAdminItem,
   LeadAdminItem
 } from './leads-and-landing-cms.models';
+import { TestimonialsService, AdminTestimonialItem } from '../../../core/services/testimonials.service';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -38,6 +39,7 @@ import {
 export class LeadsAndLandingCmsComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
+  private readonly testimonialsService = inject(TestimonialsService);
 
   // Inputs
   readonly leadsList = input.required<LeadAdminItem[]>();
@@ -48,8 +50,26 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly leadStatusUpdated = output<{ leadId: string; status: 'NEW' | 'CONTACTED' | 'REGISTERED' }>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
-  // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units)
-  readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS'>('AR');
+  // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units) | 'TESTIMONIALS'
+  readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS' | 'TESTIMONIALS'>('AR');
+
+  // Testimonials State
+  readonly adminTestimonials = signal<AdminTestimonialItem[]>([]);
+  readonly isLoadingTestimonials = signal<boolean>(false);
+  readonly testimonialFilter = signal<'ALL' | 'PENDING' | 'APPROVED'>('ALL');
+  readonly editingTestimonialId = signal<string | null>(null);
+
+  readonly filteredTestimonials = computed(() => {
+    const list = this.adminTestimonials();
+    const filter = this.testimonialFilter();
+    if (filter === 'PENDING') return list.filter((t) => !t.isApproved);
+    if (filter === 'APPROVED') return list.filter((t) => t.isApproved);
+    return list;
+  });
+
+  readonly pendingTestimonialsCount = computed(() => {
+    return this.adminTestimonials().filter((t) => !t.isApproved).length;
+  });
 
   // Local Editable Copy of CMS Config
   readonly editableCms = signal<CmsConfigAdminItem>({
@@ -197,6 +217,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
       this.editableCms.set(JSON.parse(JSON.stringify(config)));
     }
     this.fetchUnits();
+    this.loadAdminTestimonials();
   }
 
   fetchUnits(): void {
@@ -304,5 +325,104 @@ export class LeadsAndLandingCmsComponent implements OnInit {
         });
       }
     });
+  }
+
+  // =========================================================================
+  // Testimonials Operations
+  // =========================================================================
+  loadAdminTestimonials(): void {
+    this.isLoadingTestimonials.set(true);
+    this.testimonialsService.getAllAdminTestimonials().subscribe({
+      next: (res) => {
+        this.adminTestimonials.set(res.data || []);
+        this.isLoadingTestimonials.set(false);
+      },
+      error: () => {
+        this.isLoadingTestimonials.set(false);
+      }
+    });
+  }
+
+  toggleTestimonialApproval(item: AdminTestimonialItem): void {
+    const nextApproved = !item.isApproved;
+    this.testimonialsService.updateAdminTestimonial(item.id, {
+      isApproved: nextApproved,
+      studentGrade: item.studentGrade,
+      reviewText: item.reviewText
+    }).subscribe({
+      next: () => {
+        this.adminTestimonials.update((list) =>
+          list.map((t) =>
+            t.id === item.id
+              ? { ...t, isApproved: nextApproved, status: nextApproved ? 'APPROVED' : 'REJECTED' }
+              : t
+          )
+        );
+        this.toastTriggered.emit({
+          text: nextApproved ? 'تم اعتماد ونشر رأي الطالب بنجاح على الصفحة الرئيسية!' : 'تم إلغاء نشر الرأي بنجاح.',
+          type: 'success'
+        });
+      },
+      error: () => {
+        this.toastTriggered.emit({ text: 'تعذر تحديث حالة اعتماد الرأي.', type: 'error' });
+      }
+    });
+  }
+
+  saveTestimonialEdits(item: AdminTestimonialItem): void {
+    this.testimonialsService.updateAdminTestimonial(item.id, {
+      studentGrade: item.studentGrade,
+      reviewText: item.reviewText,
+      authorName: item.authorName
+    }).subscribe({
+      next: () => {
+        this.editingTestimonialId.set(null);
+        this.toastTriggered.emit({ text: 'تم حفظ وتحديث رأي الطالب ودرجته بنجاح!', type: 'success' });
+      },
+      error: () => {
+        this.toastTriggered.emit({ text: 'تعذر حفظ التعديلات.', type: 'error' });
+      }
+    });
+  }
+
+  deleteTestimonial(item: AdminTestimonialItem): void {
+    if (!confirm('هل أنتِ متأكدة من حذف هذا الرأي نهائياً؟')) return;
+    this.testimonialsService.deleteAdminTestimonial(item.id).subscribe({
+      next: () => {
+        this.adminTestimonials.update((list) => list.filter((t) => t.id !== item.id));
+        this.toastTriggered.emit({ text: 'تم حذف الرأي بنجاح.', type: 'success' });
+      },
+      error: () => {
+        this.toastTriggered.emit({ text: 'تعذر حذف الرأي.', type: 'error' });
+      }
+    });
+  }
+
+  formatStudentStage(rawStage?: string): string {
+    if (!rawStage) return '';
+    const replacements: Record<string, string> = {
+      'SEC_3': 'الصف الثالث الثانوي',
+      'SEC_2': 'الصف الثاني الثانوي',
+      'SEC_1': 'الصف الأول الثانوي',
+      'PREP_3': 'الصف الثالث الإعدادي',
+      'PREP_2': 'الصف الثاني الإعدادي',
+      'PREP_1': 'الصف الأول الإعدادي',
+      'GRADE_12': 'الصف الثاني عشر',
+      'GRADE_11': 'الصف الحادي عشر',
+      'GRADE_10': 'الصف العاشر',
+      'IGCSE_AL': 'A-Level',
+      'IGCSE_AS': 'AS-Level',
+      'IGCSE_OL': 'O-Level',
+      'SAT_MATH': 'SAT Math',
+      'EGYPTIAN': 'المنهج المصري',
+      'GULF': 'المنهج الخليجي',
+      'INTERNATIONAL': 'البريطانية (IGCSE)',
+      'AMERICAN': 'الأمريكية (SAT)'
+    };
+    let formatted = rawStage;
+    for (const [key, val] of Object.entries(replacements)) {
+      formatted = formatted.replace(new RegExp(`\\b${key}\\b`, 'g'), val);
+    }
+    return formatted;
   }
 }

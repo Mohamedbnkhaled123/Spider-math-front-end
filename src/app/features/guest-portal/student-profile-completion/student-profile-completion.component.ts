@@ -215,7 +215,12 @@ export class StudentProfileCompletionComponent implements OnInit {
   }
 
   goToInactivePortal(): void {
-    this.router.navigate(['/inactive-student-portal']);
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) {
+      this.router.navigateByUrl(returnUrl);
+    } else {
+      this.router.navigate(['/inactive-student-portal']);
+    }
   }
 
   openWhatsAppActivation(): void {

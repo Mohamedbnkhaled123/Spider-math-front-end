@@ -54,6 +54,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly isLoading = signal<boolean>(true);
   readonly playbackToken = signal<string>('');
   readonly isLectureLocked = signal<boolean>(false);
+  readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
   readonly isAssessmentsOnly = computed(() => this.workspaceData().accessScope === 'ASSESSMENTS_ONLY');
 
   // Workspace Data

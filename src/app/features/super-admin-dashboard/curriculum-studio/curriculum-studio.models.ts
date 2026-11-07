@@ -44,6 +44,7 @@ export interface AssessmentAdminItem {
   submissionsCount: number;
   xpReward?: number | null;
   referenceSheetUrl?: string | null;
+  requiresTeacherReview?: boolean;
   questions: QuestionAdminItem[];
 }
 

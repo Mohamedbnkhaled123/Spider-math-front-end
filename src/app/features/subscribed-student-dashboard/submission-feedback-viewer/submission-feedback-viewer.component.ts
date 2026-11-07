@@ -41,6 +41,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
 
   readonly isLoading = signal<boolean>(true);
   readonly loadError = signal<string | null>(null);
+  readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
 
   readonly feedback = signal<SubmissionFeedbackData>({
     submissionId: '',

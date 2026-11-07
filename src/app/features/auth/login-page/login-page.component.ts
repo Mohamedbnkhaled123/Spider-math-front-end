@@ -111,6 +111,11 @@ export class LoginPageComponent implements OnInit {
 
     if (this.authService.isAuthenticated()) {
       if (this.authService.isStudent()) {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+          return;
+        }
         this.router.navigateByUrl('/student');
         return;
       }
@@ -244,7 +249,7 @@ export class LoginPageComponent implements OnInit {
             has_active_subscription: true
           };
           this.authService.setSession(data.token, userPayload);
-          this.router.navigateByUrl('/student');
+          this.navigateStudentAfterAuth();
         }
       },
       error: (err) => {
@@ -395,14 +400,16 @@ export class LoginPageComponent implements OnInit {
 
           // If signup intent OR profile not completed -> Redirect to Complete Profile!
           if (intent === 'signup' || !data.isProfileCompleted) {
+            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
             this.router.navigate(['/complete-profile'], {
               queryParams: {
-                fullName: data.user.fullName || data.user.full_name || ''
+                fullName: data.user.fullName || data.user.full_name || '',
+                ...(returnUrl ? { returnUrl } : {})
               }
             });
           } else {
-            // Already registered & profile completed -> Student Dashboard
-            this.router.navigateByUrl('/student');
+            // Already registered & profile completed -> Target or Student Dashboard
+            this.navigateStudentAfterAuth();
           }
         }
       },
@@ -473,7 +480,7 @@ export class LoginPageComponent implements OnInit {
             has_active_subscription: !!u.has_active_subscription
           };
           this.authService.setSession(res.data.token, userPayload);
-          this.router.navigateByUrl('/student');
+          this.navigateStudentAfterAuth();
         } else {
           this.errorMessage.set('كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.');
         }
@@ -608,5 +615,14 @@ export class LoginPageComponent implements OnInit {
       return 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.';
     }
     return fallback;
+  }
+
+  private navigateStudentAfterAuth(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) {
+      this.router.navigateByUrl(returnUrl);
+    } else {
+      this.router.navigateByUrl('/student');
+    }
   }
 }

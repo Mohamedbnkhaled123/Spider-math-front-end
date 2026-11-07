@@ -175,8 +175,9 @@ export class StudentOverviewComponent implements OnInit {
   readonly dueQuizzes = signal<StudentDueQuizItem[]>([]);
   private readonly rawAssessmentsList = signal<any[]>([]);
 
-  readonly activeQuizFilter = signal<'ALL' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'>('ALL');
+  readonly activeQuizFilter = signal<'ALL' | 'GENERAL_QUIZ' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'>('ALL');
   readonly quizCountAll = computed(() => this.dueQuizzes().length);
+  readonly quizCountGeneral = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'GENERAL_QUIZ').length);
   readonly quizCountLecture = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'LECTURE_QUIZ').length);
   readonly quizCountHomework = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'HOMEWORK').length);
   readonly quizCountComprehensive = computed(() => this.dueQuizzes().filter(q => q.categoryType === 'COMPREHENSIVE_EXAM').length);
@@ -188,7 +189,7 @@ export class StudentOverviewComponent implements OnInit {
     return list.filter(q => q.categoryType === filter);
   });
 
-  setQuizFilter(filter: 'ALL' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
+  setQuizFilter(filter: 'ALL' | 'GENERAL_QUIZ' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
     this.activeQuizFilter.set(filter);
   }
 
@@ -474,24 +475,32 @@ export class StudentOverviewComponent implements OnInit {
         }
       }
 
-      let categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' = 'LECTURE_QUIZ';
+      let categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' | 'GENERAL_QUIZ' = 'LECTURE_QUIZ';
       let categoryLabelAr = 'كويز تفاعلي';
+      let unitTitleAr = '';
 
       if (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM') {
         categoryType = 'COMPREHENSIVE_EXAM';
         categoryLabelAr = 'امتحان شامل';
+        unitTitleAr = 'امتحان شامل للمرحلة';
       } else if (asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK') {
         categoryType = 'HOMEWORK';
         categoryLabelAr = 'واجب منزلي';
+        unitTitleAr = asm.unit_package_id?.title_ar || asm.unit_package_id?.title_en || 'واجب الوحدة';
+      } else if (!asm.unit_package_id && !asm.lecture_id) {
+        categoryType = 'GENERAL_QUIZ';
+        categoryLabelAr = 'كويز عام';
+        unitTitleAr = 'كويز عام للمرحلة';
       } else {
         categoryType = 'LECTURE_QUIZ';
         categoryLabelAr = 'كويز درس';
+        unitTitleAr = asm.unit_package_id?.title_ar || asm.unit_package_id?.title_en || 'كويز درس الوحدة';
       }
 
       return {
         id: asm._id,
         titleAr: asm.title_ar,
-        unitTitleAr: categoryLabelAr,
+        unitTitleAr,
         categoryType,
         categoryLabelAr,
         questionsCount: asm.questions?.length || 0,

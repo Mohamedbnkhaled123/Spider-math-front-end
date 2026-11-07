@@ -223,6 +223,7 @@ export class AssessmentStudioComponent implements OnInit {
     calculatorType: CalculatorMode;
     referenceSheetUrl: string | null;
     isPlacementTest: boolean;
+    requiresTeacherReview: boolean;
   }>({
     titleAr: '',
     titleEn: '',
@@ -237,7 +238,8 @@ export class AssessmentStudioComponent implements OnInit {
     availableUntil: null,
     calculatorType: 'NONE',
     referenceSheetUrl: null,
-    isPlacementTest: false
+    isPlacementTest: false,
+    requiresTeacherReview: false
   });
 
   readonly createGradeOptions = computed<GradeOption[]>(() => {
@@ -458,6 +460,7 @@ export class AssessmentStudioComponent implements OnInit {
             isPlacementTest: !!a.is_placement_test,
             assessmentType: a.assessment_type || a.assessmentType || 'QUIZ',
             isFree: !!(a.is_free ?? a.isFree),
+            requiresTeacherReview: !!(a.requires_teacher_review ?? a.requiresTeacherReview),
             submissionsCount: a.submissions_count || 0,
             questions: (a.questions || []).map((q: any, idx: number) => ({
               id: q._id || `q_${idx}`,
@@ -588,7 +591,8 @@ export class AssessmentStudioComponent implements OnInit {
       availableUntil: null,
       calculatorType: 'NONE',
       referenceSheetUrl: null,
-      isPlacementTest: false
+      isPlacementTest: false,
+      requiresTeacherReview: false
     });
     this.isCreateModalOpen.set(true);
   }
@@ -660,6 +664,7 @@ export class AssessmentStudioComponent implements OnInit {
       available_from: form.isScheduled && form.availableFrom ? new Date(form.availableFrom).toISOString() : null,
       available_until: form.isScheduled && form.availableUntil ? new Date(form.availableUntil).toISOString() : null,
       is_placement_test: !!form.isPlacementTest,
+      requires_teacher_review: form.requiresTeacherReview ?? false,
       is_published: true,
       questions: []
     };
@@ -1025,9 +1030,11 @@ export class AssessmentStudioComponent implements OnInit {
     const nextQuestions = [...asm.questions];
     nextQuestions[questionIndex] = updatedQ;
 
+    const hasAnyEssay = nextQuestions.some((q) => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO');
     const updatedAsm: AssessmentItem = {
       ...asm,
       questions: nextQuestions,
+      requiresTeacherReview: hasAnyEssay ? true : asm.requiresTeacherReview,
       totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
@@ -1105,9 +1112,11 @@ export class AssessmentStudioComponent implements OnInit {
     };
 
     const nextQuestions = [...asm.questions, newQ];
+    const isEssay = this.newQuestionType() === 'ESSAY' || (this.newQuestionType() as string) === 'ESSAY_PHOTO';
     const updatedAsm: AssessmentItem = {
       ...asm,
       questions: nextQuestions,
+      requiresTeacherReview: isEssay ? true : asm.requiresTeacherReview,
       totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
@@ -1243,6 +1252,7 @@ export class AssessmentStudioComponent implements OnInit {
       available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
       available_until: asm.isScheduled && asm.availableUntil ? new Date(asm.availableUntil).toISOString() : null,
       is_placement_test: !!asm.isPlacementTest,
+      requires_teacher_review: asm.questions.some(q => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO') ? true : !!asm.requiresTeacherReview,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
         return {
@@ -1289,5 +1299,10 @@ export class AssessmentStudioComponent implements OnInit {
         this.showEditorError(errorMsg);
       }
     });
+  }
+
+  hasEssayQuestions(asm: AssessmentItem | null | undefined): boolean {
+    if (!asm || !asm.questions) return false;
+    return asm.questions.some((q) => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO');
   }
 }

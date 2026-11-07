@@ -6,11 +6,11 @@
   <div class="flex items-center justify-between pb-4 mb-8 border-b border-surface-border">
     <div class="flex items-center gap-3">
       <a
-        routerLink="/student"
+        [routerLink]="returnToHome() ? '/' : '/student'"
         class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
       >
         <app-icon name="arrow-right" [size]="14" />
-        <span>{{ langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard' }}</span>
+        <span>{{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard') }}</span>
       </a>
 
       <span class="text-xs text-text-muted">|</span>
@@ -49,9 +49,9 @@
       </div>
       <h2 class="text-lg font-black text-text-primary mb-2">{{ langService.isArabic() ? 'لا يوجد تسليم سابق لهذا الامتحان' : 'No previous submission found for this exam' }}</h2>
       <p class="text-xs text-text-secondary max-w-md mx-auto mb-6 leading-relaxed">{{ loadError() }}</p>
-      <a routerLink="/student" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-bold shadow-md hover:opacity-95 transition-all">
+      <a [routerLink]="returnToHome() ? '/' : '/student'" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-bold shadow-md hover:opacity-95 transition-all">
         <app-icon name="arrow-right" [size]="14" />
-        <span>{{ langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard' }}</span>
+        <span>{{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'العودة للوحة الطالب' : 'Back to Student Dashboard') }}</span>
       </a>
     </div>
   } @else {
@@ -260,11 +260,11 @@
             </p>
             <div class="pt-2">
               <a
-                routerLink="/student"
+                [routerLink]="returnToHome() ? '/' : '/student'"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary/90 transition-all shadow-md"
               >
                 <app-icon name="arrow-right" [size]="14" />
-                <span>{{ langService.isArabic() ? 'العودة للوحة درجات الطالب' : 'Back to Student Grade Log' }}</span>
+                <span>{{ returnToHome() ? (langService.isArabic() ? 'إنهاء والعودة للصفحة الرئيسية' : 'Finish & Return to Home') : (langService.isArabic() ? 'العودة للوحة درجات الطالب' : 'Back to Student Grade Log') }}</span>
               </a>
             </div>
           </div>

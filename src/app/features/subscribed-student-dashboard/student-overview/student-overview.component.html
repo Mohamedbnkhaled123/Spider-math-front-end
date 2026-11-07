@@ -611,6 +611,24 @@
 
             <button
               type="button"
+              (click)="setQuizFilter('GENERAL_QUIZ')"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              [class.bg-teal-600]="activeQuizFilter() === 'GENERAL_QUIZ'"
+              [class.text-white]="activeQuizFilter() === 'GENERAL_QUIZ'"
+              [class.text-text-secondary]="activeQuizFilter() !== 'GENERAL_QUIZ'"
+              [class.hover:text-text-primary]="activeQuizFilter() !== 'GENERAL_QUIZ'"
+            >
+              <span>{{ langService.isArabic() ? 'كويزات عامة' : 'General Quizzes' }}</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-numeric"
+                [class.bg-white/20]="activeQuizFilter() === 'GENERAL_QUIZ'"
+                [class.bg-surface-card]="activeQuizFilter() !== 'GENERAL_QUIZ'"
+              >
+                {{ quizCountGeneral() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
               (click)="setQuizFilter('LECTURE_QUIZ')"
               class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
               [class.bg-amber-500]="activeQuizFilter() === 'LECTURE_QUIZ'"
@@ -668,20 +686,30 @@
             @for (quiz of filteredDueQuizzes(); track quiz.id) {
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-amber-500/40 transition-all">
                 <div class="flex items-center justify-between mb-1.5">
-                  <span
-                    class="px-2 py-0.5 rounded-full text-[10px] font-black border"
-                    [class.bg-amber-500/10]="quiz.categoryType === 'LECTURE_QUIZ'"
-                    [class.text-amber-500]="quiz.categoryType === 'LECTURE_QUIZ'"
-                    [class.border-amber-500/20]="quiz.categoryType === 'LECTURE_QUIZ'"
-                    [class.bg-blue-500/10]="quiz.categoryType === 'HOMEWORK'"
-                    [class.text-blue-500]="quiz.categoryType === 'HOMEWORK'"
-                    [class.border-blue-500/20]="quiz.categoryType === 'HOMEWORK'"
-                    [class.bg-purple-500/10]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
-                    [class.text-purple-500]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
-                    [class.border-purple-500/20]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
-                  >
-                    {{ quiz.categoryLabelAr }}
-                  </span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-black border"
+                      [class.bg-teal-500/10]="quiz.categoryType === 'GENERAL_QUIZ'"
+                      [class.text-teal-400]="quiz.categoryType === 'GENERAL_QUIZ'"
+                      [class.border-teal-500/20]="quiz.categoryType === 'GENERAL_QUIZ'"
+                      [class.bg-amber-500/10]="quiz.categoryType === 'LECTURE_QUIZ'"
+                      [class.text-amber-500]="quiz.categoryType === 'LECTURE_QUIZ'"
+                      [class.border-amber-500/20]="quiz.categoryType === 'LECTURE_QUIZ'"
+                      [class.bg-blue-500/10]="quiz.categoryType === 'HOMEWORK'"
+                      [class.text-blue-500]="quiz.categoryType === 'HOMEWORK'"
+                      [class.border-blue-500/20]="quiz.categoryType === 'HOMEWORK'"
+                      [class.bg-purple-500/10]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                      [class.text-purple-500]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                      [class.border-purple-500/20]="quiz.categoryType === 'COMPREHENSIVE_EXAM'"
+                    >
+                      {{ quiz.categoryLabelAr }}
+                    </span>
+                    @if (quiz.unitTitleAr && quiz.unitTitleAr !== quiz.categoryLabelAr) {
+                      <span class="text-[10px] font-bold text-text-muted">
+                        • {{ quiz.unitTitleAr }}
+                      </span>
+                    }
+                  </div>
                   @if (quiz.isUrgent) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20">
                       {{ langService.isArabic() ? 'مستعجل' : 'Urgent' }}

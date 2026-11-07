@@ -76,7 +76,7 @@ export interface StudentDueQuizItem {
   id: string;
   titleAr: string;
   unitTitleAr: string;
-  categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
+  categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' | 'GENERAL_QUIZ';
   categoryLabelAr: string;
   questionsCount: number;
   totalPoints: number;

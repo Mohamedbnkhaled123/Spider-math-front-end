@@ -247,6 +247,26 @@
         <app-icon name="book-open" [size]="14" />
         <span>{{ langService.isArabic() ? ('الوحدات المعروضة لصفحة الهبوط (' + (editableCms().landingUnitIds?.length || 0) + ')') : ('Showcased Landing Units (' + (editableCms().landingUnitIds?.length || 0) + ')') }}</span>
       </button>
+
+      <button
+        type="button"
+        (click)="activeCmsTab.set('TESTIMONIALS')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'TESTIMONIALS'"
+        [class.text-white]="activeCmsTab() === 'TESTIMONIALS'"
+        [class.shadow-md]="activeCmsTab() === 'TESTIMONIALS'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'TESTIMONIALS'"
+        [class.text-text-secondary]="activeCmsTab() !== 'TESTIMONIALS'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'TESTIMONIALS'"
+      >
+        <app-icon name="message-circle" [size]="14" />
+        <span>{{ langService.isArabic() ? ('آراء الطلاب وأولياء الأمور (' + adminTestimonials().length + ')') : ('Testimonials (' + adminTestimonials().length + ')') }}</span>
+        @if (pendingTestimonialsCount() > 0) {
+          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">
+            {{ pendingTestimonialsCount() }}
+          </span>
+        }
+      </button>
     </div>
 
     <!-- ========================================================================= -->
@@ -1209,6 +1229,263 @@
             } @empty {
               <div class="col-span-2 p-8 rounded-2xl border border-dashed border-surface-border text-center text-text-muted text-xs bg-surface-bg/40">
                 {{ langService.isArabic() ? 'لا توجد وحدات منشأة في المنصة لهذا المنهج حتى الآن. يمكنك إنشاء وحدات من قسم «استوديو المناهج».' : 'No units created for this curriculum yet. You can create units in Curriculum Studio.' }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: TESTIMONIALS (آراء وتقييمات الطلاب وأولياء الأمور)                   -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'TESTIMONIALS') {
+      <div class="space-y-6 animate-fade-in text-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-border">
+          <div>
+            <h4 class="font-black text-text-primary text-sm flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-brand-gold"></span>
+              <span>{{ langService.isArabic() ? 'إدارة وتدقيق آراء الطلاب وأولياء الأمور' : 'Testimonials & Reviews Manager' }}</span>
+            </h4>
+            <p class="text-[11px] text-text-secondary mt-0.5">
+              {{ langService.isArabic()
+                ? 'مراجعة آراء الطلاب وأولياء الأمور، اعتماد ونشر الرأي على الصفحة الرئيسية، تعديل النص، وتحديد درجة الطالب الرسمية.'
+                : 'Review student & parent feedback, approve/publish to landing page, edit text, and set student score.' }}
+            </p>
+          </div>
+
+          <!-- Filter & Refresh -->
+          <div class="flex items-center gap-2">
+            <div class="inline-flex rounded-xl p-1 bg-surface-bg border border-surface-border">
+              <button
+                type="button"
+                (click)="testimonialFilter.set('ALL')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                [class.bg-brand-primary]="testimonialFilter() === 'ALL'"
+                [class.text-white]="testimonialFilter() === 'ALL'"
+                [class.text-text-muted]="testimonialFilter() !== 'ALL'"
+              >
+                {{ langService.isArabic() ? 'الكل' : 'All' }} ({{ adminTestimonials().length }})
+              </button>
+              <button
+                type="button"
+                (click)="testimonialFilter.set('PENDING')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                [class.bg-amber-500]="testimonialFilter() === 'PENDING'"
+                [class.text-white]="testimonialFilter() === 'PENDING'"
+                [class.text-text-muted]="testimonialFilter() !== 'PENDING'"
+              >
+                {{ langService.isArabic() ? 'بانتظار الاعتماد' : 'Pending' }} ({{ pendingTestimonialsCount() }})
+              </button>
+              <button
+                type="button"
+                (click)="testimonialFilter.set('APPROVED')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                [class.bg-emerald-500]="testimonialFilter() === 'APPROVED'"
+                [class.text-white]="testimonialFilter() === 'APPROVED'"
+                [class.text-text-muted]="testimonialFilter() !== 'APPROVED'"
+              >
+                {{ langService.isArabic() ? 'المنشور' : 'Published' }}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              (click)="loadAdminTestimonials()"
+              class="p-2 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-brand-primary transition-all cursor-pointer"
+              [title]="langService.isArabic() ? 'تحديث القائمة' : 'Refresh List'"
+            >
+              <app-icon name="refresh" [size]="14" [className]="isLoadingTestimonials() ? 'animate-spin' : ''" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Testimonials Cards List -->
+        @if (isLoadingTestimonials()) {
+          <div class="p-8 text-center text-text-muted">
+            <app-icon name="loader" [size]="20" className="animate-spin mx-auto mb-2 text-brand-primary" />
+            <span>{{ langService.isArabic() ? 'جاري تحميل الآراء والتقييمات...' : 'Loading testimonials...' }}</span>
+          </div>
+        } @else if (filteredTestimonials().length === 0) {
+          <div class="p-8 text-center border border-dashed border-surface-border rounded-2xl bg-surface-bg/40 text-text-muted">
+            {{ langService.isArabic() ? 'لا توجد آراء مسجلة في هذا القسم حالياً.' : 'No testimonials found in this view.' }}
+          </div>
+        } @else {
+          <div class="space-y-4">
+            @for (t of filteredTestimonials(); track t.id) {
+              <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+                
+                <!-- Card Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-border/60">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-gold/10 text-brand-gold flex items-center justify-center font-bold">
+                      <app-icon name="user" [size]="16" />
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-text-primary text-sm">{{ t.authorName }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                          [class.bg-brand-primary/10]="t.authorRole === 'STUDENT'"
+                          [class.border-brand-primary/30]="t.authorRole === 'STUDENT'"
+                          [class.text-brand-primary]="t.authorRole === 'STUDENT'"
+                          [class.bg-purple-500/10]="t.authorRole === 'PARENT'"
+                          [class.border-purple-500/30]="t.authorRole === 'PARENT'"
+                          [class.text-purple-400]="t.authorRole === 'PARENT'"
+                        >
+                          {{ t.authorRole === 'PARENT' ? (langService.isArabic() ? 'ولي أمر' : 'Parent') : (langService.isArabic() ? 'طالب' : 'Student') }}
+                        </span>
+                      </div>
+                      <div class="text-[11px] text-text-muted flex items-center gap-2 mt-0.5">
+                        <span>{{ formatStudentStage(t.studentStage) }}</span>
+                        @if (t.userPhone) {
+                          <span>•</span>
+                          <span class="font-mono">{{ t.userPhone }}</span>
+                        }
+                        @if (t.studentCode) {
+                          <span>•</span>
+                          <span class="font-mono">{{ t.studentCode }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Status Badge -->
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="px-2.5 py-1 rounded-full text-[10px] font-bold border"
+                      [class.bg-emerald-500/10]="t.isApproved"
+                      [class.text-emerald-500]="t.isApproved"
+                      [class.border-emerald-500/30]="t.isApproved"
+                      [class.bg-amber-500/10]="!t.isApproved"
+                      [class.text-amber-500]="!t.isApproved"
+                      [class.border-amber-500/30]="!t.isApproved"
+                    >
+                      {{ t.isApproved ? (langService.isArabic() ? 'معتمد ومنشور على الموقع' : 'Approved & Published') : (langService.isArabic() ? 'بانتظار موافقة المعلمة' : 'Pending Approval') }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Review Content & Score Inputs -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <!-- Left: Review Text -->
+                  <div class="lg:col-span-2 space-y-1.5">
+                    <label class="block text-[11px] font-bold text-text-secondary">
+                      {{ langService.isArabic() ? 'نص الرأي المكتوب:' : 'Review Text:' }}
+                    </label>
+                    @if (editingTestimonialId() === t.id) {
+                      <textarea
+                        rows="3"
+                        [(ngModel)]="t.reviewText"
+                        class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-card text-xs focus:border-brand-primary outline-none"
+                      ></textarea>
+                    } @else {
+                      <p class="p-3 rounded-xl bg-surface-card border border-surface-border text-xs text-text-primary leading-relaxed">
+                        "{{ t.reviewText }}"
+                      </p>
+                    }
+                  </div>
+
+                  <!-- Right: Teacher-defined Student Score & Stage -->
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-[11px] font-bold text-text-secondary mb-1">
+                        {{ langService.isArabic() ? 'درجة الطالب والنتيجة (تحددها المعلمة):' : 'Student Grade (Set by Teacher):' }}
+                      </label>
+                      <input
+                        type="text"
+                        [(ngModel)]="t.studentGrade"
+                        [placeholder]="langService.isArabic() ? 'مثال: 98% / الدرجة النهائية A+' : 'e.g. 98% / Final A+'"
+                        class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary font-bold focus:border-brand-primary outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <span class="block text-[11px] font-bold text-text-secondary mb-1">
+                        {{ langService.isArabic() ? 'التقييم بالنجوم:' : 'Rating:' }}
+                      </span>
+                      <div class="flex items-center gap-1 text-brand-gold">
+                        @for (s of [1, 2, 3, 4, 5]; track s) {
+                          <app-icon
+                            name="star"
+                            [size]="14"
+                            [className]="s <= t.rating ? 'text-brand-gold' : 'text-surface-border'"
+                          />
+                        }
+                        <span class="text-xs font-bold font-numeric ms-1 text-text-muted">({{ t.rating }}/5)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actions Footer -->
+                <div class="pt-3 border-t border-surface-border/40 flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    @if (editingTestimonialId() === t.id) {
+                      <button
+                        type="button"
+                        (click)="saveTestimonialEdits(t)"
+                        class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-sm transition-all"
+                      >
+                        <app-icon name="check" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'تأكيد وحفظ التعديلات' : 'Save Changes' }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="editingTestimonialId.set(null)"
+                        class="px-3 py-1.5 rounded-xl border border-surface-border text-xs font-bold text-text-secondary hover:bg-surface-card cursor-pointer"
+                      >
+                        {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        (click)="editingTestimonialId.set(t.id)"
+                        class="px-3 py-1.5 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-card text-xs font-bold text-text-primary flex items-center gap-1 cursor-pointer transition-all"
+                      >
+                        <app-icon name="edit" [size]="13" />
+                        <span>{{ langService.isArabic() ? 'تعديل النص أو الدرجة' : 'Edit Text / Grade' }}</span>
+                      </button>
+                    }
+
+                    <button
+                      type="button"
+                      (click)="saveTestimonialEdits(t)"
+                      class="px-3 py-1.5 rounded-xl border border-brand-gold/30 bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-gold text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                      [title]="langService.isArabic() ? 'حفظ درجة الطالب المدخلة' : 'Save Student Grade'"
+                    >
+                      <app-icon name="check-circle" [size]="13" />
+                      <span>{{ langService.isArabic() ? 'حفظ الدرجة' : 'Save Grade' }}</span>
+                    </button>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      (click)="toggleTestimonialApproval(t)"
+                      class="px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                      [class.bg-emerald-500]="!t.isApproved"
+                      [class.text-white]="!t.isApproved"
+                      [class.hover:bg-emerald-600]="!t.isApproved"
+                      [class.border]="t.isApproved"
+                      [class.border-amber-500/40]="t.isApproved"
+                      [class.text-amber-500]="t.isApproved"
+                      [class.hover:bg-amber-500/10]="t.isApproved"
+                    >
+                      <app-icon [name]="t.isApproved ? 'lock' : 'check'" [size]="14" />
+                      <span>{{ t.isApproved ? (langService.isArabic() ? 'إلغاء النشر من الموقع' : 'Unpublish Review') : (langService.isArabic() ? 'اعتماد ونشر الرأي على الموقع' : 'Approve & Publish') }}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="deleteTestimonial(t)"
+                      class="p-1.5 rounded-xl border border-surface-border hover:border-rose-500/50 text-text-muted hover:text-rose-500 cursor-pointer transition-all"
+                      [title]="langService.isArabic() ? 'حذف الرأي' : 'Delete Review'"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                </div>
+
               </div>
             }
           </div>

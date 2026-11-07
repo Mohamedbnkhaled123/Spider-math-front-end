@@ -247,13 +247,15 @@ export class CurriculumStudioComponent implements OnInit {
     calculatorType: 'NONE' | 'DESMOS';
     xpReward: number | null;
     referenceSheetUrl: string | null;
+    requiresTeacherReview: boolean;
   }>({
     titleAr: '',
     type: 'QUIZ',
     durationMinutes: 20,
     calculatorType: 'NONE',
     xpReward: null,
-    referenceSheetUrl: null
+    referenceSheetUrl: null,
+    requiresTeacherReview: false
   });
 
   // Reference Sheet Toggles
@@ -639,7 +641,7 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
-    const titleEn = form.titleEn?.trim() || 'Unit Package';
+    const titleEn = form.titleEn?.trim() || form.titleAr.trim();
     const cleanSlug = titleEn
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -993,6 +995,11 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   // Assessment CRUD
   // =========================================================================
+  hasEssayInCurriculum(asm: AssessmentAdminItem | null | undefined): boolean {
+    if (!asm || !asm.questions) return false;
+    return asm.questions.some(q => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
+  }
+
   openCreateAssessmentModal(unit: UnitPackageAdminItem): void {
     this.activeUnitForAssessment.set(unit);
     this.isRefSheetActiveInCreateAssessment.set(false);
@@ -1002,7 +1009,23 @@ export class CurriculumStudioComponent implements OnInit {
       durationMinutes: 20,
       calculatorType: 'NONE',
       xpReward: null,
-      referenceSheetUrl: null
+      referenceSheetUrl: null,
+      requiresTeacherReview: false
+    });
+    this.isCreateAssessmentModalOpen.set(true);
+  }
+
+  openCreateGeneralAssessmentModal(): void {
+    this.activeUnitForAssessment.set(null);
+    this.isRefSheetActiveInCreateAssessment.set(false);
+    this.newAssessmentForm.set({
+      titleAr: '',
+      type: 'QUIZ',
+      durationMinutes: 20,
+      calculatorType: 'NONE',
+      xpReward: null,
+      referenceSheetUrl: null,
+      requiresTeacherReview: false
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -1011,20 +1034,16 @@ export class CurriculumStudioComponent implements OnInit {
     this.newAssessmentForm.update((prev) => ({
       ...prev,
       type,
-      durationMinutes: type === 'HOMEWORK' ? 60 : (type === 'COMPREHENSIVE_EXAM' ? 45 : 20)
+      durationMinutes: type === 'HOMEWORK' ? 60 : (type === 'COMPREHENSIVE_EXAM' ? 45 : 20),
+      requiresTeacherReview: type === 'HOMEWORK' ? true : prev.requiresTeacherReview
     }));
   }
 
   saveNewAssessment(): void {
     const unit = this.activeUnitForAssessment();
     const form = this.newAssessmentForm();
-    if (!unit || !form.titleAr.trim()) return;
-
-    if (!unit.id || unit.id.startsWith('unit_')) {
-      this.toastTriggered.emit({
-        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات أو واجبات إليها.',
-        type: 'error'
-      });
+    if (!form.titleAr.trim()) {
+      this.toastTriggered.emit({ text: 'يرجى كتابة عنوان التقييم أو الكويز!', type: 'error' });
       return;
     }
 
@@ -1037,6 +1056,65 @@ export class CurriculumStudioComponent implements OnInit {
     }
 
     const isHw = form.type === 'HOMEWORK';
+    const requiresTeacherReview = isHw ? true : !!form.requiresTeacherReview;
+
+    // General Assessment (Standalone for grade level)
+    if (!unit) {
+      const payload = {
+        unit_package_id: null,
+        curriculum: this.selectedCurriculum(),
+        grade_level: this.selectedGrade(),
+        academic_term: this.selectedTerm(),
+        title_ar: form.titleAr.trim(),
+        title_en: form.titleAr.trim(),
+        assessment_type: form.type,
+        time_limit_minutes: form.durationMinutes || (isHw ? 60 : 30),
+        min_expected_solve_sec: 10,
+        max_attempts: isHw ? 5 : 3,
+        graph_calculator: form.calculatorType,
+        reference_sheet_url: form.referenceSheetUrl || null,
+        xp_reward: Number(form.xpReward),
+        is_published: true,
+        requires_teacher_review: requiresTeacherReview,
+        questions: []
+      };
+
+      this.http.post<{ success: boolean; data: any }>('/api/v1/admin/assessments', payload).subscribe({
+        next: (res) => {
+          const created = res?.data;
+          const newAsm: AssessmentAdminItem = {
+            id: created?._id || created?.id,
+            unitId: '',
+            titleAr: form.titleAr.trim(),
+            type: form.type,
+            calculatorType: form.calculatorType,
+            durationMinutes: form.durationMinutes,
+            xpReward: form.xpReward,
+            referenceSheetUrl: form.referenceSheetUrl || null,
+            requiresTeacherReview: requiresTeacherReview,
+            submissionsCount: 0,
+            questions: []
+          };
+          this.assessmentSaved.emit(newAsm);
+          this.isCreateAssessmentModalOpen.set(false);
+          this.toastTriggered.emit({ text: 'تم إنشاء الكويز العام للمرحلة بنجاح!', type: 'success' });
+        },
+        error: (err) => {
+          const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة الكويز العام للمرحلة.';
+          this.toastTriggered.emit({ text: errMsg, type: 'error' });
+        }
+      });
+      return;
+    }
+
+    if (!unit.id || unit.id.startsWith('unit_')) {
+      this.toastTriggered.emit({
+        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات أو واجبات إليها.',
+        type: 'error'
+      });
+      return;
+    }
+
     const payload = {
       unit_package_id: unit.id,
       curriculum: unit.curriculum,
@@ -1052,6 +1130,7 @@ export class CurriculumStudioComponent implements OnInit {
       reference_sheet_url: form.referenceSheetUrl || null,
       xp_reward: Number(form.xpReward),
       is_published: true,
+      requires_teacher_review: requiresTeacherReview,
       questions: []
     };
 
@@ -1067,6 +1146,7 @@ export class CurriculumStudioComponent implements OnInit {
           durationMinutes: form.durationMinutes,
           xpReward: form.xpReward,
           referenceSheetUrl: form.referenceSheetUrl || null,
+          requiresTeacherReview: requiresTeacherReview,
           submissionsCount: 0,
           questions: (created?.questions || []).map((q: any, idx: number) => ({
             id: q._id || `q_${idx}`,
@@ -1227,7 +1307,8 @@ export class CurriculumStudioComponent implements OnInit {
 
     const updatedAsm: AssessmentAdminItem = {
       ...asm,
-      questions: [...asm.questions, newQ]
+      questions: [...asm.questions, newQ],
+      requiresTeacherReview: !isMcq ? true : asm.requiresTeacherReview
     };
     this.activeAssessment.set(updatedAsm);
 
@@ -1320,6 +1401,9 @@ export class CurriculumStudioComponent implements OnInit {
       }
     }
 
+    const hasEssay = asm.questions.some(q => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
+    const requiresTeacherReview = hasEssay ? true : !!asm.requiresTeacherReview;
+
     // Transform questions into normalized schema for backend
     const payload = {
       title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
@@ -1327,6 +1411,7 @@ export class CurriculumStudioComponent implements OnInit {
       duration_minutes: asm.durationMinutes,
       reference_sheet_url: asm.referenceSheetUrl || null,
       xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
+      requires_teacher_review: requiresTeacherReview,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';
         return {
@@ -1343,6 +1428,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
       next: () => {
+        asm.requiresTeacherReview = requiresTeacherReview;
         this.assessmentSaved.emit(asm);
         this.isAssessmentEditorOpen.set(false);
         this.toastTriggered.emit({

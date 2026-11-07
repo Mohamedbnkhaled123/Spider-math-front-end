@@ -15,6 +15,15 @@
       <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
         <button
           type="button"
+          (click)="openCreateGeneralAssessmentModal()"
+          class="px-4 py-2.5 rounded-2xl text-xs font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/30 hover:bg-brand-primary/20 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+        >
+          <app-icon name="plus" [size]="15" />
+          <span>{{ langService.isArabic() ? 'إضافة كويز عام للمرحلة' : 'Add General Quiz' }}</span>
+        </button>
+
+        <button
+          type="button"
           (click)="openCreateUnitModal()"
           class="px-5 py-2.5 rounded-2xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
@@ -1102,6 +1111,43 @@
             }
           </div>
 
+          <!-- Teacher Review Requirement (Toggle disappears if essay questions exist) -->
+          @if (hasEssayInCurriculum(asm)) {
+            <div class="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-3">
+              <app-icon name="alert-triangle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
+              <div class="text-xs">
+                <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'يتطلب تصحيح المعلمة إجبارياً' : 'Mandatory Teacher Grading' }}</span>
+                <p class="text-text-secondary mt-0.5 leading-relaxed">
+                  {{ langService.isArabic() ? 'يحتوي هذا الامتحان على أسئلة مقالية (حل يدوي)، لذا يجب أن تنتظر النتيجة تصحيح المعلمة واعتمادها في استوديو التصحيح ولا يمكن نشرها تلقائياً.' : 'This assessment contains essay questions requiring handwritten steps, so submissions must await teacher review and grading.' }}
+                </p>
+              </div>
+            </div>
+          } @else {
+            <div class="p-4 rounded-2xl border border-surface-border bg-surface-card space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'اعتماد النتيجة ومراجعة المعلمة:' : 'Teacher Review & Approval:' }}</span>
+                  <span class="text-[11px] text-text-muted">
+                    {{ asm.requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة مراجعة واعتماد المعلمة قبل إعلانها للطالب' : 'Awaits teacher review before publishing') : (langService.isArabic() ? 'تصحيح تلقائي وإعلان فوري للنتيجة والـ XP للطالب بمجرد التسليم' : 'Instant auto-grading & immediate result release') }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  (click)="asm.requiresTeacherReview = !asm.requiresTeacherReview"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  [class.bg-brand-primary]="asm.requiresTeacherReview"
+                  [class.bg-surface-border]="!asm.requiresTeacherReview"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    [class.translate-x-5]="asm.requiresTeacherReview"
+                    [class.translate-x-0]="!asm.requiresTeacherReview"
+                  ></span>
+                </button>
+              </div>
+            </div>
+          }
+
           <!-- Existing Questions List -->
           <div class="space-y-4">
             <span class="font-bold text-text-primary block text-sm">
@@ -1621,10 +1667,10 @@
         <div class="p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between">
           <div>
             <h3 class="text-base font-black text-text-primary">
-              {{ langService.isArabic() ? 'إضافة تقييم جديد للوحدة' : 'Add New Assessment to Unit' }}
+              {{ activeUnitForAssessment() ? (langService.isArabic() ? 'إضافة تقييم جديد للوحدة' : 'Add New Assessment to Unit') : (langService.isArabic() ? 'إضافة كويز عام للمرحلة' : 'Add General Quiz for Grade') }}
             </h3>
             <p class="text-xs text-text-secondary mt-0.5">
-              {{ activeUnitForAssessment()?.titleAr }}
+              {{ activeUnitForAssessment()?.titleAr || (langService.isArabic() ? 'كويز عام للمرحلة الدراسية المحددة' : 'General Quiz for Selected Grade') }}
             </p>
           </div>
 
@@ -1777,6 +1823,43 @@
               </select>
             </div>
           </div>
+
+          <!-- Teacher Review Requirement (Only for Quiz and Comprehensive Exam, Homework is always manual review) -->
+          @if (newAssessmentForm().type === 'HOMEWORK') {
+            <div class="p-3.5 rounded-2xl border border-purple-500/30 bg-purple-500/10 flex items-start gap-3">
+              <app-icon name="edit" [size]="16" className="text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+              <div class="text-xs">
+                <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'يتطلب تصحيح ومراجعة المعلمة إجبارياً' : 'Mandatory Teacher Grading' }}</span>
+                <p class="text-text-secondary mt-0.5 leading-relaxed">
+                  {{ langService.isArabic() ? 'الواجب المنزلي يتطلب فحص حلول الطلاب وكشاكيلهم المرفوعة وتصحيحها يدوياً.' : 'Homework requires reviewing handwritten student solutions and grading them manually.' }}
+                </p>
+              </div>
+            </div>
+          } @else {
+            <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'مراجعة وتصحيح المعلمة:' : 'Teacher Review Requirement:' }}</span>
+                  <span class="text-[11px] text-text-muted">
+                    {{ newAssessmentForm().requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة تصحيح المعلمة واعتمادها قبل إعلانها للطالب' : 'Results await teacher review and approval') : (langService.isArabic() ? 'اعتماد النتيجة ونقاط الـ XP وإعلانها فورياً للطالب فور التسليم' : 'Instant auto-grading and immediate XP release') }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  (click)="newAssessmentForm().requiresTeacherReview = !newAssessmentForm().requiresTeacherReview"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  [class.bg-brand-primary]="newAssessmentForm().requiresTeacherReview"
+                  [class.bg-surface-border]="!newAssessmentForm().requiresTeacherReview"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    [class.translate-x-5]="newAssessmentForm().requiresTeacherReview"
+                    [class.translate-x-0]="!newAssessmentForm().requiresTeacherReview"
+                  ></span>
+                </button>
+              </div>
+            </div>
+          }
 
           <!-- Reference Sheet (ورقة القوانين والمفاهيم الرياضية) -->
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
