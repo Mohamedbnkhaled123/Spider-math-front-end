@@ -106,7 +106,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   readonly whatsappSubscriptionUrl = computed<string>(() => {
     const title = this.lockedContentTitle();
-    const phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    let phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    if (phone.startsWith('0') && phone.length === 11) {
+      phone = '2' + phone;
+    }
     const msg = encodeURIComponent(
       `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
     );
@@ -651,7 +654,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   openWhatsAppSubscription(): void {
     const title = this.lockedContentTitle();
-    const phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    let phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    if (phone.startsWith('0') && phone.length === 11) {
+      phone = '2' + phone;
+    }
     const msg = encodeURIComponent(
       `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
     );
@@ -803,7 +809,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     if (grade.hasPlacementTest) {
       return isAr ? 'امتحان تحديد المستوى متاح' : 'Placement Test Available';
     }
-    return isAr ? 'قريباً' : 'Coming Soon';
+    return isAr ? 'Coming Soon (قريباً)' : 'Coming Soon (قريباً)';
   }
 
   getGradeMathIcon(code: string): 'operators' | 'division' | 'triangle' | 'calculus' {

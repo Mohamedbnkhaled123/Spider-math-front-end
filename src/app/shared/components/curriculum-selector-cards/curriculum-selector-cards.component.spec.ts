@@ -179,5 +179,14 @@ describe('CurriculumSelectorCardsComponent', () => {
       expect(component.showAuthGateModal()).toBeFalse();
       expect(navigateSpy).toHaveBeenCalledWith(['/student/assessments', 'quiz_free_2']);
     });
+
+    it('should format whatsapp subscription URL with international country code for Egypt', () => {
+      component.landingData.set({ whatsappSupportNumber: '01012345678' });
+      component.lockedContentTitle.set('وحدة الجبر');
+
+      const url = component.whatsappSubscriptionUrl();
+      expect(url).toContain('https://wa.me/201012345678?text=');
+      expect(url).toContain(encodeURIComponent('وحدة الجبر'));
+    });
   });
 });

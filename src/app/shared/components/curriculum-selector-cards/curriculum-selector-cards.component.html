@@ -611,10 +611,14 @@
                       <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="13" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                     </span>
                   } @else if (grade.hasPlacementTest) {
-                    <span class="group-hover:underline flex items-center gap-1.5 text-amber-300">
+                    <button
+                      type="button"
+                      (click)="startPlacementExamForGrade(grade); $event.stopPropagation()"
+                      class="group-hover:underline flex items-center gap-1.5 text-amber-300 font-bold bg-transparent border-0 p-0 cursor-pointer text-xs"
+                    >
                       <app-icon name="target" [size]="13" />
-                      {{ langService.isArabic() ? 'بدء امتحان تحديد المستوى' : 'Start Placement Test' }}
-                    </span>
+                      <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
+                    </button>
                   } @else {
                     <span class="flex items-center gap-1.5 text-text-muted font-normal text-[11px]">
                       <app-icon name="clock" [size]="12" />
