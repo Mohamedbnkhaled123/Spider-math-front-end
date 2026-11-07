@@ -363,5 +363,81 @@ describe('AssessmentStudioComponent', () => {
       const q1 = component.activeAssessment()?.questions[0];
       expect(q1?.questionImageUrl).toBeNull();
     });
+
+    it('should open AI extraction modal when openAiExtractionModal is invoked', () => {
+      expect(component.isAiExtractionModalOpen()).toBe(false);
+      component.openAiExtractionModal();
+      expect(component.isAiExtractionModalOpen()).toBe(true);
+    });
+
+    it('should bulk insert AI-extracted questions with sequential orders and update totalPoints', () => {
+      component.openEditor(sampleAssessment);
+      const initialCount = component.activeAssessment()!.questions.length;
+
+      const aiQuestions: any[] = [
+        {
+          id: 'q_ai_1',
+          order: 0,
+          type: 'MCQ',
+          textAr: 'سؤال ذكاء اصطناعي 1 $x^2$',
+          options: ['أ', 'ب', 'ج', 'د'],
+          correctOptionIndex: 1,
+          points: 3
+        },
+        {
+          id: 'q_ai_2',
+          order: 0,
+          type: 'ESSAY',
+          textAr: 'سؤال مقالي ذكاء اصطناعي',
+          options: [],
+          correctOptionIndex: 0,
+          points: 5
+        }
+      ];
+
+      component.onQuestionsExtracted(aiQuestions);
+
+      const updatedAsm = component.activeAssessment()!;
+      expect(updatedAsm.questions.length).toBe(initialCount + 2);
+      expect(updatedAsm.questions[initialCount].order).toBe(initialCount + 1);
+      expect(updatedAsm.questions[initialCount].textAr).toBe('سؤال ذكاء اصطناعي 1 $x^2$');
+      expect(updatedAsm.questions[initialCount + 1].order).toBe(initialCount + 2);
+      expect(updatedAsm.totalPoints).toBe(sampleAssessment.totalPoints + 3 + 5);
+    });
+
+    it('should cache file session and enable manual slicer for existing question', () => {
+      component.openEditor(sampleAssessment);
+
+      const mockSession: any = {
+        fileName: 'exam_2026.pdf',
+        fileType: 'pdf',
+        file: null,
+        pageNumber: 3,
+        canvas: document.createElement('canvas'),
+        dataUrl: 'data:image/webp;base64,mockCanvas'
+      };
+
+      component.onFileSessionCached(mockSession);
+      expect(component.cachedFileSession()).toBe(mockSession);
+
+      const targetQ = component.activeAssessment()!.questions[0];
+      component.openManualSlicerForExistingQuestion(targetQ);
+
+      expect(component.isManualSlicerOpen()).toBe(true);
+      expect(component.activeQuestionForSlicing()).toBe(targetQ);
+
+      component.onManualSliceSaved({
+        imageUrl: 'https://cloudinary.com/cropped_q1.webp',
+        blob: new Blob(['cropped']),
+        dataUrl: 'data:image/webp;base64,cropped',
+        sizeKb: 45,
+        width: 300,
+        height: 200
+      });
+
+      expect(targetQ.questionImageUrl).toBe('https://cloudinary.com/cropped_q1.webp');
+      expect(component.isManualSlicerOpen()).toBe(false);
+      expect(component.activeQuestionForSlicing()).toBeNull();
+    });
   });
 });

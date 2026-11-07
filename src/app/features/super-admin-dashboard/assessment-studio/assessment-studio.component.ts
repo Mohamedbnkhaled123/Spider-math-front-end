@@ -36,6 +36,10 @@ import {
 import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedule-alarm-picker/schedule-alarm-picker.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
+import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal/ai-question-extraction-modal.component';
+import { ICachedFileSession } from './ai-question-extraction-modal/ai-question-extraction-modal.models';
+import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
+import { ISliceResult } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
 
 /**
  * Timezone Drift Fix (Fix #2): Converts UTC/ISO timestamp to local input string (YYYY-MM-DDTHH:mm)
@@ -65,7 +69,9 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
     ImageCompressorUploaderComponent,
     ScheduleAlarmPickerComponent,
     MathFormulaComponent,
-    MathVirtualKeyboardComponent
+    MathVirtualKeyboardComponent,
+    AiQuestionExtractionModalComponent,
+    ManualImageSlicerModalComponent
   ],
   templateUrl: './assessment-studio.component.html',
   styleUrl: './assessment-studio.component.scss',
@@ -269,9 +275,78 @@ export class AssessmentStudioComponent implements OnInit {
   readonly isMathKeyboardOpen = signal<boolean>(false);
   readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
+  // AI Question Extraction & Slicer State (Phase 5)
+  readonly isAiExtractionModalOpen = signal<boolean>(false);
+  readonly cachedFileSession = signal<ICachedFileSession | null>(null);
+  readonly isManualSlicerOpen = signal<boolean>(false);
+  readonly activeQuestionForSlicing = signal<AssessmentQuestionItem | null>(null);
+
   openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
     this.mathKeyboardTarget.set(target);
     this.isMathKeyboardOpen.set(true);
+  }
+
+  openAiExtractionModal(): void {
+    this.isAiExtractionModalOpen.set(true);
+  }
+
+  onQuestionsExtracted(extractedQuestions: AssessmentQuestionItem[]): void {
+    const asm = this.activeAssessment();
+    if (!asm || extractedQuestions.length === 0) return;
+
+    const currentQuestions = asm.questions || [];
+    const startOrder = currentQuestions.length;
+    const formattedNewQuestions = extractedQuestions.map((q, idx) => ({
+      ...q,
+      order: startOrder + idx + 1
+    }));
+
+    const updatedQuestions = [...currentQuestions, ...formattedNewQuestions];
+    this.activeAssessment.set({
+      ...asm,
+      questions: updatedQuestions,
+      totalPoints: updatedQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
+    });
+
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `تم إدراج ${extractedQuestions.length} أسئلة بنجاح بالامتحان!`
+        : `Successfully inserted ${extractedQuestions.length} questions into assessment!`,
+      type: 'success'
+    });
+  }
+
+  onFileSessionCached(session: ICachedFileSession): void {
+    this.cachedFileSession.set(session);
+  }
+
+  openManualSlicerForExistingQuestion(q: AssessmentQuestionItem): void {
+    this.activeQuestionForSlicing.set(q);
+    this.isManualSlicerOpen.set(true);
+  }
+
+  openManualSlicerForComposer(): void {
+    this.activeQuestionForSlicing.set(null);
+    this.isManualSlicerOpen.set(true);
+  }
+
+  onManualSliceSaved(result: ISliceResult): void {
+    const q = this.activeQuestionForSlicing();
+    if (q) {
+      q.questionImageUrl = result.imageUrl;
+      const asm = this.activeAssessment();
+      if (asm) {
+        this.activeAssessment.set({ ...asm });
+      }
+    } else {
+      this.newQuestionImageUrl.set(result.imageUrl);
+    }
+    this.isManualSlicerOpen.set(false);
+    this.activeQuestionForSlicing.set(null);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم قص الصورة وحفظها بنجاح!' : 'Image cropped successfully!',
+      type: 'success'
+    });
   }
 
   ngOnInit(): void {

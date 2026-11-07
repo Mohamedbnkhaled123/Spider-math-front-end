@@ -1,0 +1,680 @@
+@if (isOpen()) {
+  <div
+    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md modal-backdrop"
+    (click)="close()"
+  >
+    <div
+      class="modal-window w-full max-w-5xl bg-surface-card border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- MODAL HEADER -->
+      <div class="px-5 py-4 border-b border-surface-border bg-surface-bg/70 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-brand-primary/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
+            <app-icon name="sparkles" [size]="20" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-black text-text-primary flex items-center gap-2">
+              <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي' : 'AI Math Question Extraction' }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                Gemini Vision
+              </span>
+            </h3>
+            <p class="text-[11px] text-text-muted hidden sm:block">
+              {{ langService.isArabic() ? 'استخراج فوري للمسائل والمعادلات الرياضية (LaTeX) وقص الرسومات الهندسية بدقة فائقة' : 'Convert exam papers and worksheets into interactive digital LaTeX questions instantly' }}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="close()"
+          class="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-border/50 border border-transparent hover:border-surface-border transition-all cursor-pointer"
+          [title]="langService.isArabic() ? 'إغلاق' : 'Close'"
+        >
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+
+      <!-- STEP WIZARD INDICATOR -->
+      <div class="px-5 py-2.5 bg-surface-bg/40 border-b border-surface-border flex items-center justify-between shrink-0 overflow-x-auto no-scrollbar text-[11px]">
+        <div class="flex items-center gap-2 sm:gap-4 font-bold">
+          <button
+            type="button"
+            (click)="goToStep('UPLOAD_AND_SELECT')"
+            class="flex items-center gap-1.5 transition-all cursor-pointer"
+            [class.text-brand-primary]="currentStep() === 'UPLOAD_AND_SELECT'"
+            [class.text-text-muted]="currentStep() !== 'UPLOAD_AND_SELECT'"
+          >
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono border"
+              [class.bg-brand-primary]="currentStep() === 'UPLOAD_AND_SELECT'"
+              [class.text-white]="currentStep() === 'UPLOAD_AND_SELECT'"
+              [class.border-brand-primary]="currentStep() === 'UPLOAD_AND_SELECT'"
+              [class.border-surface-border]="currentStep() !== 'UPLOAD_AND_SELECT'">1</span>
+            <span>{{ langService.isArabic() ? 'رفع الملف والنمط' : 'Upload & Mode' }}</span>
+          </button>
+
+          <span class="text-surface-border">/</span>
+
+          <button
+            type="button"
+            (click)="uploadedFile() || currentCanvas ? goToStep('PREVIEW_AND_PAGE') : null"
+            class="flex items-center gap-1.5 transition-all"
+            [class.cursor-pointer]="uploadedFile() || currentCanvas"
+            [class.cursor-not-allowed]="!uploadedFile() && !currentCanvas"
+            [class.text-brand-primary]="currentStep() === 'PREVIEW_AND_PAGE'"
+            [class.text-text-muted]="currentStep() !== 'PREVIEW_AND_PAGE'"
+          >
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono border"
+              [class.bg-brand-primary]="currentStep() === 'PREVIEW_AND_PAGE'"
+              [class.text-white]="currentStep() === 'PREVIEW_AND_PAGE'"
+              [class.border-brand-primary]="currentStep() === 'PREVIEW_AND_PAGE'"
+              [class.border-surface-border]="currentStep() !== 'PREVIEW_AND_PAGE'">2</span>
+            <span>{{ langService.isArabic() ? 'معاينة الصفحة' : 'Page Preview' }}</span>
+          </button>
+
+          <span class="text-surface-border">/</span>
+
+          <button
+            type="button"
+            (click)="stagedQuestions().length > 0 ? goToStep('STAGING_REVIEW') : null"
+            class="flex items-center gap-1.5 transition-all"
+            [class.cursor-pointer]="stagedQuestions().length > 0"
+            [class.cursor-not-allowed]="stagedQuestions().length === 0"
+            [class.text-brand-primary]="currentStep() === 'STAGING_REVIEW'"
+            [class.text-text-muted]="currentStep() !== 'STAGING_REVIEW'"
+          >
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono border"
+              [class.bg-brand-primary]="currentStep() === 'STAGING_REVIEW'"
+              [class.text-white]="currentStep() === 'STAGING_REVIEW'"
+              [class.border-brand-primary]="currentStep() === 'STAGING_REVIEW'"
+              [class.border-surface-border]="currentStep() !== 'STAGING_REVIEW'">3</span>
+            <span>
+              {{ langService.isArabic() ? ('منطقة المراجعة والتدقيق (' + stagedQuestions().length + ')') : ('Staging Review (' + stagedQuestions().length + ')') }}
+            </span>
+          </button>
+        </div>
+
+        @if (fileName()) {
+          <div class="hidden sm:flex items-center gap-1.5 text-text-secondary font-mono text-[10px] bg-surface-card px-2.5 py-1 rounded-lg border border-surface-border truncate max-w-xs">
+            <app-icon [name]="fileType() === 'pdf' ? 'file-text' : 'image'" [size]="12" />
+            <span class="truncate">{{ fileName() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- ERROR BANNER -->
+      @if (errorMessage()) {
+        <div class="px-5 py-3 bg-rose-500/10 border-b border-rose-500/20 text-rose-500 text-xs flex items-center justify-between shrink-0 animate-fade-in">
+          <div class="flex items-center gap-2">
+            <app-icon name="alert-circle" [size]="16" />
+            <span>{{ errorMessage() }}</span>
+          </div>
+          <button type="button" (click)="errorMessage.set(null)" class="text-rose-500 hover:text-rose-600 cursor-pointer">
+            <app-icon name="x" [size]="14" />
+          </button>
+        </div>
+      }
+
+      <!-- MODAL BODY -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+
+        <!-- ============================================== -->
+        <!-- STEP 1: UPLOAD & MODE SELECTION -->
+        <!-- ============================================== -->
+        @if (currentStep() === 'UPLOAD_AND_SELECT') {
+          <div class="space-y-6 animate-fade-in">
+            <!-- Dropzone -->
+            <div
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onFileDropped($event)"
+              (click)="fileInput.click()"
+              class="border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 bg-surface-bg/50 hover:bg-surface-bg flex flex-col items-center justify-center gap-3"
+              [class.dropzone-active]="isDragging()"
+              [class.border-amber-500]="isDragging()"
+              [class.border-surface-border]="!isDragging()"
+            >
+              <input
+                #fileInput
+                type="file"
+                accept=".pdf,image/png,image/jpeg,image/webp,image/jpg"
+                class="hidden"
+                (change)="onFileInputChanged($event)"
+              />
+
+              <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
+                <app-icon name="upload-cloud" [size]="28" />
+              </div>
+
+              <div>
+                <h4 class="font-bold text-text-primary text-sm mb-1">
+                  {{ langService.isArabic() ? 'اسحبي وأفلتي ملف الامتحان هنا، أو اضغطي للتصفح' : 'Drag & drop exam file here, or click to browse' }}
+                </h4>
+                <p class="text-text-muted text-[11px]">
+                  {{ langService.isArabic() ? 'يدعم ملفات PDF متعددة الصفحات، وصور JPG, PNG, WebP عالية الدقة' : 'Supports multi-page PDF documents and high-res JPG, PNG, WebP images' }}
+                </p>
+              </div>
+
+              @if (fileName()) {
+                <div class="mt-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-amber-500 font-mono text-xs flex items-center gap-2">
+                  <app-icon [name]="fileType() === 'pdf' ? 'file-text' : 'image'" [size]="14" />
+                  <span>{{ fileName() }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Extraction Modes Grid -->
+            <div>
+              <label class="block font-bold text-text-secondary mb-2">
+                {{ langService.isArabic() ? 'اختاري نمط الاستخراج بالذكاء الاصطناعي:' : 'Select AI Extraction Mode:' }}
+              </label>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Mode 1: Smart Hybrid -->
+                <button
+                  type="button"
+                  (click)="extractionMode.set('SMART_HYBRID')"
+                  class="p-4 rounded-2xl border text-right transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between gap-3"
+                  [class.border-amber-500]="extractionMode() === 'SMART_HYBRID'"
+                  [class.bg-amber-500/10]="extractionMode() === 'SMART_HYBRID'"
+                  [class.ring-2]="extractionMode() === 'SMART_HYBRID'"
+                  [class.ring-amber-500/20]="extractionMode() === 'SMART_HYBRID'"
+                  [class.border-surface-border]="extractionMode() !== 'SMART_HYBRID'"
+                  [class.bg-surface-card]="extractionMode() !== 'SMART_HYBRID'"
+                >
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="font-black text-text-primary text-xs">
+                        {{ langService.isArabic() ? 'الوضع الهجين الذكي' : 'Smart Hybrid Mode' }}
+                      </span>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-500">
+                        {{ langService.isArabic() ? 'موصى به' : 'Recommended' }}
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'استخراج النصوص والخيارات كمعادلات LaTeX نقية، مع قص تلقائي للرسومات الهندسية والمنحنيات فقط.' : 'Extracts text & options as clean LaTeX, auto-cropping only geometric figures & charts.' }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-amber-500 font-bold">
+                    <app-icon name="check" [size]="12" />
+                    <span>{{ langService.isArabic() ? 'معادلات LaTeX + رسومات مقصوصة' : 'LaTeX + Cropped Diagrams' }}</span>
+                  </div>
+                </button>
+
+                <!-- Mode 2: Text & LaTeX Only -->
+                <button
+                  type="button"
+                  (click)="extractionMode.set('TEXT_LATEX_ONLY')"
+                  class="p-4 rounded-2xl border text-right transition-all cursor-pointer flex flex-col justify-between gap-3"
+                  [class.border-brand-primary]="extractionMode() === 'TEXT_LATEX_ONLY'"
+                  [class.bg-brand-primary/10]="extractionMode() === 'TEXT_LATEX_ONLY'"
+                  [class.ring-2]="extractionMode() === 'TEXT_LATEX_ONLY'"
+                  [class.ring-brand-primary/20]="extractionMode() === 'TEXT_LATEX_ONLY'"
+                  [class.border-surface-border]="extractionMode() !== 'TEXT_LATEX_ONLY'"
+                  [class.bg-surface-card]="extractionMode() !== 'TEXT_LATEX_ONLY'"
+                >
+                  <div class="space-y-1.5">
+                    <span class="font-black text-text-primary text-xs block">
+                      {{ langService.isArabic() ? 'نصوص ومعادلات فقط' : 'Text & LaTeX Only' }}
+                    </span>
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'مناسب للمسائل الجبرية والتحليلية التي لا تحتوي على أي رسومات هندسية (نص ومعادلات رقمية 100%).' : 'Ideal for pure algebra and calculus worksheets with no diagrams.' }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-brand-primary font-bold">
+                    <app-icon name="calculator" [size]="12" />
+                    <span>{{ langService.isArabic() ? 'نصوص وخيارات LaTeX نقية' : 'Pure Text & LaTeX MCQ' }}</span>
+                  </div>
+                </button>
+
+                <!-- Mode 3: Full Question Image Crop -->
+                <button
+                  type="button"
+                  (click)="extractionMode.set('FULL_IMAGE_CROP')"
+                  class="p-4 rounded-2xl border text-right transition-all cursor-pointer flex flex-col justify-between gap-3"
+                  [class.border-cyan-500]="extractionMode() === 'FULL_IMAGE_CROP'"
+                  [class.bg-cyan-500/10]="extractionMode() === 'FULL_IMAGE_CROP'"
+                  [class.ring-2]="extractionMode() === 'FULL_IMAGE_CROP'"
+                  [class.ring-cyan-500/20]="extractionMode() === 'FULL_IMAGE_CROP'"
+                  [class.border-surface-border]="extractionMode() !== 'FULL_IMAGE_CROP'"
+                  [class.bg-surface-card]="extractionMode() !== 'FULL_IMAGE_CROP'"
+                >
+                  <div class="space-y-1.5">
+                    <span class="font-black text-text-primary text-xs block">
+                      {{ langService.isArabic() ? 'قص كل سؤال كصورة كاملة' : 'Full Question Image Crop' }}
+                    </span>
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'قص كل سؤال بالكامل (النص والخيارات والرسم) كصورة WebP فائقة الدقة والوضوح.' : 'Crops each entire question problem as a high-DPI WebP image.' }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-cyan-600 font-bold">
+                    <app-icon name="image" [size]="12" />
+                    <span>{{ langService.isArabic() ? 'صور مقصوصة بالكامل' : 'Full Image Question Cards' }}</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Continue Button -->
+            @if (uploadedFile() || currentCanvas) {
+              <div class="flex justify-end pt-2">
+                <button
+                  type="button"
+                  (click)="goToStep('PREVIEW_AND_PAGE')"
+                  class="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white font-bold transition-all cursor-pointer flex items-center gap-2 shadow-sm text-xs"
+                >
+                  <span>{{ langService.isArabic() ? 'متابعة لمعاينة الصفحة واختيارها' : 'Continue to Page Preview' }}</span>
+                  <app-icon [name]="langService.isRtl() ? 'chevron-left' : 'chevron-right'" [size]="14" />
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ============================================== -->
+        <!-- STEP 2: PDF / IMAGE PAGE PREVIEW & NAVIGATION -->
+        <!-- ============================================== -->
+        @if (currentStep() === 'PREVIEW_AND_PAGE') {
+          <div class="space-y-4 animate-fade-in">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-card border border-surface-border">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-500 font-bold text-xs">
+                  {{ langService.isArabic() ? ('صفحة ' + currentPageNumber() + ' من ' + totalPages()) : ('Page ' + currentPageNumber() + ' of ' + totalPages()) }}
+                </span>
+                <span class="text-text-muted text-[11px]">
+                  {{ langService.isArabic() ? 'حددي الصفحة التي تريدين استخراج أسئلتها بالذكاء الاصطناعي:' : 'Select the target page to extract questions from:' }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  (click)="goToStep('UPLOAD_AND_SELECT')"
+                  class="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <app-icon name="rotate-ccw" [size]="13" />
+                  <span>{{ langService.isArabic() ? 'تغيير الملف أو النمط' : 'Change File / Mode' }}</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="startAiExtraction()"
+                  [disabled]="isProcessing() || !currentDataUrl()"
+                  class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                >
+                  <app-icon name="sparkles" [size]="14" />
+                  <span>
+                    {{ langService.isArabic() ? ('استخراج أسئلة صفحة ' + currentPageNumber()) : ('Extract Questions from Page ' + currentPageNumber()) }}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- PDF Page Viewer Component -->
+            @if (fileType() === 'pdf' && uploadedFile()) {
+              <div class="rounded-2xl border border-surface-border overflow-hidden bg-black/10">
+                <app-pdf-page-viewer
+                  [pdfSrc]="uploadedFile()"
+                  [scale]="2.0"
+                  (pageRendered)="onPdfPageRendered($event)"
+                />
+              </div>
+            }
+
+            <!-- Standalone Image Preview (When uploading image file) -->
+            @if (fileType() === 'image') {
+              <div class="rounded-2xl border border-surface-border p-4 bg-surface-bg/50 flex flex-col items-center justify-center min-h-[350px]">
+                @if (currentDataUrl()) {
+                  <img
+                    [src]="currentDataUrl()"
+                    alt="Page preview"
+                    class="max-h-[600px] w-auto max-w-full rounded-xl border border-surface-border object-contain shadow-md"
+                  />
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ============================================== -->
+        <!-- STEP 3: STAGING REVIEW AREA / DRAWER -->
+        <!-- ============================================== -->
+        @if (currentStep() === 'STAGING_REVIEW') {
+          <div class="space-y-4 animate-fade-in">
+            <!-- Staging Control Toolbar -->
+            <div class="p-3.5 rounded-2xl bg-surface-card border border-surface-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 cursor-pointer font-bold text-text-primary">
+                  <input
+                    type="checkbox"
+                    [checked]="allChecked()"
+                    (change)="toggleAll($any($event.target).checked)"
+                    class="w-4 h-4 rounded text-brand-primary focus:ring-brand-primary cursor-pointer"
+                  />
+                  <span>
+                    {{ langService.isArabic() ? ('تحديد الكل (' + selectedCount() + ' من ' + stagedQuestions().length + ' محدد)') : ('Select All (' + selectedCount() + ' of ' + stagedQuestions().length + ')') }}
+                  </span>
+                </label>
+
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                  {{ extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين الذكي' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات فقط' : 'قص كامل') }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  (click)="goToStep('PREVIEW_AND_PAGE')"
+                  class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <app-icon name="chevron-right" [size]="13" />
+                  <span>{{ langService.isArabic() ? 'استخراج صفحة أخرى من الملف' : 'Extract Another Page' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Staged Questions Cards List -->
+            <div class="space-y-4">
+              @for (q of stagedQuestions(); track q.id) {
+                <div
+                  class="p-4 sm:p-5 rounded-2xl border transition-all space-y-4"
+                  [class.border-brand-primary]="q.checked"
+                  [class.bg-brand-primary/5]="q.checked"
+                  [class.border-surface-border]="!q.checked"
+                  [class.bg-surface-card]="!q.checked"
+                  [class.opacity-60]="!q.checked"
+                >
+                  <!-- Card Header -->
+                  <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-3">
+                    <div class="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        [checked]="q.checked"
+                        (change)="toggleQuestion(q.id)"
+                        class="w-4 h-4 rounded text-brand-primary focus:ring-brand-primary cursor-pointer"
+                      />
+                      <span class="font-bold text-text-primary font-mono text-sm">
+                        #{{ $index + 1 }}
+                      </span>
+                      @if (q.pageNumber) {
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                          {{ langService.isArabic() ? ('ص ' + q.pageNumber) : ('p. ' + q.pageNumber) }}
+                        </span>
+                      }
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted">
+                        {{ q.options.length > 0 ? (langService.isArabic() ? 'اختيار من متعدد' : 'MCQ') : (langService.isArabic() ? 'سؤال مقالي' : 'Essay') }}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                      <!-- Points Input -->
+                      <div class="flex items-center gap-1.5 font-bold">
+                        <span class="text-text-muted text-[11px]">{{ langService.isArabic() ? 'الدرجة:' : 'Points:' }}</span>
+                        <input
+                          type="number"
+                          [value]="q.points"
+                          (input)="updatePoints(q, $any($event.target).value)"
+                          min="1"
+                          max="50"
+                          class="w-14 px-2 py-1 rounded-lg border border-surface-border bg-surface-bg text-text-primary text-center font-mono font-bold text-xs outline-none focus:border-brand-primary"
+                        />
+                      </div>
+
+                      <!-- Delete Question from Staging -->
+                      <button
+                        type="button"
+                        (click)="deleteStagedQuestion(q.id)"
+                        class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                        [title]="langService.isArabic() ? 'استبعاد هذا السؤال' : 'Remove this question'"
+                      >
+                        <app-icon name="trash" [size]="14" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Question Text Area with Math Keyboard trigger & Live KaTeX preview -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <label class="font-bold text-text-secondary text-[11px]">
+                        {{ langService.isArabic() ? 'نص السؤال (معادلات وصيغ رياضية داخل $..$):' : 'Question Statement (LaTeX in $..$):' }}
+                      </label>
+                      <button
+                        type="button"
+                        (click)="openMathKeyboard(qTextRef)"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border border-brand-primary/20 flex items-center gap-1 cursor-pointer transition-all"
+                        [title]="langService.isArabic() ? 'فتح لوحة الرموز الرياضية' : 'Open Virtual Math Keyboard'"
+                      >
+                        <app-icon name="calculator" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'لوحة الرموز (LaTeX)' : 'Math Keyboard' }}</span>
+                      </button>
+                    </div>
+
+                    <textarea
+                      #qTextRef
+                      rows="2"
+                      [(ngModel)]="q.question_text"
+                      class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
+                    ></textarea>
+
+                    <!-- Real-time Live KaTeX Preview -->
+                    @if (q.question_text.trim()) {
+                      <div class="p-2.5 rounded-xl border border-brand-primary/20 bg-brand-primary/5 space-y-1">
+                        <span class="text-[10px] font-bold text-brand-primary flex items-center gap-1">
+                          <app-icon name="eye" [size]="12" />
+                          <span>{{ langService.isArabic() ? 'معاينة حية للصياغة الرياضية:' : 'Live LaTeX Preview:' }}</span>
+                        </span>
+                        <div class="text-xs text-text-primary leading-relaxed overflow-x-auto">
+                          <app-math-formula [text]="q.question_text" />
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Auto-Cropped Diagram Preview & Manual Slicer Override -->
+                  @if (q.localCropPreviewUrl || q.question_image_url) {
+                    <div class="p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-amber-500 flex items-center gap-1.5">
+                          <app-icon name="image" [size]="13" />
+                          <span>{{ langService.isArabic() ? 'الرسم الهندسي / الصورة المقصوصة تلقائياً:' : 'Auto-cropped Diagram:' }}</span>
+                        </span>
+
+                        <div class="flex items-center gap-2">
+                          <button
+                            type="button"
+                            (click)="openManualSlicerForQuestion(q)"
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
+                            [title]="langService.isArabic() ? 'تعديل وتحديد مساحة القص يدوياً' : 'Fine-tune crop area manually'"
+                          >
+                            <app-icon name="edit" [size]="12" />
+                            <span>{{ langService.isArabic() ? 'تعديل القص يدوياً' : 'Fine-tune Crop' }}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            (click)="removeCroppedImage(q)"
+                            class="p-1 rounded-lg text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                            [title]="langService.isArabic() ? 'حذف الرسم المرفق' : 'Remove diagram'"
+                          >
+                            <app-icon name="trash" [size]="13" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="flex justify-center bg-black/20 rounded-lg p-2 border border-surface-border">
+                        <img
+                          [src]="q.localCropPreviewUrl || q.question_image_url"
+                          alt="Cropped diagram"
+                          class="max-h-40 rounded object-contain"
+                        />
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Optional Manual Crop Action if no diagram was detected -->
+                    <div class="flex items-center justify-between pt-1 text-[11px] text-text-muted">
+                      <span>{{ langService.isArabic() ? 'لا يوجد رسم هندسي مرفق بهذا السؤال' : 'No diagram attached' }}</span>
+                      <button
+                        type="button"
+                        (click)="openManualSlicerForQuestion(q)"
+                        class="px-2.5 py-1 rounded-lg border border-surface-border hover:border-amber-500 text-text-secondary hover:text-amber-500 font-bold transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <app-icon name="image" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'إرفاق رسم هندسي من الصفحة' : 'Attach Diagram from Page' }}</span>
+                      </button>
+                    </div>
+                  }
+
+                  <!-- MCQ Options with Live KaTeX & Radio Correct Selector -->
+                  @if (q.options && q.options.length > 0) {
+                    <div class="space-y-2 pt-2 border-t border-surface-border">
+                      <label class="font-bold text-text-secondary text-[11px] block">
+                        {{ langService.isArabic() ? 'خيارات الإجابة (حددي الإجابة الصحيحة بالضغط على الدائرة):' : 'Answer Options (Select correct choice radio):' }}
+                      </label>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        @for (opt of q.options; track $index) {
+                          <div
+                            class="p-2.5 rounded-xl border transition-all space-y-1.5"
+                            [class.border-emerald-500]="q.correct_option_index === $index"
+                            [class.bg-emerald-500/10]="q.correct_option_index === $index"
+                            [class.border-surface-border]="q.correct_option_index !== $index"
+                            [class.bg-surface-bg]="q.correct_option_index !== $index"
+                          >
+                            <div class="flex items-center justify-between gap-2">
+                              <label class="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  [name]="'correct_' + q.id"
+                                  [checked]="q.correct_option_index === $index"
+                                  (change)="setCorrectOption(q, $index)"
+                                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                                />
+                                <span class="font-mono font-bold text-xs" [class.text-emerald-500]="q.correct_option_index === $index">
+                                  {{ ['A', 'B', 'C', 'D'][$index] || ($index + 1) }}
+                                </span>
+                              </label>
+
+                              <button
+                                type="button"
+                                (click)="openMathKeyboard(optInputRef)"
+                                class="p-1 rounded text-text-muted hover:text-brand-primary transition-all cursor-pointer"
+                                [title]="langService.isArabic() ? 'إدراج رموز رياضية بالخيار' : 'Insert math symbols'"
+                              >
+                                <app-icon name="calculator" [size]="11" />
+                              </button>
+                            </div>
+
+                            <input
+                              #optInputRef
+                              type="text"
+                              [(ngModel)]="q.options[$index]"
+                              class="w-full px-2.5 py-1.5 rounded-lg border border-surface-border bg-surface-card text-text-primary text-xs outline-none focus:border-brand-primary"
+                            />
+
+                            <!-- Live KaTeX Preview for Option -->
+                            @if (q.options[$index].trim()) {
+                              <div class="text-[11px] text-text-primary overflow-x-auto py-0.5">
+                                <app-math-formula [text]="q.options[$index]" />
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- MODAL FOOTER -->
+      <div class="px-5 py-4 border-t border-surface-border bg-surface-bg/70 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div class="text-text-muted text-[11px]">
+          @if (currentStep() === 'STAGING_REVIEW') {
+            <span>
+              {{ langService.isArabic() ? ('تم اختيار ' + selectedCount() + ' من إجمالي ' + stagedQuestions().length + ' سؤال للإدراج.') : (selectedCount() + ' of ' + stagedQuestions().length + ' questions selected.') }}
+            </span>
+          } @else {
+            <span>
+              {{ langService.isArabic() ? 'Spider-Math AI Engine • KaTeX Math Rendering • Zero Serverless Binary Routing' : 'Spider-Math AI Engine • KaTeX Math Rendering' }}
+            </span>
+          }
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            (click)="close()"
+            class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-surface-border hover:bg-surface-card text-text-secondary font-bold transition-all cursor-pointer text-xs"
+          >
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+          </button>
+
+          @if (currentStep() === 'STAGING_REVIEW') {
+            <button
+              type="button"
+              (click)="insertSelectedQuestions()"
+              [disabled]="isInserting() || selectedCount() === 0"
+              class="flex-1 sm:flex-initial px-6 py-2 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm text-xs disabled:opacity-50"
+            >
+              @if (isInserting()) {
+                <app-icon name="loader" [size]="14" className="animate-spin" />
+                <span>{{ langService.isArabic() ? 'جاري رفع الصور وإدراج الأسئلة...' : 'Inserting...' }}</span>
+              } @else {
+                <app-icon name="check" [size]="14" />
+                <span>
+                  {{ langService.isArabic() ? ('إدراج الأسئلة المحددة بالامتحان (' + selectedCount() + ' أسئلة)') : ('Insert Selected Questions (' + selectedCount() + ')') }}
+                </span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- PROCESSING OVERLAY -->
+      @if (isProcessing()) {
+        <div class="absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-center p-6 animate-fade-in">
+          <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 animate-pulse shadow-lg">
+            <app-icon name="sparkles" [size]="32" />
+          </div>
+          <div class="space-y-1.5 max-w-md">
+            <h4 class="text-sm font-black text-text-primary">
+              {{ langService.isArabic() ? 'جاري التحليل بالذكاء الاصطناعي...' : 'AI Vision Processing...' }}
+            </h4>
+            <p class="text-xs text-text-muted leading-relaxed">
+              {{ processingMessage() }}
+            </p>
+          </div>
+          <div class="w-48 h-1.5 bg-surface-border rounded-full overflow-hidden">
+            <div class="w-full h-full bg-gradient-to-r from-amber-500 to-brand-primary animate-pulse"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- EMBEDDED MANUAL SLICER MODAL FOR STAGING FINE-TUNING -->
+  <app-manual-image-slicer-modal
+    [isOpen]="isSlicerOpen()"
+    (isOpenChange)="isSlicerOpen.set($event)"
+    [imageSource]="currentCanvas || currentDataUrl()"
+    [initialBox2d]="slicerInitialBox2d()"
+    [uploadToCloudinary]="false"
+    modalTitle="تعديل مساحة القص للرسم الهندسي"
+    (sliceSaved)="onSliceSaved($event)"
+    (cancelled)="onSlicerCancelled()"
+  />
+
+  <!-- EMBEDDED VIRTUAL MATH KEYBOARD -->
+  <app-math-virtual-keyboard
+    [isOpen]="isMathKeyboardOpen()"
+    (isOpenChange)="isMathKeyboardOpen.set($event)"
+    [targetInput]="activeMathKeyboardInput()"
+    (valueChange)="onMathKeyboardValueChange($event)"
+  />
+}
+

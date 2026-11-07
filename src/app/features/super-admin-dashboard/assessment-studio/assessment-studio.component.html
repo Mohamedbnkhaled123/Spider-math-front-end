@@ -1132,6 +1132,43 @@
           <!-- TAB 2: QUESTIONS BANK -->
           @if (editorActiveTab() === 'QUESTIONS') {
             <div class="space-y-6 animate-fade-in">
+
+              <!-- AI Question Extraction Prominent Banner -->
+              <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-brand-primary/10 to-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 shadow-inner">
+                    <app-icon name="sparkles" [size]="20" />
+                  </div>
+                  <div>
+                    <h4 class="font-black text-text-primary text-xs sm:text-sm flex items-center gap-2">
+                      <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي من PDF / صور' : 'AI Question Extraction from PDF / Images' }}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">Gemini Vision</span>
+                    </h4>
+                    <p class="text-[11px] text-text-muted">
+                      {{ langService.isArabic() ? 'ارفعي ورقة امتحان أو كتاب تمارين، واختاري الصفحة ليتم استخراج المسائل ومعادلات KaTeX فوراً' : 'Upload exam papers or worksheets and auto-extract math questions into KaTeX instantly' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                  @if (cachedFileSession()) {
+                    <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-[10px] text-text-muted truncate max-w-[180px]">
+                      <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="12" />
+                      <span class="truncate">{{ cachedFileSession()?.fileName }}</span>
+                    </div>
+                  }
+
+                  <button
+                    type="button"
+                    (click)="openAiExtractionModal()"
+                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm text-xs shrink-0"
+                  >
+                    <app-icon name="sparkles" [size]="14" />
+                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي' : 'Extract with AI' }}</span>
+                  </button>
+                </div>
+              </div>
+
               <!-- Question Composer Card (Add / Edit) -->
               <div
                 id="questionComposerSection"
@@ -1240,7 +1277,20 @@
 
                 <!-- Question Image Uploader Component (WebP Auto-Compression) -->
                 <div>
-                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'صورة المسألة (اختياري):' : 'Question Image (Optional):' }}</label>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'صورة المسألة (اختياري):' : 'Question Image (Optional):' }}</label>
+                    @if (cachedFileSession()) {
+                      <button
+                        type="button"
+                        (click)="openManualSlicerForComposer()"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/25 flex items-center gap-1 cursor-pointer transition-all"
+                        [title]="langService.isArabic() ? 'قص صورة مباشرة من الملف المرفوع سابقاً' : 'Crop from cached file'"
+                      >
+                        <app-icon name="image" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'قص يدوي من الملف المرفوع' : 'Crop from Cached File' }}</span>
+                      </button>
+                    }
+                  </div>
                   <app-image-compressor-uploader
                     [uploadTarget]="'question'"
                     [existingImageUrl]="newQuestionImageUrl()"
@@ -1413,6 +1463,18 @@
                       </div>
 
                       <div class="flex items-center gap-1">
+                        @if (cachedFileSession()) {
+                          <button
+                            type="button"
+                            (click)="openManualSlicerForExistingQuestion(q)"
+                            class="p-1.5 rounded-lg text-text-muted hover:text-amber-500 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center gap-1 text-xs"
+                            [title]="langService.isArabic() ? 'قص يدوي من الملف المرفوع' : 'Crop diagram from cached file'"
+                          >
+                            <app-icon name="image" [size]="14" />
+                            <span class="text-[11px] font-bold hidden sm:inline">{{ langService.isArabic() ? 'قص من الملف' : 'Crop' }}</span>
+                          </button>
+                        }
+
                         <button
                           type="button"
                           (click)="editQuestion(q)"
@@ -1582,5 +1644,28 @@
     [(isOpen)]="isMathKeyboardOpen"
     [targetInput]="mathKeyboardTarget()"
   />
+
+  <!-- AI Question Extraction Modal (Phase 5) -->
+  <app-ai-question-extraction-modal
+    [(isOpen)]="isAiExtractionModalOpen"
+    [curriculum]="activeAssessment()?.curriculum || 'EGYPTIAN'"
+    [gradeLevel]="activeAssessment()?.gradeLevel || 'SEC_3'"
+    [existingSession]="cachedFileSession()"
+    (questionsExtracted)="onQuestionsExtracted($event)"
+    (fileSessionCached)="onFileSessionCached($event)"
+    (cancelled)="isAiExtractionModalOpen.set(false)"
+  />
+
+  <!-- Manual Image Slicer Modal for Existing Questions & Composer -->
+  @if (cachedFileSession()) {
+    <app-manual-image-slicer-modal
+      [(isOpen)]="isManualSlicerOpen"
+      [imageSource]="cachedFileSession()?.canvas || cachedFileSession()?.dataUrl || null"
+      [uploadToCloudinary]="true"
+      modalTitle="قص يدوي للمسألة من الملف المرفوع"
+      (sliceSaved)="onManualSliceSaved($event)"
+      (cancelled)="isManualSlicerOpen.set(false)"
+    />
+  }
 
 </section>

@@ -52,7 +52,12 @@
             "allowedCommonJsDependencies": [
               "dexie",
               "browser-image-compression",
-              "katex"
+              "katex",
+              "cropperjs",
+              "pdfjs-dist"
+            ],
+            "externalDependencies": [
+              "canvas"
             ]
           },
           "configurations": {
