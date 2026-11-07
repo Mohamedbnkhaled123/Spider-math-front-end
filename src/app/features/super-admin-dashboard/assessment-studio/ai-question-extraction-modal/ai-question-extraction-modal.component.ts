@@ -54,10 +54,10 @@ export class AiQuestionExtractionModalComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   readonly langService = inject(LangService);
 
-  // Inputs & Two-Way Model
+  // Inputs & Two-Way Model (Bound dynamically from active assessment)
   readonly isOpen = model<boolean>(false);
-  readonly curriculum = input<string>('EGYPTIAN');
-  readonly gradeLevel = input<string>('SEC_3');
+  readonly curriculum = input<string>('');
+  readonly gradeLevel = input<string>('');
   readonly existingSession = input<ICachedFileSession | null>(null);
 
   // Outputs
