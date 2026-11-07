@@ -7,6 +7,9 @@
 
 // KaTeX Mathematical Typesetting Stylesheet
 @import 'katex/dist/katex.min.css';
+
+// Cropper.js Interactive Image Slicer Stylesheet
+@import 'cropperjs/dist/cropper.css';
 :root,
 [data-theme='light'],
 .light {

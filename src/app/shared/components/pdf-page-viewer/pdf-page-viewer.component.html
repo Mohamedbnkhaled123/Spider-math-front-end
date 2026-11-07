@@ -1,0 +1,144 @@
+<div class="pdf-viewer-root relative flex flex-col w-full h-full rounded-2xl overflow-hidden bg-slate-950/60 border border-amber-500/20 backdrop-blur-md shadow-2xl">
+  <!-- Top Navigation & Zoom Toolbar -->
+  <header class="viewer-toolbar flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-900/80 border-b border-amber-500/20 text-slate-200 z-10">
+    <!-- Page Navigation Group -->
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="prevPage()"
+        [disabled]="currentPage() <= 1 || isLoading()"
+        class="nav-btn p-1.5 rounded-lg bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        title="الصفحة السابقة"
+        aria-label="Previous Page"
+      >
+        <app-icon name="chevron-right" [size]="18" />
+      </button>
+
+      <div class="flex items-center gap-1.5 px-3 py-1 bg-slate-800/90 rounded-lg text-xs font-semibold border border-slate-700/60">
+        <span class="text-amber-400 font-bold">{{ currentPage() }}</span>
+        <span class="text-slate-400">/</span>
+        <span class="text-slate-300">{{ totalPages() || 1 }}</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="nextPage()"
+        [disabled]="currentPage() >= totalPages() || isLoading()"
+        class="nav-btn p-1.5 rounded-lg bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        title="الصفحة التالية"
+        aria-label="Next Page"
+      >
+        <app-icon name="chevron-left" [size]="18" />
+      </button>
+    </div>
+
+    <!-- Zoom & Clarity Controls -->
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1 bg-slate-800/90 rounded-lg p-1 border border-slate-700/60 text-xs">
+        <button
+          type="button"
+          (click)="zoomOut()"
+          [disabled]="zoomFactor() <= 0.5 || isLoading()"
+          class="zoom-btn px-2 py-0.5 rounded hover:bg-amber-500/20 hover:text-amber-400 disabled:opacity-40"
+          title="تصغير"
+        >
+          -
+        </button>
+
+        <button
+          type="button"
+          (click)="resetZoom()"
+          class="px-2 py-0.5 rounded text-amber-300 font-mono hover:bg-slate-700"
+          title="إعادة ضبط الحجم"
+        >
+          {{ (zoomFactor() * 100).toFixed(0) }}%
+        </button>
+
+        <button
+          type="button"
+          (click)="zoomIn()"
+          [disabled]="zoomFactor() >= 2.5 || isLoading()"
+          class="zoom-btn px-2 py-0.5 rounded hover:bg-amber-500/20 hover:text-amber-400 disabled:opacity-40"
+          title="تكبير"
+        >
+          +
+        </button>
+      </div>
+
+      <!-- High-DPI Badge -->
+      <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        2x High-DPI
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Canvas Viewport Area -->
+  <main class="viewer-canvas-viewport relative flex-1 w-full min-h-[380px] overflow-auto flex items-center justify-center p-4 bg-slate-950/90">
+    <!-- Loading State Overlay -->
+    @if (isLoading() || isRendering()) {
+      <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-opacity">
+        <div class="w-10 h-10 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mb-3"></div>
+        <p class="text-sm font-semibold text-amber-200">
+          @if (isLoading()) { جاري تحميل ملف الـ PDF... } @else { جاري تصيير الصفحة بدقة فائقة... }
+        </p>
+      </div>
+    }
+
+    <!-- Error State Overlay -->
+    @if (errorMessage()) {
+      <div class="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-slate-950/90">
+        <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
+          <app-icon name="alert-triangle" [size]="24" />
+        </div>
+        <p class="text-sm font-medium text-rose-300 max-w-md mb-4">{{ errorMessage() }}</p>
+        <button
+          type="button"
+          (click)="pdfSrc() && loadDocument(pdfSrc()!)"
+          class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-colors shadow-lg"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    }
+
+    <!-- The Active Page Canvas -->
+    <div class="canvas-wrapper relative flex items-center justify-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/60 bg-white">
+      <canvas #mainCanvas class="block max-w-full h-auto object-contain"></canvas>
+    </div>
+  </main>
+
+  <!-- Bottom Thumbnails Strip (if enabled and multi-page) -->
+  @if (showThumbnails() && totalPages() > 1) {
+    <footer class="thumbnails-strip flex items-center gap-3 px-4 py-2.5 bg-slate-900/90 border-t border-amber-500/20 overflow-x-auto overflow-y-hidden z-10 scrollbar-thin">
+      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+        الصفحات:
+      </div>
+
+      <div class="flex items-center gap-2">
+        @for (thumb of thumbnails(); track thumb.pageNumber) {
+          <button
+            type="button"
+            (click)="goToPage(thumb.pageNumber)"
+            class="thumb-item group relative flex flex-col items-center shrink-0 rounded-lg p-1 transition-all"
+            [class.active-thumb]="thumb.pageNumber === currentPage()"
+          >
+            <div class="thumb-img-box w-12 h-16 rounded overflow-hidden bg-slate-800 border transition-all duration-200"
+              [class.border-amber-400]="thumb.pageNumber === currentPage()"
+              [class.ring-2]="thumb.pageNumber === currentPage()"
+              [class.ring-amber-400/40]="thumb.pageNumber === currentPage()"
+              [class.border-slate-700]="thumb.pageNumber !== currentPage()"
+            >
+              <img [src]="thumb.dataUrl" [alt]="'صفحة ' + thumb.pageNumber" class="w-full h-full object-cover" />
+            </div>
+            <span class="text-[10px] font-bold mt-1 text-slate-400 group-hover:text-amber-300"
+              [class.text-amber-400]="thumb.pageNumber === currentPage()"
+            >
+              {{ thumb.pageNumber }}
+            </span>
+          </button>
+        }
+      </div>
+    </footer>
+  }
+</div>

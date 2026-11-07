@@ -28,6 +28,13 @@ describe('AssessmentAttemptViewComponent', () => {
   });
 
   it('should toggle question index', () => {
+    component.bundle.set({
+      ...component.bundle(),
+      questions: [
+        { _id: 'q1', textAr: 'سؤال 1', options: [], questionType: 'MCQ', points: 1 } as any,
+        { _id: 'q2', textAr: 'سؤال 2', options: [], questionType: 'MCQ', points: 1 } as any
+      ]
+    });
     expect(component.activeQuestionIdx()).toBe(0);
     component.nextQuestion();
     expect(component.activeQuestionIdx()).toBe(1);

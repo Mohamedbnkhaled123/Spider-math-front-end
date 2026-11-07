@@ -90,8 +90,33 @@ export class InactiveDashboardComponent implements OnInit {
   readonly activeGrades = signal<string[]>(['SEC_3']);
   readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.gradeLevel()));
 
-  // Free Trial Lectures (dynamically populated from real units)
-  readonly trialLectures = signal<ITrialLecture[]>([]);
+  // Free Trial Lectures (defaults with real units override)
+  readonly trialLectures = signal<ITrialLecture[]>([
+    {
+      _id: 'trial_lec_1',
+      titleAr: 'المحاضرة التمهيدية المجانية: أساسيات واستراتيجيات التميز',
+      titleEn: 'Free Introductory Masterclass: Core Fundamentals',
+      durationMinutes: 45,
+      curriculum: 'EGYPTIAN',
+      gradeLevel: 'SEC_3',
+      academicTerm: 'TERM_1',
+      descriptionAr: 'شرح تمهيدي مفصل يوضح خرائط المنهج وحل مسائل نموذجية باستخدام حاسبة ديسموس.',
+      descriptionEn: 'Introductory lecture demonstrating syllabus blueprints and Desmos speed tactics.',
+      is_free_trial: true
+    },
+    {
+      _id: 'trial_lec_2',
+      titleAr: 'حل نماذج الامتحانات الاسترشادية وبنك الأسئلة الذكي',
+      titleEn: 'Sample Practice Workouts & Smart Question Bank',
+      durationMinutes: 40,
+      curriculum: 'EGYPTIAN',
+      gradeLevel: 'SEC_3',
+      academicTerm: 'TERM_1',
+      descriptionAr: 'تدريب تطبيقي على أفكار المسائل المركبة التي تتكرر في الاختبارات الرسمية.',
+      descriptionEn: 'High-yield practical problem solving covering recurring exam patterns.',
+      is_free_trial: true
+    }
+  ]);
 
   ngOnInit(): void {
     this.loadActiveGrades();
