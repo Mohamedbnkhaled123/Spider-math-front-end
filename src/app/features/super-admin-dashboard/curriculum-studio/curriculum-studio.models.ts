@@ -57,6 +57,7 @@ export interface LectureAdminItem {
   googleDrivePdfFileId: string;
   isPrintAllowed: boolean;
   durationMinutes: number;
+  isFree?: boolean;
   isFreeTrial?: boolean;
   xpReward?: number | null;
 }

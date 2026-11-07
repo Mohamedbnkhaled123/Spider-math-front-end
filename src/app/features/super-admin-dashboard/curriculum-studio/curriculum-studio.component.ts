@@ -960,6 +960,36 @@ export class CurriculumStudioComponent implements OnInit {
     });
   }
 
+  toggleLectureFree(unit: UnitPackageAdminItem, lec: LectureAdminItem, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const previousStatus = !!(lec.isFree || lec.isFreeTrial);
+    const newStatus = !previousStatus;
+
+    // Optimistic UI update
+    lec.isFree = newStatus;
+    lec.isFreeTrial = newStatus;
+
+    this.http.patch<{ success: boolean; data: any; message?: string }>(
+      `/api/v1/admin/lectures/${lec.id}/toggle-free`,
+      {}
+    ).subscribe({
+      next: (res) => {
+        const text = res?.message || (newStatus
+          ? (this.langService.isArabic() ? 'تم تفعيل إتاحة المحاضرة مجاناً لجميع الطلاب' : 'Lecture is now free for all students')
+          : (this.langService.isArabic() ? 'تم قفل المحاضرة لتكون خاصة بالطلاب المشتركين' : 'Lecture is now private for subscribed students'));
+        this.toastTriggered.emit({ text, type: 'success' });
+      },
+      error: (err) => {
+        lec.isFree = previousStatus;
+        lec.isFreeTrial = previousStatus;
+        const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر تعديل حالة إتاحة المحاضرة' : 'Failed to update lecture status');
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
   // =========================================================================
   // Assessment CRUD
   // =========================================================================

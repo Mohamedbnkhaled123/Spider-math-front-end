@@ -13,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
-import { CurriculumCode, AcademicTermCode } from '../../core/constants/curriculum-tree.constant';
+import { CurriculumCode, AcademicTermCode, CANONICAL_CURRICULUM_TREE } from '../../core/constants/curriculum-tree.constant';
 
 // Subcomponents Partitioned as per Phase 14
 import { AdminAnalyticsShellComponent } from './admin-analytics-shell/admin-analytics-shell.component';
@@ -76,8 +76,9 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Curriculum State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
-  readonly selectedGrade = signal<string>('PREP_1');
+  readonly selectedGrade = signal<string>('');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
+  readonly activeGrades = signal<string[]>([]);
   readonly unitsList = signal<UnitPackageAdminItem[]>([]);
 
   // Grading State
@@ -122,6 +123,7 @@ export class SuperAdminDashboardComponent implements OnInit {
       return;
     }
     // Restore persisted active tab and grade filters
+    let savedGrade = '';
     try {
       const savedTab = localStorage.getItem('spider_admin_active_tab') as AdminTab | null;
       const validTabs: AdminTab[] = ['analytics', 'curriculum', 'assessments', 'grading', 'students', 'leads_cms'];
@@ -134,7 +136,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.selectedCurriculum.set(savedCurriculum);
       }
 
-      const savedGrade = localStorage.getItem('spider_admin_selected_grade');
+      savedGrade = localStorage.getItem('spider_admin_selected_grade') || '';
       if (savedGrade) {
         this.selectedGrade.set(savedGrade);
       }
@@ -145,10 +147,29 @@ export class SuperAdminDashboardComponent implements OnInit {
       }
     } catch {}
 
+    this.fetchActiveGrades(savedGrade);
     this.fetchRealAtlasData();
     this.fetchCurriculumUnits();
     this.fetchLeads();
     this.fetchCmsConfig();
+  }
+
+  fetchActiveGrades(savedGrade?: string): void {
+    this.http.get<{ success: boolean; data: any }>('/api/v1/public/active-grades').subscribe({
+      next: (res) => {
+        const active = res?.data?.activeGrades;
+        if (Array.isArray(active) && active.length > 0) {
+          this.activeGrades.set(active);
+          if (!savedGrade) {
+            const curr = this.selectedCurriculum();
+            const track = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
+            const matchedActive = track?.grades.find(g => active.includes(g.code))?.code || active[0];
+            this.selectedGrade.set(matchedActive);
+            this.fetchCurriculumUnits();
+          }
+        }
+      }
+    });
   }
 
   // =========================================================================
@@ -164,7 +185,7 @@ export class SuperAdminDashboardComponent implements OnInit {
           const mapped: StudentAdminSummary[] = res.data.map((u) => {
             const role = (u.role || 'STUDENT') as 'STUDENT' | 'PARENT' | 'SUPER_ADMIN';
             let roleCurriculum = u.curriculum || 'المصري';
-            let roleGrade = u.grade_level || 'SEC_3';
+            let roleGrade = u.grade_level || '—';
             let defaultCode = u.student_code || (u.is_profile_completed === false ? 'قيد التسجيل' : '—');
 
             if (role === 'PARENT') {
@@ -259,6 +280,9 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   fetchCurriculumUnits(): void {
+    if (!this.selectedGrade()) {
+      return;
+    }
     const params = `curriculum=${this.selectedCurriculum()}&gradeLevel=${this.selectedGrade()}&term=${this.selectedTerm()}`;
     this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?${params}`).subscribe({
       next: (res) => {
@@ -297,7 +321,8 @@ export class SuperAdminDashboardComponent implements OnInit {
                               googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_drive_file_id || '',
                               isPrintAllowed: !!l.is_print_allowed,
                               durationMinutes: l.video_duration_sec ? Math.round(l.video_duration_sec / 60) : (l.duration_minutes || 45),
-                              isFreeTrial: !!l.is_free_trial,
+                              isFree: !!(l.is_free ?? l.isFree ?? l.is_free_trial),
+                              isFreeTrial: !!(l.is_free ?? l.isFree ?? l.is_free_trial),
                               xpReward: l.xp_reward_on_complete ?? null
                             })),
                             assessments: (cRes.data.assessments || []).map((a: any) => ({
@@ -350,7 +375,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             studentPhone: l.student_phone || l.phone_number || '',
             parentPhone: l.parent_phone || '',
             curriculum: l.curriculum || 'EGYPTIAN',
-            gradeLevel: l.grade_level || 'SEC_3',
+            gradeLevel: l.grade_level || '—',
             governorate: l.governorate || 'القاهرة',
             placementScore: l.placement_score || l.score || 0,
             status: l.status || 'NEW',
@@ -531,18 +556,17 @@ export class SuperAdminDashboardComponent implements OnInit {
         localStorage.setItem('spider_admin_selected_curriculum', curr);
       } catch {}
     }
-    const defaultGradeMap: Record<CurriculumCode, string> = {
-      EGYPTIAN: 'PREP_1',
-      GULF: 'GRADE_10',
-      INTERNATIONAL: 'IGCSE_OL',
-      AMERICAN: 'SAT_MATH'
-    };
-    const newGrade = defaultGradeMap[curr] || 'PREP_1';
-    this.selectedGrade.set(newGrade);
-    if (isPlatformBrowser(this.platformId)) {
-      try {
-        localStorage.setItem('spider_admin_selected_grade', newGrade);
-      } catch {}
+    const track = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
+    const active = this.activeGrades();
+    const matchedActive = track?.grades.find(g => active.includes(g.code))?.code;
+    const newGrade = matchedActive || track?.grades[0]?.code || '';
+    if (newGrade) {
+      this.selectedGrade.set(newGrade);
+      if (isPlatformBrowser(this.platformId)) {
+        try {
+          localStorage.setItem('spider_admin_selected_grade', newGrade);
+        } catch {}
+      }
     }
     this.fetchCurriculumUnits();
   }

@@ -10,6 +10,7 @@ export interface IGradeLevelAvailability extends IGradeLevelMeta {
   isAvailable: boolean;
   publishedUnitsCount: number;
   hasPublishedUnits: boolean;
+  hasPlacementTest?: boolean;
 }
 
 export interface ICurriculumUiCard extends ICurriculumNode {

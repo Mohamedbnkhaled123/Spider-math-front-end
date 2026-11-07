@@ -42,6 +42,8 @@ export interface AssessmentItem {
   totalPoints: number;
   isPublished: boolean;
   isPlacementTest: boolean;
+  assessmentType?: string;
+  isFree?: boolean;
   submissionsCount: number;
   questions: AssessmentQuestionItem[];
 }

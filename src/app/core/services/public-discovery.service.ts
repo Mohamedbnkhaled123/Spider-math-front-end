@@ -12,7 +12,8 @@ import {
   IUnlockPlacementPayload,
   IUnlockPlacementResult,
   ICompleteProfilePayload,
-  ICompleteProfileResult
+  ICompleteProfileResult,
+  IGradeQuizzesResponse
 } from './public-discovery.models';
 import {
   CANONICAL_CURRICULUM_TREE,
@@ -301,6 +302,25 @@ export class PublicDiscoveryService {
     ).pipe(
       map(res => res?.data || []),
       catchError(() => of([]))
+    );
+  }
+
+  /**
+   * Fetches published curriculum quizzes for a specific grade & term grouped by units.
+   */
+  getGradeQuizzes(curriculum: string, gradeLevel: string, term?: string): Observable<IGradeQuizzesResponse> {
+    let params = new HttpParams()
+      .set('curriculum', curriculum)
+      .set('gradeLevel', gradeLevel);
+    if (term) {
+      params = params.set('term', term);
+    }
+    return this.http.get<{ success: boolean; data: IGradeQuizzesResponse }>(
+      `${this.apiBase}/public/grade-quizzes`,
+      { params }
+    ).pipe(
+      map(res => res?.data || { units: [], generalQuizzes: [] }),
+      catchError(() => of({ units: [], generalQuizzes: [] }))
     );
   }
 

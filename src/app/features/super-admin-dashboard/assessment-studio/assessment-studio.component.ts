@@ -85,9 +85,9 @@ export class AssessmentStudioComponent implements OnInit {
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
-  // Filter Signals (persisted per teacher selection, defaults to PREP_1)
+  // Filter Signals (persisted per teacher selection, dynamically loaded from active grades)
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
-  readonly selectedGrade = signal<string>('PREP_1');
+  readonly selectedGrade = signal<string>('');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
 
   // State
@@ -96,7 +96,7 @@ export class AssessmentStudioComponent implements OnInit {
   readonly isSaving = signal<boolean>(false);
 
   // Active Grades & Tracks State
-  readonly activeGrades = signal<string[]>(['PREP_1', 'PREP_2', 'PREP_3', 'SEC_1']);
+  readonly activeGrades = signal<string[]>([]);
   readonly allCurriculaTracks = signal<CurriculumTrackItem[]>([
     {
       code: 'EGYPTIAN',
@@ -227,7 +227,7 @@ export class AssessmentStudioComponent implements OnInit {
     titleAr: '',
     titleEn: '',
     curriculum: 'EGYPTIAN',
-    gradeLevel: 'SEC_3',
+    gradeLevel: '',
     term: 'TERM_1',
     durationMinutes: 45,
     passPercentage: 60,
@@ -373,29 +373,36 @@ export class AssessmentStudioComponent implements OnInit {
       } catch {}
     }
     this.loadTracksAndActiveGrades();
-    this.loadAssessments();
+    if (this.selectedGrade()) {
+      this.loadAssessments();
+    }
   }
 
   loadTracksAndActiveGrades(): void {
     this.http.get<{ success: boolean; data: any }>('/api/v1/public/active-grades').subscribe({
       next: (res) => {
-        if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
-          this.activeGrades.set(res.data.activeGrades);
-          // If no grade was saved in localStorage, pick the first active grade
-          if (isPlatformBrowser(this.platformId)) {
-            const savedGrade = localStorage.getItem('spider_admin_selected_grade');
-            if (!savedGrade) {
-              const currentTrackGrades = this.gradeOptions();
-              const activeGrade = currentTrackGrades.find(g => res.data.activeGrades.includes(g.code))?.code;
-              if (activeGrade && this.selectedGrade() !== activeGrade) {
-                this.selectedGrade.set(activeGrade);
-                this.loadAssessments();
-              }
-            }
-          }
+        const active: string[] = Array.isArray(res?.data?.activeGrades) ? res.data.activeGrades : [];
+        if (active.length > 0) {
+          this.activeGrades.set(active);
         }
         if (res?.data?.curriculaTracks && Array.isArray(res.data.curriculaTracks) && res.data.curriculaTracks.length > 0) {
           this.allCurriculaTracks.set(res.data.curriculaTracks);
+        }
+
+        // If no grade was saved in localStorage, pick the first active grade dynamically
+        let savedGrade: string | null = null;
+        if (isPlatformBrowser(this.platformId)) {
+          try {
+            savedGrade = localStorage.getItem('spider_admin_selected_grade');
+          } catch {}
+        }
+        if (!savedGrade) {
+          const currentTrackGrades = this.gradeOptions();
+          const activeGrade = currentTrackGrades.find(g => active.includes(g.code))?.code || active[0] || currentTrackGrades[0]?.code || '';
+          if (activeGrade && this.selectedGrade() !== activeGrade) {
+            this.selectedGrade.set(activeGrade);
+            this.loadAssessments();
+          }
         }
       }
     });
@@ -405,6 +412,9 @@ export class AssessmentStudioComponent implements OnInit {
     const curr = this.selectedCurriculum();
     const gr = this.selectedGrade();
     const tm = this.selectedTerm();
+    if (!gr) {
+      return;
+    }
     const cacheKey = `${curr}_${gr}_${tm}`;
 
     if (!forceRefresh && ASSESSMENTS_MEMORY_CACHE.has(cacheKey)) {
@@ -446,6 +456,8 @@ export class AssessmentStudioComponent implements OnInit {
             totalPoints: a.total_points || (a.questions?.length ? a.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
             isPublished: !!a.is_published,
             isPlacementTest: !!a.is_placement_test,
+            assessmentType: a.assessment_type || a.assessmentType || 'QUIZ',
+            isFree: !!(a.is_free ?? a.isFree),
             submissionsCount: a.submissions_count || 0,
             questions: (a.questions || []).map((q: any, idx: number) => ({
               id: q._id || `q_${idx}`,
@@ -486,7 +498,7 @@ export class AssessmentStudioComponent implements OnInit {
     }
     const track = this.allCurriculaTracks().find((t) => t.code === curr);
     const firstActive = track?.grades.find((g) => this.isGradeActive(g.code))?.code;
-    const firstGrade = firstActive || track?.grades[0]?.code || 'PREP_1';
+    const firstGrade = firstActive || track?.grades[0]?.code || '';
     this.selectedGrade.set(firstGrade);
     if (isPlatformBrowser(this.platformId)) {
       try {
@@ -558,7 +570,7 @@ export class AssessmentStudioComponent implements OnInit {
     const track = this.allCurriculaTracks().find((t) => t.code === this.selectedCurriculum());
     const initialGrade = track?.grades.some((g) => g.code === this.selectedGrade())
       ? this.selectedGrade()
-      : (track?.grades[0]?.code || 'SEC_3');
+      : (track?.grades.find((g) => this.isGradeActive(g.code))?.code || track?.grades[0]?.code || '');
 
     this.createErrorMessage.set(null);
     this.isRefSheetActiveInCreate.set(false);
@@ -601,7 +613,7 @@ export class AssessmentStudioComponent implements OnInit {
 
   onCurriculumChangeInCreate(curr: CurriculumCode): void {
     const track = this.allCurriculaTracks().find((t) => t.code === curr);
-    const firstGrade = track?.grades[0]?.code || 'SEC_3';
+    const firstGrade = track?.grades.find((g) => this.isGradeActive(g.code))?.code || track?.grades[0]?.code || '';
     this.createForm.update((f) => ({
       ...f,
       curriculum: curr,
@@ -725,6 +737,49 @@ export class AssessmentStudioComponent implements OnInit {
   // =========================================================================
   // Delete Assessment
   // =========================================================================
+  toggleFree(item: AssessmentItem, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (item.assessmentType === 'HOMEWORK') {
+      this.toastTriggered.emit({
+        text: this.langService.isArabic()
+          ? 'الواجب المنزلي خاص دائماً بالطلاب المشتركين ولا يمكن جعله مجانياً'
+          : 'Homework is strictly private for subscribed students',
+        type: 'warning'
+      });
+      return;
+    }
+
+    const previousStatus = !!item.isFree;
+    const newStatus = !previousStatus;
+
+    // Optimistic UI update
+    this.assessmentsList.update((list) =>
+      list.map((a) => (a.id === item.id ? { ...a, isFree: newStatus } : a))
+    );
+
+    this.http.patch<{ success: boolean; data: any; message?: string }>(
+      `/api/v1/admin/assessments/${item.id}/toggle-free`,
+      {}
+    ).subscribe({
+      next: (res) => {
+        const text = res?.message || (newStatus
+          ? (this.langService.isArabic() ? 'تم تفعيل إتاحة الكويز مجاناً لجميع الطلاب' : 'Quiz is now free for all students')
+          : (this.langService.isArabic() ? 'تم قفل الكويز ليكون خاصاً بالطلاب المشتركين' : 'Quiz is now private for subscribed students'));
+        this.toastTriggered.emit({ text, type: 'success' });
+        ASSESSMENTS_MEMORY_CACHE.delete(`${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`);
+      },
+      error: (err) => {
+        this.assessmentsList.update((list) =>
+          list.map((a) => (a.id === item.id ? { ...a, isFree: previousStatus } : a))
+        );
+        const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر تعديل حالة إتاحة الامتحان' : 'Failed to update assessment free status');
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
   deleteAssessment(item: AssessmentItem): void {
     this.openConfirm(
       'تأكيد حذف الامتحان نهائياً',
@@ -825,7 +880,7 @@ export class AssessmentStudioComponent implements OnInit {
     const asm = this.activeAssessment();
     if (!asm || asm.submissionsCount > 0) return;
     const track = this.allCurriculaTracks().find((t) => t.code === curr);
-    const firstGrade = track?.grades[0]?.code || 'SEC_3';
+    const firstGrade = track?.grades.find((g) => this.isGradeActive(g.code))?.code || track?.grades[0]?.code || '';
     this.activeAssessment.set({
       ...asm,
       curriculum: curr,

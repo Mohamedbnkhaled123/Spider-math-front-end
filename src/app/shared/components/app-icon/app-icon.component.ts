@@ -6,6 +6,7 @@ export type AppIconName =
   | 'sun'
   | 'moon'
   | 'lock'
+  | 'unlock'
   | 'refresh'
   | 'book-open'
   | 'message-circle'

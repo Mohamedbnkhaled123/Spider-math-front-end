@@ -182,6 +182,27 @@
                       {{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}
                     </span>
                   }
+                  @if (item.assessmentType !== 'HOMEWORK') {
+                    @if (item.isFree) {
+                      <span
+                        (click)="toggleFree(item, $event)"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20"
+                        [title]="langService.isArabic() ? 'اضغط للتحويل إلى خاص' : 'Click to make private'"
+                      >
+                        <app-icon name="unlock" [size]="12" />
+                        <span>مجاني</span>
+                      </span>
+                    } @else {
+                      <span
+                        (click)="toggleFree(item, $event)"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-surface-bg text-text-muted border border-surface-border cursor-pointer hover:bg-surface-border"
+                        [title]="langService.isArabic() ? 'اضغط للتحويل إلى مجاني' : 'Click to make free'"
+                      >
+                        <app-icon name="lock" [size]="12" />
+                        <span>خاص</span>
+                      </span>
+                    }
+                  }
                   @if (item.isPublished) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
                       <app-icon name="check-circle" [size]="10" />

@@ -25,7 +25,11 @@ import {
   AcademicTermCode
 } from '../../../core/constants/curriculum-tree.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
-import { ICurriculumTreeItem } from '../../../core/services/public-discovery.models';
+import {
+  ICurriculumTreeItem,
+  IGradeQuizzesResponse,
+  IGradeQuizItem
+} from '../../../core/services/public-discovery.models';
 import {
   ICurriculumSelection,
   ICurriculumUiCard,
@@ -78,6 +82,34 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   readonly unitLectures = signal<any[]>([]);
   readonly isLoadingUnitContents = signal<boolean>(false);
   readonly showAuthGateModal = signal<boolean>(false);
+  readonly authGateActionMessage = signal<string>('');
+
+  // Curriculum Grade Quizzes & Accordion State
+  readonly gradeQuizzesData = signal<IGradeQuizzesResponse>({ units: [], generalQuizzes: [] });
+  readonly isLoadingGradeQuizzes = signal<boolean>(false);
+  readonly expandedUnitAccordions = signal<Set<string>>(new Set());
+
+  // Locked Content Modal (Subscription via WhatsApp)
+  readonly showLockedContentModal = signal<boolean>(false);
+  readonly lockedContentTitle = signal<string>('');
+  readonly landingData = signal<any>(null);
+
+  readonly supportWhatsappNumber = computed<string>(() => {
+    const data = this.landingData();
+    return (
+      data?.whatsappSupportNumber ||
+      data?.contactChannels?.support_whatsapp ||
+      data?.contactChannels?.subscription_whatsapp ||
+      '01012345678'
+    );
+  });
+
+  readonly totalGradeQuizzesCount = computed<number>(() => {
+    const data = this.gradeQuizzesData();
+    const fromUnits = (data.units || []).reduce((sum, u) => sum + (u.quizzes?.length || 0), 0);
+    const fromGeneral = data.generalQuizzes?.length || 0;
+    return fromUnits + fromGeneral;
+  });
 
   // Phase 2.3: Frosted Glass Track Modal State
   readonly isTrackModalOpen = signal<boolean>(false);
@@ -107,12 +139,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         const serverGrade = serverCurriculum?.gradeLevels.find(g => g.gradeLevel === grade.code);
         const hasPublished = serverGrade ? serverGrade.hasPublishedUnits : false;
         const count = serverGrade ? serverGrade.totalPublishedUnitsCount : 0;
-        const isAvail = serverGrade ? serverGrade.isAvailable : false;
+        const hasPlacement = serverGrade ? (serverGrade.hasPlacementTest ?? serverGrade.terms?.some(t => t.hasPlacementTest) ?? false) : false;
+        const isAvail = serverGrade ? (serverGrade.isAvailable || hasPlacement) : false;
         return {
           ...grade,
           isAvailable: isAvail,
           hasPublishedUnits: hasPublished,
-          publishedUnitsCount: count
+          publishedUnitsCount: count,
+          hasPlacementTest: hasPlacement
         };
       });
 
@@ -261,6 +295,13 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       error: () => {
         this.isLoading.set(false);
       }
+    });
+
+    this.discoveryService.getLandingData().subscribe({
+      next: data => {
+        this.landingData.set(data);
+      },
+      error: () => {}
     });
   }
 
@@ -472,6 +513,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   loadUnitsForSelection(): void {
     this.isLoadingUnits.set(true);
+    this.loadGradeQuizzes();
     this.discoveryService.getUnitsCatalog(
       this.selectedCurriculumCode(),
       this.selectedGradeCode(),
@@ -489,6 +531,123 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       error: () => {
         this.publishedUnits.set([]);
         this.isLoadingUnits.set(false);
+      }
+    });
+  }
+
+  loadGradeQuizzes(): void {
+    this.isLoadingGradeQuizzes.set(true);
+    this.discoveryService.getGradeQuizzes(
+      this.selectedCurriculumCode(),
+      this.selectedGradeCode(),
+      this.selectedTermCode()
+    ).subscribe({
+      next: (res) => {
+        this.gradeQuizzesData.set(res || { units: [], generalQuizzes: [] });
+        this.isLoadingGradeQuizzes.set(false);
+        const initialExpanded = new Set<string>();
+        (res?.units || []).forEach(u => {
+          if (u.quizzes && u.quizzes.length > 0) {
+            initialExpanded.add(u.unitId);
+          }
+        });
+        if (initialExpanded.size === 0 && res?.units?.length) {
+          initialExpanded.add(res.units[0].unitId);
+        }
+        if (res?.generalQuizzes?.length) {
+          initialExpanded.add('general');
+        }
+        this.expandedUnitAccordions.set(initialExpanded);
+      },
+      error: () => {
+        this.gradeQuizzesData.set({ units: [], generalQuizzes: [] });
+        this.isLoadingGradeQuizzes.set(false);
+      }
+    });
+  }
+
+  toggleUnitAccordion(unitId: string): void {
+    this.expandedUnitAccordions.update(set => {
+      const next = new Set(set);
+      if (next.has(unitId)) {
+        next.delete(unitId);
+      } else {
+        next.add(unitId);
+      }
+      return next;
+    });
+  }
+
+  isUnitExpanded(unitId: string): boolean {
+    return this.expandedUnitAccordions().has(unitId);
+  }
+
+  onQuizClick(quiz: IGradeQuizItem): void {
+    if (quiz.isFree) {
+      if (this.authService.isAuthenticated()) {
+        this.closeTrackModal();
+        this.router.navigate(['/student/assessments', quiz.id]);
+      } else {
+        this.authGateActionMessage.set(
+          this.langService.isArabic()
+            ? 'سجل دخولك مجاناً لبدء هذا الكويز ومتابعة درجاتك وإجاباتك مع المعلمة'
+            : 'Sign in for free to take this quiz and submit your answers to the teacher'
+        );
+        this.showAuthGateModal.set(true);
+      }
+    } else {
+      this.openLockedContentModal(quiz.titleAr || quiz.titleEn || (this.langService.isArabic() ? 'كويز خاص' : 'Private Quiz'));
+    }
+  }
+
+  onLectureClick(lec: any): void {
+    const isFree = !!(lec.is_free || lec.is_free_trial || lec.isFree || lec.isFreeTrial);
+    if (isFree) {
+      if (this.authService.isAuthenticated()) {
+        const unitId = this.selectedUnitForPreview()?._id || this.selectedGradeCode();
+        this.closeTrackModal();
+        this.router.navigate(['/student/units', unitId], { queryParams: { lectureId: lec._id || lec.id } });
+      } else {
+        this.authGateActionMessage.set(
+          this.langService.isArabic()
+            ? 'سجل دخولك مجاناً لمشاهدة هذه المحاضرة والملزمة المرفقة'
+            : 'Sign in for free to watch this lecture and its study material'
+        );
+        this.showAuthGateModal.set(true);
+      }
+    } else {
+      this.openLockedContentModal(lec.lecture_title_ar || lec.titleAr || lec.title || (this.langService.isArabic() ? 'محاضرة خاصة' : 'Private Lecture'));
+    }
+  }
+
+  openLockedContentModal(title: string): void {
+    this.lockedContentTitle.set(title);
+    this.showLockedContentModal.set(true);
+  }
+
+  closeLockedContentModal(): void {
+    this.showLockedContentModal.set(false);
+  }
+
+  openWhatsAppSubscription(): void {
+    const title = this.lockedContentTitle();
+    const phone = this.supportWhatsappNumber().replace(/[^0-9]/g, '') || '201012345678';
+    const msg = encodeURIComponent(
+      `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
+    );
+    if (isPlatformBrowser(this.platformId)) {
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
+  }
+
+  startPlacementExamForGrade(grade: IGradeLevelAvailability): void {
+    this.selectedGradeCode.set(grade.code);
+    this.closeTrackModal();
+    this.router.navigate(['/placement-test'], {
+      queryParams: {
+        curriculum: this.selectedCurriculumCode(),
+        gradeLevel: grade.code,
+        term: this.selectedTermCode()
       }
     });
   }
@@ -579,10 +738,11 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   attemptWatchLecture(unit: any): void {
-    if (this.authService.isAuthenticated()) {
+    if (unit?.isSubscribed) {
+      this.closeTrackModal();
       this.router.navigate(['/student/units', unit._id]);
     } else {
-      this.showAuthGateModal.set(true);
+      this.openLockedContentModal(unit?.title_ar || unit?.title_en || (this.langService.isArabic() ? 'الوحدة الدراسية' : 'Study Unit'));
     }
   }
 
@@ -615,38 +775,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getGradeSubtitle(grade: IGradeLevelAvailability): string {
     const isAr = this.langService.isArabic();
-    const code = grade.code;
-
-    if (code === 'PRI_4' || code === 'GRADE_4') {
-      return isAr ? '6 وحدات • الجبر والحساب' : '6 Units • Algebra & Arithmetic';
+    if (grade.hasPublishedUnits && grade.publishedUnitsCount > 0) {
+      return isAr
+        ? `${grade.publishedUnitsCount} وحدات متاحة`
+        : `${grade.publishedUnitsCount} Units Available`;
     }
-    if (code === 'PRI_5' || code === 'GRADE_5') {
-      return isAr ? '6 وحدات • أساسيات الرياضيات' : '6 Units • Math Fundamentals';
+    if (grade.hasPlacementTest) {
+      return isAr ? 'امتحان تحديد المستوى متاح' : 'Placement Test Available';
     }
-    if (code === 'PRI_6' || code === 'GRADE_6') {
-      return isAr ? '7 وحدات • الهندسة والجبر' : '7 Units • Geometry & Algebra';
-    }
-    if (code === 'PREP_1' || code === 'GRADE_7') {
-      return isAr ? '5 وحدات • الجبر والهندسة' : '5 Units • Algebra & Geometry';
-    }
-    if (code === 'PREP_2' || code === 'GRADE_8') {
-      return isAr ? '6 وحدات • الجبر والهندسة' : '6 Units • Algebra & Geometry';
-    }
-    if (code === 'PREP_3' || code === 'GRADE_9') {
-      return isAr ? '5 وحدات • الجبر، الهندسة وحساب المثلثات' : '5 Units • Algebra, Geometry & Trig';
-    }
-    if (code === 'SEC_1' || code === 'GRADE_10') {
-      return isAr ? '6 وحدات • الجبر، المثلثات والهندسة' : '6 Units • Algebra, Trig & Geometry';
-    }
-    if (code === 'SEC_2' || code === 'GRADE_11') {
-      return isAr ? '8 وحدات • التفاضل، الجبر والميكانيكا' : '8 Units • Calculus, Algebra & Mechanics';
-    }
-    if (code === 'SEC_3' || code === 'GRADE_12') {
-      return isAr ? '10 وحدات • الرياضيات البحتة والتطبيقية' : '10 Units • Pure & Applied Mathematics';
-    }
-
-    const count = grade.publishedUnitsCount || 6;
-    return isAr ? `${count} وحدات • منهج متكامل` : `${count} Units • Complete Curriculum`;
+    return isAr ? 'قريباً' : 'Coming Soon';
   }
 
   getGradeMathIcon(code: string): 'operators' | 'division' | 'triangle' | 'calculus' {

@@ -12,6 +12,7 @@ export interface IGradeLevelTreeItem {
   terms: ITermTreeItem[];
   hasPublishedUnits: boolean;
   totalPublishedUnitsCount: number;
+  hasPlacementTest?: boolean;
   isAvailable: boolean; // Dynamic availability: true if content exists, false = 'Coming Soon'
 }
 
@@ -266,4 +267,32 @@ export interface ICompleteProfileResult {
     academic_term: string;
     governorate?: string;
   };
+}
+
+export interface IGradeQuizItem {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  assessmentType: string;
+  timeLimitMinutes: number;
+  totalPoints: number;
+  questionsCount: number;
+  isFree: boolean;
+  isPlacementTest: boolean;
+  xpReward: number;
+}
+
+export interface IGradeUnitQuizzesItem {
+  unitId: string;
+  titleAr: string;
+  titleEn: string;
+  orderIndex: number;
+  packageType?: string;
+  priceEgp?: number;
+  quizzes: IGradeQuizItem[];
+}
+
+export interface IGradeQuizzesResponse {
+  units: IGradeUnitQuizzesItem[];
+  generalQuizzes: IGradeQuizItem[];
 }
