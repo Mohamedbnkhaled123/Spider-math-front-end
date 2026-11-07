@@ -86,17 +86,22 @@
             </span>
           }
         </div>
-        <select
-          [ngModel]="selectedGrade()"
-          (ngModelChange)="selectGrade($event)"
-          class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
-        >
-          @for (grade of gradeOptions(); track grade.code) {
-            <option [value]="grade.code">
-              {{ (langService.isArabic() ? grade.titleAr : grade.titleEn) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
-            </option>
-          }
-        </select>
+        <div class="relative">
+          <select
+            [ngModel]="selectedGrade()"
+            (ngModelChange)="selectGrade($event)"
+            class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary appearance-none cursor-pointer"
+          >
+            @for (grade of gradeOptions(); track grade.code) {
+              <option [value]="grade.code">
+                {{ (langService.isArabic() ? grade.titleAr : grade.titleEn) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+              </option>
+            }
+          </select>
+          <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+            <app-icon name="chevron-down" [size]="14" />
+          </div>
+        </div>
       </div>
 
       <!-- 3. Academic Term Switcher (3 cols) -->
@@ -421,41 +426,56 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المنهج الدراسي:' : 'Curriculum:' }}</label>
-              <select
-                [ngModel]="createForm().curriculum"
-                (ngModelChange)="onCurriculumChangeInCreate($event)"
-                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-              >
-                <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
-                <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
-                <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
-              </select>
+              <div class="relative">
+                <select
+                  [ngModel]="createForm().curriculum"
+                  (ngModelChange)="onCurriculumChangeInCreate($event)"
+                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                >
+                  <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
+                  <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
+                  <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                  <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
+                </select>
+                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                  <app-icon name="chevron-down" [size]="14" />
+                </div>
+              </div>
             </div>
 
             <div>
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الصف الدراسي (عزل كامل):' : 'Grade Level (Strict Isolation):' }}</label>
-              <select
-                [(ngModel)]="createForm().gradeLevel"
-                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none"
-              >
-                @for (grade of createGradeOptions(); track grade.code) {
-                  <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
-                }
-              </select>
+              <div class="relative">
+                <select
+                  [(ngModel)]="createForm().gradeLevel"
+                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                >
+                  @for (grade of createGradeOptions(); track grade.code) {
+                    <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                  }
+                </select>
+                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                  <app-icon name="chevron-down" [size]="14" />
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
-              <select
-                [(ngModel)]="createForm().term"
-                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-              >
-                <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
-                <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
-              </select>
+              <div class="relative">
+                <select
+                  [(ngModel)]="createForm().term"
+                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                >
+                  <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                  <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
+                </select>
+                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                  <app-icon name="chevron-down" [size]="14" />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -841,17 +861,22 @@
                       <span class="text-rose-500 text-[10px] mr-1 font-normal">{{ langService.isArabic() ? '(مقفول لوجود تسليمات)' : '(Locked: Submissions Exist)' }}</span>
                     }
                   </label>
-                  <select
-                    [ngModel]="asm.curriculum"
-                    (ngModelChange)="onCurriculumChangeInEditor($event)"
-                    [disabled]="asm.submissionsCount > 0"
-                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60"
-                  >
-                    <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
-                    <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                    <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
-                    <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
-                  </select>
+                  <div class="relative">
+                    <select
+                      [ngModel]="asm.curriculum"
+                      (ngModelChange)="onCurriculumChangeInEditor($event)"
+                      [disabled]="asm.submissionsCount > 0"
+                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
+                    >
+                      <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
+                      <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
+                      <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                      <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
+                    </select>
+                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                      <app-icon name="chevron-down" [size]="14" />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -861,28 +886,38 @@
                       <span class="text-rose-500 text-[10px] mr-1 font-normal">{{ langService.isArabic() ? '(مقفول لوجود تسليمات)' : '(Locked: Submissions Exist)' }}</span>
                     }
                   </label>
-                  <select
-                    [(ngModel)]="asm.gradeLevel"
-                    [disabled]="asm.submissionsCount > 0"
-                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none disabled:opacity-60"
-                  >
-                    @for (grade of editorGradeOptions(); track grade.code) {
-                      <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
-                    }
-                  </select>
+                  <div class="relative">
+                    <select
+                      [(ngModel)]="asm.gradeLevel"
+                      [disabled]="asm.submissionsCount > 0"
+                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
+                    >
+                      @for (grade of editorGradeOptions(); track grade.code) {
+                        <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                      }
+                    </select>
+                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                      <app-icon name="chevron-down" [size]="14" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
-                  <select
-                    [(ngModel)]="asm.term"
-                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-                  >
-                    <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
-                    <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
-                  </select>
+                  <div class="relative">
+                    <select
+                      [(ngModel)]="asm.term"
+                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                      <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
+                    </select>
+                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                      <app-icon name="chevron-down" [size]="14" />
+                    </div>
+                  </div>
                 </div>
 
                 <div>

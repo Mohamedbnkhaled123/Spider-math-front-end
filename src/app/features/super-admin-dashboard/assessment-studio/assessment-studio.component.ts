@@ -5,9 +5,10 @@ import {
   computed,
   inject,
   OnInit,
-  output
+  output,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -80,12 +81,13 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
 export class AssessmentStudioComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
-  // Filter Signals
+  // Filter Signals (persisted per teacher selection, defaults to PREP_1)
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
-  readonly selectedGrade = signal<string>('SEC_3');
+  readonly selectedGrade = signal<string>('PREP_1');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
 
   // State
@@ -94,16 +96,18 @@ export class AssessmentStudioComponent implements OnInit {
   readonly isSaving = signal<boolean>(false);
 
   // Active Grades & Tracks State
-  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly activeGrades = signal<string[]>(['PREP_1', 'PREP_2', 'PREP_3', 'SEC_1']);
   readonly allCurriculaTracks = signal<CurriculumTrackItem[]>([
     {
       code: 'EGYPTIAN',
       nameAr: 'المنهج المصري',
       grades: [
-        { code: 'SEC_3', titleAr: 'الصف الثالث الثانوي (Thanaweya)', titleEn: 'Secondary 3' },
-        { code: 'SEC_2', titleAr: 'الصف الثاني الثانوي', titleEn: 'Secondary 2' },
+        { code: 'PREP_1', titleAr: 'الصف الأول الإعدادي', titleEn: 'Prep 1' },
+        { code: 'PREP_2', titleAr: 'الصف الثاني الإعدادي', titleEn: 'Prep 2' },
+        { code: 'PREP_3', titleAr: 'الصف الثالث الإعدادي', titleEn: 'Prep 3' },
         { code: 'SEC_1', titleAr: 'الصف الأول الثانوي', titleEn: 'Secondary 1' },
-        { code: 'PREP_3', titleAr: 'الصف الثالث الإعدادي', titleEn: 'Prep 3' }
+        { code: 'SEC_2', titleAr: 'الصف الثاني الثانوي', titleEn: 'Secondary 2' },
+        { code: 'SEC_3', titleAr: 'الصف الثالث الثانوي (Thanaweya)', titleEn: 'Secondary 3' }
       ]
     },
     {
@@ -350,6 +354,24 @@ export class AssessmentStudioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const savedCurriculum = localStorage.getItem('spider_admin_selected_curriculum') as CurriculumCode | null;
+        if (savedCurriculum) {
+          this.selectedCurriculum.set(savedCurriculum);
+        }
+
+        const savedGrade = localStorage.getItem('spider_admin_selected_grade');
+        if (savedGrade) {
+          this.selectedGrade.set(savedGrade);
+        }
+
+        const savedTerm = localStorage.getItem('spider_admin_selected_term') as AcademicTermCode | null;
+        if (savedTerm) {
+          this.selectedTerm.set(savedTerm);
+        }
+      } catch {}
+    }
     this.loadTracksAndActiveGrades();
     this.loadAssessments();
   }
@@ -359,6 +381,18 @@ export class AssessmentStudioComponent implements OnInit {
       next: (res) => {
         if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
           this.activeGrades.set(res.data.activeGrades);
+          // If no grade was saved in localStorage, pick the first active grade
+          if (isPlatformBrowser(this.platformId)) {
+            const savedGrade = localStorage.getItem('spider_admin_selected_grade');
+            if (!savedGrade) {
+              const currentTrackGrades = this.gradeOptions();
+              const activeGrade = currentTrackGrades.find(g => res.data.activeGrades.includes(g.code))?.code;
+              if (activeGrade && this.selectedGrade() !== activeGrade) {
+                this.selectedGrade.set(activeGrade);
+                this.loadAssessments();
+              }
+            }
+          }
         }
         if (res?.data?.curriculaTracks && Array.isArray(res.data.curriculaTracks) && res.data.curriculaTracks.length > 0) {
           this.allCurriculaTracks.set(res.data.curriculaTracks);
@@ -445,20 +479,42 @@ export class AssessmentStudioComponent implements OnInit {
 
   selectCurriculum(curr: CurriculumCode): void {
     this.selectedCurriculum.set(curr);
-    const firstGrade = this.gradeOptions()[0]?.code || 'SEC_3';
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_curriculum', curr);
+      } catch {}
+    }
+    const track = this.allCurriculaTracks().find((t) => t.code === curr);
+    const firstActive = track?.grades.find((g) => this.isGradeActive(g.code))?.code;
+    const firstGrade = firstActive || track?.grades[0]?.code || 'PREP_1';
     this.selectedGrade.set(firstGrade);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_grade', firstGrade);
+      } catch {}
+    }
     this.currentPage.set(1);
     this.loadAssessments();
   }
 
   selectGrade(grade: string): void {
     this.selectedGrade.set(grade);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_grade', grade);
+      } catch {}
+    }
     this.currentPage.set(1);
     this.loadAssessments();
   }
 
   selectTerm(term: AcademicTermCode): void {
     this.selectedTerm.set(term);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_term', term);
+      } catch {}
+    }
     this.currentPage.set(1);
     this.loadAssessments();
   }

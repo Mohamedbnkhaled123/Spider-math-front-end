@@ -57,7 +57,7 @@
               <div>
                 <h2 class="text-lg sm:text-xl font-black text-text-primary tracking-tight flex items-center gap-2 font-academic-serif">
                   <app-icon name="activity" [size]="20" className="text-brand-primary" />
-                  <span>@if (langService.isArabic()) { لوحة الإحصائيات المركزية <span class="text-gold-accent">وغرفة العمليات</span> } @else { Central Analytics & <span class="text-gold-accent">Operations Studio</span> } <span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></span>
+                  <span>@if (langService.isArabic()) { لوحة الإحصائيات المركزية <span class="text-gold-accent">وغرفة العمليات</span> } @else { Central Analytics & <span class="text-gold-accent">Operations Studio</span> }</span>
                 </h2>
                 <p class="text-xs text-text-secondary mt-0.5">
                   {{ langService.isArabic() ? 'متابعة حركة الطلاب اللحظية، طلبات اعتماد الأجهزة الجديدة، والامتحانات بانتظار الاعتماد.' : 'Real-time student monitoring, new device approvals, and assessments awaiting grading.' }}

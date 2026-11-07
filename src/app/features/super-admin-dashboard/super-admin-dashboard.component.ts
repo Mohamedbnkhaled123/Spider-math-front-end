@@ -64,8 +64,8 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
-  // Active navigation tab
-  readonly activeTab = signal<AdminTab>('analytics');
+  // Active navigation tab (defaults directly to assessments per teacher workflow)
+  readonly activeTab = signal<AdminTab>('assessments');
   readonly isLoading = signal<boolean>(false);
   readonly toastMessage = signal<{ text: string; type: 'success' | 'warning' | 'error' } | null>(null);
 
@@ -76,7 +76,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Curriculum State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
-  readonly selectedGrade = signal<string>('SEC_3');
+  readonly selectedGrade = signal<string>('PREP_1');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
   readonly unitsList = signal<UnitPackageAdminItem[]>([]);
 
@@ -121,6 +121,30 @@ export class SuperAdminDashboardComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+    // Restore persisted active tab and grade filters
+    try {
+      const savedTab = localStorage.getItem('spider_admin_active_tab') as AdminTab | null;
+      const validTabs: AdminTab[] = ['analytics', 'curriculum', 'assessments', 'grading', 'students', 'leads_cms'];
+      if (savedTab && validTabs.includes(savedTab)) {
+        this.activeTab.set(savedTab);
+      }
+
+      const savedCurriculum = localStorage.getItem('spider_admin_selected_curriculum') as CurriculumCode | null;
+      if (savedCurriculum) {
+        this.selectedCurriculum.set(savedCurriculum);
+      }
+
+      const savedGrade = localStorage.getItem('spider_admin_selected_grade');
+      if (savedGrade) {
+        this.selectedGrade.set(savedGrade);
+      }
+
+      const savedTerm = localStorage.getItem('spider_admin_selected_term') as AcademicTermCode | null;
+      if (savedTerm) {
+        this.selectedTerm.set(savedTerm);
+      }
+    } catch {}
+
     this.fetchRealAtlasData();
     this.fetchCurriculumUnits();
     this.fetchLeads();
@@ -449,6 +473,11 @@ export class SuperAdminDashboardComponent implements OnInit {
   // =========================================================================
   setTab(tab: AdminTab): void {
     this.activeTab.set(tab);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_active_tab', tab);
+      } catch {}
+    }
   }
 
   showToast(text: string, type: 'success' | 'warning' | 'error' = 'success'): void {
@@ -497,23 +526,44 @@ export class SuperAdminDashboardComponent implements OnInit {
   // Unit Events
   onCurriculumChanged(curr: CurriculumCode): void {
     this.selectedCurriculum.set(curr);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_curriculum', curr);
+      } catch {}
+    }
     const defaultGradeMap: Record<CurriculumCode, string> = {
-      EGYPTIAN: 'SEC_3',
-      GULF: 'GRADE_12',
-      INTERNATIONAL: 'IGCSE_AL',
+      EGYPTIAN: 'PREP_1',
+      GULF: 'GRADE_10',
+      INTERNATIONAL: 'IGCSE_OL',
       AMERICAN: 'SAT_MATH'
     };
-    this.selectedGrade.set(defaultGradeMap[curr] || 'SEC_3');
+    const newGrade = defaultGradeMap[curr] || 'PREP_1';
+    this.selectedGrade.set(newGrade);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_grade', newGrade);
+      } catch {}
+    }
     this.fetchCurriculumUnits();
   }
 
   onGradeChanged(grade: string): void {
     this.selectedGrade.set(grade);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_grade', grade);
+      } catch {}
+    }
     this.fetchCurriculumUnits();
   }
 
   onTermChanged(term: AcademicTermCode): void {
     this.selectedTerm.set(term);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_admin_selected_term', term);
+      } catch {}
+    }
     this.fetchCurriculumUnits();
   }
 
