@@ -309,13 +309,19 @@ export class AiQuestionExtractionModalComponent {
         gradeLevel: this.gradeLevel()
       };
 
+      const headers: Record<string, string> = {};
       const customKey = this.customApiKey().trim();
       if (customKey) {
         payload['apiKey'] = customKey;
+        headers['x-gemini-api-key'] = customKey;
       }
 
       const res = await firstValueFrom(
-        this.http.post<IAiExtractionBackendResponse>('/api/v1/assessments/ai-extract-questions', payload)
+        this.http.post<IAiExtractionBackendResponse>(
+          '/api/v1/assessments/ai-extract-questions',
+          payload,
+          { headers }
+        )
       );
 
       const rawQuestions = res?.data?.questions || [];
@@ -371,11 +377,18 @@ export class AiQuestionExtractionModalComponent {
       });
       this.currentStep.set('STAGING_REVIEW');
     } catch (err: any) {
-      const serverMsg =
-        err?.error?.error?.message ||
-        err?.error?.message ||
-        err?.message ||
-        'Server error';
+      let serverMsg = 'Server error';
+      if (typeof err?.error === 'object' && err?.error !== null) {
+        serverMsg =
+          err.error?.error?.message ||
+          err.error?.message ||
+          err?.message ||
+          'Server error';
+      } else if (typeof err?.error === 'string' && err.error.trim().length > 0) {
+        serverMsg = err.error.trim();
+      } else if (err?.message) {
+        serverMsg = err.message;
+      }
       this.errorMessage.set(
         this.langService.isArabic()
           ? `فشل استخراج الأسئلة: ${serverMsg}`
