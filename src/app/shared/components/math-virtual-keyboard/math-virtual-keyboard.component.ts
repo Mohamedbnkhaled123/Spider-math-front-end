@@ -19,7 +19,11 @@ import {
   MATH_CATEGORY_TABS,
   MATH_KEYBOARD_KEYS,
   IMathSymbolKey,
-  NUMERIC_KEYPAD_KEYS
+  NUMERIC_KEYPAD_KEYS,
+  IVisualTemplate,
+  VisualTemplateType,
+  createVisualTemplate,
+  compileTemplateLatex
 } from './math-virtual-keyboard.models';
 
 /**
@@ -53,6 +57,14 @@ export class MathVirtualKeyboardComponent {
   readonly activeCategory = signal<MathKeyboardCategory>('BASIC');
   readonly previewFormula = signal<string>('');
   readonly isNativeMobileKeyboardActive = signal<boolean>(false);
+  readonly activeVisualTemplate = signal<IVisualTemplate | null>(null);
+
+  // Live KaTeX formula rendered for the currently active visual template
+  readonly templateKaTeXPreview = computed<string>(() => {
+    const tmpl = this.activeVisualTemplate();
+    if (!tmpl) return '';
+    return compileTemplateLatex(tmpl);
+  });
 
   // Computed lists
   readonly categoryTabs = computed(() => MATH_CATEGORY_TABS);
@@ -70,6 +82,7 @@ export class MathVirtualKeyboardComponent {
       if (open && el) {
         el.setAttribute('readonly', 'true');
         this.isNativeMobileKeyboardActive.set(false);
+        this.activeVisualTemplate.set(null);
         this.previewFormula.set(el.value);
 
         const handleInput = () => {
@@ -92,6 +105,53 @@ export class MathVirtualKeyboardComponent {
   }
 
   /**
+   * Opens the interactive visual template on screen so teacher can edit the
+   * math symbol directly (e.g. numerator/denominator) without touching raw LaTeX or dollars.
+   */
+  openVisualTemplate(type: VisualTemplateType): void {
+    const tmpl = createVisualTemplate(type);
+    this.activeVisualTemplate.set(tmpl);
+  }
+
+  cancelVisualTemplate(): void {
+    this.activeVisualTemplate.set(null);
+  }
+
+  selectSlot(index: number): void {
+    const tmpl = this.activeVisualTemplate();
+    if (!tmpl || index < 0 || index >= tmpl.slots.length) return;
+    this.activeVisualTemplate.set({
+      ...tmpl,
+      activeSlotIndex: index
+    });
+  }
+
+  nextSlot(): void {
+    const tmpl = this.activeVisualTemplate();
+    if (!tmpl) return;
+    const nextIndex = (tmpl.activeSlotIndex + 1) % tmpl.slots.length;
+    this.selectSlot(nextIndex);
+  }
+
+  updateSlotValue(index: number, val: string): void {
+    const tmpl = this.activeVisualTemplate();
+    if (!tmpl || index < 0 || index >= tmpl.slots.length) return;
+    const updatedSlots = tmpl.slots.map((s, i) => (i === index ? { ...s, value: val } : s));
+    this.activeVisualTemplate.set({
+      ...tmpl,
+      slots: updatedSlots
+    });
+  }
+
+  applyVisualTemplate(): void {
+    const tmpl = this.activeVisualTemplate();
+    if (!tmpl) return;
+    const latex = compileTemplateLatex(tmpl);
+    this.activeVisualTemplate.set(null);
+    this.insertSymbolDirect(latex);
+  }
+
+  /**
    * Re-activates mobile keyboard suppression if native prose typing mode was active,
    * keeping virtual keyboard controls in sync and soft keyboard dismissed.
    */
@@ -110,7 +170,11 @@ export class MathVirtualKeyboardComponent {
     event.preventDefault();
   }
 
-  insertSymbol(latexCode: string, cursorOffset: number = 0): void {
+  /**
+   * Direct symbol insertion into target input without artificial dollar signs.
+   * All mathematical formatting happens behind the scenes.
+   */
+  private insertSymbolDirect(latexCode: string, cursorOffset: number = 0): void {
     const el = this.targetInput();
     if (!el) {
       this.previewFormula.update((prev) => prev + latexCode);
@@ -123,31 +187,12 @@ export class MathVirtualKeyboardComponent {
     const end = el.selectionEnd ?? el.value.length;
     const currentValue = el.value;
 
-    // Detect if cursor is currently within unclosed $ ... $ or $$ ... $$ math mode
-    const mathMode = getMathModeAtCursor(currentValue, start);
-    const isInsideMathMode = mathMode !== 'NONE';
-
-    let textToInsert = latexCode;
-    if (!isInsideMathMode) {
-      textToInsert = `$${latexCode}$`;
-    }
-
-    const nextValue = currentValue.slice(0, start) + textToInsert + currentValue.slice(end);
+    const nextValue = currentValue.slice(0, start) + latexCode + currentValue.slice(end);
     el.value = nextValue;
 
-    // Smart cursor position: place inside or after snippet
-    let newCursorPos: number;
-    if (!isInsideMathMode) {
-      newCursorPos = start + textToInsert.length - 1 + cursorOffset;
-    } else {
-      newCursorPos = start + textToInsert.length + cursorOffset;
-    }
-
-    // Guard bounds
-    newCursorPos = Math.max(0, Math.min(newCursorPos, el.value.length));
+    const newCursorPos = Math.max(0, Math.min(start + latexCode.length + cursorOffset, el.value.length));
     el.setSelectionRange(newCursorPos, newCursorPos);
 
-    // Trigger Angular and DOM listeners
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -156,36 +201,59 @@ export class MathVirtualKeyboardComponent {
   }
 
   /**
-   * Inserts digits, decimals, and basic arithmetic symbols directly into target input
-   * without artificially wrapping every single digit into $...$ blocks.
-   * Works smoothly both within active math formulas and inside plain text questions/options.
+   * Main insertion handler:
+   * - If an interactive visual template is currently open, types into its active slot.
+   * - If a composite key is tapped, launches direct visual template on screen.
+   * - If a simple symbol is tapped, inserts directly into formula without dollar signs.
    */
-  insertNumeric(value: string): void {
-    const el = this.targetInput();
-    if (!el) {
-      this.previewFormula.update((prev) => prev + value);
+  insertSymbol(latexCode: string, cursorOffset: number = 0, templateType?: VisualTemplateType): void {
+    const tmpl = this.activeVisualTemplate();
+    if (tmpl) {
+      const activeIdx = tmpl.activeSlotIndex;
+      const currentVal = tmpl.slots[activeIdx]?.value ?? '';
+      this.updateSlotValue(activeIdx, currentVal + latexCode);
       return;
     }
 
-    this.ensureReadonlySuppression(el);
+    const matchedKey = MATH_KEYBOARD_KEYS.find((k) => k.latex === latexCode || k.label === latexCode);
+    let effectiveTemplate = templateType || matchedKey?.templateType;
+    if (!effectiveTemplate) {
+      if (latexCode.includes('\\frac')) effectiveTemplate = 'FRACTION';
+      else if (latexCode.includes('\\sqrt[') || latexCode.includes('\\sqrt[]')) effectiveTemplate = 'NTH_ROOT';
+      else if (latexCode.includes('\\sqrt')) effectiveTemplate = 'SQRT';
+      else if (latexCode.includes('\\int_') || latexCode.includes('\\int{')) effectiveTemplate = 'INTEGRAL';
+      else if (latexCode.includes('\\lim')) effectiveTemplate = 'LIMIT';
+      else if (latexCode.includes('\\log_')) effectiveTemplate = 'LOG';
+    }
 
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? el.value.length;
-    const currentValue = el.value;
+    if (effectiveTemplate) {
+      this.openVisualTemplate(effectiveTemplate);
+      return;
+    }
 
-    const nextValue = currentValue.slice(0, start) + value + currentValue.slice(end);
-    el.value = nextValue;
-
-    const newCursorPos = start + value.length;
-    el.setSelectionRange(newCursorPos, newCursorPos);
-
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    this.previewFormula.set(nextValue);
-    this.valueChange.emit(nextValue);
+    this.insertSymbolDirect(latexCode, cursorOffset);
   }
 
+  /**
+   * Inserts digits, decimals, and arithmetic symbols directly.
+   * If a visual template is active, writes directly into the selected slot on screen.
+   */
+  insertNumeric(value: string): void {
+    const tmpl = this.activeVisualTemplate();
+    if (tmpl) {
+      const activeIdx = tmpl.activeSlotIndex;
+      const currentVal = tmpl.slots[activeIdx]?.value ?? '';
+      this.updateSlotValue(activeIdx, currentVal + value);
+      return;
+    }
+
+    this.insertSymbolDirect(value);
+  }
+
+  /**
+   * Legacy delimiter support maintained for backwards compatibility.
+   * No raw dollar signs are exposed in UI buttons.
+   */
   insertDelimiter(type: 'INLINE' | 'BLOCK'): void {
     const el = this.targetInput();
     const delimiter = type === 'BLOCK' ? '$$  $$' : '$  $';
@@ -216,6 +284,14 @@ export class MathVirtualKeyboardComponent {
   }
 
   handleBackspace(): void {
+    const tmpl = this.activeVisualTemplate();
+    if (tmpl) {
+      const activeIdx = tmpl.activeSlotIndex;
+      const currentVal = tmpl.slots[activeIdx]?.value ?? '';
+      this.updateSlotValue(activeIdx, currentVal.slice(0, -1));
+      return;
+    }
+
     const el = this.targetInput();
     if (!el) {
       this.previewFormula.update((prev) => prev.slice(0, -1));
@@ -253,30 +329,25 @@ export class MathVirtualKeyboardComponent {
   }
 
   handleSpace(): void {
-    const el = this.targetInput();
-    if (!el) {
-      this.previewFormula.update((prev) => prev + ' ');
+    const tmpl = this.activeVisualTemplate();
+    if (tmpl) {
+      const activeIdx = tmpl.activeSlotIndex;
+      const currentVal = tmpl.slots[activeIdx]?.value ?? '';
+      this.updateSlotValue(activeIdx, currentVal + ' ');
       return;
     }
 
-    this.ensureReadonlySuppression(el);
-
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? el.value.length;
-    const currentValue = el.value;
-
-    const nextValue = currentValue.slice(0, start) + ' ' + currentValue.slice(end);
-    el.value = nextValue;
-    el.setSelectionRange(start + 1, start + 1);
-
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    this.previewFormula.set(nextValue);
-    this.valueChange.emit(nextValue);
+    this.insertSymbolDirect(' ');
   }
 
   handleClear(): void {
+    const tmpl = this.activeVisualTemplate();
+    if (tmpl) {
+      const activeIdx = tmpl.activeSlotIndex;
+      this.updateSlotValue(activeIdx, '');
+      return;
+    }
+
     const el = this.targetInput();
     if (el) {
       this.ensureReadonlySuppression(el);
@@ -308,6 +379,7 @@ export class MathVirtualKeyboardComponent {
   }
 
   close(): void {
+    this.activeVisualTemplate.set(null);
     const el = this.targetInput();
     if (el) {
       el.removeAttribute('readonly');

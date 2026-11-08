@@ -65,7 +65,8 @@ export class MathFormulaComponent {
           safeHtml: this.sanitizer.bypassSecurityTrustHtml(wrappedHtml)
         };
       } catch {
-        const escaped = this.escapeHtml(token.raw);
+        const cleanRaw = token.raw.replace(/\\\$/g, '').replace(/\$/g, '');
+        const escaped = this.escapeHtml(cleanRaw);
         const fallbackHtml = `<span class="math-katex-error font-mono text-xs text-rose-500" dir="ltr">${escaped}</span>`;
         return {
           ...token,

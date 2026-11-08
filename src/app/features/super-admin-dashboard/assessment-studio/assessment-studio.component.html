@@ -1365,17 +1365,17 @@
                       type="button"
                       (click)="openMathKeyboard(qTextArea)"
                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border border-brand-primary/20 flex items-center gap-1 cursor-pointer transition-all"
-                      [title]="langService.isArabic() ? 'فتح لوحة المفاتيح الرياضية لكتابة الرموز والمعادلات' : 'Open Math Virtual Keyboard'"
+                      [title]="langService.isArabic() ? 'فتح لوحة المفاتيح الرياضية لكتابة وتعديل الرموز' : 'Open Math Virtual Keyboard'"
                     >
                       <app-icon name="calculator" [size]="13" />
-                      <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية (LaTeX)' : 'Math Keyboard' }}</span>
+                      <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
                     </button>
                   </div>
                   <textarea
                     #qTextArea
                     rows="2"
                     [(ngModel)]="newQuestionTextAr"
-                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... (يمكن كتابة $معادلة$)' : 'Type problem text or equation prompt here... (e.g. $x^2$)'"
+                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... واستخدمي لوحة الرموز لكتابة وتعديل المعادلات' : 'Type problem text or equation prompt here... and use Math Keyboard for formulas'"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                   ></textarea>
 

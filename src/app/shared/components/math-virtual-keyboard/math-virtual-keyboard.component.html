@@ -6,7 +6,7 @@
   <aside
     class="math-keyboard-sheet fixed bottom-0 left-0 right-0 z-[150] rounded-t-3xl border-t border-x border-surface-border bg-surface-card backdrop-blur-2xl shadow-2xl p-3 sm:p-5 space-y-3 animate-slide-up max-h-[85vh] overflow-y-auto"
     role="region"
-    aria-label="Math Virtual Keyboard"
+    aria-label="Visual Math Keyboard"
   >
     <!-- Top Header & Action Controls Bar -->
     <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-surface-border">
@@ -18,10 +18,10 @@
         </div>
         <div>
           <h3 class="text-xs sm:text-sm font-black text-text-primary">
-            {{ langService.isArabic() ? 'لوحة المفاتيح الرياضية (LaTeX)' : 'Virtual Math Keyboard (LaTeX)' }}
+            {{ langService.isArabic() ? 'لوحة الرموز والمعادلات الرياضية' : 'Visual Math Keyboard' }}
           </h3>
           <span class="text-[10px] text-text-muted">
-            {{ langService.isArabic() ? 'إدراج الرموز والمعادلات بسلاسة دون تشويش الاتجاه' : 'Insert formulas with bidirectional LTR isolation' }}
+            {{ langService.isArabic() ? 'تعديل وكتابة الرموز الرياضية بصرياً ومباشرة' : 'Edit and insert math symbols visually on screen' }}
           </span>
         </div>
       </div>
@@ -29,7 +29,7 @@
       <!-- Action Buttons: Prose Toggle & Close -->
       <div class="flex items-center gap-2">
         
-        <!-- User Requested Quick Toggle: Phone Soft Keyboard vs Virtual Math Keyboard -->
+        <!-- Quick Toggle: Native Phone Keyboard vs Virtual Math Keyboard -->
         <button
           type="button"
           (click)="toggleNativeKeyboard()"
@@ -40,7 +40,7 @@
           [class.bg-surface-bg]="!isNativeMobileKeyboardActive()"
           [class.text-text-secondary]="!isNativeMobileKeyboardActive()"
           [class.border-surface-border]="!isNativeMobileKeyboardActive()"
-          [title]="langService.isArabic() ? 'التبديل بين كتابة النصوص العربية العادية والرموز الرياضية' : 'Toggle between native phone typing and math symbols'"
+          [title]="langService.isArabic() ? 'التبديل بين كتابة النصوص العادية والرموز الرياضية' : 'Toggle between native phone typing and math symbols'"
         >
           <app-icon name="phone" [size]="13" />
           <span>
@@ -66,29 +66,180 @@
 
     </div>
 
-    <!-- Live Equation Preview Strip -->
-    <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 min-h-[46px]">
-      <div class="flex-1 overflow-x-auto text-xs sm:text-sm text-text-primary dir-auto font-mono">
-        @if (previewFormula()) {
-          <app-math-formula [text]="previewFormula()" />
-        } @else {
-          <span class="text-text-muted italic text-[11px]">
-            {{ langService.isArabic() ? 'معاينة فورية للمعادلة أثناء الكتابة...' : 'Live formula preview strip...' }}
-          </span>
-        }
-      </div>
+    <!-- DIRECT VISUAL MATH SYMBOL EDITOR (Active when editing a composite symbol like fraction/root/power) -->
+    @if (activeVisualTemplate(); as tmpl) {
+      <div class="visual-template-card p-3 sm:p-4 rounded-2xl bg-brand-primary/5 border-2 border-brand-primary/30 space-y-3 animate-fade-in shadow-inner">
+        
+        <!-- Template Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-brand-primary/20 text-brand-primary flex items-center justify-center font-bold text-xs">
+              <app-icon name="edit" [size]="14" />
+            </span>
+            <span class="text-xs sm:text-sm font-black text-text-primary">
+              {{ langService.isArabic() ? tmpl.titleAr : tmpl.titleEn }}
+            </span>
+          </div>
 
-      <button
-        type="button"
-        (click)="handleClear()"
-        (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
-        class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
-        [title]="langService.isArabic() ? 'مسح المحتوى' : 'Clear all'"
-      >
-        {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
-      </button>
-    </div>
+          <button
+            type="button"
+            (pointerdown)="preventFocusLoss($event)"
+            (touchstart)="preventFocusLoss($event)"
+            (click)="cancelVisualTemplate()"
+            class="text-xs text-text-muted hover:text-rose-500 p-1 rounded-lg transition-colors cursor-pointer"
+            [title]="langService.isArabic() ? 'إلغاء' : 'Cancel'"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Interactive Direct Visual Slots -->
+        <div class="flex flex-wrap items-center justify-center gap-3 py-2 bg-surface-card rounded-xl border border-surface-border p-3">
+          
+          <!-- Special Visual Layout for FRACTION -->
+          @if (tmpl.type === 'FRACTION') {
+            <div class="flex flex-col items-center gap-1.5 w-full max-w-xs">
+              
+              <!-- Numerator Slot -->
+              <button
+                type="button"
+                (pointerdown)="preventFocusLoss($event)"
+                (touchstart)="preventFocusLoss($event)"
+                (click)="selectSlot(0)"
+                class="w-full px-3 py-2 rounded-xl border-2 text-center text-sm font-bold transition-all cursor-pointer select-none"
+                [class.border-brand-primary]="tmpl.activeSlotIndex === 0"
+                [class.bg-brand-primary/10]="tmpl.activeSlotIndex === 0"
+                [class.ring-2]="tmpl.activeSlotIndex === 0"
+                [class.ring-brand-primary/30]="tmpl.activeSlotIndex === 0"
+                [class.border-surface-border]="tmpl.activeSlotIndex !== 0"
+                [class.bg-surface-bg]="tmpl.activeSlotIndex !== 0"
+              >
+                <div class="text-[10px] text-text-muted mb-0.5">
+                  {{ langService.isArabic() ? 'البسط (أعلى الكسر)' : 'Numerator (Top)' }}
+                </div>
+                <div class="text-text-primary font-mono font-bold min-h-[22px]">
+                  {{ tmpl.slots[0].value || tmpl.slots[0].placeholder }}
+                </div>
+              </button>
+
+              <!-- Fraction Division Bar Line -->
+              <div class="w-full h-1 bg-brand-primary/50 rounded-full my-0.5"></div>
+
+              <!-- Denominator Slot -->
+              <button
+                type="button"
+                (pointerdown)="preventFocusLoss($event)"
+                (touchstart)="preventFocusLoss($event)"
+                (click)="selectSlot(1)"
+                class="w-full px-3 py-2 rounded-xl border-2 text-center text-sm font-bold transition-all cursor-pointer select-none"
+                [class.border-brand-primary]="tmpl.activeSlotIndex === 1"
+                [class.bg-brand-primary/10]="tmpl.activeSlotIndex === 1"
+                [class.ring-2]="tmpl.activeSlotIndex === 1"
+                [class.ring-brand-primary/30]="tmpl.activeSlotIndex === 1"
+                [class.border-surface-border]="tmpl.activeSlotIndex !== 1"
+                [class.bg-surface-bg]="tmpl.activeSlotIndex !== 1"
+              >
+                <div class="text-[10px] text-text-muted mb-0.5">
+                  {{ langService.isArabic() ? 'المقام (أسفل الكسر)' : 'Denominator (Bottom)' }}
+                </div>
+                <div class="text-text-primary font-mono font-bold min-h-[22px]">
+                  {{ tmpl.slots[1].value || tmpl.slots[1].placeholder }}
+                </div>
+              </button>
+
+            </div>
+          } @else {
+            <!-- Generic Interactive Slots for Roots, Powers, Limits, Integrals, etc. -->
+            <div class="flex flex-wrap items-center justify-center gap-2.5 w-full">
+              @for (slot of tmpl.slots; track slot.id; let idx = $index) {
+                <button
+                  type="button"
+                  (pointerdown)="preventFocusLoss($event)"
+                  (touchstart)="preventFocusLoss($event)"
+                  (click)="selectSlot(idx)"
+                  class="flex-1 min-w-[120px] px-3 py-2 rounded-xl border-2 text-center transition-all cursor-pointer select-none"
+                  [class.border-brand-primary]="tmpl.activeSlotIndex === idx"
+                  [class.bg-brand-primary/10]="tmpl.activeSlotIndex === idx"
+                  [class.ring-2]="tmpl.activeSlotIndex === idx"
+                  [class.ring-brand-primary/30]="tmpl.activeSlotIndex === idx"
+                  [class.border-surface-border]="tmpl.activeSlotIndex !== idx"
+                  [class.bg-surface-bg]="tmpl.activeSlotIndex !== idx"
+                >
+                  <div class="text-[10px] text-text-muted mb-0.5">
+                    {{ langService.isArabic() ? slot.labelAr : slot.labelEn }}
+                  </div>
+                  <div class="text-text-primary font-mono text-sm font-bold min-h-[22px]">
+                    {{ slot.value || slot.placeholder }}
+                  </div>
+                </button>
+              }
+            </div>
+          }
+
+        </div>
+
+        <!-- Real-time Live KaTeX preview of the edited symbol -->
+        <div class="flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-card border border-surface-border">
+          <div class="flex items-center gap-2 overflow-x-auto">
+            <span class="text-[11px] font-bold text-text-secondary shrink-0">
+              {{ langService.isArabic() ? 'المعاينة الحية للرمز:' : 'Live Rendered Symbol:' }}
+            </span>
+            <div class="text-base text-brand-primary font-bold overflow-x-auto">
+              <app-math-formula [text]="templateKaTeXPreview()" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (pointerdown)="preventFocusLoss($event)"
+              (touchstart)="preventFocusLoss($event)"
+              (click)="nextSlot()"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-bg hover:bg-surface-elevated text-text-primary border border-surface-border cursor-pointer transition-all"
+              [title]="langService.isArabic() ? 'الانتقال للخانة التالية' : 'Next Slot'"
+            >
+              {{ langService.isArabic() ? 'الخانة التالية ⇥' : 'Next Slot ⇥' }}
+            </button>
+
+            <button
+              type="button"
+              (pointerdown)="preventFocusLoss($event)"
+              (touchstart)="preventFocusLoss($event)"
+              (click)="applyVisualTemplate()"
+              class="px-4 py-1.5 rounded-xl text-xs font-black bg-brand-primary hover:bg-brand-secondary text-white shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+            >
+              <app-icon name="check" [size]="14" />
+              <span>{{ langService.isArabic() ? 'إدراج الرمز الرياضي ✓' : 'Insert Math Symbol ✓' }}</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    } @else {
+      <!-- Live Equation Preview Strip (when not in visual template builder) -->
+      <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 min-h-[46px]">
+        <div class="flex-1 overflow-x-auto text-xs sm:text-sm text-text-primary dir-auto font-mono">
+          @if (previewFormula()) {
+            <app-math-formula [text]="previewFormula()" />
+          } @else {
+            <span class="text-text-muted italic text-[11px]">
+              {{ langService.isArabic() ? 'معاينة فورية للمسألة الرياضية أثناء الكتابة...' : 'Live formula preview strip...' }}
+            </span>
+          }
+        </div>
+
+        <button
+          type="button"
+          (click)="handleClear()"
+          (pointerdown)="preventFocusLoss($event)"
+          (touchstart)="preventFocusLoss($event)"
+          class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
+          [title]="langService.isArabic() ? 'مسح المحتوى' : 'Clear all'"
+        >
+          {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
+        </button>
+      </div>
+    }
 
     <!-- Dedicated Numbers Keypad (Always Visible) -->
     <div class="p-1.5 sm:p-2 rounded-2xl bg-surface-bg border border-surface-border space-y-1">
@@ -138,7 +289,7 @@
           type="button"
           (pointerdown)="preventFocusLoss($event)"
           (touchstart)="preventFocusLoss($event)"
-          (click)="insertSymbol(key.latex, key.cursorOffset ?? 0)"
+          (click)="insertSymbol(key.latex, key.cursorOffset ?? 0, key.templateType)"
           class="key-btn h-11 sm:h-12 rounded-xl border border-surface-border bg-surface-elevated hover:bg-brand-primary/10 hover:border-brand-primary/50 text-text-primary text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-150 select-none cursor-pointer active:scale-95 shadow-sm"
           [attr.aria-label]="key.ariaLabel || key.latex"
         >
@@ -147,36 +298,36 @@
       }
     </div>
 
-    <!-- Utility & Action Keys Bar -->
+    <!-- Utility & Action Keys Bar (Strictly Zero Dollar Signs) -->
     <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2 border-t border-surface-border">
       
-      <!-- Inline Delimiter $..$ -->
+      <!-- Quick Fraction Visual Template Trigger -->
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
         (touchstart)="preventFocusLoss($event)"
-        (click)="insertDelimiter('INLINE')"
+        (click)="openVisualTemplate('FRACTION')"
         class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
-        [title]="langService.isArabic() ? 'إدراج صيغة رياضية مدمجة $..$' : 'Insert inline formula $..$'"
+        [title]="langService.isArabic() ? 'تعديل كسر رياضي بصرياً' : 'Edit fraction visually'"
       >
-        <span class="font-mono text-sm font-black">$..$</span>
-        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'مدمجة' : 'Inline' }}</span>
+        <span class="text-sm font-black font-mono">½</span>
+        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'كسر' : 'Fraction' }}</span>
       </button>
 
-      <!-- Block Delimiter $$..$$ -->
+      <!-- Quick Root Visual Template Trigger -->
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
         (touchstart)="preventFocusLoss($event)"
-        (click)="insertDelimiter('BLOCK')"
+        (click)="openVisualTemplate('SQRT')"
         class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
-        [title]="langService.isArabic() ? 'إدراج معادلة سطرية منفصلة $$..$$' : 'Insert block formula $$..$$'"
+        [title]="langService.isArabic() ? 'تعديل جذر تربيعي بصرياً' : 'Edit square root visually'"
       >
-        <span class="font-mono text-sm font-black">$$..$$</span>
-        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'سطر منفصل' : 'Block' }}</span>
+        <span class="text-sm font-black font-mono">√x</span>
+        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'جذر' : 'Root' }}</span>
       </button>
 
-      <!-- Space Key (Spans 2 columns on mobile) -->
+      <!-- Space Key -->
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
@@ -201,14 +352,14 @@
         <span>{{ langService.isArabic() ? 'حذف' : 'Del' }}</span>
       </button>
 
-      <!-- Close Sheet Button -->
+      <!-- Close / Done Sheet Button -->
       <button
         type="button"
         (click)="close()"
         class="h-10 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all active:scale-95"
       >
         <app-icon name="check" [size]="14" />
-        <span>{{ langService.isArabic() ? 'إغلاق' : 'Close' }}</span>
+        <span>{{ langService.isArabic() ? 'تم' : 'Done' }}</span>
       </button>
 
     </div>

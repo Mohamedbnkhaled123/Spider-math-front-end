@@ -513,7 +513,7 @@
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                       <label class="font-bold text-text-secondary text-[11px]">
-                        {{ langService.isArabic() ? 'نص السؤال (معادلات وصيغ رياضية داخل $..$):' : 'Question Statement (LaTeX in $..$):' }}
+                        {{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Question Statement:' }}
                       </label>
                       <button
                         type="button"
@@ -522,7 +522,7 @@
                         [title]="langService.isArabic() ? 'فتح لوحة الرموز الرياضية' : 'Open Virtual Math Keyboard'"
                       >
                         <app-icon name="calculator" [size]="12" />
-                        <span>{{ langService.isArabic() ? 'لوحة الرموز (LaTeX)' : 'Math Keyboard' }}</span>
+                        <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
                       </button>
                     </div>
 
@@ -538,7 +538,7 @@
                       <div class="p-2.5 rounded-xl border border-brand-primary/20 bg-brand-primary/5 space-y-1">
                         <span class="text-[10px] font-bold text-brand-primary flex items-center gap-1">
                           <app-icon name="eye" [size]="12" />
-                          <span>{{ langService.isArabic() ? 'معاينة حية للصياغة الرياضية:' : 'Live LaTeX Preview:' }}</span>
+                          <span>{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية:' : 'Live Math Preview:' }}</span>
                         </span>
                         <div class="text-xs text-text-primary leading-relaxed overflow-x-auto">
                           <app-math-formula [text]="q.question_text" />

@@ -38,7 +38,8 @@ export class MathLatexPipe implements PipeTransform {
         const displayStyle = isBlock ? 'block' : 'inline-block';
         return `<span class="math-katex-wrap" dir="ltr" style="unicode-bidi: isolate; display: ${displayStyle};">${rendered}</span>`;
       } catch {
-        const escaped = this.escapeHtml(token.raw);
+        const cleanRaw = token.raw.replace(/\\\$/g, '').replace(/\$/g, '');
+        const escaped = this.escapeHtml(cleanRaw);
         return `<span class="math-katex-error font-mono text-xs text-rose-500" dir="ltr">${escaped}</span>`;
       }
     });

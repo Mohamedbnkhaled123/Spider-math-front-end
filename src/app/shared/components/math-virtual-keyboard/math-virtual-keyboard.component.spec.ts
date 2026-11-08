@@ -73,7 +73,23 @@ describe('MathVirtualKeyboardComponent', () => {
     expect(component.previewFormula()).toBe('x = 50');
   });
 
-  it('should auto-wrap in $...$ when inserting symbol outside math mode', () => {
+  it('should NOT insert raw dollar signs ($) into target input when inserting symbols', () => {
+    inputEl.value = 'أوجد ';
+    inputEl.selectionStart = 5;
+    inputEl.selectionEnd = 5;
+
+    fixture.componentRef.setInput('targetInput', inputEl);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.detectChanges();
+
+    component.insertSymbol('\\pi');
+
+    expect(inputEl.value).toBe('أوجد \\pi');
+    expect(inputEl.value).not.toContain('$');
+    expect(component.previewFormula()).toBe('أوجد \\pi');
+  });
+
+  it('should open direct visual template on screen when tapping composite key like fraction', () => {
     inputEl.value = 'أوجد ';
     inputEl.selectionStart = 5;
     inputEl.selectionEnd = 5;
@@ -84,12 +100,41 @@ describe('MathVirtualKeyboardComponent', () => {
 
     component.insertSymbol('\\frac{a}{b}');
 
-    expect(inputEl.value).toBe('أوجد $\\frac{a}{b}$');
-    expect(component.previewFormula()).toBe('أوجد $\\frac{a}{b}$');
+    // Visual template opens directly for teacher to edit on screen
+    expect(component.activeVisualTemplate()).toBeTruthy();
+    expect(component.activeVisualTemplate()?.type).toBe('FRACTION');
+    expect(component.activeVisualTemplate()?.slots.length).toBe(2);
+    expect(inputEl.value).not.toContain('$');
   });
 
-  it('should NOT add extra $ when inserting symbol already inside math mode', () => {
-    inputEl.value = 'أوجد $\\frac{a}{b} ';
+  it('should allow editing visual template slots directly on screen and apply without dollar signs', () => {
+    inputEl.value = 'أوجد ';
+    inputEl.selectionStart = 5;
+    inputEl.selectionEnd = 5;
+
+    fixture.componentRef.setInput('targetInput', inputEl);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.detectChanges();
+
+    component.openVisualTemplate('FRACTION');
+    component.insertNumeric('3'); // Types into numerator (slot 0)
+    expect(component.activeVisualTemplate()?.slots[0].value).toBe('3');
+
+    component.nextSlot(); // Move to denominator (slot 1)
+    expect(component.activeVisualTemplate()?.activeSlotIndex).toBe(1);
+
+    component.insertNumeric('5'); // Types into denominator
+    expect(component.activeVisualTemplate()?.slots[1].value).toBe('5');
+    expect(component.templateKaTeXPreview()).toBe('\\frac{3}{5}');
+
+    component.applyVisualTemplate();
+    expect(component.activeVisualTemplate()).toBeNull();
+    expect(inputEl.value).toBe('أوجد \\frac{3}{5}');
+    expect(inputEl.value).not.toContain('$');
+  });
+
+  it('should NOT add extra $ when inserting symbol into existing math string', () => {
+    inputEl.value = 'أوجد \\frac{a}{b} ';
     inputEl.selectionStart = inputEl.value.length;
     inputEl.selectionEnd = inputEl.value.length;
 
@@ -99,7 +144,8 @@ describe('MathVirtualKeyboardComponent', () => {
 
     component.insertSymbol('+');
 
-    expect(inputEl.value).toBe('أوجد $\\frac{a}{b} +');
+    expect(inputEl.value).toBe('أوجد \\frac{a}{b} +');
+    expect(inputEl.value).not.toContain('$');
   });
 
   it('should NOT add extra $ when inserting symbol inside block math mode $$...$$', () => {
@@ -247,5 +293,110 @@ describe('MathVirtualKeyboardComponent', () => {
     component.close();
     expect(component.isOpen()).toBeFalse();
     expect(inputEl.hasAttribute('readonly')).toBeFalse();
+  });
+
+  describe('Direct Visual Math Templates (Zero Dollar Signs & WYSIWYG Editing)', () => {
+    it('should edit square root directly and insert clean LaTeX without dollars', () => {
+      inputEl.value = 'الناتج = ';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.openVisualTemplate('SQRT');
+      expect(component.activeVisualTemplate()?.type).toBe('SQRT');
+
+      component.insertNumeric('6');
+      component.insertNumeric('4');
+      expect(component.templateKaTeXPreview()).toBe('\\sqrt{64}');
+
+      component.applyVisualTemplate();
+      expect(component.activeVisualTemplate()).toBeNull();
+      expect(inputEl.value).toBe('الناتج = \\sqrt{64}');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should edit power/exponent directly and insert clean LaTeX without dollars', () => {
+      inputEl.value = '';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.openVisualTemplate('POWER');
+      expect(component.activeVisualTemplate()?.type).toBe('POWER');
+
+      component.selectSlot(0); // Base slot
+      component.handleClear();
+      component.insertSymbol('y');
+
+      component.selectSlot(1); // Exponent slot
+      component.handleClear();
+      component.insertNumeric('3');
+
+      expect(component.templateKaTeXPreview()).toBe('y^{3}');
+
+      component.applyVisualTemplate();
+      expect(inputEl.value).toBe('y^{3}');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should edit definite integral directly and insert clean LaTeX without dollars', () => {
+      inputEl.value = '';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.openVisualTemplate('INTEGRAL');
+      expect(component.activeVisualTemplate()?.type).toBe('INTEGRAL');
+
+      component.selectSlot(0); // Lower limit
+      component.handleClear();
+      component.insertNumeric('0');
+
+      component.selectSlot(1); // Upper limit
+      component.handleClear();
+      component.insertSymbol('\\pi');
+
+      component.selectSlot(2); // Integrand
+      component.handleClear();
+      component.insertSymbol('\\sin(x)');
+
+      expect(component.templateKaTeXPreview()).toBe('\\int_{0}^{\\pi} \\sin(x) \\, dx');
+
+      component.applyVisualTemplate();
+      expect(inputEl.value).toBe('\\int_{0}^{\\pi} \\sin(x) \\, dx');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should cancel visual template without changing target input', () => {
+      inputEl.value = 'قيمة أولية';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.openVisualTemplate('FRACTION');
+      component.insertNumeric('99');
+      component.cancelVisualTemplate();
+
+      expect(component.activeVisualTemplate()).toBeNull();
+      expect(inputEl.value).toBe('قيمة أولية');
+    });
+
+    it('should handle backspace and space inside visual template slots', () => {
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.openVisualTemplate('FRACTION');
+      component.insertNumeric('1');
+      component.insertNumeric('2');
+      component.insertNumeric('3');
+      expect(component.activeVisualTemplate()?.slots[0].value).toBe('123');
+
+      component.handleBackspace();
+      expect(component.activeVisualTemplate()?.slots[0].value).toBe('12');
+
+      component.handleSpace();
+      expect(component.activeVisualTemplate()?.slots[0].value).toBe('12 ');
+    });
   });
 });

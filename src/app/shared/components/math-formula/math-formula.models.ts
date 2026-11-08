@@ -28,12 +28,57 @@ export function isPureLatex(text: string): boolean {
   if (/^\\[a-zA-Z]+/.test(trimmed)) return true;
   // Single math variable letter: e.g. 'x', 'y', 'z', 'a', 'b', 'n'
   if (/^[a-zA-Z]$/.test(trimmed)) return true;
-  // Common standalone math symbols: ±, ×, ÷, ≤, ≥, ≠, ≈, ∞, π, θ
-  if (/^[±×÷≤≥≠≈∞πο]$/.test(trimmed)) return true;
+  // Common standalone math symbols: ±, ×, ÷, ≤, ≥, ≠, ≈, ∞, π, θ, °
+  if (/^[±×÷≤≥≠≈∞πο°]$/.test(trimmed)) return true;
   // If it contains math expressions without Arabic text
   const hasArabic = /[\u0600-\u06FF]/.test(trimmed);
   if (!hasArabic && /[\^_{}\\]/.test(trimmed)) return true;
   return false;
+}
+
+/**
+ * Pattern to identify LaTeX commands, superscripts/subscripts, and standalone math symbols
+ * outside dollar signs so teachers and users never need to write or see dollar signs.
+ */
+const UNWRAPPED_LATEX_PATTERN = /(\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})*|[a-zA-Z0-9]+(?:\^\{[^{}]*\}|\^[0-9a-zA-Z]|_\{[^{}]*\}|_[0-9a-zA-Z])+?|[±×÷≤≥≠≈∞πο°])/g;
+
+/**
+ * Splits plain text segments that may contain unwrapped LaTeX commands into TEXT and INLINE_MATH tokens.
+ */
+function tokenizeUnwrappedLatex(text: string): IMathToken[] {
+  if (!text) return [];
+  const tokens: IMathToken[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  const regex = new RegExp(UNWRAPPED_LATEX_PATTERN);
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const plain = text.slice(lastIndex, match.index);
+      if (plain) {
+        tokens.push({ type: 'TEXT', raw: plain });
+      }
+    }
+
+    const matchedCmd = match[0];
+    if (matchedCmd) {
+      tokens.push({
+        type: 'INLINE_MATH',
+        raw: matchedCmd.trim()
+      });
+    }
+
+    lastIndex = match.index + matchedCmd.length;
+  }
+
+  if (lastIndex < text.length) {
+    const trailing = text.slice(lastIndex);
+    if (trailing) {
+      tokens.push({ type: 'TEXT', raw: trailing });
+    }
+  }
+
+  return tokens.length > 0 ? tokens : [{ type: 'TEXT', raw: text }];
 }
 
 /**
@@ -82,8 +127,10 @@ export function getMathModeAtCursor(text: string, cursorPos: number): MathMode {
 }
 
 /**
- * Parses mixed Arabic/English text and LaTeX expressions ($...$ and $$...$$) into tokens.
+ * Parses mixed Arabic/English text and LaTeX expressions ($...$ and $$...$$, or unwrapped LaTeX) into tokens.
  * Accurately respects escaped dollars (\$), preventing false positives.
+ * Allows LaTeX commands (e.g. \frac{1}{2}, \sqrt{x}, \pi) to render visually even without dollar signs,
+ * keeping the UI completely free of raw dollar signs ($) for teachers and students.
  */
 export function parseMathTokens(rawText: string | null | undefined): IMathToken[] {
   if (!rawText) return [];
@@ -94,7 +141,8 @@ export function parseMathTokens(rawText: string | null | undefined): IMathToken[
     if (isPureLatex(rawText)) {
       return [{ type: 'INLINE_MATH', raw: rawText.trim() }];
     }
-    return [{ type: 'TEXT', raw: rawText.replace(/\\\$/g, '$') }];
+    // Tokenize unwrapped LaTeX commands inside text
+    return tokenizeUnwrappedLatex(rawText.replace(/\\\$/g, '$'));
   }
 
   // Matches unescaped $$...$$ (block) or $...$ (inline, ignoring $$)
@@ -105,9 +153,9 @@ export function parseMathTokens(rawText: string | null | undefined): IMathToken[
 
   while ((match = pattern.exec(rawText)) !== null) {
     if (match.index > lastIndex) {
-      const textPart = rawText.slice(lastIndex, match.index);
+      const textPart = rawText.slice(lastIndex, match.index).replace(/\\\$/g, '$');
       if (textPart) {
-        tokens.push({ type: 'TEXT', raw: textPart.replace(/\\\$/g, '$') });
+        tokens.push(...tokenizeUnwrappedLatex(textPart));
       }
     }
 
@@ -128,9 +176,9 @@ export function parseMathTokens(rawText: string | null | undefined): IMathToken[
   }
 
   if (lastIndex < rawText.length) {
-    const trailingText = rawText.slice(lastIndex);
+    const trailingText = rawText.slice(lastIndex).replace(/\\\$/g, '$');
     if (trailingText) {
-      tokens.push({ type: 'TEXT', raw: trailingText.replace(/\\\$/g, '$') });
+      tokens.push(...tokenizeUnwrappedLatex(trailingText));
     }
   }
 

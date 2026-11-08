@@ -73,6 +73,14 @@ describe('MathFormulaComponent', () => {
       expect(tokens[0].raw).toBe('\\frac{1}{2}');
     });
 
+    it('should parse unwrapped LaTeX expressions in Arabic sentences without dollar signs', () => {
+      const tokens = parseMathTokens('أوجد قيمة \\frac{1}{2} عندما x^2 = 4');
+      expect(tokens.length).toBeGreaterThanOrEqual(3);
+      const fracToken = tokens.find(t => t.raw === '\\frac{1}{2}');
+      expect(fracToken).toBeTruthy();
+      expect(fracToken?.type).toBe('INLINE_MATH');
+    });
+
     it('should handle escaped dollars without breaking into false math tokens', () => {
       const input = 'السعر \\$50 فقط واشتراك المنصة \\$100';
       const tokens = parseMathTokens(input);
