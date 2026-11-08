@@ -77,20 +77,36 @@
               <app-icon name="edit" [size]="14" />
             </span>
             <span class="text-xs sm:text-sm font-black text-text-primary">
-              {{ langService.isArabic() ? tmpl.titleAr : tmpl.titleEn }}
+              {{ editingSymbolRange() ? (langService.isArabic() ? ('تعديل ' + tmpl.titleAr) : ('Edit ' + tmpl.titleEn)) : (langService.isArabic() ? tmpl.titleAr : tmpl.titleEn) }}
             </span>
           </div>
 
-          <button
-            type="button"
-            (pointerdown)="preventFocusLoss($event)"
-            (touchstart)="preventFocusLoss($event)"
-            (click)="cancelVisualTemplate()"
-            class="text-xs text-text-muted hover:text-rose-500 p-1 rounded-lg transition-colors cursor-pointer"
-            [title]="langService.isArabic() ? 'إلغاء' : 'Cancel'"
-          >
-            <app-icon name="x" [size]="16" />
-          </button>
+          <div class="flex items-center gap-2">
+            @if (editingSymbolRange()) {
+              <button
+                type="button"
+                (pointerdown)="preventFocusLoss($event)"
+                (touchstart)="preventFocusLoss($event)"
+                (click)="deleteEditingSymbol()"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                [title]="langService.isArabic() ? 'حذف هذا الرمز من المسألة' : 'Delete this symbol'"
+              >
+                <app-icon name="trash" [size]="13" />
+                <span>{{ langService.isArabic() ? 'حذف الرمز' : 'Delete' }}</span>
+              </button>
+            }
+
+            <button
+              type="button"
+              (pointerdown)="preventFocusLoss($event)"
+              (touchstart)="preventFocusLoss($event)"
+              (click)="cancelVisualTemplate()"
+              class="text-xs text-text-muted hover:text-rose-500 p-1 rounded-lg transition-colors cursor-pointer"
+              [title]="langService.isArabic() ? 'إلغاء' : 'Cancel'"
+            >
+              <app-icon name="x" [size]="16" />
+            </button>
+          </div>
         </div>
 
         <!-- Interactive Direct Visual Slots -->
@@ -149,7 +165,7 @@
 
             </div>
           } @else {
-            <!-- Generic Interactive Slots for Roots, Powers, Limits, Integrals, etc. -->
+            <!-- Generic Interactive Slots for Roots, Powers, Limits, Integrals, Summations, etc. -->
             <div class="flex flex-wrap items-center justify-center gap-2.5 w-full">
               @for (slot of tmpl.slots; track slot.id; let idx = $index) {
                 <button
@@ -209,35 +225,91 @@
               class="px-4 py-1.5 rounded-xl text-xs font-black bg-brand-primary hover:bg-brand-secondary text-white shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
             >
               <app-icon name="check" [size]="14" />
-              <span>{{ langService.isArabic() ? 'إدراج الرمز الرياضي ✓' : 'Insert Math Symbol ✓' }}</span>
+              <span>
+                {{ editingSymbolRange()
+                  ? (langService.isArabic() ? 'حفظ التعديل على الرمز ✓' : 'Update Math Symbol ✓')
+                  : (langService.isArabic() ? 'إدراج الرمز الرياضي ✓' : 'Insert Math Symbol ✓') }}
+              </span>
             </button>
           </div>
         </div>
 
       </div>
     } @else {
-      <!-- Live Equation Preview Strip (when not in visual template builder) -->
-      <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 min-h-[46px]">
-        <div class="flex-1 overflow-x-auto text-xs sm:text-sm text-text-primary dir-auto font-mono">
-          @if (previewFormula()) {
-            <app-math-formula [text]="previewFormula()" />
-          } @else {
-            <span class="text-text-muted italic text-[11px]">
-              {{ langService.isArabic() ? 'معاينة فورية للمسألة الرياضية أثناء الكتابة...' : 'Live formula preview strip...' }}
-            </span>
-          }
+      <!-- Live Equation Preview Strip & Interactive Symbol Bar -->
+      <div class="space-y-2">
+        <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 min-h-[46px]">
+          <div class="flex-1 overflow-x-auto text-xs sm:text-sm text-text-primary dir-auto font-mono">
+            @if (previewFormula()) {
+              <app-math-formula [text]="previewFormula()" />
+            } @else {
+              <span class="text-text-muted italic text-[11px]">
+                {{ langService.isArabic() ? 'معاينة فورية للمسألة الرياضية أثناء الكتابة...' : 'Live formula preview strip...' }}
+              </span>
+            }
+          </div>
+
+          <button
+            type="button"
+            (click)="handleClear()"
+            (pointerdown)="preventFocusLoss($event)"
+            (touchstart)="preventFocusLoss($event)"
+            class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
+            [title]="langService.isArabic() ? 'مسح المحتوى' : 'Clear all'"
+          >
+            {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
+          </button>
         </div>
 
-        <button
-          type="button"
-          (click)="handleClear()"
-          (pointerdown)="preventFocusLoss($event)"
-          (touchstart)="preventFocusLoss($event)"
-          class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
-          [title]="langService.isArabic() ? 'مسح المحتوى' : 'Clear all'"
-        >
-          {{ langService.isArabic() ? 'مسح الكل' : 'Clear' }}
-        </button>
+        <!-- Detected Symbol at Cursor Quick-Edit Strip -->
+        @if (symbolAtCursor(); as curSym) {
+          <div class="flex items-center justify-between gap-2 p-2 px-3 rounded-xl bg-brand-primary/10 border border-brand-primary/30 animate-fade-in">
+            <div class="flex items-center gap-2 overflow-x-auto">
+              <span class="text-brand-primary text-xs font-bold shrink-0">
+                🎯 {{ langService.isArabic() ? 'الرمز عند المؤشر:' : 'Symbol at cursor:' }}
+              </span>
+              <div class="text-xs text-text-primary font-bold overflow-x-auto">
+                <app-math-formula [text]="curSym.displayPreview" />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (pointerdown)="preventFocusLoss($event)"
+              (touchstart)="preventFocusLoss($event)"
+              (click)="editExistingSymbol(curSym)"
+              class="px-3 py-1 rounded-lg text-xs font-black bg-brand-primary hover:bg-brand-secondary text-white transition-all cursor-pointer shadow-sm active:scale-95 shrink-0 flex items-center gap-1"
+            >
+              <app-icon name="edit" [size]="12" />
+              <span>{{ langService.isArabic() ? 'تعديل هذا الرمز ✏️' : 'Edit This Symbol ✏️' }}</span>
+            </button>
+          </div>
+        }
+
+        <!-- Interactive Math Symbol Chips List -->
+        @if (parsedMathSymbols().length > 0) {
+          <div class="space-y-1">
+            <div class="text-[10px] font-bold text-text-muted px-1 flex items-center gap-1">
+              <app-icon name="edit" [size]="11" />
+              <span>{{ langService.isArabic() ? 'الرموز الرياضية بالمسألة (اضغطي لتعديل أي رمز مباشرة):' : 'Symbols in problem (tap to edit directly):' }}</span>
+            </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto p-1 py-1.5">
+              @for (sym of parsedMathSymbols(); track sym.id) {
+                <button
+                  type="button"
+                  (pointerdown)="preventFocusLoss($event)"
+                  (touchstart)="preventFocusLoss($event)"
+                  (click)="editExistingSymbol(sym)"
+                  class="px-2.5 py-1 rounded-xl border border-surface-border bg-surface-card hover:bg-brand-primary/10 hover:border-brand-primary/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95"
+                  [title]="langService.isArabic() ? ('تعديل ' + sym.titleAr) : ('Edit ' + sym.titleEn)"
+                >
+                  <span class="text-brand-primary text-[11px] font-medium">{{ langService.isArabic() ? sym.titleAr : sym.titleEn }}:</span>
+                  <span class="text-text-primary"><app-math-formula [text]="sym.displayPreview" /></span>
+                </button>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
 
@@ -299,7 +371,7 @@
     </div>
 
     <!-- Utility & Action Keys Bar (Strictly Zero Dollar Signs) -->
-    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2 border-t border-surface-border">
+    <div class="grid grid-cols-6 gap-1.5 sm:gap-2 pt-2 border-t border-surface-border">
       
       <!-- Quick Fraction Visual Template Trigger -->
       <button
@@ -327,16 +399,29 @@
         <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'جذر' : 'Root' }}</span>
       </button>
 
+      <!-- Quick Power Visual Template Trigger -->
+      <button
+        type="button"
+        (pointerdown)="preventFocusLoss($event)"
+        (touchstart)="preventFocusLoss($event)"
+        (click)="openVisualTemplate('POWER')"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+        [title]="langService.isArabic() ? 'تعديل أس وقوة بصرياً' : 'Edit power visually'"
+      >
+        <span class="text-sm font-black font-mono">x²</span>
+        <span class="hidden sm:inline text-[10px] text-text-muted">{{ langService.isArabic() ? 'أس' : 'Power' }}</span>
+      </button>
+
       <!-- Space Key -->
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
         (touchstart)="preventFocusLoss($event)"
         (click)="handleSpace()"
-        class="col-span-1 sm:col-span-2 h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-text-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
       >
         <app-icon name="minus" [size]="14" />
-        <span>{{ langService.isArabic() ? 'مسافة' : 'Space' }}</span>
+        <span class="text-[11px]">{{ langService.isArabic() ? 'مسافة' : 'Space' }}</span>
       </button>
 
       <!-- Backspace Key -->
@@ -345,18 +430,18 @@
         (pointerdown)="preventFocusLoss($event)"
         (touchstart)="preventFocusLoss($event)"
         (click)="handleBackspace()"
-        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-rose-500/10 hover:text-rose-500 text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+        class="h-10 rounded-xl border border-surface-border bg-surface-bg hover:bg-rose-500/10 hover:text-rose-500 text-xs font-bold text-text-primary flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
         [title]="langService.isArabic() ? 'حذف الرمز السابق' : 'Backspace'"
       >
         <app-icon name="arrow-left" [size]="14" />
-        <span>{{ langService.isArabic() ? 'حذف' : 'Del' }}</span>
+        <span class="text-[11px]">{{ langService.isArabic() ? 'حذف' : 'Del' }}</span>
       </button>
 
       <!-- Close / Done Sheet Button -->
       <button
         type="button"
         (click)="close()"
-        class="h-10 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all active:scale-95"
+        class="h-10 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white text-xs font-black flex items-center justify-center gap-1 cursor-pointer shadow-sm transition-all active:scale-95"
       >
         <app-icon name="check" [size]="14" />
         <span>{{ langService.isArabic() ? 'تم' : 'Done' }}</span>

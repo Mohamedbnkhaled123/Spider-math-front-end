@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MathVirtualKeyboardComponent } from './math-virtual-keyboard.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { parseMathSymbolsFromText, findSymbolAtCursor } from './math-virtual-keyboard.models';
 
 describe('MathVirtualKeyboardComponent', () => {
   let component: MathVirtualKeyboardComponent;
@@ -397,6 +398,132 @@ describe('MathVirtualKeyboardComponent', () => {
 
       component.handleSpace();
       expect(component.activeVisualTemplate()?.slots[0].value).toBe('12 ');
+    });
+
+    it('should accurately parse existing math symbols from text with parseMathSymbolsFromText', () => {
+      const text = 'أوجد قيمة \\frac{3}{5} + \\sqrt{16} عندما x^2 = 4';
+      const symbols = parseMathSymbolsFromText(text);
+
+      expect(symbols.length).toBe(3);
+      expect(symbols[0].type).toBe('FRACTION');
+      expect(symbols[0].rawLatex).toBe('\\frac{3}{5}');
+      expect(symbols[0].template.slots[0].value).toBe('3');
+      expect(symbols[0].template.slots[1].value).toBe('5');
+
+      expect(symbols[1].type).toBe('SQRT');
+      expect(symbols[1].rawLatex).toBe('\\sqrt{16}');
+      expect(symbols[1].template.slots[0].value).toBe('16');
+
+      expect(symbols[2].type).toBe('POWER');
+      expect(symbols[2].rawLatex).toBe('x^2');
+      expect(symbols[2].template.slots[0].value).toBe('x');
+      expect(symbols[2].template.slots[1].value).toBe('2');
+    });
+
+    it('should find symbol at cursor accurately with findSymbolAtCursor', () => {
+      const text = 'احسب \\frac{3}{5} ثم قارن';
+      const symbols = parseMathSymbolsFromText(text);
+
+      expect(symbols.length).toBe(1);
+      const frac = symbols[0];
+
+      // Cursor before fraction
+      expect(findSymbolAtCursor(symbols, 2)).toBeNull();
+
+      // Cursor at fraction start, inside, and end
+      expect(findSymbolAtCursor(symbols, frac.startIndex)).toEqual(frac);
+      expect(findSymbolAtCursor(symbols, frac.startIndex + 3)).toEqual(frac);
+      expect(findSymbolAtCursor(symbols, frac.endIndex)).toEqual(frac);
+
+      // Cursor after fraction
+      expect(findSymbolAtCursor(symbols, frac.endIndex + 2)).toBeNull();
+    });
+
+    it('should allow directly editing an existing math symbol in-place without seeing LaTeX or dollar signs', () => {
+      inputEl.value = 'أوجد قيمة \\frac{3}{5} في أبسط صورة';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const symbols = component.parsedMathSymbols();
+      expect(symbols.length).toBe(1);
+      const existingFrac = symbols[0];
+
+      // Teacher taps the existing fraction to edit it directly
+      component.editExistingSymbol(existingFrac);
+      expect(component.activeVisualTemplate()).toBeTruthy();
+      expect(component.activeVisualTemplate()?.type).toBe('FRACTION');
+      expect(component.activeVisualTemplate()?.slots[0].value).toBe('3');
+      expect(component.activeVisualTemplate()?.slots[1].value).toBe('5');
+
+      // Teacher changes numerator to 7 using on-screen numeric keypad
+      component.selectSlot(0);
+      component.handleClear();
+      component.insertNumeric('7');
+      expect(component.templateKaTeXPreview()).toBe('\\frac{7}{5}');
+
+      // Teacher taps update
+      component.applyVisualTemplate();
+      expect(component.activeVisualTemplate()).toBeNull();
+      expect(inputEl.value).toBe('أوجد قيمة \\frac{7}{5} في أبسط صورة');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should allow deleting an existing math symbol directly from the question text', () => {
+      inputEl.value = 'احسب المقدار \\sqrt{25} الآن';
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const symbols = component.parsedMathSymbols();
+      expect(symbols.length).toBe(1);
+
+      component.editExistingSymbol(symbols[0]);
+      expect(component.activeVisualTemplate()).toBeTruthy();
+
+      // Teacher taps "حذف الرمز"
+      component.deleteEditingSymbol();
+      expect(component.activeVisualTemplate()).toBeNull();
+      expect(inputEl.value).toBe('احسب المقدار  الآن');
+      expect(inputEl.value).not.toContain('\\sqrt');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should insert calculus derivative d/dx directly without opening fraction template', () => {
+      inputEl.value = 'المشتقة: ';
+      inputEl.selectionStart = inputEl.value.length;
+      inputEl.selectionEnd = inputEl.value.length;
+
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      // Tapping derivative key \frac{d}{dx}
+      component.insertSymbol('\\frac{d}{dx}');
+
+      // Must NOT open template, must insert \frac{d}{dx} directly
+      expect(component.activeVisualTemplate()).toBeNull();
+      expect(inputEl.value).toBe('المشتقة: \\frac{d}{dx}');
+      expect(inputEl.value).not.toContain('$');
+    });
+
+    it('should render interactive symbol chips and cursor-detected strip in the UI', () => {
+      inputEl.value = 'قارن بين \\frac{1}{2} و \\frac{3}{4}';
+      inputEl.selectionStart = 11; // Inside \frac{1}{2}
+      inputEl.selectionEnd = 11;
+
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.parsedMathSymbols().length).toBe(2);
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      expect(hostEl.textContent).toContain('الرموز الرياضية بالمسألة');
+
+      // Symbol chips should be rendered
+      const chips = hostEl.querySelectorAll('.visual-template-card, button');
+      expect(chips.length).toBeGreaterThan(0);
     });
   });
 });

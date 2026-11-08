@@ -14,8 +14,11 @@ export type VisualTemplateType =
   | 'POWER'
   | 'SUBSCRIPT'
   | 'INTEGRAL'
+  | 'INDEFINITE_INTEGRAL'
   | 'LIMIT'
+  | 'SUMMATION'
   | 'LOG'
+  | 'LN'
   | 'ABS'
   | 'PARENS';
 
@@ -33,6 +36,18 @@ export interface IVisualTemplate {
   titleEn: string;
   slots: IVisualSlot[];
   activeSlotIndex: number;
+}
+
+export interface IParsedMathSymbol {
+  id: string;
+  type: VisualTemplateType;
+  titleAr: string;
+  titleEn: string;
+  startIndex: number;
+  endIndex: number;
+  rawLatex: string;
+  displayPreview: string;
+  template: IVisualTemplate;
 }
 
 export interface IMathSymbolKey {
@@ -118,6 +133,16 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         ],
         activeSlotIndex: 2
       };
+    case 'INDEFINITE_INTEGRAL':
+      return {
+        type: 'INDEFINITE_INTEGRAL',
+        titleAr: 'تعديل التكامل غير المحدد مباشرة',
+        titleEn: 'Edit Indefinite Integral Directly',
+        slots: [
+          { id: 'expr', labelAr: 'الدالة f(x)', labelEn: 'Integrand', placeholder: 'x', value: 'x' }
+        ],
+        activeSlotIndex: 0
+      };
     case 'LIMIT':
       return {
         type: 'LIMIT',
@@ -129,6 +154,18 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         ],
         activeSlotIndex: 1
       };
+    case 'SUMMATION':
+      return {
+        type: 'SUMMATION',
+        titleAr: 'تعديل رمز التجميع (سيجما)',
+        titleEn: 'Edit Summation Directly',
+        slots: [
+          { id: 'lower', labelAr: 'بداية التجميع', labelEn: 'Lower limit', placeholder: 'i=1', value: 'i=1' },
+          { id: 'upper', labelAr: 'نهاية التجميع', labelEn: 'Upper limit', placeholder: 'n', value: 'n' },
+          { id: 'expr', labelAr: 'المقدار المراد جمعه', labelEn: 'Expression', placeholder: 'i', value: 'i' }
+        ],
+        activeSlotIndex: 2
+      };
     case 'LOG':
       return {
         type: 'LOG',
@@ -139,6 +176,16 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
           { id: 'val', labelAr: 'العدد (b)', labelEn: 'Value (b)', placeholder: 'x', value: 'x' }
         ],
         activeSlotIndex: 1
+      };
+    case 'LN':
+      return {
+        type: 'LN',
+        titleAr: 'تعديل اللوغاريتم الطبيعي (ln)',
+        titleEn: 'Edit Natural Log Directly',
+        slots: [
+          { id: 'val', labelAr: 'العدد (x)', labelEn: 'Value (x)', placeholder: 'x', value: 'x' }
+        ],
+        activeSlotIndex: 0
       };
     case 'ABS':
       return {
@@ -196,15 +243,29 @@ export function compileTemplateLatex(template: IVisualTemplate): string {
       const expr = s[2]?.value.trim() || 'x';
       return `\\int_{${a}}^{${b}} ${expr} \\, dx`;
     }
+    case 'INDEFINITE_INTEGRAL': {
+      const expr = s[0]?.value.trim() || 'x';
+      return `\\int ${expr} \\, dx`;
+    }
     case 'LIMIT': {
       const to = s[0]?.value.trim() || '0';
       const expr = s[1]?.value.trim() || 'f(x)';
       return `\\lim_{x \\to ${to}} ${expr}`;
     }
+    case 'SUMMATION': {
+      const lower = s[0]?.value.trim() || 'i=1';
+      const upper = s[1]?.value.trim() || 'n';
+      const expr = s[2]?.value.trim() || 'i';
+      return `\\sum_{${lower}}^{${upper}} ${expr}`;
+    }
     case 'LOG': {
       const base = s[0]?.value.trim() || '10';
       const val = s[1]?.value.trim() || 'x';
       return `\\log_{${base}}(${val})`;
+    }
+    case 'LN': {
+      const val = s[0]?.value.trim() || 'x';
+      return `\\ln(${val})`;
     }
     case 'ABS': {
       const val = s[0]?.value.trim() || 'x';
@@ -284,9 +345,9 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   { label: 'x^n', latex: 'x^{}', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: 'x power n' },
   { label: 'x_n', latex: 'x_{}', templateType: 'SUBSCRIPT', category: 'ALGEBRA', ariaLabel: 'x subscript n' },
   { label: '|x|', latex: '||', templateType: 'ABS', category: 'ALGEBRA', ariaLabel: 'Absolute value' },
-  { label: '\\log', latex: '\\log()', category: 'ALGEBRA', ariaLabel: 'Logarithm' },
+  { label: '\\log', latex: '\\log()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Logarithm' },
   { label: '\\log_a b', latex: '\\log_{}()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Log base a of b' },
-  { label: '\\ln', latex: '\\ln()', category: 'ALGEBRA', ariaLabel: 'Natural log' },
+  { label: '\\ln', latex: '\\ln()', templateType: 'LN', category: 'ALGEBRA', ariaLabel: 'Natural log' },
   { label: '(x)', latex: '()', templateType: 'PARENS', category: 'ALGEBRA', ariaLabel: 'Parentheses' },
   { label: '[x]', latex: '[]', category: 'ALGEBRA', ariaLabel: 'Square brackets' },
   { label: '\\{x\\}', latex: '\\{\\}', category: 'ALGEBRA', ariaLabel: 'Braces' },
@@ -334,7 +395,7 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   { label: '\\frac{d}{dx}', latex: '\\frac{d}{dx}', category: 'CALCULUS', ariaLabel: 'Derivative d/dx' },
   { label: '\\frac{dy}{dx}', latex: '\\frac{dy}{dx}', category: 'CALCULUS', ariaLabel: 'Derivative dy/dx' },
   { label: '\\frac{\\partial}{\\partial x}', latex: '\\frac{\\partial}{\\partial x}', category: 'CALCULUS', ariaLabel: 'Partial derivative' },
-  { label: '\\sum', latex: '\\sum_{i=1}^{n}', category: 'CALCULUS', ariaLabel: 'Summation' },
+  { label: '\\sum', latex: '\\sum_{i=1}^{n}', templateType: 'SUMMATION', category: 'CALCULUS', ariaLabel: 'Summation' },
   { label: '\\prod', latex: '\\prod_{i=1}^{n}', category: 'CALCULUS', ariaLabel: 'Product' },
   { label: '\\lim_{x \\to 0}', latex: '\\lim_{x \\to 0}', templateType: 'LIMIT', category: 'CALCULUS', ariaLabel: 'Limit x to 0' },
   { label: '\\lim_{x \\to \\infty}', latex: '\\lim_{x \\to \\infty}', category: 'CALCULUS', ariaLabel: 'Limit x to infinity' },
@@ -346,3 +407,370 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   { label: '\\Delta x', latex: '\\Delta x', category: 'CALCULUS', ariaLabel: 'Delta x' },
   { label: '\\to', latex: '\\to', category: 'CALCULUS', ariaLabel: 'Approaches' }
 ];
+
+/**
+ * Parses all composite mathematical symbols present in text (fractions, roots, powers, integrals, etc.)
+ * so the teacher can edit them directly on screen through the visual math keyboard.
+ */
+export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
+  if (!text) return [];
+
+  const candidates: IParsedMathSymbol[] = [];
+
+  // 1. Fractions: \frac{num}{den}
+  const fracRegex = /\\frac\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+  let match: RegExpExecArray | null;
+  while ((match = fracRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const num = match[1];
+    const den = match[2];
+    candidates.push({
+      id: `sym_frac_${match.index}`,
+      type: 'FRACTION',
+      titleAr: 'كسر اعتيادي',
+      titleEn: 'Fraction',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'FRACTION',
+        titleAr: 'تعديل الكسر الرياضي مباشرة',
+        titleEn: 'Edit Fraction Directly',
+        slots: [
+          { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: num },
+          { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: den }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 2. Nth Root: \sqrt[deg]{rad}
+  const nthRootRegex = /\\sqrt\[([^\]]*)\]\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+  while ((match = nthRootRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const deg = match[1];
+    const rad = match[2];
+    candidates.push({
+      id: `sym_nth_${match.index}`,
+      type: 'NTH_ROOT',
+      titleAr: 'جذر نوني',
+      titleEn: 'N-th Root',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'NTH_ROOT',
+        titleAr: 'تعديل الجذر النوني مباشرة',
+        titleEn: 'Edit N-th Root Directly',
+        slots: [
+          { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: deg },
+          { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: rad }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 3. Square Root: \sqrt{rad} (must not be part of \sqrt[)
+  const sqrtRegex = /(?<!\\sqrt\[[^\]]*\])\\sqrt\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+  while ((match = sqrtRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const rad = match[1];
+    candidates.push({
+      id: `sym_sqrt_${match.index}`,
+      type: 'SQRT',
+      titleAr: 'جذر تربيعي',
+      titleEn: 'Square Root',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'SQRT',
+        titleAr: 'تعديل الجذر التربيعي مباشرة',
+        titleEn: 'Edit Square Root Directly',
+        slots: [
+          { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '16', value: rad }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 4. Summation: \sum_{lower}^{upper} expr
+  const sumRegex = /\\sum_\{([^{}]*)\}\^\{([^{}]*)\}(?:\s*([^\s$+\-=]+|\S+))?/g;
+  while ((match = sumRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const lower = match[1];
+    const upper = match[2];
+    const expr = match[3] || 'i';
+    candidates.push({
+      id: `sym_sum_${match.index}`,
+      type: 'SUMMATION',
+      titleAr: 'رمز التجميع (سيجما)',
+      titleEn: 'Summation',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'SUMMATION',
+        titleAr: 'تعديل رمز التجميع مباشرة',
+        titleEn: 'Edit Summation Directly',
+        slots: [
+          { id: 'lower', labelAr: 'بداية التجميع', labelEn: 'Lower limit', placeholder: 'i=1', value: lower },
+          { id: 'upper', labelAr: 'نهاية التجميع', labelEn: 'Upper limit', placeholder: 'n', value: upper },
+          { id: 'expr', labelAr: 'المقدار المراد جمعه', labelEn: 'Expression', placeholder: 'i', value: expr }
+        ],
+        activeSlotIndex: 2
+      }
+    });
+  }
+
+  // 5. Definite Integral: \int_{lower}^{upper} expr
+  const intDefRegex = /\\int_\{([^{}]*)\}\^\{([^{}]*)\}(?:\s*([^\\]+?)(?:\\,\s*dx|\s*dx)?)?(?=\s|[+\-=]|$|\\)/g;
+  while ((match = intDefRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const lower = match[1];
+    const upper = match[2];
+    const expr = (match[3] || 'x').trim();
+    candidates.push({
+      id: `sym_int_${match.index}`,
+      type: 'INTEGRAL',
+      titleAr: 'تكامل محدد',
+      titleEn: 'Definite Integral',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'INTEGRAL',
+        titleAr: 'تعديل التكامل المحدد مباشرة',
+        titleEn: 'Edit Definite Integral Directly',
+        slots: [
+          { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: lower },
+          { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: upper },
+          { id: 'expr', labelAr: 'الدالة f(x)', labelEn: 'Integrand', placeholder: 'x', value: expr }
+        ],
+        activeSlotIndex: 2
+      }
+    });
+  }
+
+  // 6. Indefinite Integral: \int expr dx
+  const intIndefRegex = /(?<!_\{[^{}]*\})\\int(?!\s*_\s*\{)\s+([^\\]+?)(?:\\,\s*dx|\s*dx)(?=\s|[+\-=]|$|\\)/g;
+  while ((match = intIndefRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const expr = (match[1] || 'x').trim();
+    candidates.push({
+      id: `sym_int_indef_${match.index}`,
+      type: 'INDEFINITE_INTEGRAL',
+      titleAr: 'تكامل غير محدد',
+      titleEn: 'Indefinite Integral',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'INDEFINITE_INTEGRAL',
+        titleAr: 'تعديل التكامل غير المحدد مباشرة',
+        titleEn: 'Edit Indefinite Integral Directly',
+        slots: [
+          { id: 'expr', labelAr: 'الدالة المراد مكاملتها', labelEn: 'Integrand', placeholder: 'x', value: expr }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 7. Limit: \lim_{var \to target} expr
+  const limRegex = /\\lim_\{([a-zA-Z])\s*\\to\s*([^{}]*)\}(?:\s*([^\s$+\-=]+|\S+))?/g;
+  while ((match = limRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const to = match[2];
+    const expr = match[3] || 'f(x)';
+    candidates.push({
+      id: `sym_lim_${match.index}`,
+      type: 'LIMIT',
+      titleAr: 'نهاية دالة',
+      titleEn: 'Limit',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'LIMIT',
+        titleAr: 'تعديل النهاية مباشرة',
+        titleEn: 'Edit Limit Directly',
+        slots: [
+          { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: to },
+          { id: 'expr', labelAr: 'الدالة المراد دراستها', labelEn: 'Expression', placeholder: 'f(x)', value: expr }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 8. Logarithm: \log_{base}(val) or \log(val)
+  const logRegex = /\\log(?:_\{([^{}]*)\})?\(([^\)]*)\)/g;
+  while ((match = logRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1] || '10';
+    const val = match[2];
+    candidates.push({
+      id: `sym_log_${match.index}`,
+      type: 'LOG',
+      titleAr: 'لوغاريتم',
+      titleEn: 'Logarithm',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'LOG',
+        titleAr: 'تعديل اللوغاريتم مباشرة',
+        titleEn: 'Edit Logarithm Directly',
+        slots: [
+          { id: 'base', labelAr: 'أساس اللوغاريتم (a)', labelEn: 'Base (a)', placeholder: '10', value: base },
+          { id: 'val', labelAr: 'العدد (b)', labelEn: 'Value (b)', placeholder: 'x', value: val }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 9. Natural Log: \ln(val)
+  const lnRegex = /\\ln\(([^\)]*)\)/g;
+  while ((match = lnRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const val = match[1];
+    candidates.push({
+      id: `sym_ln_${match.index}`,
+      type: 'LN',
+      titleAr: 'لوغاريتم طبيعي (ln)',
+      titleEn: 'Natural Log (ln)',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'LN',
+        titleAr: 'تعديل اللوغاريتم الطبيعي مباشرة',
+        titleEn: 'Edit Natural Log Directly',
+        slots: [
+          { id: 'val', labelAr: 'العدد (x)', labelEn: 'Value (x)', placeholder: 'x', value: val }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 10. Power: base^{exp} or base^digit (excluding if preceded by \int or \sum)
+  const powRegex = /(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^\{([^{}]*)\}|(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^([0-9a-zA-Z])/g;
+  while ((match = powRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1] || match[3];
+    const exp = match[2] || match[4];
+    candidates.push({
+      id: `sym_pow_${match.index}`,
+      type: 'POWER',
+      titleAr: 'أس وقوة',
+      titleEn: 'Power',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'POWER',
+        titleAr: 'تعديل الأس مباشرة',
+        titleEn: 'Edit Power Directly',
+        slots: [
+          { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: base },
+          { id: 'exp', labelAr: 'الأس', labelEn: 'Exponent', placeholder: '2', value: exp }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 11. Subscript: base_{sub} or base_digit (excluding if preceded by \int, \sum, \lim, \log)
+  const subRegex = /(?<!\\(?:int|sum|lim|log)[^{}]*)(\b[a-zA-Z0-9\)]+)_\{([^{}]*)\}|(?<!\\(?:int|sum|lim|log)[^{}]*)(\b[a-zA-Z0-9\)]+)_([0-9a-zA-Z])/g;
+  while ((match = subRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1] || match[3];
+    const sub = match[2] || match[4];
+    candidates.push({
+      id: `sym_sub_${match.index}`,
+      type: 'SUBSCRIPT',
+      titleAr: 'دليل سفلي',
+      titleEn: 'Subscript',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'SUBSCRIPT',
+        titleAr: 'تعديل الدليل السفلي مباشرة',
+        titleEn: 'Edit Subscript Directly',
+        slots: [
+          { id: 'base', labelAr: 'الرمز الأساسي', labelEn: 'Base', placeholder: 'x', value: base },
+          { id: 'sub', labelAr: 'الدليل السفلي', labelEn: 'Subscript', placeholder: '1', value: sub }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 12. Absolute Value: |val|
+  const absRegex = /\|([^\|]+)\|/g;
+  while ((match = absRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const val = match[1];
+    candidates.push({
+      id: `sym_abs_${match.index}`,
+      type: 'ABS',
+      titleAr: 'قيمة مطلقة / مقياس',
+      titleEn: 'Absolute Value',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: raw,
+      template: {
+        type: 'ABS',
+        titleAr: 'تعديل القيمة المطلقة مباشرة',
+        titleEn: 'Edit Absolute Value Directly',
+        slots: [
+          { id: 'val', labelAr: 'ما بداخل المقياس', labelEn: 'Inside Value', placeholder: 'x', value: val }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // Sort by startIndex ascending
+  candidates.sort((a, b) => a.startIndex - b.startIndex);
+
+  // Filter out any nested sub-matches (outer composite symbol takes priority)
+  const result: IParsedMathSymbol[] = [];
+  for (const c of candidates) {
+    const isContained = result.some(
+      (r) => c.startIndex >= r.startIndex && c.endIndex <= r.endIndex
+    );
+    if (!isContained) {
+      result.push(c);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Accurately finds whether the cursor position is inside or on the boundaries of a math symbol.
+ */
+export function findSymbolAtCursor(symbols: IParsedMathSymbol[], cursorIndex: number): IParsedMathSymbol | null {
+  if (!symbols.length || cursorIndex < 0) return null;
+  return symbols.find((s) => cursorIndex >= s.startIndex && cursorIndex <= s.endIndex) || null;
+}

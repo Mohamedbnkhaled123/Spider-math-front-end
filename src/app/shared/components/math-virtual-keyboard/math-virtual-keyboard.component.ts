@@ -22,8 +22,11 @@ import {
   NUMERIC_KEYPAD_KEYS,
   IVisualTemplate,
   VisualTemplateType,
+  IParsedMathSymbol,
   createVisualTemplate,
-  compileTemplateLatex
+  compileTemplateLatex,
+  parseMathSymbolsFromText,
+  findSymbolAtCursor
 } from './math-virtual-keyboard.models';
 
 /**
@@ -58,6 +61,18 @@ export class MathVirtualKeyboardComponent {
   readonly previewFormula = signal<string>('');
   readonly isNativeMobileKeyboardActive = signal<boolean>(false);
   readonly activeVisualTemplate = signal<IVisualTemplate | null>(null);
+  readonly activeCursorPos = signal<number>(0);
+  readonly editingSymbolRange = signal<{ start: number; end: number } | null>(null);
+
+  // Parsed math symbols from preview formula
+  readonly parsedMathSymbols = computed<IParsedMathSymbol[]>(() => {
+    return parseMathSymbolsFromText(this.previewFormula());
+  });
+
+  // Symbol at current cursor position (if any)
+  readonly symbolAtCursor = computed<IParsedMathSymbol | null>(() => {
+    return findSymbolAtCursor(this.parsedMathSymbols(), this.activeCursorPos());
+  });
 
   // Live KaTeX formula rendered for the currently active visual template
   readonly templateKaTeXPreview = computed<string>(() => {
@@ -83,16 +98,30 @@ export class MathVirtualKeyboardComponent {
         el.setAttribute('readonly', 'true');
         this.isNativeMobileKeyboardActive.set(false);
         this.activeVisualTemplate.set(null);
+        this.editingSymbolRange.set(null);
         this.previewFormula.set(el.value);
+        this.activeCursorPos.set(el.selectionStart ?? el.value.length);
 
         const handleInput = () => {
           this.previewFormula.set(el.value);
+          this.activeCursorPos.set(el.selectionStart ?? el.value.length);
         };
+
+        const handleCursorSync = () => {
+          this.activeCursorPos.set(el.selectionStart ?? el.value.length);
+        };
+
         el.addEventListener('input', handleInput);
+        el.addEventListener('click', handleCursorSync);
+        el.addEventListener('keyup', handleCursorSync);
+        el.addEventListener('select', handleCursorSync);
 
         onCleanup(() => {
           el.removeAttribute('readonly');
           el.removeEventListener('input', handleInput);
+          el.removeEventListener('click', handleCursorSync);
+          el.removeEventListener('keyup', handleCursorSync);
+          el.removeEventListener('select', handleCursorSync);
         });
       } else if (el) {
         el.removeAttribute('readonly');
@@ -109,12 +138,46 @@ export class MathVirtualKeyboardComponent {
    * math symbol directly (e.g. numerator/denominator) without touching raw LaTeX or dollars.
    */
   openVisualTemplate(type: VisualTemplateType): void {
+    this.editingSymbolRange.set(null);
     const tmpl = createVisualTemplate(type);
     this.activeVisualTemplate.set(tmpl);
   }
 
+  /**
+   * Opens an existing parsed math symbol in the visual template editor so the teacher
+   * can modify its values (numerator, denominator, exponent, etc.) directly on screen.
+   */
+  editExistingSymbol(symbol: IParsedMathSymbol): void {
+    this.editingSymbolRange.set({ start: symbol.startIndex, end: symbol.endIndex });
+    this.activeVisualTemplate.set(symbol.template);
+  }
+
+  /**
+   * Deletes the currently edited math symbol completely from the input behind the scenes.
+   */
+  deleteEditingSymbol(): void {
+    const range = this.editingSymbolRange();
+    const el = this.targetInput();
+    if (range && el) {
+      this.ensureReadonlySuppression(el);
+      const currentVal = el.value;
+      const nextVal = currentVal.slice(0, range.start) + currentVal.slice(range.end);
+      el.value = nextVal;
+      const newPos = Math.max(0, Math.min(range.start, nextVal.length));
+      el.setSelectionRange(newPos, newPos);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      this.previewFormula.set(nextVal);
+      this.activeCursorPos.set(newPos);
+      this.valueChange.emit(nextVal);
+    }
+    this.editingSymbolRange.set(null);
+    this.activeVisualTemplate.set(null);
+  }
+
   cancelVisualTemplate(): void {
     this.activeVisualTemplate.set(null);
+    this.editingSymbolRange.set(null);
   }
 
   selectSlot(index: number): void {
@@ -147,8 +210,34 @@ export class MathVirtualKeyboardComponent {
     const tmpl = this.activeVisualTemplate();
     if (!tmpl) return;
     const latex = compileTemplateLatex(tmpl);
+    const range = this.editingSymbolRange();
     this.activeVisualTemplate.set(null);
-    this.insertSymbolDirect(latex);
+    this.editingSymbolRange.set(null);
+
+    const el = this.targetInput();
+    if (!el) {
+      this.previewFormula.update((prev) => prev + latex);
+      return;
+    }
+
+    this.ensureReadonlySuppression(el);
+
+    if (range) {
+      // In-place replacement of existing math symbol
+      const currentVal = el.value;
+      const nextVal = currentVal.slice(0, range.start) + latex + currentVal.slice(range.end);
+      el.value = nextVal;
+      const newCursor = Math.max(0, Math.min(range.start + latex.length, nextVal.length));
+      el.setSelectionRange(newCursor, newCursor);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      this.previewFormula.set(nextVal);
+      this.activeCursorPos.set(newCursor);
+      this.valueChange.emit(nextVal);
+    } else {
+      // Insertion of new math symbol at cursor
+      this.insertSymbolDirect(latex);
+    }
   }
 
   /**
@@ -197,14 +286,15 @@ export class MathVirtualKeyboardComponent {
     el.dispatchEvent(new Event('change', { bubbles: true }));
 
     this.previewFormula.set(nextValue);
+    this.activeCursorPos.set(newCursorPos);
     this.valueChange.emit(nextValue);
   }
 
   /**
    * Main insertion handler:
    * - If an interactive visual template is currently open, types into its active slot.
-   * - If a composite key is tapped, launches direct visual template on screen.
-   * - If a simple symbol is tapped, inserts directly into formula without dollar signs.
+   * - If a composite key is tapped, checks if cursor is on an existing symbol to edit it, or launches visual template.
+   * - If a simple symbol or derivative key is tapped, inserts directly into formula without dollar signs.
    */
   insertSymbol(latexCode: string, cursorOffset: number = 0, templateType?: VisualTemplateType): void {
     const tmpl = this.activeVisualTemplate();
@@ -216,17 +306,15 @@ export class MathVirtualKeyboardComponent {
     }
 
     const matchedKey = MATH_KEYBOARD_KEYS.find((k) => k.latex === latexCode || k.label === latexCode);
-    let effectiveTemplate = templateType || matchedKey?.templateType;
-    if (!effectiveTemplate) {
-      if (latexCode.includes('\\frac')) effectiveTemplate = 'FRACTION';
-      else if (latexCode.includes('\\sqrt[') || latexCode.includes('\\sqrt[]')) effectiveTemplate = 'NTH_ROOT';
-      else if (latexCode.includes('\\sqrt')) effectiveTemplate = 'SQRT';
-      else if (latexCode.includes('\\int_') || latexCode.includes('\\int{')) effectiveTemplate = 'INTEGRAL';
-      else if (latexCode.includes('\\lim')) effectiveTemplate = 'LIMIT';
-      else if (latexCode.includes('\\log_')) effectiveTemplate = 'LOG';
-    }
+    const effectiveTemplate = templateType || matchedKey?.templateType;
 
     if (effectiveTemplate) {
+      // Check if cursor is on an existing symbol of this type to edit it directly
+      const atCursor = this.symbolAtCursor();
+      if (atCursor && atCursor.type === effectiveTemplate) {
+        this.editExistingSymbol(atCursor);
+        return;
+      }
       this.openVisualTemplate(effectiveTemplate);
       return;
     }
@@ -311,6 +399,7 @@ export class MathVirtualKeyboardComponent {
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
       this.previewFormula.set(nextValue);
+      this.activeCursorPos.set(start);
       this.valueChange.emit(nextValue);
       return;
     }
@@ -325,6 +414,7 @@ export class MathVirtualKeyboardComponent {
     el.dispatchEvent(new Event('change', { bubbles: true }));
 
     this.previewFormula.set(nextValue);
+    this.activeCursorPos.set(start - 1);
     this.valueChange.emit(nextValue);
   }
 
@@ -356,6 +446,7 @@ export class MathVirtualKeyboardComponent {
       el.dispatchEvent(new Event('change', { bubbles: true }));
     }
     this.previewFormula.set('');
+    this.activeCursorPos.set(0);
     this.valueChange.emit('');
   }
 
