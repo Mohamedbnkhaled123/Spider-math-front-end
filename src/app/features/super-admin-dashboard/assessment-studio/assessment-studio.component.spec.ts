@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem } from './assessment-studio.models';
+import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
+import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
 
 describe('AssessmentStudioComponent', () => {
   let component: AssessmentStudioComponent;
@@ -438,6 +440,255 @@ describe('AssessmentStudioComponent', () => {
       expect(targetQ.questionImageUrl).toBe('https://cloudinary.com/cropped_q1.webp');
       expect(component.isManualSlicerOpen()).toBe(false);
       expect(component.activeQuestionForSlicing()).toBeNull();
+    });
+  });
+
+  describe('Teacher Assessment Auto-Save in Dexie & 1-Click Restoration (Milestone 2 - R2 & R4)', () => {
+    const mockDraft: AssessmentDraft = {
+      draftId: 'asm_draft_test',
+      assessmentId: 'asm_123',
+      draftType: 'EDIT',
+      titleAr: 'مسودة اختبار تفاضل مستعادة',
+      titleEn: 'Restored Calculus Draft',
+      curriculum: 'EGYPTIAN',
+      gradeLevel: 'SEC_3',
+      term: 'TERM_1',
+      calculatorType: 'DESMOS',
+      referenceSheetUrl: null,
+      durationMinutes: 50,
+      passPercentage: 65,
+      maxAttempts: 2,
+      isScheduled: false,
+      isPlacementTest: false,
+      requiresTeacherReview: false,
+      totalPoints: 15,
+      questions: [
+        {
+          id: 'q_draft_1',
+          order: 1,
+          type: 'MCQ',
+          textAr: 'أوجد مشتقة $f(x) = \\sin(x)$',
+          options: ['$\\cos(x)$', '$-\\cos(x)$', '$\\tan(x)$', '$1$'],
+          correctOptionIndex: 0,
+          points: 5
+        }
+      ],
+      composerSnapshot: {
+        editingQuestionId: null,
+        type: 'MCQ',
+        textAr: 'مسألة قيد الكتابة أثناء الحفظ التلقائي',
+        imageUrl: null,
+        options: ['أ', 'ب', 'ج', 'د'],
+        correctIndex: 2,
+        points: 5,
+        youtubeUrl: ''
+      },
+      createdAt: 1700000000000,
+      updatedAt: 1700000050000
+    };
+
+    it('should check for pending drafts on ngOnInit and set pendingDraft signal', async () => {
+      spyOn(component.draftService, 'getLatestDraft').and.returnValue(Promise.resolve(mockDraft));
+
+      await component.checkForPendingDrafts();
+
+      expect(component.pendingDraft()).toEqual(mockDraft);
+    });
+
+    it('should render the restorable draft banner with 1-click restore and discard buttons', () => {
+      component.pendingDraft.set(mockDraft);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const banner = hostEl.querySelector('[data-testid="draft-restore-banner"]');
+      expect(banner).toBeTruthy();
+      expect(banner?.textContent).toContain('مسودة اختبار تفاضل مستعادة');
+      expect(banner?.textContent).toContain('استعادة المسودة بنقرة واحدة');
+      expect(banner?.textContent).toContain('تجاهل المسودة');
+
+      const restoreBtn = hostEl.querySelector('[data-testid="restore-draft-btn"]');
+      const discardBtn = hostEl.querySelector('[data-testid="discard-draft-btn"]');
+      expect(restoreBtn).toBeTruthy();
+      expect(discardBtn).toBeTruthy();
+    });
+
+    it('should restore draft questions, options, settings, and composer state in 1 click and open editor in QUESTIONS tab', () => {
+      component.pendingDraft.set(mockDraft);
+      fixture.detectChanges();
+
+      let toastEmitted: any = null;
+      component.toastTriggered.subscribe((t) => (toastEmitted = t));
+
+      component.restoreDraft(mockDraft);
+
+      // Verify activeAssessment is restored
+      const asm = component.activeAssessment();
+      expect(asm).toBeTruthy();
+      expect(asm?.titleAr).toBe('مسودة اختبار تفاضل مستعادة');
+      expect(asm?.durationMinutes).toBe(50);
+      expect(asm?.questions.length).toBe(1);
+      expect(asm?.questions[0].textAr).toBe('أوجد مشتقة $f(x) = \\sin(x)$');
+
+      // Verify composer snapshot is restored
+      expect(component.newQuestionTextAr()).toBe('مسألة قيد الكتابة أثناء الحفظ التلقائي');
+      expect(component.newQuestionOptions()).toEqual(['أ', 'ب', 'ج', 'د']);
+      expect(component.newQuestionCorrectIndex()).toBe(2);
+
+      // Verify editor is opened to QUESTIONS tab
+      expect(component.isEditorOpen()).toBeTrue();
+      expect(component.editorActiveTab()).toBe('QUESTIONS');
+
+      // Verify banner is dismissed
+      expect(component.pendingDraft()).toBeNull();
+      expect(toastEmitted?.type).toBe('success');
+    });
+
+    it('should discard draft, delete it from Dexie via draftService.deleteDraft, and dismiss banner', async () => {
+      component.pendingDraft.set(mockDraft);
+      spyOn(component.draftService, 'deleteDraft').and.returnValue(Promise.resolve());
+
+      let toastEmitted: any = null;
+      component.toastTriggered.subscribe((t) => (toastEmitted = t));
+
+      await component.discardDraft(mockDraft.draftId);
+
+      expect(component.draftService.deleteDraft).toHaveBeenCalledWith(mockDraft.draftId);
+      expect(component.pendingDraft()).toBeNull();
+      expect(toastEmitted?.type).toBe('warning');
+    });
+
+    it('should trigger debounced draft auto-save when typing into question text or options', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      fixture.detectChanges();
+      spyOn(component, 'triggerDraftAutoSave');
+
+      const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+      expect(textarea).toBeTruthy();
+      textarea.value = 'تعديل نص السؤال التلقائي';
+      textarea.dispatchEvent(new Event('input'));
+
+      expect(component.triggerDraftAutoSave).toHaveBeenCalledWith(false);
+
+      const optionInput: HTMLInputElement = fixture.nativeElement.querySelector('input[data-opt-index="0"]');
+      if (optionInput) {
+        optionInput.value = 'خيار جديد';
+        optionInput.dispatchEvent(new Event('input'));
+        expect(component.triggerDraftAutoSave).toHaveBeenCalledWith(false);
+      }
+    });
+
+    it('should trigger immediate draft auto-save when adding, updating, or deleting questions', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      spyOn(component, 'triggerDraftAutoSave');
+
+      // Test addQuestion
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('سؤال جديد للاختبار');
+      component.newQuestionOptions.set(['1', '2', '3', '4']);
+      component.saveQuestion();
+      expect(component.triggerDraftAutoSave).toHaveBeenCalledWith(true);
+
+      // Test deleteQuestion
+      spyOn(component, 'openConfirm').and.callFake((title, msg, onConfirm) => onConfirm());
+      component.deleteQuestion(1);
+      expect(component.triggerDraftAutoSave).toHaveBeenCalledWith(true);
+    });
+
+    it('should completely delete draft from Dexie upon successful saveAssessmentEditor', async () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      spyOn(component.draftService, 'deleteDraft').and.returnValue(Promise.resolve());
+      component.pendingDraft.set(mockDraft);
+
+      component.saveAssessmentEditor();
+      await Promise.resolve();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      expect(component.draftService.deleteDraft).toHaveBeenCalledWith(sampleAssessment.id);
+      expect(component.pendingDraft()).toBeNull();
+    });
+
+    it('should trigger immediate auto-save on window:beforeunload if editor is open', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      spyOn(component, 'triggerDraftAutoSave');
+
+      component.onBeforeUnload();
+
+      expect(component.triggerDraftAutoSave).toHaveBeenCalledWith(true);
+    });
+
+    it('should strictly comply with R4: zero Unicode emojis across all draft messages, badges, and templates', () => {
+      component.pendingDraft.set(mockDraft);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const htmlText = hostEl.innerHTML;
+
+      // Unicode Emoji regex range
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      const hasEmoji = emojiRegex.test(htmlText);
+      expect(hasEmoji).toBeFalse();
+
+      // Verify standard SVG <app-icon> components are used
+      const banner = hostEl.querySelector('[data-testid="draft-restore-banner"]');
+      const icons = banner?.querySelectorAll('app-icon');
+      expect(icons?.length).toBeGreaterThanOrEqual(3); // clock, rotate-ccw, trash
+    });
+  });
+
+  describe('Milestone 3: Teacher Student-Simulation Preview (R3 & R4)', () => {
+    it('should open preview modal with selected assessment item from the bank', () => {
+      component.openPreviewModal(sampleAssessment);
+      expect(component.isPreviewModalOpen()).toBeTrue();
+      expect(component.previewAssessment()?.id).toBe(sampleAssessment.id);
+    });
+
+    it('should open preview modal from question editor drawer with working draft questions', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      expect(component.isEditorOpen()).toBeTrue();
+
+      const workingCopy = component.activeAssessment()!;
+      component.openPreviewModal(workingCopy);
+
+      expect(component.isPreviewModalOpen()).toBeTrue();
+      expect(component.previewAssessment()?.id).toBe(sampleAssessment.id);
+    });
+
+    it('should close preview modal and reset preview assessment', () => {
+      component.openPreviewModal(sampleAssessment);
+      expect(component.isPreviewModalOpen()).toBeTrue();
+
+      component.closePreviewModal();
+      expect(component.isPreviewModalOpen()).toBeFalse();
+      expect(component.previewAssessment()).toBeNull();
+    });
+
+    it('should render preview button on assessment card and trigger openPreviewModal on click', () => {
+      component.assessmentsList.set([sampleAssessment]);
+      component.selectedCurriculum.set(sampleAssessment.curriculum);
+      component.selectedGrade.set(sampleAssessment.gradeLevel);
+      component.selectedTerm.set(sampleAssessment.term);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const previewBtn: HTMLButtonElement | null = hostEl.querySelector('[data-testid="card-preview-btn"]');
+      expect(previewBtn).toBeTruthy();
+
+      spyOn(component, 'openPreviewModal');
+      previewBtn?.click();
+      expect(component.openPreviewModal).toHaveBeenCalledWith(sampleAssessment);
+    });
+
+    it('should render preview button in editor drawer header and trigger openPreviewModal on click', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const drawerPreviewBtn: HTMLButtonElement | null = hostEl.querySelector('[data-testid="drawer-preview-btn"]');
+      expect(drawerPreviewBtn).toBeTruthy();
+
+      spyOn(component, 'openPreviewModal');
+      drawerPreviewBtn?.click();
+      expect(component.openPreviewModal).toHaveBeenCalled();
     });
   });
 });

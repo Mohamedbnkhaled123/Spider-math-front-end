@@ -191,7 +191,7 @@ export class OfflineSyncQueueService implements OnDestroy {
 
       this.syncShieldState.set('SYNCED_ONLINE');
       this.syncMessage.set(
-        response.data?.message || 'تمت مزامنة وتسليم إجاباتك بنجاح وحساب نقاط الـ XP ✦'
+        response.data?.message || 'تمت مزامنة وتسليم إجاباتك بنجاح وحساب نقاط الـ XP.'
       );
     } catch (error: any) {
       const status = error instanceof HttpErrorResponse ? error.status : 0;

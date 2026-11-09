@@ -267,13 +267,14 @@
                           class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
                           [title]="langService.isArabic() ? 'حذف هذه الصورة' : 'Delete this photo'"
                         >
-                          ✕
+                          <app-icon name="x" [size]="16" />
                         </button>
                       </div>
                     }
                     <div>
-                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
-                        {{ langService.isArabic() ? '✓ تم إرفاق صورة الحل كإجابة لهذا السؤال بنجاح' : '✓ Solution photo attached successfully' }}
+                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <app-icon name="check" [size]="16" />
+                        <span>{{ langService.isArabic() ? 'تم إرفاق صورة الحل كإجابة لهذا السؤال بنجاح' : 'Solution photo attached successfully' }}</span>
                       </span>
                       <span class="text-[10px] text-text-muted">
                         {{ langService.isArabic() ? 'سيتم تسليمها للمهندسة هبة عبدالوهاب لمراجعة خطوات الحل وتصحيحها.' : 'It will be submitted to Eng. Heba Abdel-Wahab to review and grade solution steps.' }}
@@ -314,13 +315,14 @@
                           class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
                           [title]="langService.isArabic() ? 'حذف هذه الصورة' : 'Delete this photo'"
                         >
-                          ✕
+                          <app-icon name="x" [size]="16" />
                         </button>
                       </div>
                     }
                     <div>
-                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
-                        {{ langService.isArabic() ? '✓ تم حفظ صورة حل المسألة المقالية' : '✓ Written solution photo saved' }}
+                      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <app-icon name="check" [size]="16" />
+                        <span>{{ langService.isArabic() ? 'تم حفظ صورة حل المسألة المقالية' : 'Written solution photo saved' }}</span>
                       </span>
                       <span class="text-[10px] text-text-muted">
                         {{ langService.isArabic() ? 'يمكنك إضافة صورة ثانية إذا كان الحل يتكون من صفحتين.' : 'You can add a second photo if your solution spans two pages.' }}

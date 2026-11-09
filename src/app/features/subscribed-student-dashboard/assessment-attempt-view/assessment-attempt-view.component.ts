@@ -340,8 +340,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
               payload
             )
           );
-          // Delete active quiz from Dexie so offline queue does not double-send
-          await spiderMathDb.activeQuizzes.delete(this.bundle().assessmentId);
+          // Clear active quiz cache from both Dexie and localStorage so state is cleanly purged
+          await this.quizCache.clearQuiz(this.bundle().assessmentId);
           this.isSubmissionCompleted.set(true);
           const subId = res?.data?.submissionId || this.bundle().assessmentId;
           const returnToHome = this.route.snapshot.queryParamMap.get('returnToHome') === 'true';
@@ -361,6 +361,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
         record?.elapsedSeconds ?? 120,
         idempotencyKey
       );
+      // Clear active quiz cache from both Dexie and localStorage after queuing offline attempt
+      await this.quizCache.clearQuiz(this.bundle().assessmentId);
 
       this.isSubmissionCompleted.set(true);
       const returnToHome = this.route.snapshot.queryParamMap.get('returnToHome') === 'true';

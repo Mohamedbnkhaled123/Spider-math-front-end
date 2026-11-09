@@ -42,6 +42,7 @@ export interface ActiveQuizRecord {
     sizeKb: number;
   }>;
   clientStartedAt: string;
+  serverStartedAt?: string;
   cachedAt: number;
   lastSavedAt: number;
   isCompleted: boolean;
@@ -74,12 +75,16 @@ export interface SyncQueueRecord {
 }
 
 export interface AssessmentStartResponse {
-  assessment_id: string;
-  title: string;
+  assessment_id?: string;
+  title?: string;
   unit_id?: string;
-  duration_minutes: number;
-  questions: CachedQuestion[];
-  client_started_at: string;
+  duration_minutes?: number;
+  questions?: CachedQuestion[];
+  client_started_at?: string;
+  server_started_at?: string;
+  serverStartedAt?: string;
+  idempotencyKey?: string;
+  assessment?: any;
 }
 
 export interface SubmissionSyncResponse {

@@ -6,7 +6,8 @@ import {
   inject,
   OnInit,
   output,
-  PLATFORM_ID
+  PLATFORM_ID,
+  HostListener
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +27,8 @@ import {
   GradeOption,
   CurriculumTrackItem
 } from '../curriculum-studio/curriculum-studio.models';
+import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
+import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -42,6 +45,7 @@ import { AiQuestionExtractionModalComponent } from './ai-question-extraction-mod
 import { ICachedFileSession } from './ai-question-extraction-modal/ai-question-extraction-modal.models';
 import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
 import { ISliceResult } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
+import { AssessmentPreviewModalComponent } from './assessment-preview-modal/assessment-preview-modal.component';
 
 /**
  * Timezone Drift Fix (Fix #2): Converts UTC/ISO timestamp to local input string (YYYY-MM-DDTHH:mm)
@@ -73,7 +77,8 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
     MathFormulaComponent,
     MathVirtualKeyboardComponent,
     AiQuestionExtractionModalComponent,
-    ManualImageSlicerModalComponent
+    ManualImageSlicerModalComponent,
+    AssessmentPreviewModalComponent
   ],
   templateUrl: './assessment-studio.component.html',
   styleUrl: './assessment-studio.component.scss',
@@ -83,8 +88,26 @@ export class AssessmentStudioComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  readonly draftService = inject(AssessmentDraftService);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
+
+  // Teacher Draft Auto-Save State (Phase 15 - Milestone 2 - R2)
+  readonly pendingDraft = signal<AssessmentDraft | null>(null);
+
+  // Simulation Preview State (Phase 15 - Milestone 3 - R3)
+  readonly previewAssessment = signal<AssessmentItem | null>(null);
+  readonly isPreviewModalOpen = signal<boolean>(false);
+
+  openPreviewModal(item: AssessmentItem): void {
+    this.previewAssessment.set(item);
+    this.isPreviewModalOpen.set(true);
+  }
+
+  closePreviewModal(): void {
+    this.isPreviewModalOpen.set(false);
+    this.previewAssessment.set(null);
+  }
 
   // Filter Signals (persisted per teacher selection, dynamically loaded from active grades)
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
@@ -311,6 +334,7 @@ export class AssessmentStudioComponent implements OnInit {
         this.updateOption(Number(optIdx), visualVal);
       }
     }
+    this.triggerDraftAutoSave(false);
   }
 
   onQuestionTextInput(event: Event): void {
@@ -323,6 +347,7 @@ export class AssessmentStudioComponent implements OnInit {
       target.setSelectionRange(pos, pos);
     }
     this.newQuestionTextAr.set(visualVal);
+    this.triggerDraftAutoSave(false);
   }
 
   onOptionInput(index: number, event: Event): void {
@@ -335,6 +360,7 @@ export class AssessmentStudioComponent implements OnInit {
       target.setSelectionRange(pos, pos);
     }
     this.updateOption(index, visualVal);
+    this.triggerDraftAutoSave(false);
   }
 
   openAiExtractionModal(): void {
@@ -358,6 +384,7 @@ export class AssessmentStudioComponent implements OnInit {
       questions: updatedQuestions,
       totalPoints: updatedQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     });
+    this.triggerDraftAutoSave(true);
 
     this.toastTriggered.emit({
       text: this.langService.isArabic()
@@ -394,13 +421,157 @@ export class AssessmentStudioComponent implements OnInit {
     }
     this.isManualSlicerOpen.set(false);
     this.activeQuestionForSlicing.set(null);
+    this.triggerDraftAutoSave(true);
     this.toastTriggered.emit({
       text: this.langService.isArabic() ? 'تم قص الصورة وحفظها بنجاح!' : 'Image cropped successfully!',
       type: 'success'
     });
   }
 
+  // =========================================================================
+  // Teacher Draft Auto-Save in Dexie & 1-Click Restoration (Milestone 2 - R2)
+  // =========================================================================
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    if (this.isEditorOpen() && this.activeAssessment()) {
+      this.triggerDraftAutoSave(true);
+    }
+  }
+
+  triggerDraftAutoSave(immediate = false): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+
+    const draft: AssessmentDraft = {
+      draftId: asm.id || 'new_assessment_draft',
+      assessmentId: asm.id || null,
+      draftType: 'EDIT',
+      titleAr: asm.titleAr || '',
+      titleEn: asm.titleEn || '',
+      curriculum: asm.curriculum,
+      gradeLevel: asm.gradeLevel,
+      term: asm.term,
+      calculatorType: asm.calculatorType,
+      referenceSheetUrl: asm.referenceSheetUrl || null,
+      durationMinutes: asm.durationMinutes,
+      passPercentage: asm.passPercentage,
+      maxAttempts: asm.maxAttempts,
+      isScheduled: !!asm.isScheduled,
+      availableFrom: asm.availableFrom || null,
+      availableUntil: asm.availableUntil || null,
+      isPlacementTest: !!asm.isPlacementTest,
+      requiresTeacherReview: !!asm.requiresTeacherReview,
+      totalPoints: asm.totalPoints,
+      questions: asm.questions || [],
+      composerSnapshot: {
+        editingQuestionId: this.editingQuestionId(),
+        type: this.newQuestionType(),
+        textAr: this.newQuestionTextAr(),
+        imageUrl: this.newQuestionImageUrl(),
+        options: this.newQuestionOptions(),
+        correctIndex: this.newQuestionCorrectIndex(),
+        points: this.newQuestionPoints(),
+        youtubeUrl: this.newQuestionYoutubeUrl()
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    if (immediate) {
+      this.draftService.saveDraft(draft);
+    } else {
+      this.draftService.scheduleDebouncedSave(draft, 600);
+    }
+  }
+
+  async checkForPendingDrafts(): Promise<void> {
+    try {
+      const latest = await this.draftService.getLatestDraft();
+      if (latest) {
+        this.pendingDraft.set(latest);
+      }
+    } catch (err) {
+      console.warn('Failed to check for pending drafts:', err);
+    }
+  }
+
+  formatDraftTime(timestamp?: number): string {
+    if (!timestamp) return '';
+    const d = new Date(timestamp);
+    return d.toLocaleTimeString(this.langService.isArabic() ? 'ar-EG' : 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: 'numeric',
+      month: 'short'
+    });
+  }
+
+  restoreDraft(draft: AssessmentDraft): void {
+    const restoredAsm: AssessmentItem = {
+      id: draft.assessmentId || draft.draftId,
+      titleAr: draft.titleAr || '',
+      titleEn: draft.titleEn || '',
+      curriculum: draft.curriculum,
+      gradeLevel: draft.gradeLevel,
+      term: draft.term,
+      calculatorType: draft.calculatorType,
+      referenceSheetUrl: draft.referenceSheetUrl || null,
+      durationMinutes: draft.durationMinutes || 45,
+      passPercentage: draft.passPercentage || 60,
+      maxAttempts: draft.maxAttempts || 1,
+      isScheduled: !!draft.isScheduled,
+      availableFrom: draft.availableFrom || null,
+      availableUntil: draft.availableUntil || null,
+      isPlacementTest: !!draft.isPlacementTest,
+      requiresTeacherReview: !!draft.requiresTeacherReview,
+      totalPoints: draft.totalPoints || (draft.questions || []).reduce((sum, q) => sum + (q.points || 1), 0),
+      isPublished: false,
+      submissionsCount: 0,
+      questions: draft.questions || []
+    };
+
+    this.activeAssessment.set(restoredAsm);
+    this.isRefSheetActiveInEditor.set(Boolean(restoredAsm.referenceSheetUrl));
+    this.editorActiveTab.set('QUESTIONS');
+    this.editorErrorMessage.set(null);
+    this.autoRegradeWarning.set(false);
+
+    if (draft.composerSnapshot) {
+      this.editingQuestionId.set(draft.composerSnapshot.editingQuestionId);
+      this.newQuestionType.set(draft.composerSnapshot.type);
+      this.newQuestionTextAr.set(draft.composerSnapshot.textAr);
+      this.newQuestionImageUrl.set(draft.composerSnapshot.imageUrl);
+      this.newQuestionOptions.set(draft.composerSnapshot.options || ['', '', '', '']);
+      this.newQuestionCorrectIndex.set(draft.composerSnapshot.correctIndex ?? 0);
+      this.newQuestionPoints.set(draft.composerSnapshot.points ?? 5);
+      this.newQuestionYoutubeUrl.set(draft.composerSnapshot.youtubeUrl || '');
+    } else {
+      this.resetQuestionForm();
+    }
+
+    this.isEditorOpen.set(true);
+    this.pendingDraft.set(null);
+
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? 'تمت استعادة المسودة بنجاح بكامل الأسئلة والإعدادات!'
+        : 'Draft restored successfully with all questions and settings!',
+      type: 'success'
+    });
+  }
+
+  async discardDraft(draftId: string): Promise<void> {
+    await this.draftService.deleteDraft(draftId);
+    this.pendingDraft.set(null);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم تجاهل وحذف مسودة الامتحان' : 'Draft discarded',
+      type: 'warning'
+    });
+  }
+
   ngOnInit(): void {
+    this.checkForPendingDrafts();
     if (isPlatformBrowser(this.platformId)) {
       try {
         const savedCurriculum = localStorage.getItem('spider_admin_selected_curriculum') as CurriculumCode | null;
@@ -715,7 +886,14 @@ export class AssessmentStudioComponent implements OnInit {
     };
 
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/assessments', payload).subscribe({
-      next: () => {
+      next: async (res) => {
+        // R2: Guaranteed cleanup of draft from Dexie upon successful creation
+        await this.draftService.deleteDraft('new_assessment_draft');
+        if (res?.data?._id || res?.data?.id) {
+          await this.draftService.deleteDraft(res.data._id || res.data.id);
+        }
+        this.pendingDraft.set(null);
+
         this.isSaving.set(false);
         ASSESSMENTS_MEMORY_CACHE.clear();
         this.closeCreateModal();
@@ -836,7 +1014,11 @@ export class AssessmentStudioComponent implements OnInit {
       `هل أنت متأكدة من حذف امتحان "${item.titleAr}" المخصص لـ (${item.gradeLevel})؟ هذا الإجراء غير قابل للتراجع.`,
       () => {
         this.http.delete(`/api/v1/admin/assessments/${item.id}`).subscribe({
-          next: () => {
+          next: async () => {
+            await this.draftService.deleteDraft(item.id);
+            if (this.pendingDraft()?.draftId === item.id || this.pendingDraft()?.assessmentId === item.id) {
+              this.pendingDraft.set(null);
+            }
             ASSESSMENTS_MEMORY_CACHE.clear();
             this.assessmentsList.update((list) => list.filter((a) => a.id !== item.id));
             this.toastTriggered.emit({ text: 'تم حذف الامتحان بنجاح!', type: 'warning' });
@@ -869,6 +1051,7 @@ export class AssessmentStudioComponent implements OnInit {
     this.isRefSheetActiveInEditor.set(active);
     if (!active) {
       this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
+      this.triggerDraftAutoSave(true);
     }
   }
 
@@ -889,6 +1072,7 @@ export class AssessmentStudioComponent implements OnInit {
     if (url) {
       this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
       this.isRefSheetActiveInEditor.set(true);
+      this.triggerDraftAutoSave(true);
       this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بالامتحان بنجاح!', type: 'success' });
     }
   }
@@ -896,6 +1080,7 @@ export class AssessmentStudioComponent implements OnInit {
   removeReferenceSheetInEditor(): void {
     this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: null } : null));
     this.isRefSheetActiveInEditor.set(false);
+    this.triggerDraftAutoSave(true);
   }
 
   // =========================================================================
@@ -936,10 +1121,12 @@ export class AssessmentStudioComponent implements OnInit {
       curriculum: curr,
       gradeLevel: firstGrade
     });
+    this.triggerDraftAutoSave(true);
   }
 
   onQuestionImageUploaded(url: string): void {
     this.newQuestionImageUrl.set(url);
+    this.triggerDraftAutoSave(true);
     this.toastTriggered.emit({ text: 'تم ضغط ورفع صورة المسألة بنجاح!', type: 'success' });
   }
 
@@ -1084,6 +1271,7 @@ export class AssessmentStudioComponent implements OnInit {
       totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
+    this.triggerDraftAutoSave(true);
 
     if (asm.submissionsCount > 0) {
       this.autoRegradeWarning.set(true);
@@ -1166,6 +1354,7 @@ export class AssessmentStudioComponent implements OnInit {
       totalPoints: nextQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
+    this.triggerDraftAutoSave(true);
 
     this.resetQuestionForm();
     this.toastTriggered.emit({
@@ -1204,6 +1393,7 @@ export class AssessmentStudioComponent implements OnInit {
           questions: filtered,
           totalPoints: filtered.reduce((sum, q) => sum + (q.points || 1), 0)
         });
+        this.triggerDraftAutoSave(true);
         this.toastTriggered.emit({ text: 'تم حذف السؤال من الامتحان!', type: 'warning' });
       },
       true,
@@ -1317,7 +1507,11 @@ export class AssessmentStudioComponent implements OnInit {
     };
 
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
-      next: () => {
+      next: async () => {
+        // R2: Guaranteed complete deletion of draft from Dexie upon successful save/publish
+        await this.draftService.deleteDraft(asm.id);
+        this.pendingDraft.set(null);
+
         this.isSaving.set(false);
         ASSESSMENTS_MEMORY_CACHE.clear();
         this.assessmentsList.update((list) =>

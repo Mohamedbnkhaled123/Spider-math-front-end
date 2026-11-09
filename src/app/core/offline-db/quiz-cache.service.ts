@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, from, map, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, from, map, switchMap, throwError } from 'rxjs';
 import { spiderMathDb } from './spider-math-db';
 import {
   ActiveQuizRecord,
@@ -14,10 +14,11 @@ import {
  * Spider Math Educational Platform (v2.2)
  * Phase 12: Offline-First Quiz Cache & Monotonic Clock Service
  * 
- * - Starts assessments and caches sanitized question bundles in Dexie.js
- * - Runs a tamper-proof monotonic clock (performance.now()) resisting OS clock rollback
- * - Automatically persists elapsed seconds to IndexedDB every 1000ms
- * - Enforces Animation 4.6 Urgency States (> 5m CALM, < 5m WARNING, < 2m CRITICAL)
+ * - Starts assessments and caches sanitized question bundles in Dexie.js & localStorage
+ * - Runs a tamper-proof monotonic clock resisting OS clock rollback
+ * - Enforces authoritative start timestamp anti-cheat calculations across browser refreshes
+ * - Automatically persists elapsed seconds to IndexedDB and localStorage every 1000ms
+ * - Enforces Urgency States (> 5m CALM, < 5m WARNING, < 2m CRITICAL, <= 0s EXPIRED)
  */
 @Injectable({
   providedIn: 'root'
@@ -73,19 +74,21 @@ export class QuizCacheService implements OnDestroy {
   }
 
   /**
-   * Starts assessment via backend API, sanitizes questions, and saves to Dexie.js.
-   * If offline or API fails, attempts to load from existing Dexie.js cache.
+   * Starts assessment via backend API, sanitizes questions, and saves to Dexie.js & localStorage.
+   * Merges previously saved answers/images and computes monotonic elapsed time from authoritative start.
+   * If offline or API fails, attempts to load from existing Dexie.js & localStorage cache.
    */
   startAndCache(assessmentId: string): Observable<ActiveQuizRecord> {
-    const clientStartedAt = new Date().toISOString();
+    const localSession = this.getLocalSession(assessmentId);
+    const initialClientStartedAt = localSession?.clientStartedAt || new Date().toISOString();
 
     return this.http
       .post<{ success: boolean; data: AssessmentStartResponse }>(
         `${this.apiBase}/${assessmentId}/start-and-cache`,
-        { client_started_at: clientStartedAt }
+        { client_started_at: initialClientStartedAt }
       )
       .pipe(
-        switchMap(response => {
+        switchMap(async response => {
           const data: any = response.data;
           const asm = data.assessment || data;
           const questionsList = asm.questions || data.questions || [];
@@ -105,28 +108,66 @@ export class QuizCacheService implements OnDestroy {
             requires_desmos: !!(q.requires_desmos || q.requiresDesmos)
           }));
 
+          // Check Dexie and synchronous localStorage fallback before updating record
+          const cached = await this.getExistingState(assessmentId);
+
+          // Merge answers and images: never overwrite with empty structures
+          const preservedAnswers: Record<string, number> = {
+            ...(cached?.selectedAnswers ?? {})
+          };
+          const preservedImages = (cached?.uploadedImages && cached.uploadedImages.length > 0)
+            ? cached.uploadedImages
+            : [];
+
+          // Authoritative start timestamp: data.serverStartedAt || cached.serverStartedAt || cached.clientStartedAt || clientStartedAt
+          const serverStartedAt = data.serverStartedAt || data.server_started_at || cached?.serverStartedAt;
+          const clientStartedAt = cached?.clientStartedAt || data.clientStartedAt || data.client_started_at || initialClientStartedAt;
+          const authoritativeStart = serverStartedAt || clientStartedAt;
+
+          const startMs = new Date(authoritativeStart).getTime();
+          const realElapsedSec = !isNaN(startMs)
+            ? Math.max(0, Math.floor((Date.now() - startMs) / 1000))
+            : 0;
+
+          // Guard against OS clock rollback (monotonicity):
+          const monotonicElapsedSec = Math.max(realElapsedSec, cached?.elapsedSeconds ?? 0);
+
+          const durationMinutes = asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || data.duration_minutes || cached?.durationMinutes || 30;
+          const totalDurationSec = durationMinutes * 60;
+
+          const isExpired = monotonicElapsedSec >= totalDurationSec;
+          const finalElapsedSec = isExpired ? totalDurationSec : monotonicElapsedSec;
+
           const record: ActiveQuizRecord = {
             assessmentId,
-            idempotencyKey: data.idempotencyKey || undefined,
-            title: asm.title_ar || asm.titleAr || data.title || 'Interactive Assessment',
-            unitId: asm.unit_package_id || asm.unit_id || data.unit_id,
-            referenceSheetUrl: asm.reference_sheet_url || asm.referenceSheetUrl || data.reference_sheet_url || null,
-            durationMinutes: asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || 30,
-            questions: sanitizedQuestions,
-            elapsedSeconds: 0,
-            selectedAnswers: {},
-            uploadedImages: [],
+            idempotencyKey: data.idempotencyKey || cached?.idempotencyKey || undefined,
+            title: asm.title_ar || asm.titleAr || data.title || cached?.title || 'Interactive Assessment',
+            unitId: asm.unit_package_id || asm.unit_id || data.unit_id || cached?.unitId,
+            referenceSheetUrl: asm.reference_sheet_url || asm.referenceSheetUrl || data.reference_sheet_url || cached?.referenceSheetUrl || null,
+            durationMinutes,
+            questions: sanitizedQuestions.length > 0 ? sanitizedQuestions : (cached?.questions || []),
+            elapsedSeconds: finalElapsedSec,
+            selectedAnswers: preservedAnswers,
+            uploadedImages: preservedImages,
             clientStartedAt,
-            cachedAt: Date.now(),
+            serverStartedAt,
+            cachedAt: cached?.cachedAt || Date.now(),
             lastSavedAt: Date.now(),
-            isCompleted: false
+            isCompleted: cached?.isCompleted || false
           };
 
-          return from(this.saveQuizToDb(record)).pipe(map(() => record));
-        }),
-        tap(record => {
+          await this.saveQuizToDb(record);
+
           this.activeQuiz.set(record);
-          this.startMonotonicClock(0, record.durationMinutes);
+          this.elapsedSeconds.set(finalElapsedSec);
+
+          if (isExpired) {
+            this.stopMonotonicClock();
+          } else {
+            this.startMonotonicClock(finalElapsedSec, durationMinutes);
+          }
+
+          return record;
         }),
         catchError(err => {
           if (err && (err.status === 403 || err.status === 400 || err.status === 404)) {
@@ -136,8 +177,6 @@ export class QuizCacheService implements OnDestroy {
           return from(this.loadCachedQuiz(assessmentId)).pipe(
             map(cached => {
               if (cached) {
-                this.activeQuiz.set(cached);
-                this.startMonotonicClock(cached.elapsedSeconds, cached.durationMinutes);
                 return cached;
               }
               throw new Error('Assessment not available offline and no cache found.');
@@ -148,25 +187,48 @@ export class QuizCacheService implements OnDestroy {
   }
 
   /**
-   * Loads cached quiz record from Dexie.js and restores state.
+   * Loads cached quiz record from Dexie.js & localStorage, applying monotonic real-elapsed time calculation.
    */
   async loadCachedQuiz(assessmentId: string): Promise<ActiveQuizRecord | undefined> {
     if (!isPlatformBrowser(this.platformId)) return undefined;
     try {
-      const record = await spiderMathDb.activeQuizzes.get(assessmentId);
+      const record = await this.getExistingState(assessmentId);
       if (record) {
+        const authoritativeStart = record.serverStartedAt || record.clientStartedAt;
+        let finalElapsedSec = record.elapsedSeconds || 0;
+        if (authoritativeStart) {
+          const startMs = new Date(authoritativeStart).getTime();
+          if (!isNaN(startMs)) {
+            const realElapsedSec = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+            finalElapsedSec = Math.max(realElapsedSec, record.elapsedSeconds || 0);
+          }
+        }
+
+        const totalDurationSec = (record.durationMinutes || 30) * 60;
+        const isExpired = finalElapsedSec >= totalDurationSec;
+        finalElapsedSec = isExpired ? totalDurationSec : finalElapsedSec;
+
+        record.elapsedSeconds = finalElapsedSec;
         this.activeQuiz.set(record);
-        this.elapsedSeconds.set(record.elapsedSeconds);
+        this.elapsedSeconds.set(finalElapsedSec);
+
+        if (isExpired) {
+          this.stopMonotonicClock();
+        } else {
+          this.startMonotonicClock(finalElapsedSec, record.durationMinutes || 30);
+        }
+
+        await this.saveQuizToDb(record);
       }
       return record;
     } catch (err) {
-      console.error('Failed to load cached quiz from Dexie:', err);
+      console.error('Failed to load cached quiz from Dexie/localStorage:', err);
       return undefined;
     }
   }
 
   /**
-   * Records student's MCQ choice locally and updates Dexie.js (< 2ms).
+   * Records student's MCQ choice locally in memory, Dexie.js, and localStorage (< 2ms).
    */
   async recordAnswer(questionId: string, optionIndex: number): Promise<void> {
     const current = this.activeQuiz();
@@ -182,6 +244,7 @@ export class QuizCacheService implements OnDestroy {
     this.activeQuiz.set({ ...current });
 
     if (isPlatformBrowser(this.platformId)) {
+      this.saveLocalSession(current);
       try {
         await spiderMathDb.activeQuizzes.update(current.assessmentId, {
           selectedAnswers: updatedAnswers,
@@ -194,7 +257,7 @@ export class QuizCacheService implements OnDestroy {
   }
 
   /**
-   * Records uploaded homework solutions locally in Dexie.js.
+   * Records uploaded homework solutions locally in Dexie.js and localStorage.
    * If questionId is provided, preserves and merges images for that specific question.
    */
   async recordHomeworkImages(
@@ -220,6 +283,7 @@ export class QuizCacheService implements OnDestroy {
     this.activeQuiz.set({ ...current });
 
     if (isPlatformBrowser(this.platformId)) {
+      this.saveLocalSession(current);
       try {
         await spiderMathDb.activeQuizzes.update(current.assessmentId, {
           uploadedImages: current.uploadedImages,
@@ -245,6 +309,7 @@ export class QuizCacheService implements OnDestroy {
     this.activeQuiz.set({ ...current });
 
     if (isPlatformBrowser(this.platformId)) {
+      this.saveLocalSession(current);
       try {
         await spiderMathDb.activeQuizzes.update(current.assessmentId, {
           uploadedImages: current.uploadedImages,
@@ -269,6 +334,7 @@ export class QuizCacheService implements OnDestroy {
     this.activeQuiz.set({ ...current });
 
     if (isPlatformBrowser(this.platformId)) {
+      this.saveLocalSession(current);
       try {
         await spiderMathDb.activeQuizzes.update(current.assessmentId, {
           isCompleted: true,
@@ -283,7 +349,7 @@ export class QuizCacheService implements OnDestroy {
   }
 
   /**
-   * Removes quiz from Dexie.js after successful online sync.
+   * Removes quiz from Dexie.js and localStorage after successful online sync.
    */
   async clearQuiz(assessmentId: string): Promise<void> {
     this.stopMonotonicClock();
@@ -293,6 +359,7 @@ export class QuizCacheService implements OnDestroy {
     }
 
     if (isPlatformBrowser(this.platformId)) {
+      this.removeLocalSession(assessmentId);
       try {
         await spiderMathDb.activeQuizzes.delete(assessmentId);
       } catch (err) {
@@ -302,14 +369,94 @@ export class QuizCacheService implements OnDestroy {
   }
 
   /**
-   * Internal helper to save/put record to Dexie.js.
+   * Internal helper to save/put record to Dexie.js and localStorage.
    */
   private async saveQuizToDb(record: ActiveQuizRecord): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.saveLocalSession(record);
     try {
       await spiderMathDb.activeQuizzes.put(record);
     } catch (err) {
       console.warn('Failed to put quiz record in Dexie:', err);
+    }
+  }
+
+  /**
+   * Fetches existing quiz state from Dexie and localStorage, merging their data.
+   * Compares `lastSavedAt` to prioritize whichever store holds fresher state.
+   */
+  private async getExistingState(assessmentId: string): Promise<ActiveQuizRecord | undefined> {
+    let dexieRecord: ActiveQuizRecord | undefined;
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        dexieRecord = await spiderMathDb.activeQuizzes.get(assessmentId);
+      } catch (err) {
+        console.warn('Failed to read active quiz from Dexie:', err);
+      }
+    }
+    const localRecord = this.getLocalSession(assessmentId);
+
+    if (dexieRecord && localRecord) {
+      const localTime = localRecord.lastSavedAt ?? 0;
+      const dexieTime = dexieRecord.lastSavedAt ?? 0;
+      const isLocalFresher = localTime >= dexieTime;
+
+      const baseRecord = isLocalFresher
+        ? { ...dexieRecord, ...localRecord }
+        : { ...localRecord, ...dexieRecord };
+
+      const selectedAnswers = isLocalFresher
+        ? {
+            ...(dexieRecord.selectedAnswers || {}),
+            ...(localRecord.selectedAnswers || {})
+          }
+        : {
+            ...(localRecord.selectedAnswers || {}),
+            ...(dexieRecord.selectedAnswers || {})
+          };
+
+      const uploadedImages = isLocalFresher
+        ? (localRecord.uploadedImages ?? dexieRecord.uploadedImages ?? [])
+        : (dexieRecord.uploadedImages ?? localRecord.uploadedImages ?? []);
+
+      return {
+        ...baseRecord,
+        selectedAnswers,
+        uploadedImages
+      } as ActiveQuizRecord;
+    }
+    return dexieRecord || (localRecord as ActiveQuizRecord) || undefined;
+  }
+
+  /**
+   * Synchronous localStorage fallback helpers.
+   */
+  private getLocalSession(assessmentId: string): Partial<ActiveQuizRecord> | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    try {
+      const raw = localStorage.getItem(`sm_exam_session_${assessmentId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveLocalSession(record: ActiveQuizRecord): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      localStorage.setItem(`sm_exam_session_${record.assessmentId}`, JSON.stringify(record));
+    } catch (err) {
+      console.warn('Failed to save exam session to localStorage:', err);
+    }
+  }
+
+  private removeLocalSession(assessmentId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      localStorage.removeItem(`sm_exam_session_${assessmentId}`);
+      localStorage.removeItem(`sm_exam_answers_${assessmentId}`);
+    } catch (err) {
+      console.warn('Failed to clear exam session from localStorage:', err);
     }
   }
 
@@ -329,13 +476,34 @@ export class QuizCacheService implements OnDestroy {
     this.timerIntervalId = setInterval(() => {
       const deltaMs = performance.now() - this.startPerformanceNow;
       const currentElapsed = this.baseElapsedSeconds + Math.floor(deltaMs / 1000);
+      const totalSec = durationMinutes * 60;
+
+      if (currentElapsed >= totalSec) {
+        this.elapsedSeconds.set(totalSec);
+        const quiz = this.activeQuiz();
+        if (quiz) {
+          quiz.elapsedSeconds = totalSec;
+          quiz.lastSavedAt = Date.now();
+          this.saveLocalSession(quiz);
+          spiderMathDb.activeQuizzes
+            .update(quiz.assessmentId, {
+              elapsedSeconds: totalSec,
+              lastSavedAt: quiz.lastSavedAt
+            })
+            .catch(() => {});
+        }
+        this.stopMonotonicClock();
+        return;
+      }
+
       this.elapsedSeconds.set(currentElapsed);
 
-      // Persist to Dexie every 1000ms
+      // Persist to Dexie and localStorage every 1000ms
       const quiz = this.activeQuiz();
       if (quiz) {
         quiz.elapsedSeconds = currentElapsed;
         quiz.lastSavedAt = Date.now();
+        this.saveLocalSession(quiz);
         spiderMathDb.activeQuizzes
           .update(quiz.assessmentId, {
             elapsedSeconds: currentElapsed,
