@@ -65,6 +65,86 @@ export interface INumericKey {
   ariaLabel?: string;
 }
 
+/**
+ * Converts raw LaTeX commands to clean visual mathematical symbols
+ * ensuring no raw LaTeX syntax like \le or \neq is displayed as plain text.
+ */
+export function toVisualMath(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\\le(?![a-zA-Z])/g, '≤')
+    .replace(/\\leq(?![a-zA-Z])/g, '≤')
+    .replace(/\\ge(?![a-zA-Z])/g, '≥')
+    .replace(/\\geq(?![a-zA-Z])/g, '≥')
+    .replace(/\\neq(?![a-zA-Z])/g, '≠')
+    .replace(/\\ne(?![a-zA-Z])/g, '≠')
+    .replace(/\\pm(?![a-zA-Z])/g, '±')
+    .replace(/\\mp(?![a-zA-Z])/g, '∓')
+    .replace(/\\times(?![a-zA-Z])/g, '×')
+    .replace(/\\div(?![a-zA-Z])/g, '÷')
+    .replace(/\\approx(?![a-zA-Z])/g, '≈')
+    .replace(/\\infty(?![a-zA-Z])/g, '∞')
+    .replace(/\\cdot(?![a-zA-Z])/g, '·')
+    .replace(/\\in(?![a-zA-Z])/g, '∈')
+    .replace(/\\notin(?![a-zA-Z])/g, '∉')
+    .replace(/\\subset(?![a-zA-Z])/g, '⊂')
+    .replace(/\\subseteq(?![a-zA-Z])/g, '⊆')
+    .replace(/\\cup(?![a-zA-Z])/g, '∪')
+    .replace(/\\cap(?![a-zA-Z])/g, '∩')
+    .replace(/\\therefore(?![a-zA-Z])/g, '∴')
+    .replace(/\\because(?![a-zA-Z])/g, '∵')
+    .replace(/\\pi(?![a-zA-Z])/g, 'π')
+    .replace(/\\theta(?![a-zA-Z])/g, 'θ')
+    .replace(/\\alpha(?![a-zA-Z])/g, 'α')
+    .replace(/\\beta(?![a-zA-Z])/g, 'β')
+    .replace(/\\gamma(?![a-zA-Z])/g, 'γ')
+    .replace(/\\Delta(?![a-zA-Z])/g, 'Δ')
+    .replace(/\\delta(?![a-zA-Z])/g, 'δ')
+    .replace(/\\lambda(?![a-zA-Z])/g, 'λ')
+    .replace(/\\omega(?![a-zA-Z])/g, 'ω')
+    .replace(/\\angle(?![a-zA-Z])/g, '∠')
+    .replace(/\\perp(?![a-zA-Z])/g, '⊥')
+    .replace(/\\parallel(?![a-zA-Z])/g, '∥')
+    .replace(/\\triangle(?![a-zA-Z])/g, '△')
+    .replace(/\\cong(?![a-zA-Z])/g, '≅')
+    .replace(/\\sim(?![a-zA-Z])/g, '∼')
+    .replace(/\\sin(?![a-zA-Z])/g, 'sin')
+    .replace(/\\cos(?![a-zA-Z])/g, 'cos')
+    .replace(/\\tan(?![a-zA-Z])/g, 'tan')
+    .replace(/\\cot(?![a-zA-Z])/g, 'cot')
+    .replace(/\\sec(?![a-zA-Z])/g, 'sec')
+    .replace(/\\csc(?![a-zA-Z])/g, 'csc')
+    .replace(/\\log(?![a-zA-Z])/g, 'log')
+    .replace(/\\ln(?![a-zA-Z])/g, 'ln')
+    .replace(/\\lim(?![a-zA-Z])/g, 'lim')
+    .replace(/\\to(?![a-zA-Z])/g, '→')
+    .replace(/\\rightarrow(?![a-zA-Z])/g, '→')
+    .replace(/\\leftarrow(?![a-zA-Z])/g, '←')
+    .replace(/\\int(?![a-zA-Z])/g, '∫')
+    .replace(/\\iint(?![a-zA-Z])/g, '∬')
+    .replace(/\\sum(?![a-zA-Z])/g, '∑')
+    .replace(/\\prod(?![a-zA-Z])/g, '∏')
+    .replace(/\\degree(?![a-zA-Z])/g, '°')
+    .replace(/\^\{\\circ\}|\\circ(?![a-zA-Z])/g, '°')
+    .replace(/\\%/g, '%')
+    .replace(/\\sqrt\[([^\]]*)\]\{([^}]*)\}/g, '$1√$2')
+    .replace(/\\sqrt\{([^}]*)\}/g, '√$1')
+    .replace(/\\frac\{d\}\{dx\}/g, 'd/dx')
+    .replace(/\\frac\{dy\}\{dx\}/g, 'dy/dx')
+    .replace(/\\frac\{\\partial\}\{\\partial x\}/g, '∂/∂x')
+    .replace(/\\frac\{1\}\{2\}/g, '½')
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1/$2)')
+    .replace(/\\sum_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∑($1 to $2) ')
+    .replace(/\\int_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∫($1 to $2) ')
+    .replace(/\\lim_\{([^{}]*)\s*\\to\s*([^{}]*)\}\s*/g, 'lim($1→$2) ')
+    .replace(/\\log_\{([^{}]*)\}\(([^)]*)\)/g, 'log_$1($2)')
+    .replace(/\\ln\(([^)]*)\)/g, 'ln($1)')
+    .replace(/\\,\s*dx/g, ' dx')
+    .replace(/\^2\b|\^\{2\}/g, '²')
+    .replace(/\^3\b|\^\{3\}/g, '³')
+    .replace(/\^n\b|\^\{n\}/g, 'ⁿ');
+}
+
 export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate {
   switch (type) {
     case 'FRACTION':
@@ -73,8 +153,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         titleAr: 'تعديل الكسر الرياضي مباشرة',
         titleEn: 'Edit Fraction Directly',
         slots: [
-          { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: '' },
-          { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: '' }
+          { id: 'num', labelAr: 'البسط (أعلى)', labelEn: 'Numerator', placeholder: '3', value: '' },
+          { id: 'den', labelAr: 'المقام (أسفل)', labelEn: 'Denominator', placeholder: '5', value: '' }
         ],
         activeSlotIndex: 0
       };
@@ -94,7 +174,7 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         titleAr: 'تعديل الجذر النوني مباشرة',
         titleEn: 'Edit N-th Root Directly',
         slots: [
-          { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Root Index (n)', placeholder: '3', value: '' },
+          { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: '' },
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: '' }
         ],
         activeSlotIndex: 0
@@ -103,7 +183,7 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
       return {
         type: 'POWER',
         titleAr: 'تعديل الأس مباشرة',
-        titleEn: 'Edit Power Directly',
+        titleEn: 'Edit Exponent Directly',
         slots: [
           { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: 'x' },
           { id: 'exp', labelAr: 'الأس', labelEn: 'Exponent', placeholder: '2', value: '2' }
@@ -116,7 +196,7 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         titleAr: 'تعديل الدليل السفلي مباشرة',
         titleEn: 'Edit Subscript Directly',
         slots: [
-          { id: 'base', labelAr: 'المتغير', labelEn: 'Base Symbol', placeholder: 'x', value: 'x' },
+          { id: 'base', labelAr: 'الرمز الأساسي', labelEn: 'Base', placeholder: 'x', value: 'x' },
           { id: 'sub', labelAr: 'الدليل السفلي', labelEn: 'Subscript', placeholder: '1', value: '1' }
         ],
         activeSlotIndex: 1
@@ -139,7 +219,7 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
         titleAr: 'تعديل التكامل غير المحدد مباشرة',
         titleEn: 'Edit Indefinite Integral Directly',
         slots: [
-          { id: 'expr', labelAr: 'الدالة f(x)', labelEn: 'Integrand', placeholder: 'x', value: 'x' }
+          { id: 'expr', labelAr: 'الدالة المراد مكاملتها', labelEn: 'Integrand', placeholder: 'x', value: 'x' }
         ],
         activeSlotIndex: 0
       };
@@ -312,47 +392,47 @@ export const MATH_CATEGORY_TABS: IMathCategoryTab[] = [
 
 export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   // --- BASIC & OPERATIONS ---
-  { label: '\\pi', latex: '\\pi', category: 'BASIC', ariaLabel: 'Pi' },
-  { label: '\\theta', latex: '\\theta', category: 'BASIC', ariaLabel: 'Theta' },
-  { label: '\\pm', latex: '\\pm', category: 'BASIC', ariaLabel: 'Plus minus' },
-  { label: '\\times', latex: '\\times', category: 'BASIC', ariaLabel: 'Multiply' },
-  { label: '\\div', latex: '\\div', category: 'BASIC', ariaLabel: 'Divide' },
-  { label: '\\le', latex: '\\le', category: 'BASIC', ariaLabel: 'Less than or equal' },
-  { label: '\\ge', latex: '\\ge', category: 'BASIC', ariaLabel: 'Greater than or equal' },
-  { label: '\\neq', latex: '\\neq', category: 'BASIC', ariaLabel: 'Not equal' },
-  { label: '\\approx', latex: '\\approx', category: 'BASIC', ariaLabel: 'Approximately equal' },
+  { label: 'π', latex: 'π', category: 'BASIC', ariaLabel: 'Pi' },
+  { label: 'θ', latex: 'θ', category: 'BASIC', ariaLabel: 'Theta' },
+  { label: '±', latex: '±', category: 'BASIC', ariaLabel: 'Plus minus' },
+  { label: '×', latex: '×', category: 'BASIC', ariaLabel: 'Multiply' },
+  { label: '÷', latex: '÷', category: 'BASIC', ariaLabel: 'Divide' },
+  { label: '≤', latex: '≤', category: 'BASIC', ariaLabel: 'Less than or equal' },
+  { label: '≥', latex: '≥', category: 'BASIC', ariaLabel: 'Greater than or equal' },
+  { label: '≠', latex: '≠', category: 'BASIC', ariaLabel: 'Not equal' },
+  { label: '≈', latex: '≈', category: 'BASIC', ariaLabel: 'Approximately equal' },
   { label: '=', latex: '=', category: 'BASIC', ariaLabel: 'Equals' },
   { label: '+', latex: '+', category: 'BASIC', ariaLabel: 'Plus' },
   { label: '-', latex: '-', category: 'BASIC', ariaLabel: 'Minus' },
-  { label: '\\cdot', latex: '\\cdot', category: 'BASIC', ariaLabel: 'Dot product' },
-  { label: '\\infty', latex: '\\infty', category: 'BASIC', ariaLabel: 'Infinity' },
-  { label: '\\in', latex: '\\in', category: 'BASIC', ariaLabel: 'Element of' },
-  { label: '\\notin', latex: '\\notin', category: 'BASIC', ariaLabel: 'Not element of' },
-  { label: '\\subset', latex: '\\subset', category: 'BASIC', ariaLabel: 'Subset' },
-  { label: '\\cup', latex: '\\cup', category: 'BASIC', ariaLabel: 'Union' },
-  { label: '\\cap', latex: '\\cap', category: 'BASIC', ariaLabel: 'Intersection' },
-  { label: '\\%', latex: '\\%', category: 'BASIC', ariaLabel: 'Percent' },
-  { label: '^{\\circ}', latex: '^{\\circ}', category: 'BASIC', ariaLabel: 'Degree' },
-  { label: '\\sqrt{\\phantom{x}}', latex: '\\sqrt{}', templateType: 'SQRT', category: 'BASIC', ariaLabel: 'Square root' },
-  { label: '\\therefore', latex: '\\therefore', category: 'BASIC', ariaLabel: 'Therefore' },
-  { label: '\\because', latex: '\\because', category: 'BASIC', ariaLabel: 'Because' },
+  { label: '·', latex: '·', category: 'BASIC', ariaLabel: 'Dot product' },
+  { label: '∞', latex: '∞', category: 'BASIC', ariaLabel: 'Infinity' },
+  { label: '∈', latex: '∈', category: 'BASIC', ariaLabel: 'Element of' },
+  { label: '∉', latex: '∉', category: 'BASIC', ariaLabel: 'Not element of' },
+  { label: '⊂', latex: '⊂', category: 'BASIC', ariaLabel: 'Subset' },
+  { label: '∪', latex: '∪', category: 'BASIC', ariaLabel: 'Union' },
+  { label: '∩', latex: '∩', category: 'BASIC', ariaLabel: 'Intersection' },
+  { label: '%', latex: '%', category: 'BASIC', ariaLabel: 'Percent' },
+  { label: '°', latex: '°', category: 'BASIC', ariaLabel: 'Degree' },
+  { label: '√', latex: '√', templateType: 'SQRT', category: 'BASIC', ariaLabel: 'Square root' },
+  { label: '∴', latex: '∴', category: 'BASIC', ariaLabel: 'Therefore' },
+  { label: '∵', latex: '∵', category: 'BASIC', ariaLabel: 'Because' },
 
   // --- ALGEBRA & FRACTIONS ---
-  { label: '\\frac{a}{b}', latex: '\\frac{}{}', templateType: 'FRACTION', category: 'ALGEBRA', ariaLabel: 'Fraction' },
-  { label: '\\sqrt{x}', latex: '\\sqrt{}', templateType: 'SQRT', category: 'ALGEBRA', ariaLabel: 'Square root of x' },
-  { label: '\\sqrt[n]{x}', latex: '\\sqrt[]{}', templateType: 'NTH_ROOT', category: 'ALGEBRA', ariaLabel: 'Nth root' },
-  { label: 'x^2', latex: 'x^2', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: 'x squared' },
-  { label: 'x^n', latex: 'x^{}', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: 'x power n' },
-  { label: 'x_n', latex: 'x_{}', templateType: 'SUBSCRIPT', category: 'ALGEBRA', ariaLabel: 'x subscript n' },
-  { label: '|x|', latex: '||', templateType: 'ABS', category: 'ALGEBRA', ariaLabel: 'Absolute value' },
-  { label: '\\log', latex: '\\log()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Logarithm' },
-  { label: '\\log_a b', latex: '\\log_{}()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Log base a of b' },
-  { label: '\\ln', latex: '\\ln()', templateType: 'LN', category: 'ALGEBRA', ariaLabel: 'Natural log' },
-  { label: '(x)', latex: '()', templateType: 'PARENS', category: 'ALGEBRA', ariaLabel: 'Parentheses' },
-  { label: '[x]', latex: '[]', category: 'ALGEBRA', ariaLabel: 'Square brackets' },
-  { label: '\\{x\\}', latex: '\\{\\}', category: 'ALGEBRA', ariaLabel: 'Braces' },
-  { label: 'f(x)', latex: 'f()', category: 'ALGEBRA', ariaLabel: 'Function f of x' },
-  { label: 'g(x)', latex: 'g()', category: 'ALGEBRA', ariaLabel: 'Function g of x' },
+  { label: '½', latex: '½', category: 'ALGEBRA', ariaLabel: 'Fraction half' },
+  { label: 'a/b', latex: '\\frac{a}{b}', templateType: 'FRACTION', category: 'ALGEBRA', ariaLabel: 'Fraction' },
+  { label: '√x', latex: '√x', templateType: 'SQRT', category: 'ALGEBRA', ariaLabel: 'Square root of x' },
+  { label: 'ⁿ√x', latex: 'ⁿ√x', templateType: 'NTH_ROOT', category: 'ALGEBRA', ariaLabel: 'Nth root' },
+  { label: 'x²', latex: 'x²', category: 'ALGEBRA', ariaLabel: 'x squared' },
+  { label: 'x³', latex: 'x³', category: 'ALGEBRA', ariaLabel: 'x cubed' },
+  { label: 'xⁿ', latex: 'xⁿ', category: 'ALGEBRA', ariaLabel: 'x power n' },
+  { label: '|x|', latex: '|x|', templateType: 'ABS', category: 'ALGEBRA', ariaLabel: 'Absolute value' },
+  { label: 'log', latex: 'log()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Logarithm' },
+  { label: 'ln', latex: 'ln()', templateType: 'LN', category: 'ALGEBRA', ariaLabel: 'Natural log' },
+  { label: '(x)', latex: '(x)', templateType: 'PARENS', category: 'ALGEBRA', ariaLabel: 'Parentheses' },
+  { label: '[x]', latex: '[x]', category: 'ALGEBRA', ariaLabel: 'Square brackets' },
+  { label: '{x}', latex: '{x}', category: 'ALGEBRA', ariaLabel: 'Braces' },
+  { label: 'f(x)', latex: 'f(x)', category: 'ALGEBRA', ariaLabel: 'Function f of x' },
+  { label: 'g(x)', latex: 'g(x)', category: 'ALGEBRA', ariaLabel: 'Function g of x' },
   { label: 'x', latex: 'x', category: 'ALGEBRA', ariaLabel: 'Variable x' },
   { label: 'y', latex: 'y', category: 'ALGEBRA', ariaLabel: 'Variable y' },
   { label: 'z', latex: 'z', category: 'ALGEBRA', ariaLabel: 'Variable z' },
@@ -360,52 +440,44 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   { label: 'b', latex: 'b', category: 'ALGEBRA', ariaLabel: 'Variable b' },
   { label: 'c', latex: 'c', category: 'ALGEBRA', ariaLabel: 'Variable c' },
   { label: 'n', latex: 'n', category: 'ALGEBRA', ariaLabel: 'Variable n' },
-  { label: 'e^x', latex: 'e^{}', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: 'e to the power x' },
-  { label: '10^x', latex: '10^{}', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: '10 to the power x' },
+  { label: '²', latex: '²', category: 'ALGEBRA', ariaLabel: 'Superscript 2' },
+  { label: '³', latex: '³', category: 'ALGEBRA', ariaLabel: 'Superscript 3' },
+  { label: 'ⁿ', latex: 'ⁿ', category: 'ALGEBRA', ariaLabel: 'Superscript n' },
 
   // --- GEOMETRY & ANGLES ---
-  { label: '\\triangle', latex: '\\triangle', category: 'GEOMETRY', ariaLabel: 'Triangle' },
-  { label: '\\angle', latex: '\\angle', category: 'GEOMETRY', ariaLabel: 'Angle' },
-  { label: '\\perp', latex: '\\perp', category: 'GEOMETRY', ariaLabel: 'Perpendicular' },
-  { label: '\\parallel', latex: '\\parallel', category: 'GEOMETRY', ariaLabel: 'Parallel' },
-  { label: '^{\\circ}', latex: '^{\\circ}', category: 'GEOMETRY', ariaLabel: 'Degree' },
-  { label: '\\overleftrightarrow{AB}', latex: '\\overleftrightarrow{AB}', category: 'GEOMETRY', ariaLabel: 'Line AB' },
-  { label: '\\overline{AB}', latex: '\\overline{AB}', category: 'GEOMETRY', ariaLabel: 'Segment AB' },
-  { label: '\\vec{v}', latex: '\\vec{v}', category: 'GEOMETRY', ariaLabel: 'Vector v' },
-  { label: '\\sin', latex: '\\sin()', category: 'GEOMETRY', ariaLabel: 'Sine' },
-  { label: '\\cos', latex: '\\cos()', category: 'GEOMETRY', ariaLabel: 'Cosine' },
-  { label: '\\tan', latex: '\\tan()', category: 'GEOMETRY', ariaLabel: 'Tangent' },
-  { label: '\\cot', latex: '\\cot()', category: 'GEOMETRY', ariaLabel: 'Cotangent' },
-  { label: '\\sec', latex: '\\sec()', category: 'GEOMETRY', ariaLabel: 'Secant' },
-  { label: '\\csc', latex: '\\csc()', category: 'GEOMETRY', ariaLabel: 'Cosecant' },
-  { label: '\\alpha', latex: '\\alpha', category: 'GEOMETRY', ariaLabel: 'Alpha' },
-  { label: '\\beta', latex: '\\beta', category: 'GEOMETRY', ariaLabel: 'Beta' },
-  { label: '\\gamma', latex: '\\gamma', category: 'GEOMETRY', ariaLabel: 'Gamma' },
-  { label: '\\Delta', latex: '\\Delta', category: 'GEOMETRY', ariaLabel: 'Delta' },
-  { label: 'm\\angle A', latex: 'm\\angle A', category: 'GEOMETRY', ariaLabel: 'Measure of angle A' },
-  { label: '\\cong', latex: '\\cong', category: 'GEOMETRY', ariaLabel: 'Congruent' },
-  { label: '\\sim', latex: '\\sim', category: 'GEOMETRY', ariaLabel: 'Similar' },
-  { label: '\\lambda', latex: '\\lambda', category: 'GEOMETRY', ariaLabel: 'Lambda' },
-  { label: '\\omega', latex: '\\omega', category: 'GEOMETRY', ariaLabel: 'Omega' },
+  { label: '△', latex: '△', category: 'GEOMETRY', ariaLabel: 'Triangle' },
+  { label: '∠', latex: '∠', category: 'GEOMETRY', ariaLabel: 'Angle' },
+  { label: '⊥', latex: '⊥', category: 'GEOMETRY', ariaLabel: 'Perpendicular' },
+  { label: '∥', latex: '∥', category: 'GEOMETRY', ariaLabel: 'Parallel' },
+  { label: '°', latex: '°', category: 'GEOMETRY', ariaLabel: 'Degree' },
+  { label: 'sin', latex: 'sin()', category: 'GEOMETRY', ariaLabel: 'Sine' },
+  { label: 'cos', latex: 'cos()', category: 'GEOMETRY', ariaLabel: 'Cosine' },
+  { label: 'tan', latex: 'tan()', category: 'GEOMETRY', ariaLabel: 'Tangent' },
+  { label: 'cot', latex: 'cot()', category: 'GEOMETRY', ariaLabel: 'Cotangent' },
+  { label: 'sec', latex: 'sec()', category: 'GEOMETRY', ariaLabel: 'Secant' },
+  { label: 'csc', latex: 'csc()', category: 'GEOMETRY', ariaLabel: 'Cosecant' },
+  { label: 'α', latex: 'α', category: 'GEOMETRY', ariaLabel: 'Alpha' },
+  { label: 'β', latex: 'β', category: 'GEOMETRY', ariaLabel: 'Beta' },
+  { label: 'γ', latex: 'γ', category: 'GEOMETRY', ariaLabel: 'Gamma' },
+  { label: 'Δ', latex: 'Δ', category: 'GEOMETRY', ariaLabel: 'Delta' },
+  { label: '≅', latex: '≅', category: 'GEOMETRY', ariaLabel: 'Congruent' },
+  { label: '∼', latex: '∼', category: 'GEOMETRY', ariaLabel: 'Similar' },
+  { label: 'λ', latex: 'λ', category: 'GEOMETRY', ariaLabel: 'Lambda' },
+  { label: 'ω', latex: 'ω', category: 'GEOMETRY', ariaLabel: 'Omega' },
 
   // --- CALCULUS & LIMITS ---
-  { label: '\\int', latex: '\\int', category: 'CALCULUS', ariaLabel: 'Indefinite integral' },
-  { label: '\\int_a^b', latex: '\\int_{a}^{b}', templateType: 'INTEGRAL', category: 'CALCULUS', ariaLabel: 'Definite integral' },
-  { label: '\\iint', latex: '\\iint', category: 'CALCULUS', ariaLabel: 'Double integral' },
-  { label: '\\frac{d}{dx}', latex: '\\frac{d}{dx}', category: 'CALCULUS', ariaLabel: 'Derivative d/dx' },
-  { label: '\\frac{dy}{dx}', latex: '\\frac{dy}{dx}', category: 'CALCULUS', ariaLabel: 'Derivative dy/dx' },
-  { label: '\\frac{\\partial}{\\partial x}', latex: '\\frac{\\partial}{\\partial x}', category: 'CALCULUS', ariaLabel: 'Partial derivative' },
-  { label: '\\sum', latex: '\\sum_{i=1}^{n}', templateType: 'SUMMATION', category: 'CALCULUS', ariaLabel: 'Summation' },
-  { label: '\\prod', latex: '\\prod_{i=1}^{n}', category: 'CALCULUS', ariaLabel: 'Product' },
-  { label: '\\lim_{x \\to 0}', latex: '\\lim_{x \\to 0}', templateType: 'LIMIT', category: 'CALCULUS', ariaLabel: 'Limit x to 0' },
-  { label: '\\lim_{x \\to \\infty}', latex: '\\lim_{x \\to \\infty}', category: 'CALCULUS', ariaLabel: 'Limit x to infinity' },
+  { label: '∫', latex: '∫', category: 'CALCULUS', ariaLabel: 'Indefinite integral' },
+  { label: '∬', latex: '∬', category: 'CALCULUS', ariaLabel: 'Double integral' },
+  { label: 'd/dx', latex: 'd/dx', category: 'CALCULUS', ariaLabel: 'Derivative d/dx' },
+  { label: 'dy/dx', latex: 'dy/dx', category: 'CALCULUS', ariaLabel: 'Derivative dy/dx' },
+  { label: '∂/∂x', latex: '∂/∂x', category: 'CALCULUS', ariaLabel: 'Partial derivative' },
+  { label: '∑', latex: '∑', category: 'CALCULUS', ariaLabel: 'Summation' },
+  { label: '∏', latex: '∏', category: 'CALCULUS', ariaLabel: 'Product' },
+  { label: 'lim', latex: 'lim', category: 'CALCULUS', ariaLabel: 'Limit' },
   { label: "f'(x)", latex: "f'(x)", category: 'CALCULUS', ariaLabel: 'First derivative' },
-  { label: "f''(x)", latex: "f''(x)", category: 'CALCULUS', ariaLabel: 'Second derivative' },
   { label: 'dx', latex: 'dx', category: 'CALCULUS', ariaLabel: 'dx differential' },
   { label: 'dy', latex: 'dy', category: 'CALCULUS', ariaLabel: 'dy differential' },
-  { label: 'dt', latex: 'dt', category: 'CALCULUS', ariaLabel: 'dt differential' },
-  { label: '\\Delta x', latex: '\\Delta x', category: 'CALCULUS', ariaLabel: 'Delta x' },
-  { label: '\\to', latex: '\\to', category: 'CALCULUS', ariaLabel: 'Approaches' }
+  { label: '→', latex: '→', category: 'CALCULUS', ariaLabel: 'Approaches arrow' }
 ];
 
 /**
@@ -432,6 +504,34 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
+      displayPreview: toVisualMath(raw),
+      template: {
+        type: 'FRACTION',
+        titleAr: 'تعديل الكسر الرياضي مباشرة',
+        titleEn: 'Edit Fraction Directly',
+        slots: [
+          { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: num },
+          { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: den }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 1b. Visual Fractions: (num/den)
+  const visualFracRegex = /\(([a-zA-Z0-9]+)\/([a-zA-Z0-9]+)\)/g;
+  while ((match = visualFracRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const num = match[1];
+    const den = match[2];
+    candidates.push({
+      id: `sym_vfrac_${match.index}`,
+      type: 'FRACTION',
+      titleAr: 'كسر اعتيادي',
+      titleEn: 'Fraction',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\frac{${num}}{${den}}`,
       displayPreview: raw,
       template: {
         type: 'FRACTION',
@@ -460,6 +560,34 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
+      displayPreview: toVisualMath(raw),
+      template: {
+        type: 'NTH_ROOT',
+        titleAr: 'تعديل الجذر النوني مباشرة',
+        titleEn: 'Edit N-th Root Directly',
+        slots: [
+          { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: deg },
+          { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: rad }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 2b. Visual Nth Root: deg√rad
+  const visualNthRootRegex = /([0-9a-zA-Z]+)√([0-9a-zA-Z]+)/g;
+  while ((match = visualNthRootRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const deg = match[1];
+    const rad = match[2];
+    candidates.push({
+      id: `sym_vnth_${match.index}`,
+      type: 'NTH_ROOT',
+      titleAr: 'جذر نوني',
+      titleEn: 'N-th Root',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\sqrt[${deg}]{${rad}}`,
       displayPreview: raw,
       template: {
         type: 'NTH_ROOT',
@@ -487,6 +615,32 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
+      displayPreview: toVisualMath(raw),
+      template: {
+        type: 'SQRT',
+        titleAr: 'تعديل الجذر التربيعي مباشرة',
+        titleEn: 'Edit Square Root Directly',
+        slots: [
+          { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '16', value: rad }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  // 3b. Visual Square Root: √rad (excluding if preceded by deg in deg√rad)
+  const visualSqrtRegex = /(?<![0-9a-zA-Z])√([a-zA-Z0-9]+)/g;
+  while ((match = visualSqrtRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const rad = match[1];
+    candidates.push({
+      id: `sym_vsqrt_${match.index}`,
+      type: 'SQRT',
+      titleAr: 'جذر تربيعي',
+      titleEn: 'Square Root',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\sqrt{${rad}}`,
       displayPreview: raw,
       template: {
         type: 'SQRT',
@@ -515,7 +669,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'SUMMATION',
         titleAr: 'تعديل رمز التجميع مباشرة',
@@ -530,29 +684,29 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 5. Definite Integral: \int_{lower}^{upper} expr
-  const intDefRegex = /\\int_\{([^{}]*)\}\^\{([^{}]*)\}(?:\s*([^\\]+?)(?:\\,\s*dx|\s*dx)?)?(?=\s|[+\-=]|$|\\)/g;
-  while ((match = intDefRegex.exec(text)) !== null) {
+  // 5. Definite Integral: \int_{a}^{b} expr \, dx
+  const defIntRegex = /\\int_\{([^{}]*)\}\^\{([^{}]*)\}(?:\s*(.*?)(?:\\,\s*dx|\s+dx|(?=\\int|\\sum|\$|\n|$)))?/g;
+  while ((match = defIntRegex.exec(text)) !== null) {
     const raw = match[0];
-    const lower = match[1];
-    const upper = match[2];
+    const a = match[1];
+    const b = match[2];
     const expr = (match[3] || 'x').trim();
     candidates.push({
-      id: `sym_int_${match.index}`,
+      id: `sym_defint_${match.index}`,
       type: 'INTEGRAL',
       titleAr: 'تكامل محدد',
       titleEn: 'Definite Integral',
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'INTEGRAL',
         titleAr: 'تعديل التكامل المحدد مباشرة',
         titleEn: 'Edit Definite Integral Directly',
         slots: [
-          { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: lower },
-          { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: upper },
+          { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: a },
+          { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: b },
           { id: 'expr', labelAr: 'الدالة f(x)', labelEn: 'Integrand', placeholder: 'x', value: expr }
         ],
         activeSlotIndex: 2
@@ -560,20 +714,20 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 6. Indefinite Integral: \int expr dx
-  const intIndefRegex = /(?<!_\{[^{}]*\})\\int(?!\s*_\s*\{)\s+([^\\]+?)(?:\\,\s*dx|\s*dx)(?=\s|[+\-=]|$|\\)/g;
-  while ((match = intIndefRegex.exec(text)) !== null) {
+  // 6. Indefinite Integral: \int expr \, dx (must not have _ or ^ immediately following)
+  const indefIntRegex = /(?<!\\int_[^{}]*\^[^{}]*)\\int(?!_[^{}]*\^[^{}]*)(?:\s*(.*?)(?:\\,\s*dx|\s+dx|(?=\\int|\\sum|\$|\n|$)))/g;
+  while ((match = indefIntRegex.exec(text)) !== null) {
     const raw = match[0];
     const expr = (match[1] || 'x').trim();
     candidates.push({
-      id: `sym_int_indef_${match.index}`,
+      id: `sym_indefint_${match.index}`,
       type: 'INDEFINITE_INTEGRAL',
       titleAr: 'تكامل غير محدد',
       titleEn: 'Indefinite Integral',
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'INDEFINITE_INTEGRAL',
         titleAr: 'تعديل التكامل غير المحدد مباشرة',
@@ -586,27 +740,27 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 7. Limit: \lim_{var \to target} expr
-  const limRegex = /\\lim_\{([a-zA-Z])\s*\\to\s*([^{}]*)\}(?:\s*([^\s$+\-=]+|\S+))?/g;
+  // 7. Limit: \lim_{x \to val} expr
+  const limRegex = /\\lim_\{\s*(?:x\s*\\to\s*)?([^{}]*)\}(?:\s*(.*?)(?=\s*\$|\n|$|\\lim|\\int|\\sum))?/g;
   while ((match = limRegex.exec(text)) !== null) {
     const raw = match[0];
-    const to = match[2];
-    const expr = match[3] || 'f(x)';
+    const toVal = match[1];
+    const expr = (match[2] || 'f(x)').trim();
     candidates.push({
       id: `sym_lim_${match.index}`,
       type: 'LIMIT',
-      titleAr: 'نهاية دالة',
-      titleEn: 'Limit',
+      titleAr: 'نهاية رياضية (lim)',
+      titleEn: 'Limit (lim)',
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'LIMIT',
         titleAr: 'تعديل النهاية مباشرة',
         titleEn: 'Edit Limit Directly',
         slots: [
-          { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: to },
+          { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: toVal },
           { id: 'expr', labelAr: 'الدالة المراد دراستها', labelEn: 'Expression', placeholder: 'f(x)', value: expr }
         ],
         activeSlotIndex: 1
@@ -614,11 +768,11 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 8. Logarithm: \log_{base}(val) or \log(val)
-  const logRegex = /\\log(?:_\{([^{}]*)\})?\(([^\)]*)\)/g;
+  // 8. Logarithm: \log_{base}(val)
+  const logRegex = /\\log_\{([^{}]*)\}\(([^\)]*)\)/g;
   while ((match = logRegex.exec(text)) !== null) {
     const raw = match[0];
-    const base = match[1] || '10';
+    const base = match[1];
     const val = match[2];
     candidates.push({
       id: `sym_log_${match.index}`,
@@ -628,7 +782,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'LOG',
         titleAr: 'تعديل اللوغاريتم مباشرة',
@@ -655,7 +809,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'LN',
         titleAr: 'تعديل اللوغاريتم الطبيعي مباشرة',
@@ -682,6 +836,35 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
+      displayPreview: toVisualMath(raw),
+      template: {
+        type: 'POWER',
+        titleAr: 'تعديل الأس مباشرة',
+        titleEn: 'Edit Power Directly',
+        slots: [
+          { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: base },
+          { id: 'exp', labelAr: 'الأس', labelEn: 'Exponent', placeholder: '2', value: exp }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 10b. Visual Power: base[²³ⁿ]
+  const visualPowRegex = /([a-zA-Z0-9]+)([²³ⁿ])/g;
+  while ((match = visualPowRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1];
+    const expChar = match[2];
+    const exp = expChar === '²' ? '2' : expChar === '³' ? '3' : 'n';
+    candidates.push({
+      id: `sym_vpow_${match.index}`,
+      type: 'POWER',
+      titleAr: 'أس وقوة',
+      titleEn: 'Power',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `${base}^{${exp}}`,
       displayPreview: raw,
       template: {
         type: 'POWER',
@@ -710,7 +893,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'SUBSCRIPT',
         titleAr: 'تعديل الدليل السفلي مباشرة',
@@ -725,19 +908,19 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
   }
 
   // 12. Absolute Value: |val|
-  const absRegex = /\|([^\|]+)\|/g;
+  const absRegex = /\|([^|\n]+)\|/g;
   while ((match = absRegex.exec(text)) !== null) {
     const raw = match[0];
     const val = match[1];
     candidates.push({
       id: `sym_abs_${match.index}`,
       type: 'ABS',
-      titleAr: 'قيمة مطلقة / مقياس',
+      titleAr: 'مقياس / قيمة مطلقة',
       titleEn: 'Absolute Value',
       startIndex: match.index,
       endIndex: match.index + raw.length,
       rawLatex: raw,
-      displayPreview: raw,
+      displayPreview: toVisualMath(raw),
       template: {
         type: 'ABS',
         titleAr: 'تعديل القيمة المطلقة مباشرة',
@@ -750,27 +933,52 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // Sort by startIndex ascending
-  candidates.sort((a, b) => a.startIndex - b.startIndex);
+  // 13. Parentheses: (val) (only if inside contains math characters)
+  const parensRegex = /\(([^()\n]*[+\-*\/=\\^_{}≤≥≠±×÷√][^()\n]*)\)/g;
+  while ((match = parensRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const val = match[1];
+    candidates.push({
+      id: `sym_parens_${match.index}`,
+      type: 'PARENS',
+      titleAr: 'أقواس دائرية',
+      titleEn: 'Parentheses',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: raw,
+      displayPreview: toVisualMath(raw),
+      template: {
+        type: 'PARENS',
+        titleAr: 'تعديل ما بداخل القوسين مباشرة',
+        titleEn: 'Edit Parentheses Directly',
+        slots: [
+          { id: 'val', labelAr: 'ما بداخل القوسين', labelEn: 'Inside Parentheses', placeholder: 'x', value: val }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
 
-  // Filter out any nested sub-matches (outer composite symbol takes priority)
-  const result: IParsedMathSymbol[] = [];
+  // Deduplicate and filter out any candidates that overlap with an already-accepted higher-priority candidate
+  const nonOverlapping: IParsedMathSymbol[] = [];
   for (const c of candidates) {
-    const isContained = result.some(
-      (r) => c.startIndex >= r.startIndex && c.endIndex <= r.endIndex
+    const overlaps = nonOverlapping.some(
+      (existing) => c.startIndex < existing.endIndex && c.endIndex > existing.startIndex
     );
-    if (!isContained) {
-      result.push(c);
+    if (!overlaps) {
+      nonOverlapping.push(c);
     }
   }
 
-  return result;
+  // Sort by start position
+  return nonOverlapping.sort((a, b) => a.startIndex - b.startIndex);
 }
 
 /**
- * Accurately finds whether the cursor position is inside or on the boundaries of a math symbol.
+ * Finds the parsed math symbol covering the given cursor position.
+ * Returns null if cursor is not inside any parsed composite symbol.
  */
-export function findSymbolAtCursor(symbols: IParsedMathSymbol[], cursorIndex: number): IParsedMathSymbol | null {
-  if (!symbols.length || cursorIndex < 0) return null;
-  return symbols.find((s) => cursorIndex >= s.startIndex && cursorIndex <= s.endIndex) || null;
+export function findSymbolAtCursor(symbols: IParsedMathSymbol[], cursorPos: number): IParsedMathSymbol | null {
+  if (!symbols || symbols.length === 0) return null;
+  return symbols.find((s) => cursorPos >= s.startIndex && cursorPos <= s.endIndex) || null;
 }

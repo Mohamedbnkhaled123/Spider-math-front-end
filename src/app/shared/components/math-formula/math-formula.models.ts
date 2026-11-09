@@ -28,19 +28,41 @@ export function isPureLatex(text: string): boolean {
   if (/^\\[a-zA-Z]+/.test(trimmed)) return true;
   // Single math variable letter: e.g. 'x', 'y', 'z', 'a', 'b', 'n'
   if (/^[a-zA-Z]$/.test(trimmed)) return true;
-  // Common standalone math symbols: ±, ×, ÷, ≤, ≥, ≠, ≈, ∞, π, θ, °
-  if (/^[±×÷≤≥≠≈∞πο°]$/.test(trimmed)) return true;
+  // Common standalone math symbols: ±, ×, ÷, ≤, ≥, ≠, ≈, ∞, π, θ, °, etc.
+  if (/^[±×÷≤≥≠≈∞πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√·∈∉⊂⊆∪∩∴∵]$/.test(trimmed)) return true;
   // If it contains math expressions without Arabic text
   const hasArabic = /[\u0600-\u06FF]/.test(trimmed);
-  if (!hasArabic && /[\^_{}\\]/.test(trimmed)) return true;
+  if (!hasArabic && /[\^_{}\\=<>≤≥≠≈±∓×÷·∞∈∉⊂⊆∪∩∴∵πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√%]/.test(trimmed)) return true;
   return false;
+}
+
+/**
+ * Normalizes Unicode visual math characters into standard KaTeX notation
+ * before passing to katex.renderToString, eliminating unknown symbol warnings
+ * and broken missing glyph square boxes (such as for ², ³, ⁿ, ½, △, ⊥, ∥).
+ */
+export function normalizeForKaTeX(mathStr: string): string {
+  if (!mathStr) return '';
+  return mathStr
+    .replace(/²/g, '^2')
+    .replace(/³/g, '^3')
+    .replace(/ⁿ/g, '^n')
+    .replace(/½/g, '\\frac{1}{2}')
+    .replace(/△\s*/g, '\\triangle ')
+    .replace(/\s*⊥\s*/g, ' \\perp ')
+    .replace(/\s*∥\s*/g, ' \\parallel ')
+    .replace(/\s*·\s*/g, ' \\cdot ')
+    .replace(/([0-9a-zA-Z]+)√([0-9a-zA-Z]+)/g, '\\sqrt[$1]{$2}')
+    .replace(/√([0-9a-zA-Z]+)/g, '\\sqrt{$1}')
+    .replace(/\(([^/()]+)\/([^/()]+)\)/g, '\\frac{$1}{$2}')
+    .trim();
 }
 
 /**
  * Pattern to identify LaTeX commands, superscripts/subscripts, and standalone math symbols
  * outside dollar signs so teachers and users never need to write or see dollar signs.
  */
-const UNWRAPPED_LATEX_PATTERN = /(\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})*|[a-zA-Z0-9]+(?:\^\{[^{}]*\}|\^[0-9a-zA-Z]|_\{[^{}]*\}|_[0-9a-zA-Z])+?|[±×÷≤≥≠≈∞πο°])/g;
+const UNWRAPPED_LATEX_PATTERN = /(\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})*|[a-zA-Z0-9]+(?:\^\{[^{}]*\}|\^[0-9a-zA-Z]|_\{[^{}]*\}|_[0-9a-zA-Z]|[²³ⁿ])+?|[0-9a-zA-Z]*√[0-9a-zA-Z]+|\([^/()]+\/[^/()]+\)|[±×÷≤≥≠≈∞πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√·∈∉⊂⊆∪∩∴∵<>])/g;
 
 /**
  * Splits plain text segments that may contain unwrapped LaTeX commands into TEXT and INLINE_MATH tokens.

@@ -526,25 +526,25 @@
                       </button>
                     </div>
 
-                    <textarea
-                      #qTextRef
-                      rows="2"
-                      [(ngModel)]="q.question_text"
-                      class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-                    ></textarea>
+                    <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-bg focus-within:border-brand-primary transition-all p-2.5 space-y-2">
+                      <textarea
+                        #qTextRef
+                        rows="2"
+                        [(ngModel)]="q.question_text"
+                        (input)="onQuestionTextInput(q, $event)"
+                        class="w-full bg-transparent text-text-primary text-xs outline-none resize-y"
+                      ></textarea>
 
-                    <!-- Real-time Live KaTeX Preview -->
-                    @if (q.question_text.trim()) {
-                      <div class="p-2.5 rounded-xl border border-brand-primary/20 bg-brand-primary/5 space-y-1">
-                        <span class="text-[10px] font-bold text-brand-primary flex items-center gap-1">
-                          <app-icon name="eye" [size]="12" />
-                          <span>{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية:' : 'Live Math Preview:' }}</span>
-                        </span>
-                        <div class="text-xs text-text-primary leading-relaxed overflow-x-auto">
-                          <app-math-formula [text]="q.question_text" />
+                      <!-- Real-time visual math formula display embedded directly inside active question field (No separate preview container) -->
+                      @if (q.question_text.trim()) {
+                        <div class="active-question-display border-t border-surface-border/40 pt-1.5 flex items-center justify-between text-xs text-text-primary overflow-x-auto">
+                          <span class="sr-only">{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
+                          <div class="flex-1 overflow-x-auto">
+                            <app-math-formula [text]="q.question_text" />
+                          </div>
                         </div>
-                      </div>
-                    }
+                      }
+                    </div>
                   </div>
 
                   <!-- Auto-Cropped Diagram Preview & Manual Slicer Override -->
@@ -645,6 +645,7 @@
                               #optInputRef
                               type="text"
                               [(ngModel)]="q.options[$index]"
+                              (input)="onOptionInput(q, $index, $event)"
                               class="w-full px-2.5 py-1.5 rounded-lg border border-surface-border bg-surface-card text-text-primary text-xs outline-none focus:border-brand-primary"
                             />
 

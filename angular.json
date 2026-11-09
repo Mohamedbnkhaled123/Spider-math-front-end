@@ -39,6 +39,16 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/katex/dist/fonts",
+                "output": "media"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/katex/dist/fonts",
+                "output": "fonts"
               }
             ],
             "styles": [
@@ -132,6 +142,16 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/katex/dist/fonts",
+                "output": "media"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/katex/dist/fonts",
+                "output": "fonts"
               }
             ],
             "styles": [

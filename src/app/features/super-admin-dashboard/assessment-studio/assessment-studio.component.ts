@@ -37,6 +37,7 @@ import {
 import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedule-alarm-picker/schedule-alarm-picker.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
+import { toVisualMath } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal/ai-question-extraction-modal.component';
 import { ICachedFileSession } from './ai-question-extraction-modal/ai-question-extraction-modal.models';
 import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
@@ -290,6 +291,50 @@ export class AssessmentStudioComponent implements OnInit {
   openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
     this.mathKeyboardTarget.set(target);
     this.isMathKeyboardOpen.set(true);
+  }
+
+  onMathKeyboardValueChange(val: string): void {
+    const target = this.mathKeyboardTarget();
+    if (!target) return;
+    const visualVal = toVisualMath(val);
+    if (target.value !== visualVal) {
+      const pos = target.selectionStart ?? visualVal.length;
+      target.value = visualVal;
+      target.setSelectionRange(pos, pos);
+    }
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+    if (target.tagName.toLowerCase() === 'textarea') {
+      this.newQuestionTextAr.set(visualVal);
+    } else {
+      const optIdx = target.getAttribute('data-opt-index');
+      if (optIdx !== null) {
+        this.updateOption(Number(optIdx), visualVal);
+      }
+    }
+  }
+
+  onQuestionTextInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    if (!target) return;
+    const visualVal = toVisualMath(target.value);
+    if (visualVal !== target.value) {
+      const pos = target.selectionStart ?? visualVal.length;
+      target.value = visualVal;
+      target.setSelectionRange(pos, pos);
+    }
+    this.newQuestionTextAr.set(visualVal);
+  }
+
+  onOptionInput(index: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    const visualVal = toVisualMath(target.value);
+    if (visualVal !== target.value) {
+      const pos = target.selectionStart ?? visualVal.length;
+      target.value = visualVal;
+      target.setSelectionRange(pos, pos);
+    }
+    this.updateOption(index, visualVal);
   }
 
   openAiExtractionModal(): void {
@@ -899,9 +944,10 @@ export class AssessmentStudioComponent implements OnInit {
   }
 
   updateOption(index: number, value: string): void {
+    const visualVal = toVisualMath(value);
     this.newQuestionOptions.update((opts) => {
       const copy = opts.length === 4 ? [...opts] : [...opts, '', '', ''].slice(0, 4);
-      copy[index] = value;
+      copy[index] = visualVal;
       return copy;
     });
   }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MathFormulaComponent } from './math-formula.component';
-import { parseMathTokens, isPureLatex, getMathModeAtCursor } from './math-formula.models';
+import { parseMathTokens, isPureLatex, getMathModeAtCursor, normalizeForKaTeX } from './math-formula.models';
 
 describe('MathFormulaComponent', () => {
   let component: MathFormulaComponent;
@@ -132,6 +132,45 @@ describe('MathFormulaComponent', () => {
       const el: HTMLElement = fixture.nativeElement;
       const blockToken = el.querySelector('.math-katex-token--block');
       expect(blockToken).toBeTruthy();
+    });
+
+    it('should normalize visual math notations for KaTeX correctly', () => {
+      expect(normalizeForKaTeX('(3/5)')).toBe('\\frac{3}{5}');
+      expect(normalizeForKaTeX('½')).toBe('\\frac{1}{2}');
+      expect(normalizeForKaTeX('3√8')).toBe('\\sqrt[3]{8}');
+      expect(normalizeForKaTeX('√16')).toBe('\\sqrt{16}');
+      expect(normalizeForKaTeX('x²')).toBe('x^2');
+      expect(normalizeForKaTeX('△ABC')).toBe('\\triangle ABC');
+      expect(normalizeForKaTeX('AB ⊥ CD')).toBe('AB \\perp CD');
+      expect(normalizeForKaTeX('AB ∥ CD')).toBe('AB \\parallel CD');
+    });
+
+    it('should render visual math without raw LaTeX syntax or broken PUA boxes', () => {
+      fixture.componentRef.setInput('text', '1س ≤ ≠ ≠');
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const html = el.innerHTML;
+      expect(html).not.toContain('\uE020');
+      expect(html).not.toContain('\\le');
+      expect(html).not.toContain('\\neq');
+
+      const katexHtml = el.querySelector('.katex');
+      expect(katexHtml).toBeTruthy();
+    });
+
+    it('should parse and render unwrapped visual fractions inside Arabic sentences', () => {
+      const tokens = parseMathTokens('أوجد قيمة (3/5) في أبسط صورة');
+      expect(tokens.length).toBe(3);
+      expect(tokens[1].type).toBe('INLINE_MATH');
+      expect(tokens[1].raw).toBe('(3/5)');
+
+      fixture.componentRef.setInput('text', 'أوجد قيمة (3/5) في أبسط صورة');
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const katexHtml = el.querySelector('.katex');
+      expect(katexHtml).toBeTruthy();
     });
   });
 });

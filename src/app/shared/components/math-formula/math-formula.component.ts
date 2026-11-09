@@ -10,7 +10,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 import katex from 'katex';
 import {
   ISafeMathToken,
-  parseMathTokens
+  parseMathTokens,
+  normalizeForKaTeX
 } from './math-formula.models';
 
 /**
@@ -50,15 +51,21 @@ export class MathFormulaComponent {
 
       const isBlock = token.type === 'BLOCK_MATH' || (!this.inline() && rawTokens.length === 1);
       try {
-        const rendered = katex.renderToString(token.raw, {
+        const katexInput = normalizeForKaTeX(token.raw);
+        const rendered = katex.renderToString(katexInput, {
           displayMode: isBlock,
           throwOnError: false,
-          strict: false,
+          strict: 'ignore',
           output: 'htmlAndMathml'
         });
 
+        // Eliminate hollow broken placeholder boxes (such as KaTeX PUA \uE020 for not-equal)
+        const sanitizedRendered = rendered
+          .replace(/<span class="mrel"><span class="mrel"><span class="mord katex-vbox">[\s\S]*?<\/span><\/span><span class="mspace nobreak"><\/span><span class="mrel">=<\/span><\/span>/g, '<span class="mrel">≠</span>')
+          .replace(/\uE020/g, '≠');
+
         const displayStyle = isBlock ? 'block' : 'inline-block';
-        const wrappedHtml = `<span class="math-katex-wrap" dir="ltr" style="unicode-bidi: isolate; display: ${displayStyle};">${rendered}</span>`;
+        const wrappedHtml = `<span class="math-katex-wrap" dir="ltr" style="unicode-bidi: isolate; display: ${displayStyle};">${sanitizedRendered}</span>`;
 
         return {
           ...token,

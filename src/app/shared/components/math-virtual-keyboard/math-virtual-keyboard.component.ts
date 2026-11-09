@@ -11,8 +11,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppIconComponent } from '../app-icon/app-icon.component';
-import { MathFormulaComponent } from '../math-formula/math-formula.component';
-import { getMathModeAtCursor } from '../math-formula/math-formula.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
   MathKeyboardCategory,
@@ -41,7 +39,7 @@ import {
 @Component({
   selector: 'app-math-virtual-keyboard',
   standalone: true,
-  imports: [CommonModule, AppIconComponent, MathFormulaComponent],
+  imports: [CommonModule, AppIconComponent],
   templateUrl: './math-virtual-keyboard.component.html',
   styleUrl: './math-virtual-keyboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

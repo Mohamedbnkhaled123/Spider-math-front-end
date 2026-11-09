@@ -1371,26 +1371,26 @@
                       <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
                     </button>
                   </div>
-                  <textarea
-                    #qTextArea
-                    rows="2"
-                    [(ngModel)]="newQuestionTextAr"
-                    [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... واستخدمي لوحة الرموز لكتابة وتعديل المعادلات' : 'Type problem text or equation prompt here... and use Math Keyboard for formulas'"
-                    class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-                  ></textarea>
+                  <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-bg focus-within:border-brand-primary transition-all p-2.5 space-y-2">
+                    <textarea
+                      #qTextArea
+                      rows="2"
+                      [value]="newQuestionTextAr()"
+                      (input)="onQuestionTextInput($event)"
+                      [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... واستخدمي لوحة الرموز لكتابة وتعديل المعادلات' : 'Type problem text or equation prompt here... and use Math Keyboard for formulas'"
+                      class="w-full bg-transparent text-text-primary text-xs outline-none resize-y"
+                    ></textarea>
 
-                  <!-- Real-time Live KaTeX preview while typing question text -->
-                  @if (newQuestionTextAr().trim()) {
-                    <div class="mt-2 p-3 rounded-xl border border-brand-primary/25 bg-brand-primary/5 space-y-1.5 animate-fade-in">
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-brand-primary">
-                        <app-icon name="eye" [size]="13" />
-                        <span>{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
+                    <!-- Real-time visual math formula display embedded directly inside active question field (No separate preview container) -->
+                    @if (newQuestionTextAr().trim()) {
+                      <div class="active-question-display border-t border-surface-border/40 pt-1.5 flex items-center justify-between text-xs text-text-primary overflow-x-auto">
+                        <span class="sr-only">{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
+                        <div class="flex-1 overflow-x-auto">
+                          <app-math-formula [text]="newQuestionTextAr()" />
+                        </div>
                       </div>
-                      <div class="p-2.5 rounded-lg bg-surface-bg/90 border border-surface-border text-xs text-text-primary leading-relaxed overflow-x-auto">
-                        <app-math-formula [text]="newQuestionTextAr()" />
-                      </div>
-                    </div>
-                  }
+                    }
+                  </div>
                 </div>
 
                 <!-- Question Image Uploader Component (WebP Auto-Compression) -->
@@ -1451,7 +1451,8 @@
                               #optInput
                               type="text"
                               [value]="opt"
-                              (input)="updateOption($index, $any($event.target).value)"
+                              [attr.data-opt-index]="$index"
+                              (input)="onOptionInput($index, $event)"
                               [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
                               class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
                             />
@@ -1465,13 +1466,11 @@
                             </button>
                           </div>
 
-                          <!-- Real-time Live KaTeX preview for option -->
+                          <!-- Real-time embedded visual math display for option (No separate preview container) -->
                           @if (opt.trim()) {
-                            <div class="px-2.5 py-1.5 rounded-lg bg-surface-bg border border-surface-border/70 text-xs text-text-primary flex items-center justify-between gap-2 overflow-x-auto">
-                              <span class="text-[10px] text-text-muted shrink-0">{{ langService.isArabic() ? 'معاينة فورية:' : 'Live Preview:' }}</span>
-                              <div class="flex-1 text-start ps-2 overflow-x-auto">
-                                <app-math-formula [text]="opt" />
-                              </div>
+                            <div class="active-option-display border-t border-surface-border/40 pt-1 text-xs text-text-primary overflow-x-auto">
+                              <span class="sr-only">{{ langService.isArabic() ? 'معاينة فورية:' : 'Live Preview:' }}</span>
+                              <app-math-formula [text]="opt" />
                             </div>
                           }
                         </div>
@@ -1757,10 +1756,11 @@
     </div>
   }
 
-  <!-- Teacher Virtual Math Keyboard (Docked Bottom Sheet) -->
+  <!-- Teacher Virtual Math Keyboard (Google-Style Compact Floating) -->
   <app-math-virtual-keyboard
     [(isOpen)]="isMathKeyboardOpen"
     [targetInput]="mathKeyboardTarget()"
+    (valueChange)="onMathKeyboardValueChange($event)"
   />
 
   <!-- AI Question Extraction Modal (Phase 5) -->

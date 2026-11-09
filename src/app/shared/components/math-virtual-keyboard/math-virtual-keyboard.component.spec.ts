@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MathVirtualKeyboardComponent } from './math-virtual-keyboard.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
-import { parseMathSymbolsFromText, findSymbolAtCursor } from './math-virtual-keyboard.models';
+import { parseMathSymbolsFromText, findSymbolAtCursor, toVisualMath } from './math-virtual-keyboard.models';
 
 describe('MathVirtualKeyboardComponent', () => {
   let component: MathVirtualKeyboardComponent;
@@ -524,6 +524,62 @@ describe('MathVirtualKeyboardComponent', () => {
       // Symbol chips should be rendered
       const chips = hostEl.querySelectorAll('.visual-template-card, button');
       expect(chips.length).toBeGreaterThan(0);
+    });
+
+    it('should convert LaTeX commands to clean visual symbols via toVisualMath without raw syntax', () => {
+      expect(toVisualMath('\\le')).toBe('≤');
+      expect(toVisualMath('\\neq')).toBe('≠');
+      expect(toVisualMath('\\ge')).toBe('≥');
+      expect(toVisualMath('\\pm')).toBe('±');
+      expect(toVisualMath('\\frac{1}{2}')).toBe('½');
+      expect(toVisualMath('\\frac{3}{5}')).toBe('(3/5)');
+      expect(toVisualMath('\\sqrt{16}')).toBe('√16');
+      expect(toVisualMath('\\sqrt[3]{8}')).toBe('3√8');
+      expect(toVisualMath('x^2')).toBe('x²');
+      expect(toVisualMath('1س\\le\\neq\\neq')).toBe('1س≤≠≠');
+    });
+
+    it('should parse visual mathematical symbols from text with parseMathSymbolsFromText', () => {
+      const text = 'احسب (3/5) + √16 + 3√8 عندما x² = 4';
+      const symbols = parseMathSymbolsFromText(text);
+
+      expect(symbols.length).toBe(4);
+      expect(symbols[0].type).toBe('FRACTION');
+      expect(symbols[0].template.slots[0].value).toBe('3');
+      expect(symbols[0].template.slots[1].value).toBe('5');
+
+      expect(symbols[1].type).toBe('SQRT');
+      expect(symbols[1].template.slots[0].value).toBe('16');
+
+      expect(symbols[2].type).toBe('NTH_ROOT');
+      expect(symbols[2].template.slots[0].value).toBe('3');
+      expect(symbols[2].template.slots[1].value).toBe('8');
+
+      expect(symbols[3].type).toBe('POWER');
+      expect(symbols[3].template.slots[0].value).toBe('x');
+      expect(symbols[3].template.slots[1].value).toBe('2');
+    });
+
+    it('should render compact Google-style keyboard layout with numeric-grid and close button X', () => {
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const keyboardAside = hostEl.querySelector('aside.google-math-keyboard');
+      expect(keyboardAside).toBeTruthy();
+
+      // Verify prominent close button X exists
+      const closeBtn = hostEl.querySelector('button[aria-label="Close keyboard"]');
+      expect(closeBtn).toBeTruthy();
+
+      // Verify numeric grid with 15 columns container exists
+      const numericGrid = hostEl.querySelector('.numeric-grid');
+      expect(numericGrid).toBeTruthy();
+
+      // Verify no preview bar exists inside the keyboard component (R1)
+      const previewBar = hostEl.querySelector('.preview-bar, .keyboard-preview');
+      expect(previewBar).toBeNull();
     });
   });
 });

@@ -18,6 +18,7 @@ import { firstValueFrom } from 'rxjs';
 import { AppIconComponent } from '../../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
+import { toVisualMath } from '../../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import { PdfPageViewerComponent } from '../../../../shared/components/pdf-page-viewer/pdf-page-viewer.component';
 import { IPdfPageRenderEvent } from '../../../../shared/components/pdf-page-viewer/pdf-page-viewer.models';
 import { ManualImageSlicerModalComponent } from '../../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
@@ -530,7 +531,41 @@ export class AiQuestionExtractionModalComponent {
     this.isMathKeyboardOpen.set(true);
   }
 
-  onMathKeyboardValueChange(_val: string): void {
+  onQuestionTextInput(q: IStagedQuestion, event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    if (!target) return;
+    const visual = toVisualMath(target.value);
+    if (visual !== target.value) {
+      const pos = target.selectionStart ?? visual.length;
+      target.value = visual;
+      target.setSelectionRange(pos, pos);
+    }
+    q.question_text = visual;
+  }
+
+  onOptionInput(q: IStagedQuestion, index: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    const visual = toVisualMath(target.value);
+    if (visual !== target.value) {
+      const pos = target.selectionStart ?? visual.length;
+      target.value = visual;
+      target.setSelectionRange(pos, pos);
+    }
+    q.options[index] = visual;
+  }
+
+  onMathKeyboardValueChange(val: string): void {
+    const target = this.activeMathKeyboardInput();
+    if (target) {
+      const visual = toVisualMath(val);
+      if (target.value !== visual) {
+        const pos = target.selectionStart ?? visual.length;
+        target.value = visual;
+        target.setSelectionRange(pos, pos);
+      }
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
     this.cdr.markForCheck();
   }
 

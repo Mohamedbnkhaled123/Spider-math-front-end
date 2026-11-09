@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import katex from 'katex';
-import { parseMathTokens } from '../components/math-formula/math-formula.models';
+import { parseMathTokens, normalizeForKaTeX } from '../components/math-formula/math-formula.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -28,15 +28,21 @@ export class MathLatexPipe implements PipeTransform {
 
       const isBlock = token.type === 'BLOCK_MATH';
       try {
-        const rendered = katex.renderToString(token.raw, {
+        const katexInput = normalizeForKaTeX(token.raw);
+        const rendered = katex.renderToString(katexInput, {
           displayMode: isBlock,
           throwOnError: false,
-          strict: false,
+          strict: 'ignore',
           output: 'htmlAndMathml'
         });
 
+        // Eliminate hollow broken placeholder boxes (such as KaTeX PUA \uE020 for not-equal)
+        const sanitizedRendered = rendered
+          .replace(/<span class="mrel"><span class="mrel"><span class="mord katex-vbox">[\s\S]*?<\/span><\/span><span class="mspace nobreak"><\/span><span class="mrel">=<\/span><\/span>/g, '<span class="mrel">≠</span>')
+          .replace(/\uE020/g, '≠');
+
         const displayStyle = isBlock ? 'block' : 'inline-block';
-        return `<span class="math-katex-wrap" dir="ltr" style="unicode-bidi: isolate; display: ${displayStyle};">${rendered}</span>`;
+        return `<span class="math-katex-wrap" dir="ltr" style="unicode-bidi: isolate; display: ${displayStyle};">${sanitizedRendered}</span>`;
       } catch {
         const cleanRaw = token.raw.replace(/\\\$/g, '').replace(/\$/g, '');
         const escaped = this.escapeHtml(cleanRaw);
