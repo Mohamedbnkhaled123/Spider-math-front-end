@@ -470,6 +470,111 @@ code,
 }
 
 // ==============================================================================
+// Global Page & Route Navigation View Transitions (0.5s Smooth Easing - R6)
+// ==============================================================================
+::view-transition-group(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(root) {
+  animation: 0.5s cubic-bezier(0.22, 1, 0.36, 1) both fadeOutPage;
+}
+
+::view-transition-new(root) {
+  animation: 0.5s cubic-bezier(0.22, 1, 0.36, 1) both fadeInPage;
+}
+
+@keyframes fadeOutPage {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ==============================================================================
+// Standardized 0.5s Transitions for Interactive Elements (Modals, Drawers, Dropdowns - R6)
+// ==============================================================================
+@keyframes fadeIn05 {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn05,
+.animate-fade-in {
+  animation: fadeIn05 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes modalScaleIn05 {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalScaleIn05,
+.animate-scale-up,
+.animate-modal-in {
+  animation: modalScaleIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drawerSlideDown05 {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drawer-smooth-05 {
+  animation: drawerSlideDown05 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dropdownPop05 {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.notifications-dropdown {
+  transform-origin: top;
+  animation: dropdownPop05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+// ==============================================================================
 // Accessibility: Respect User Reduced Motion Preferences
 // ==============================================================================
 @media (prefers-reduced-motion: reduce) {
@@ -482,6 +587,11 @@ code,
     scroll-behavior: auto !important;
   }
 
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 // ==============================================================================
@@ -713,3 +823,13 @@ code,
     filter: blur(35px);
   }
 }
+
+// Global utility for scrollable containers without visual scrollbars
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+

@@ -228,7 +228,7 @@
   <!-- 2. MOBILE & TABLET VIEW (< 1024px): 2x2 Radial Spider Architecture       -->
   <!-- ========================================================================= -->
 
-  <div #mobileCurriculaContainer class="lg:hidden relative py-6 px-4 sm:px-8 max-w-xl mx-auto overflow-hidden">
+  <div #mobileCurriculaContainer class="lg:hidden relative py-6 px-4 sm:px-8 max-w-xl md:max-w-3xl mx-auto overflow-hidden">
     <!-- Mobile/Tablet Verlet Silk Canvas: Covers the entire mobile section -->
     <canvas #silkCanvasMobile class="absolute inset-0 w-full h-full pointer-events-none z-10" [class.hidden]="isTrackModalOpen()"></canvas>
 
@@ -276,7 +276,7 @@
       </div>
 
       <!-- Center Spider Mascot (Prominent Scale & Centered Aura) -->
-      <div class="relative w-full h-44 sm:h-52 my-2 sm:my-3 flex items-center justify-center select-none">
+      <div class="relative w-full min-h-[220px] sm:min-h-[260px] my-3 sm:my-4 flex items-center justify-center select-none">
         <div class="mascot-lighting-glow pointer-events-none select-none" aria-hidden="true">
           <div class="glow-core"></div>
           <div class="glow-ambient"></div>
@@ -293,7 +293,7 @@
       </div>
 
       <!-- Bottom Row: International (2) & American (3) -->
-      <div class="grid grid-cols-2 gap-3.5 sm:gap-5 relative z-20 mt-2 sm:mt-3">
+      <div class="grid grid-cols-2 gap-3.5 sm:gap-5 relative z-20 mt-4 sm:mt-5">
         @for (curriculum of bottomCurricula(); track curriculum.code) {
           <div
             (click)="openTrackModal(curriculum.code)"
@@ -430,11 +430,11 @@
 
           <!-- Filter Tabs (GRADES step) -->
           @if (modalStep() === 'GRADES') {
-            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md">
+            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md max-w-full overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 (click)="setStageFilter('ALL')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
                 [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                 [class.text-slate-950]="activeStageFilter() === 'ALL'"
                 [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -447,7 +447,7 @@
               <button
                 type="button"
                 (click)="setStageFilter('PRIMARY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
                 [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                 [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                 [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -460,7 +460,7 @@
               <button
                 type="button"
                 (click)="setStageFilter('PREPARATORY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
                 [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                 [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                 [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -473,7 +473,7 @@
               <button
                 type="button"
                 (click)="setStageFilter('SECONDARY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
                 [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                 [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                 [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -486,35 +486,15 @@
             </div>
           }
 
-          <!-- Term Selector (UNITS step) -->
+          <!-- Active Term Indicator (UNITS step) -->
           @if (modalStep() === 'UNITS') {
-            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md">
-              <button
-                type="button"
-                (click)="selectTerm('TERM_1')"
-                class="px-4 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-brand-gold]="selectedTermCode() === 'TERM_1'"
-                [class.text-slate-950]="selectedTermCode() === 'TERM_1'"
-                [class.font-bold]="selectedTermCode() === 'TERM_1'"
-                [class.shadow-sm]="selectedTermCode() === 'TERM_1'"
-                [class.text-text-secondary]="selectedTermCode() !== 'TERM_1'"
-                [class.hover:text-text-primary]="selectedTermCode() !== 'TERM_1'"
-              >
-                {{ langService.isArabic() ? 'الفصل الدراسي الأول' : 'Term 1' }}
-              </button>
-              <button
-                type="button"
-                (click)="selectTerm('TERM_2')"
-                class="px-4 py-1.5 rounded-lg transition-all cursor-pointer"
-                [class.bg-brand-gold]="selectedTermCode() === 'TERM_2'"
-                [class.text-slate-950]="selectedTermCode() === 'TERM_2'"
-                [class.font-bold]="selectedTermCode() === 'TERM_2'"
-                [class.shadow-sm]="selectedTermCode() === 'TERM_2'"
-                [class.text-text-secondary]="selectedTermCode() !== 'TERM_2'"
-                [class.hover:text-text-primary]="selectedTermCode() !== 'TERM_2'"
-              >
-                {{ langService.isArabic() ? 'الفصل الدراسي الثاني' : 'Term 2' }}
-              </button>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>
+                {{ selectedTermCode() === 'TERM_1'
+                  ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)')
+                  : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}
+              </span>
             </div>
           }
         </div>
@@ -634,7 +614,7 @@
 
               <!-- Grade Overview Bar -->
 
-              <div class="flex items-center justify-between mb-6 pb-4 border-b border-surface-border/60">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-surface-border/60">
 
                 <div>
 

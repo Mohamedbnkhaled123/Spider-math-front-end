@@ -139,8 +139,8 @@
             <!-- 3D Mascot Image with Book (Transparent WebP with Gentle Float) -->
             <div class="relative z-10 w-full flex items-center justify-center pt-6">
               <img
-                src="/assets/branding/spider-mascot-hero-book.webp"
-                alt="Spider Math AI Study Partner"
+                [src]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar.webp' : '/assets/branding/spider-mascot-hero-book.webp'"
+                [alt]="langService.isArabic() ? 'رفيق سبايدر ماث الذكي للمذاكرة' : 'Spider Math AI Study Partner'"
                 width="640"
                 height="640"
                 fetchpriority="high"

@@ -60,31 +60,10 @@
 
     <!-- Actions Group: Term Switcher & Notifications -->
     <div class="flex items-center gap-3 self-end lg:self-center">
-      <!-- Academic Term Switcher (TERM_1 / TERM_2) -->
-      <div class="term-switcher-pills flex items-center p-1 rounded-2xl border border-surface-border bg-surface-card shadow-sm">
-        <button
-          type="button"
-          (click)="setTerm('TERM_1')"
-          class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer"
-          [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
-          [class.text-white]="selectedTerm() === 'TERM_1'"
-          [class.shadow-sm]="selectedTerm() === 'TERM_1'"
-          [class.text-text-secondary]="selectedTerm() !== 'TERM_1'"
-        >
-          {{ langService.isArabic() ? 'الفصل الأول' : 'Term 1' }}
-        </button>
-
-        <button
-          type="button"
-          (click)="setTerm('TERM_2')"
-          class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer"
-          [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
-          [class.text-white]="selectedTerm() === 'TERM_2'"
-          [class.shadow-sm]="selectedTerm() === 'TERM_2'"
-          [class.text-text-secondary]="selectedTerm() !== 'TERM_2'"
-        >
-          {{ langService.isArabic() ? 'الفصل الثاني' : 'Term 2' }}
-        </button>
+      <!-- Active Academic Term Badge (Non-interactive) -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>{{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)') : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}</span>
       </div>
 
       <!-- Notification Bell with Dropdown -->
@@ -105,7 +84,7 @@
 
         <!-- Notification Panel Dropdown -->
         @if (isNotificationsOpen()) {
-          <div class="notifications-dropdown absolute left-0 rtl:left-0 rtl:right-auto mt-2 w-80 sm:w-96 rounded-2xl border border-surface-border glass-panel shadow-glass p-4 z-layer-modal bg-surface-card">
+          <div class="notifications-dropdown absolute right-0 rtl:left-0 rtl:right-auto mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] rounded-2xl border border-surface-border glass-panel shadow-glass p-4 z-layer-modal bg-surface-card">
             <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
               <h4 class="text-xs font-black text-text-primary flex items-center gap-1.5">
                 <app-icon name="message-circle" [size]="14" className="text-brand-accent" />
@@ -450,11 +429,11 @@
         </div>
 
         <!-- Filter Tabs -->
-        <div class="flex items-center gap-1 p-1 rounded-2xl bg-surface-bg border border-surface-border self-start md:self-center">
+        <div class="flex items-center gap-1 p-1 rounded-2xl bg-surface-bg border border-surface-border self-start md:self-center max-w-full overflow-x-auto no-scrollbar">
           <button
             type="button"
             (click)="setLecturesFilter('ALL')"
-            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
             [class.bg-brand-primary]="lecturesFilter() === 'ALL'"
             [class.text-white]="lecturesFilter() === 'ALL'"
             [class.text-text-secondary]="lecturesFilter() !== 'ALL'"
@@ -465,7 +444,7 @@
           <button
             type="button"
             (click)="setLecturesFilter('WATCHED')"
-            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
             [class.bg-emerald-600]="lecturesFilter() === 'WATCHED'"
             [class.text-white]="lecturesFilter() === 'WATCHED'"
             [class.text-text-secondary]="lecturesFilter() !== 'WATCHED'"
@@ -477,7 +456,7 @@
           <button
             type="button"
             (click)="setLecturesFilter('UNWATCHED')"
-            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
             [class.bg-amber-500]="lecturesFilter() === 'UNWATCHED'"
             [class.text-white]="lecturesFilter() === 'UNWATCHED'"
             [class.text-text-secondary]="lecturesFilter() !== 'UNWATCHED'"

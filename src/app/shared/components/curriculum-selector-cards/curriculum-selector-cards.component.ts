@@ -313,6 +313,11 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.discoveryService.getLandingData().subscribe({
       next: data => {
         this.landingData.set(data);
+        const serverActiveTerm = (data?.activeAcademicTerm || (data as any)?.active_academic_term) as AcademicTermCode | undefined;
+        if (serverActiveTerm && this.selectedTermCode() !== serverActiveTerm) {
+          this.selectedTermCode.set(serverActiveTerm);
+          this.loadUnitsForSelection();
+        }
       },
       error: () => {}
     });
@@ -489,8 +494,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         // Accurate limb points from spider mascot proportions:
         spiderOrigins[0] = { x: sx + sw * 0.20, y: sy + sh * 0.46 }; // Upper-left joint -> Card 0
         spiderOrigins[1] = { x: sx + sw * 0.80, y: sy + sh * 0.46 }; // Upper-right joint -> Card 1
-        spiderOrigins[2] = { x: sx + sw * 0.22, y: sy + sh * 0.74 }; // Lower-left paw -> Card 2
-        spiderOrigins[3] = { x: sx + sw * 0.78, y: sy + sh * 0.74 }; // Lower-right paw -> Card 3
+        spiderOrigins[2] = { x: sx + sw * 0.16, y: sy + sh * 0.86 }; // Lower-left book corner -> Card 2
+        spiderOrigins[3] = { x: sx + sw * 0.84, y: sy + sh * 0.86 }; // Lower-right book corner -> Card 3
       }
     };
 
@@ -943,6 +948,10 @@ function renderCardConnectedWeb(
 ): void {
   ctx.save();
 
+  const dpr = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1;
+  const canvasW = ctx.canvas.clientWidth || (ctx.canvas.width / dpr);
+  const canvasH = ctx.canvas.clientHeight || (ctx.canvas.height / dpr);
+
   // Soft subtle glow/shadow to ensure strands pop with clarity in both modes
   if (!isDark) {
     ctx.shadowColor = 'rgba(165, 110, 25, 0.28)';
@@ -962,18 +971,71 @@ function renderCardConnectedWeb(
     const cx = (origins[0].x + origins[1].x + origins[2].x + origins[3].x) / 4;
     const cy = (origins[0].y + origins[1].y + origins[2].y + origins[3].y) / 4;
     const baseR = Math.hypot(origins[0].x - cx, origins[0].y - cy);
-    const ringRadii = [baseR * 1.25, baseR * 1.75, baseR * 2.30];
+    const ringRadii = [
+      baseR * 1.25,
+      baseR * 1.75,
+      baseR * 2.30,
+      baseR * 2.95,
+      baseR * 3.65,
+      baseR * 4.40,
+      baseR * 5.25
+    ];
 
     ctx.save();
     for (let r = 0; r < ringRadii.length; r++) {
       const radius = ringRadii[r];
       const pulse = Math.sin(time * 1.2 + r * 0.9) * 1.3;
-      ctx.strokeStyle = r === 1
-        ? (isDark ? 'rgba(212, 175, 106, 0.35)' : 'rgba(160, 105, 22, 0.85)')
-        : (isDark ? 'rgba(212, 175, 106, 0.22)' : 'rgba(175, 120, 30, 0.55)');
-      ctx.lineWidth = r === 1 ? (isDark ? 0.65 : 1.25) : (isDark ? 0.45 : 0.85);
+      const alpha = Math.max(0.04, 0.35 * Math.pow(0.72, r));
+      ctx.strokeStyle = isDark
+        ? `rgba(212, 175, 106, ${alpha.toFixed(3)})`
+        : `rgba(160, 105, 22, ${Math.min(0.85, alpha * 2.2).toFixed(3)})`;
+      ctx.lineWidth = isDark
+        ? Math.max(0.35, 0.65 * Math.pow(0.88, r))
+        : Math.max(0.55, 1.25 * Math.pow(0.88, r));
       ctx.beginPath();
       ctx.arc(cx, cy, Math.max(10, radius + pulse), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Downward radiating spokes from center extending towards the bottom edge (y = H) with organic wave sway
+    const downwardSpokeAngles = [
+      0.28 * Math.PI,
+      0.36 * Math.PI,
+      0.44 * Math.PI,
+      0.52 * Math.PI,
+      0.60 * Math.PI,
+      0.68 * Math.PI
+    ];
+
+    ctx.save();
+    for (let s = 0; s < downwardSpokeAngles.length; s++) {
+      const angle = downwardSpokeAngles[s];
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      const startR = baseR * 1.15;
+      const startX = cx + cosA * startR;
+      const startY = cy + sinA * startR;
+
+      const distToBottom = (canvasH - startY) / (sinA || 0.001);
+      const endX = startX + cosA * distToBottom;
+      const endY = canvasH;
+
+      const segs = 18;
+      ctx.beginPath();
+      for (let k = 0; k <= segs; k++) {
+        const t = k / segs;
+        const envelope = Math.sin(t * Math.PI);
+        const sway = Math.sin(time * 1.15 + t * 2.6 + s * 0.9) * 2.4 * envelope;
+        const px = startX + (endX - startX) * t + sway;
+        const py = startY + (endY - startY) * t;
+
+        if (k === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+
+      ctx.strokeStyle = isDark ? 'rgba(212, 175, 106, 0.16)' : 'rgba(160, 105, 22, 0.45)';
+      ctx.lineWidth = isDark ? 0.45 : 0.85;
       ctx.stroke();
     }
     ctx.restore();
@@ -1152,6 +1214,19 @@ function renderCardConnectedWeb(
     ctx.strokeStyle = isDark ? 'rgba(212, 175, 106, 0.35)' : 'rgba(175, 120, 28, 0.80)';
     ctx.lineWidth = isDark ? 0.4 : 0.95;
     ctx.stroke();
+  }
+
+  // Apply a smooth vertical fade gradient near y = H - 40px to H so the spider web dissolves seamlessly
+  const fadeH = 40;
+  if (canvasH > fadeH) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    const bottomFade = ctx.createLinearGradient(0, canvasH - fadeH, 0, canvasH);
+    bottomFade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    bottomFade.addColorStop(1, 'rgba(0, 0, 0, 1)');
+    ctx.fillStyle = bottomFade;
+    ctx.fillRect(0, canvasH - fadeH, canvasW, fadeH);
+    ctx.restore();
   }
 
   ctx.restore();

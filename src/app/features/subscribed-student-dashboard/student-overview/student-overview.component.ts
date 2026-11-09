@@ -15,6 +15,7 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import {
   validatePhoneNumber,
@@ -57,9 +58,14 @@ export class StudentOverviewComponent implements OnInit {
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
+  private readonly discoveryService = inject(PublicDiscoveryService, { optional: true });
 
-  // Term Switcher Signal
-  readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
+  // Term Switcher Signal (Synchronized with teacher's active term from PublicDiscoveryService / student profile)
+  readonly selectedTerm = signal<AcademicTermCode>(
+    ((this.discoveryService?.getLandingData() as any)?.activeAcademicTerm as AcademicTermCode) ||
+    (this.authService.currentUser()?.academic_term as AcademicTermCode) ||
+    'TERM_1'
+  );
   readonly isNotificationsOpen = signal<boolean>(false);
   readonly isLoadingLeaderboard = signal<boolean>(false);
   readonly expandedUnitId = signal<string | null>(null);
@@ -226,6 +232,24 @@ export class StudentOverviewComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+
+    const landingRes: any = this.discoveryService?.getLandingData?.();
+    const activeTerm = landingRes?.activeAcademicTerm;
+    if (activeTerm) {
+      this.selectedTerm.set(activeTerm as AcademicTermCode);
+    } else if (landingRes && typeof landingRes.subscribe === 'function') {
+      landingRes.subscribe({
+        next: (data: any) => {
+          if (data?.activeAcademicTerm && data.activeAcademicTerm !== this.selectedTerm()) {
+            this.selectedTerm.set(data.activeAcademicTerm as AcademicTermCode);
+            this.fetchRealStudentData();
+            this.fetchRealAssessments();
+          }
+        },
+        error: () => {}
+      });
+    }
+
     this.loadActiveGrades();
     this.fetchRealStudentData();
     this.fetchRealAssessments();
