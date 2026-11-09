@@ -104,21 +104,8 @@ $axis-blue: #0284C7;
 }
 
 // ------------------------------------------------------------------------------
-// Hero Section Architecture & Visual Identity
+// Hero Section Architecture
 // ------------------------------------------------------------------------------
-.hero-container {
-  // Exact Dark Royal Violet-Cobalt gradient derived 1:1 from Logo identity
-  background: radial-gradient(120% 100% at 75% 45%, #2A0E6F 0%, #1A0745 42%, #0E0426 100%);
-  position: relative;
-}
-
-:host-context([data-theme='light']) .hero-container,
-:host-context(.light) .hero-container,
-.landing-home-root.light .hero-container,
-.landing-home-root[data-theme='light'] .hero-container {
-  background: radial-gradient(120% 100% at 75% 45%, rgba(192, 132, 252, 0.16) 0%, rgba(216, 180, 254, 0.08) 45%, var(--surface-bg-primary) 100%);
-}
-
 .hero-title-gradient {
   background: linear-gradient(135deg, #FFFFFF 0%, #E9D5FF 25%, #38BDF8 65%, #00BAC6 100%);
   -webkit-background-clip: text;
