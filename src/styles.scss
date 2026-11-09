@@ -13,13 +13,16 @@
 :root,
 [data-theme='light'],
 .light {
-  // Master Color Palette — Luxury Academic Parchment (Light Mode)
-  --surface-bg-primary: #FAF6EE;          // Warm Academic Cream Parchment
-  --surface-bg-secondary: #F3EDE0;        // Soft Ivory Parchment
-  --surface-bg-card: rgba(255, 252, 245, 0.82); // Frosted Glass Card
+  // Master Color Palette — Luxury Academic Parchment (Light Mode 1 - Cream)
+  --surface-bg-primary: #F8F1EB;          // Main Light Cream
+  --surface-bg-secondary: #F4EAE1;        // Secondary Cream Beige
+  --surface-bg-lightest: #FAF3ED;         // Lightest Off-White Cream
+  --surface-bg-edge: #EDE0D6;             // Darkest on edges Light Beige
+  --surface-bg-card: rgba(250, 243, 237, 0.88); // Frosted Glass Card
   --surface-bg-elevated: #FFFFFF;
-  --surface-bg-modal: rgba(250, 246, 238, 0.94);
-  --surface-glass-header: rgba(250, 246, 238, 0.88);
+  --surface-bg-modal: rgba(248, 241, 235, 0.96);
+  --surface-glass-header: rgba(250, 243, 237, 0.90);
+  --surface-gradient-bg: linear-gradient(180deg, #FAF3ED 0%, #F8F1EB 50%, #F4EAE1 100%);
   // Text Hierarchy
   --text-primary: #111629;                // Deep Academic Slate Ink
   --text-secondary: #3E4559;              // Balanced Reading Charcoal
@@ -42,7 +45,7 @@
   // Surfaces & Glassmorphism
   --surface-border: rgba(158, 111, 24, 0.32);
   --surface-border-glow: rgba(158, 111, 24, 0.70);
-  --surface-glass: rgba(250, 246, 238, 0.86);
+  --surface-glass: rgba(248, 241, 235, 0.90);
   --math-bg-stroke: rgba(17, 22, 41, 0.06);
   --grid-pattern-color: rgba(158, 111, 24, 0.05);
   // Backward compatibility alias tokens
@@ -66,24 +69,27 @@
 
 .dark,
 [data-theme='dark'] {
-  // Master Color Palette — Academic Pure Light Navy (Clean, Zero Purple/Violet)
-  --surface-bg-primary: #111D35;          // Clean Light Academic Navy
-  --surface-bg-secondary: #172644;        // Clear Navy Panel
-  --surface-bg-card: rgba(23, 38, 68, 0.72); // Frosted Pure Navy Glass
-  --surface-bg-elevated: #1D3056;        // Elevated Navy Surface
-  --surface-bg-modal: rgba(17, 29, 53, 0.96);
-  --surface-glass-header: rgba(17, 29, 53, 0.88);
+  // Master Color Palette — Academic Luxury Purple (Dark Mode 2)
+  --surface-bg-primary: #2A1D37;          // Main Dark Purple
+  --surface-bg-secondary: #211931;        // Secondary Darker Purple
+  --surface-bg-lightest: #342745;         // Lightest (behind spider) Medium Purple
+  --surface-bg-edge: #120B1A;             // Darkest on edges Almost Black
+  --surface-bg-card: rgba(42, 29, 55, 0.78); // Frosted Dark Purple Glass
+  --surface-bg-elevated: #342745;        // Elevated Medium Purple Surface
+  --surface-bg-modal: rgba(26, 17, 35, 0.97);
+  --surface-glass-header: rgba(33, 25, 49, 0.90);
+  --surface-gradient-bg: radial-gradient(circle at center, #342745 0%, #2A1D37 45%, #211931 70%, #120B1A 100%);
   // Text Hierarchy
   --text-primary: #F8FAFC;                // Crisp Ivory Starlight
-  --text-secondary: #B8C7E0;              // Soft Silver-Cyan Mist
-  --text-muted: #7E92B5;                  // Steel Navy
-  // Luxury Metallic Gold & Azure Accents (Clean, Zero Purple)
+  --text-secondary: #D4C7E2;              // Soft Lilac Silver
+  --text-muted: #9F8EB5;                  // Muted Editorial Violet
+  // Luxury Metallic Gold & Royal Violet Accents
   --color-brand-gold: #D4AF6A;            // Luminous Champagne Gold
   --color-brand-gold-light: #F0D596;      // Bright Radiance Gold
   --color-brand-gold-dark: #A67E33;       // Antique Gold
-  --color-brand-violet: #38BDF8;          // Azure / Sky Blue Accent
+  --color-brand-violet: #A855F7;          // Vibrant Amethyst Accent
   --color-brand-primary: #D4AF6A;
-  --color-brand-secondary: #0284C7;
+  --color-brand-secondary: #9333EA;
   --color-brand-accent: #E5C378;
   --color-brand-cyan: #38BDF8;
   // Signature Luxury Gradients
@@ -91,11 +97,11 @@
   --gradient-gold-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
   --gradient-spider-math: linear-gradient(135deg, #E5C47E 0%, #C89F52 55%, #A67B30 100%);
   --gradient-spider-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(56, 189, 248, 0.25));
+  --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(168, 85, 247, 0.25));
   // Surfaces & Glassmorphism
   --surface-border: rgba(212, 175, 106, 0.24);
   --surface-border-glow: rgba(212, 175, 106, 0.75);
-  --surface-glass: rgba(17, 29, 53, 0.85);
+  --surface-glass: rgba(42, 29, 55, 0.85);
   --math-bg-stroke: rgba(255, 255, 255, 0.055);
   --grid-pattern-color: transparent;
   // Backward compatibility alias tokens
@@ -106,8 +112,8 @@
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
   // Shadows & Elevation
-  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.55);
-  --shadow-brand-glow: 0 0 28px -4px rgba(212, 175, 106, 0.35), 0 0 18px -2px rgba(56, 189, 248, 0.20);
+  --shadow-card: 0 16px 36px -12px rgba(18, 11, 26, 0.65);
+  --shadow-brand-glow: 0 12px 32px -4px rgba(212, 175, 106, 0.30), 0 0 20px -2px rgba(168, 85, 247, 0.25);
   // Typography Families
   --font-arabic-heading: 'Tajawal', sans-serif;
   --font-arabic-body: 'IBM Plex Sans Arabic', sans-serif;
@@ -580,7 +586,8 @@ code,
 .bg-chalkboard-math-layer {
   position: relative;
   background-color: var(--surface-bg-primary);
-  background-image: none;
+  background-image: var(--surface-gradient-bg);
+  background-attachment: fixed;
 }
 
 
@@ -602,32 +609,32 @@ code,
   justify-content: center;
   overflow: visible; // NEVER clip, ensuring 100% natural diffusion into background
 
-  // Layer 1: Core Soft Azure/Navy Radiance (Clean Light Navy Glow Behind Spider Mascot)
+  // Layer 1: Core Soft Radiance (Clean Purple Glow Behind Spider Mascot matching #342745 / #A855F7)
   .glow-core {
     position: absolute;
     width: 380px;
     height: 380px;
     background: radial-gradient(
       circle at 50% 50%,
-      rgba(56, 140, 220, 0.35) 0%,
-      rgba(30, 95, 175, 0.22) 35%,
-      rgba(17, 45, 95, 0.10) 65%,
+      rgba(168, 85, 247, 0.35) 0%,
+      rgba(107, 33, 168, 0.22) 35%,
+      rgba(52, 39, 69, 0.12) 65%,
       transparent 88%
     );
     filter: blur(45px);
     -webkit-filter: blur(45px);
   }
 
-  // Layer 2: Broad Ambient Navy Cloud (Pure Crisp Navy Diffusion)
+  // Layer 2: Broad Ambient Purple Cloud (Rich Medium-Dark Purple Diffusion matching #342745 -> #2A1D37)
   .glow-ambient {
     position: absolute;
     width: 620px;
     height: 620px;
     background: radial-gradient(
       ellipse 65% 60% at 50% 48%,
-      rgba(35, 85, 165, 0.22) 0%,
-      rgba(22, 60, 130, 0.14) 40%,
-      rgba(17, 29, 53, 0.05) 70%,
+      rgba(88, 28, 135, 0.26) 0%,
+      rgba(52, 39, 69, 0.16) 40%,
+      rgba(42, 29, 55, 0.08) 70%,
       transparent 90%
     );
     filter: blur(70px);
@@ -641,9 +648,9 @@ code,
     height: 440px;
     background: radial-gradient(
       circle at 62% 38%,
-      rgba(212, 175, 106, 0.22) 0%,
-      rgba(180, 140, 60, 0.12) 35%,
-      rgba(56, 140, 220, 0.06) 55%,
+      rgba(212, 175, 106, 0.24) 0%,
+      rgba(180, 140, 60, 0.14) 35%,
+      rgba(168, 85, 247, 0.08) 55%,
       transparent 75%
     );
     filter: blur(45px);
