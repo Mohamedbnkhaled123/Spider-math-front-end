@@ -90,6 +90,7 @@ describe('AssessmentStudioComponent', () => {
 
     fixture = TestBed.createComponent(AssessmentStudioComponent);
     component = fixture.componentInstance;
+    await component.draftService.clearAllDrafts();
     fixture.detectChanges();
   });
 
@@ -148,6 +149,33 @@ describe('AssessmentStudioComponent', () => {
       expect(component.activeAssessment()?.totalPoints).toBe(20);
       expect(component.editingQuestionId()).toBeNull();
       expect(component.newQuestionTextAr()).toBe('');
+    });
+
+    it('should preserve newly added question when closing and reopening the exam editor and auto-persist to backend', () => {
+      component.assessmentsList.set([sampleAssessment]);
+      component.openEditor(component.assessmentsList()[0], 'QUESTIONS');
+      mockHttpClient.patch.calls.reset();
+
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('سؤال محفوظ بعد الإغلاق وإعادة الفتح');
+      component.newQuestionOptions.set(['أ', 'ب', 'ج', 'د']);
+      component.newQuestionCorrectIndex.set(1);
+      component.newQuestionPoints.set(5);
+
+      component.saveQuestion();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      expect(component.assessmentsList()[0].questions.length).toBe(3);
+
+      // Teacher closes the exam modal without clicking the bottom Save button
+      component.closeEditor();
+      expect(component.isEditorOpen()).toBeFalse();
+
+      // Teacher reopens the exam from the list
+      component.openEditor(component.assessmentsList()[0], 'QUESTIONS');
+      const reopenedQuestions = component.activeAssessment()?.questions || [];
+      expect(reopenedQuestions.length).toBe(3);
+      expect(reopenedQuestions[2].textAr).toBe('سؤال محفوظ بعد الإغلاق وإعادة الفتح');
     });
 
     it('should enter edit mode when editQuestion is invoked', () => {
