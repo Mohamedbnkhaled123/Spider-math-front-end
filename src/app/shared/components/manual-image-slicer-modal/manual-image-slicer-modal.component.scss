@@ -11,34 +11,117 @@
 }
 
 .cropper-viewport {
-  background-image: radial-gradient(rgba(196, 154, 69, 0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(212, 175, 106, 0.12) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
+.cropper-stage-wrapper {
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
 .cropper-image-container {
-  min-height: 300px;
+  min-height: 320px;
 }
 
 // Custom Cropper.js Luxury Skin overrides
 :host ::ng-deep {
   .cropper-view-box {
     outline: 2px solid #f59e0b;
-    outline-color: rgba(245, 158, 11, 0.9);
+    outline-color: rgba(245, 158, 11, 0.95);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
   }
 
   .cropper-line {
-    background-color: rgba(245, 158, 11, 0.5);
+    background-color: rgba(245, 158, 11, 0.6);
   }
 
   .cropper-point {
     background-color: #f59e0b;
-    width: 8px;
-    height: 8px;
-    opacity: 0.9;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 6px rgba(245, 158, 11, 0.8);
+    opacity: 1;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      background-color: #fbbf24;
+      transform: scale(1.25);
+    }
+  }
+
+  // Corners - prominent circular handles with white ring
+  .cropper-point.point-nw {
+    width: 14px;
+    height: 14px;
+    top: -7px;
+    left: -7px;
+    border-radius: 9999px;
+  }
+  .cropper-point.point-ne {
+    width: 14px;
+    height: 14px;
+    top: -7px;
+    right: -7px;
+    border-radius: 9999px;
+  }
+  .cropper-point.point-se {
+    width: 14px;
+    height: 14px;
+    bottom: -7px;
+    right: -7px;
+    border-radius: 9999px;
+  }
+  .cropper-point.point-sw {
+    width: 14px;
+    height: 14px;
+    bottom: -7px;
+    left: -7px;
+    border-radius: 9999px;
+  }
+
+  // Edge middles - prominent wide pill handles for easy top/bottom/left/right grabbing
+  .cropper-point.point-n {
+    width: 32px;
+    height: 10px;
+    top: -5px;
+    left: 50%;
+    margin-left: -16px;
+    border-radius: 9999px;
+    cursor: ns-resize;
+  }
+  .cropper-point.point-s {
+    width: 32px;
+    height: 10px;
+    bottom: -5px;
+    left: 50%;
+    margin-left: -16px;
+    border-radius: 9999px;
+    cursor: ns-resize;
+  }
+  .cropper-point.point-w {
+    width: 10px;
+    height: 32px;
+    left: -5px;
+    top: 50%;
+    margin-top: -16px;
+    border-radius: 9999px;
+    cursor: ew-resize;
+  }
+  .cropper-point.point-e {
+    width: 10px;
+    height: 32px;
+    right: -5px;
+    top: 50%;
+    margin-top: -16px;
+    border-radius: 9999px;
+    cursor: ew-resize;
   }
 
   .cropper-dashed {
-    border-color: rgba(245, 158, 11, 0.4);
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+
+  .cropper-modal {
+    background-color: rgba(14, 7, 23, 0.65);
   }
 }
 

@@ -127,7 +127,7 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
 
     try {
       this.cropper = new Cropper(imgEl, {
-        viewMode: 1, // Keep crop box within image boundaries
+        viewMode: 1, // Keep crop box strictly within image boundaries
         dragMode: 'move',
         responsive: true,
         restore: false,
@@ -136,6 +136,10 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
         scalable: true,
         zoomable: true,
         zoomOnTouch: true,
+        zoomOnWheel: true,
+        autoCropArea: 0.82,
+        minCropBoxWidth: 40,
+        minCropBoxHeight: 30,
         initialAspectRatio: NaN,
         ready: () => {
           this.isCropperReady.set(true);

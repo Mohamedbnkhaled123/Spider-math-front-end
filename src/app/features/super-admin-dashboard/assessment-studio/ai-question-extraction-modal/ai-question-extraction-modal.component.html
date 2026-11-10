@@ -1,6 +1,6 @@
 @if (isOpen()) {
   <div
-    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md modal-backdrop"
+    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-[#120B1A]/80 backdrop-blur-md modal-backdrop"
     (click)="close()"
   >
     <div
@@ -740,7 +740,7 @@
 
       <!-- PROCESSING OVERLAY -->
       @if (isProcessing()) {
-        <div class="absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-center p-6 animate-fade-in">
+        <div class="absolute inset-0 z-50 bg-[#120B1A]/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-center p-6 animate-fade-in">
           <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 animate-pulse shadow-lg">
             <app-icon name="sparkles" [size]="32" />
           </div>
@@ -783,7 +783,7 @@
   <!-- DELETE / REMOVE CONFIRMATION DIALOG MODAL -->
   @if (confirmationDialog(); as dialog) {
     <div
-      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-[#120B1A]/80 backdrop-blur-md animate-fade-in"
       (click)="closeConfirmation()"
     >
       <div
