@@ -276,6 +276,17 @@ code,
 
 }
 
+@keyframes floatMathSymbolSlow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-16px) rotate(-6deg);
+  }
+
+}
+
 // 2. Cartesian Web Node Pulse Glow (GPU Composited)
 @keyframes nodePulseGlow {
   0% {
@@ -460,6 +471,10 @@ code,
 // Animation Utility Classes
 .animate-float-math {
   animation: floatMathSymbol 6s ease-in-out infinite;
+}
+
+.animate-float-math-slow {
+  animation: floatMathSymbolSlow 8.5s ease-in-out infinite;
 }
 
 .animate-spark-twinkle {
@@ -861,9 +876,12 @@ app-assessment-preview-modal,
 body:has(.assessment-runner-root),
 body:has(.placement-runner-root),
 body:has(app-assessment-attempt-view),
-body:has(app-placement-exam-runner) {
+body:has(app-placement-exam-runner),
+body:has(app-assessment-preview-modal) {
   .animate-float-math,
+  .animate-float-math-slow,
   .floating-math-symbol,
+  .global-floating-math-layer,
   [class*="animate-float-math"],
   [class*="floating-math"] {
     display: none !important;
@@ -872,6 +890,25 @@ body:has(app-placement-exam-runner) {
     visibility: hidden !important;
     pointer-events: none !important;
   }
+}
+
+// Global Ambient Math Atmosphere Layer
+.global-floating-math-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
+  z-index: 0;
+}
+
+.floating-math-symbol {
+  display: inline-block;
+  pointer-events: none;
+  user-select: none;
+  font-family: 'KaTeX_Main', 'Cambria Math', 'Times New Roman', serif;
+  text-shadow: 0 0 24px rgba(168, 85, 247, 0.3);
+  transition: opacity 0.3s ease;
 }
 
 

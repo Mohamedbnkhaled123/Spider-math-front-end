@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { BrandHeaderComponent } from './shared/components/brand-header/brand-header.component';
@@ -26,8 +27,30 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 export class AppComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly seoMetaService = inject(SeoMetaService);
+  private readonly router = inject(Router);
+
+  readonly isExamOrQuizPage = signal<boolean>(false);
 
   ngOnInit(): void {
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
+    this.checkIsExamPage(this.router.url);
+
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.checkIsExamPage(e.urlAfterRedirects || e.url);
+      });
+  }
+
+  private checkIsExamPage(url: string): void {
+    const isExam = !!url && (
+      url.includes('/assessments/') ||
+      url.includes('/placement-test') ||
+      url.includes('/attempt') ||
+      url.includes('/exam') ||
+      url.includes('/quiz') ||
+      url.includes('/homework')
+    );
+    this.isExamOrQuizPage.set(isExam);
   }
 }
