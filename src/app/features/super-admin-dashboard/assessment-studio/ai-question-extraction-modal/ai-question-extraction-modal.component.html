@@ -353,6 +353,19 @@
 
                 <button
                   type="button"
+                  (click)="useFileForManualSlicing()"
+                  [disabled]="isProcessing() || !currentDataUrl()"
+                  class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
+                  [title]="langService.isArabic() ? 'نقل هذه الصفحة مباشرة للامتحان للقص اليدوي للمسائل بدون استخدام الذكاء الاصطناعي' : 'Transfer this page to assessment studio for manual cropping without AI'"
+                >
+                  <app-icon name="image" [size]="14" />
+                  <span>
+                    {{ langService.isArabic() ? 'القص اليدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
                   (click)="startAiExtraction()"
                   [disabled]="isProcessing() || !currentDataUrl()"
                   class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"

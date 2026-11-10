@@ -372,6 +372,12 @@ export class AssessmentStudioComponent implements OnInit {
 
   onFileSessionCached(session: ICachedFileSession): void {
     this.cachedFileSession.set(session);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `تم اعتماد ملف "${session.fileName}" (صفحة ${session.pageNumber}) للقص اليدوي! يمكنك الآن النقر على "قص يدوي" لإرفاق الصورة بأي مسألة.`
+        : `File "${session.fileName}" (page ${session.pageNumber}) ready for manual cropping!`,
+      type: 'success'
+    });
   }
 
   openManualSlicerForExistingQuestion(q: AssessmentQuestionItem): void {

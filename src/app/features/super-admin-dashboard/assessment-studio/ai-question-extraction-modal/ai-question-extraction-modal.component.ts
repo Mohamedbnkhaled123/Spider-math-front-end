@@ -271,7 +271,7 @@ export class AiQuestionExtractionModalComponent {
     this.emitFileSession();
   }
 
-  private emitFileSession(): void {
+  emitFileSession(): void {
     this.fileSessionCached.emit({
       fileName: this.fileName(),
       fileType: this.fileType() || 'pdf',
@@ -280,6 +280,19 @@ export class AiQuestionExtractionModalComponent {
       canvas: this.currentCanvas,
       dataUrl: this.currentDataUrl()
     });
+  }
+
+  useFileForManualSlicing(): void {
+    if (!this.currentCanvas && !this.currentDataUrl()) {
+      this.errorMessage.set(
+        this.langService.isArabic()
+          ? 'يرجى الانتظار حتى اكتمال تحميل وعرض الصفحة.'
+          : 'Please wait for the page preview to load completely.'
+      );
+      return;
+    }
+    this.emitFileSession();
+    this.close();
   }
 
   // --- AI Extraction Trigger ---

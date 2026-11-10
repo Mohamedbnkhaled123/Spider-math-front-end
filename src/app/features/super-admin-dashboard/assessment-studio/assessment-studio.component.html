@@ -1355,13 +1355,25 @@
                   </div>
                 </div>
 
-                <div class="flex items-center gap-2 w-full sm:w-auto">
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   @if (cachedFileSession()) {
-                    <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-[10px] text-text-muted truncate max-w-[180px]">
-                      <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="12" />
-                      <span class="truncate">{{ cachedFileSession()?.fileName }}</span>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-[11px] text-text-primary">
+                      <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="13" className="text-amber-500" />
+                      <span class="truncate max-w-[140px] sm:max-w-[200px] font-bold">{{ cachedFileSession()?.fileName }}</span>
+                      <span class="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 font-mono font-bold text-[10px]">
+                        {{ langService.isArabic() ? ('ص ' + cachedFileSession()?.pageNumber) : ('p. ' + cachedFileSession()?.pageNumber) }}
+                      </span>
                     </div>
                   }
+
+                  <button
+                    type="button"
+                    (click)="openAiExtractionModal()"
+                    class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs shrink-0"
+                  >
+                    <app-icon name="image" [size]="14" className="text-amber-500" />
+                    <span>{{ cachedFileSession() ? (langService.isArabic() ? 'تغيير الملف أو الصفحة' : 'Change File / Page') : (langService.isArabic() ? 'رفع ملف للقص اليدوي (بدون AI)' : 'Upload for Manual Crop') }}</span>
+                  </button>
 
                   <button
                     type="button"
@@ -1369,7 +1381,7 @@
                     class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm text-xs shrink-0"
                   >
                     <app-icon name="sparkles" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي' : 'Extract with AI' }}</span>
+                    <span>{{ langService.isArabic() ? 'استخراج بالذكاء الاصطناعي' : 'Extract with AI' }}</span>
                   </button>
                 </div>
               </div>
@@ -1485,15 +1497,25 @@
                   <div class="flex items-center justify-between mb-1">
                     <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'صورة المسألة (اختياري):' : 'Question Image (Optional):' }}</label>
                     @if (cachedFileSession()) {
-                      <button
-                        type="button"
-                        (click)="openManualSlicerForComposer()"
-                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/25 flex items-center gap-1 cursor-pointer transition-all"
-                        [title]="langService.isArabic() ? 'قص صورة مباشرة من الملف المرفوع سابقاً' : 'Crop from cached file'"
-                      >
-                        <app-icon name="image" [size]="12" />
-                        <span>{{ langService.isArabic() ? 'قص يدوي من الملف المرفوع' : 'Crop from Cached File' }}</span>
-                      </button>
+                      <div class="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          (click)="openManualSlicerForComposer()"
+                          class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all shadow-sm active:scale-95"
+                          [title]="langService.isArabic() ? 'قص صورة مباشرة من الصفحة الحالية للملف المرفوع' : 'Crop from cached file'"
+                        >
+                          <app-icon name="image" [size]="12" />
+                          <span>{{ langService.isArabic() ? ('قص يدوي من الملف (صفحة ' + cachedFileSession()?.pageNumber + ')') : ('Crop from page ' + cachedFileSession()?.pageNumber) }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openAiExtractionModal()"
+                          class="px-2 py-1 rounded-lg text-[10px] text-text-muted hover:text-text-primary hover:bg-surface-card border border-surface-border transition-colors cursor-pointer"
+                          [title]="langService.isArabic() ? 'تغيير صفحة الـ PDF أو تغيير الملف' : 'Change page or file'"
+                        >
+                          <span>{{ langService.isArabic() ? 'تغيير الصفحة' : 'Change Page' }}</span>
+                        </button>
+                      </div>
                     }
                   </div>
                   <app-image-compressor-uploader
