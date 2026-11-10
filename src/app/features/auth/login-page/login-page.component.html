@@ -352,16 +352,17 @@
                   <select
                     id="regCountry"
                     [ngModel]="regCountry()"
-                    (ngModelChange)="regCountry.set($event)"
+                    (ngModelChange)="onRegCountryChange($event)"
                     name="regCountry"
                     class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                   >
-                    <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
-                    <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
-                    <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
-                    <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
-                    <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
-                    <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
+                    @for (group of regCountryGroups(); track group.id) {
+                      <optgroup [label]="langService.isArabic() ? group.labelAr : group.labelEn">
+                        @for (c of group.countries; track c.code) {
+                          <option [value]="c.code">{{ langService.isArabic() ? c.nameAr : c.nameEn }}</option>
+                        }
+                      </optgroup>
+                    }
                   </select>
                 </div>
 

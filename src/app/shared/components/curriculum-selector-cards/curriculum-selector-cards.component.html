@@ -487,7 +487,7 @@
           }
 
           <!-- Active Term Indicator (UNITS step) -->
-          @if (modalStep() === 'UNITS') {
+          @if (modalStep() === 'UNITS' && currentCurriculumHasTerms()) {
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
               <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>
@@ -623,7 +623,7 @@
                   </h4>
 
                   <p class="text-xs text-brand-gold mt-0.5">
-                    {{ (langService.isArabic() ? currentSelectedGrade()?.stageAr : currentSelectedGrade()?.stageEn) || '' }} • {{ selectedTermCode() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }}
+                    {{ (langService.isArabic() ? currentSelectedGrade()?.stageAr : currentSelectedGrade()?.stageEn) || '' }}@if (currentCurriculumHasTerms()) { • {{ selectedTermCode() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }} }
                   </p>
 
                 </div>

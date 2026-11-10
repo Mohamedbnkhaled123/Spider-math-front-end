@@ -16,7 +16,9 @@ import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constan
 import {
   validatePhoneNumber,
   arePhoneNumbersIdentical,
-  getPhonePlaceholderByCountry
+  getPhonePlaceholderByCountry,
+  getAvailableCountryGroups,
+  CountryGroup
 } from '../../../core/utils/phone-validator.util';
 import { LoginTab } from './login-page.models';
 
@@ -77,6 +79,10 @@ export class LoginPageComponent implements OnInit {
   readonly egyptGovernorates = EGYPT_GOVERNORATES;
 
   readonly isRegEgypt = computed<boolean>(() => this.regCountry() === 'EG');
+
+  readonly regCountryGroups = computed<CountryGroup[]>(() =>
+    getAvailableCountryGroups(this.regCurriculum())
+  );
 
   readonly regPhonePlaceholder = computed<string>(() =>
     getPhonePlaceholderByCountry(this.regCountry())
@@ -152,10 +158,19 @@ export class LoginPageComponent implements OnInit {
 
   onRegCurriculumChange(code: CurriculumCode): void {
     this.regCurriculum.set(code);
+    if (code === 'GULF' && this.regCountry() === 'EG') {
+      this.regCountry.set('SA');
+    } else if (code === 'EGYPTIAN' && this.regCountry() !== 'EG') {
+      this.regCountry.set('EG');
+    }
     const grades = this.regAvailableGrades();
     if (grades.length > 0) {
       this.regGradeLevel.set(grades[0].code);
     }
+  }
+
+  onRegCountryChange(countryCode: string): void {
+    this.regCountry.set(countryCode);
   }
 
   // =========================================================================

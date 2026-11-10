@@ -13,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
-import { CurriculumCode, AcademicTermCode, CANONICAL_CURRICULUM_TREE } from '../../core/constants/curriculum-tree.constant';
+import { CurriculumCode, AcademicTermCode, CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../core/constants/curriculum-tree.constant';
 
 // Subcomponents Partitioned as per Phase 14
 import { AdminAnalyticsShellComponent } from './admin-analytics-shell/admin-analytics-shell.component';
@@ -283,7 +283,8 @@ export class SuperAdminDashboardComponent implements OnInit {
     if (!this.selectedGrade()) {
       return;
     }
-    const params = `curriculum=${this.selectedCurriculum()}&gradeLevel=${this.selectedGrade()}&term=${this.selectedTerm()}`;
+    const termQuery = curriculumHasTerms(this.selectedCurriculum()) ? `&term=${this.selectedTerm()}` : '';
+    const params = `curriculum=${this.selectedCurriculum()}&gradeLevel=${this.selectedGrade()}${termQuery}`;
     this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?${params}`).subscribe({
       next: (res) => {
         if (res?.data && Array.isArray(res.data)) {

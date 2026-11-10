@@ -19,6 +19,7 @@ import {
   AssessmentItem,
   AssessmentQuestionItem
 } from './assessment-studio.models';
+import { CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
 import {
   CurriculumCode,
   AcademicTermCode,
@@ -121,47 +122,19 @@ export class AssessmentStudioComponent implements OnInit {
 
   // Active Grades & Tracks State
   readonly activeGrades = signal<string[]>([]);
-  readonly allCurriculaTracks = signal<CurriculumTrackItem[]>([
-    {
-      code: 'EGYPTIAN',
-      nameAr: 'المنهج المصري',
-      grades: [
-        { code: 'PREP_1', titleAr: 'الصف الأول الإعدادي', titleEn: 'Prep 1' },
-        { code: 'PREP_2', titleAr: 'الصف الثاني الإعدادي', titleEn: 'Prep 2' },
-        { code: 'PREP_3', titleAr: 'الصف الثالث الإعدادي', titleEn: 'Prep 3' },
-        { code: 'SEC_1', titleAr: 'الصف الأول الثانوي', titleEn: 'Secondary 1' },
-        { code: 'SEC_2', titleAr: 'الصف الثاني الثانوي', titleEn: 'Secondary 2' },
-        { code: 'SEC_3', titleAr: 'الصف الثالث الثانوي (Thanaweya)', titleEn: 'Secondary 3' }
-      ]
-    },
-    {
-      code: 'GULF',
-      nameAr: 'المنهج الخليجي',
-      grades: [
-        { code: 'GRADE_12', titleAr: 'الصف الثاني عشر (توجيهي)', titleEn: 'Grade 12' },
-        { code: 'GRADE_11', titleAr: 'الصف الحادي عشر', titleEn: 'Grade 11' },
-        { code: 'GRADE_10', titleAr: 'الصف العاشر', titleEn: 'Grade 10' }
-      ]
-    },
-    {
-      code: 'INTERNATIONAL',
-      nameAr: 'IGCSE / البريطانية',
-      grades: [
-        { code: 'IGCSE_AL', titleAr: 'A-Level Mathematics (9709)', titleEn: 'Cambridge / Edexcel A-Level' },
-        { code: 'IGCSE_AS', titleAr: 'AS-Level Pure & Mechanics', titleEn: 'AS-Level Math' },
-        { code: 'IGCSE_OL', titleAr: 'O-Level Extended Math (0580)', titleEn: 'IGCSE O-Level' }
-      ]
-    },
-    {
-      code: 'AMERICAN',
-      nameAr: 'SAT / الأمريكية',
-      grades: [
-        { code: 'SAT_MATH', titleAr: 'Digital SAT Math (Hard Modules)', titleEn: 'SAT Digital Math' },
-        { code: 'ACT_MATH', titleAr: 'ACT Math Mastery', titleEn: 'ACT Mathematics' },
-        { code: 'EST_MATH', titleAr: 'EST I & EST II Math', titleEn: 'EST Math' }
-      ]
-    }
-  ]);
+  readonly currentCurriculumHasTerms = computed<boolean>(() => curriculumHasTerms(this.selectedCurriculum()));
+
+  readonly allCurriculaTracks = signal<CurriculumTrackItem[]>(
+    CANONICAL_CURRICULUM_TREE.map(c => ({
+      code: c.code as CurriculumCode,
+      nameAr: c.titleAr,
+      grades: c.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn
+      }))
+    }))
+  );
 
   readonly gradeOptions = computed<GradeOption[]>(() => {
     const track = this.allCurriculaTracks().find((t) => t.code === this.selectedCurriculum());
@@ -174,7 +147,7 @@ export class AssessmentStudioComponent implements OnInit {
       (a) =>
         a.curriculum === this.selectedCurriculum() &&
         a.gradeLevel === this.selectedGrade() &&
-        a.term === this.selectedTerm()
+        (!this.currentCurriculumHasTerms() || a.term === this.selectedTerm())
     );
   });
 
@@ -583,7 +556,8 @@ export class AssessmentStudioComponent implements OnInit {
    */
   autoPersistAssessmentToBackend(asm: AssessmentItem): void {
     if (!asm || !asm.id || asm.id === 'new_assessment_draft') return;
-    if (!asm.titleAr || !asm.titleAr.trim()) return;
+    const rawTitle = (asm.titleAr || asm.titleEn || '').trim();
+    if (!rawTitle) return;
     if (!asm.questions || asm.questions.length === 0) return;
 
     // Validate all MCQ questions before auto-persisting to backend
@@ -597,8 +571,8 @@ export class AssessmentStudioComponent implements OnInit {
     }
 
     const payload = {
-      title_ar: asm.titleAr.trim(),
-      title_en: (asm.titleEn || '').trim() || asm.titleAr.trim(),
+      title_ar: rawTitle,
+      title_en: (asm.titleEn || rawTitle).trim(),
       curriculum: asm.curriculum,
       grade_level: asm.gradeLevel,
       academic_term: asm.term,
@@ -782,8 +756,9 @@ export class AssessmentStudioComponent implements OnInit {
       this.isLoading.set(true);
     }
 
+    const termQuery = this.currentCurriculumHasTerms() ? `&academicTerm=${tm}` : '';
     this.http.get<{ success: boolean; data: any[] }>(
-      `/api/v1/admin/assessments?curriculum=${curr}&gradeLevel=${gr}&academicTerm=${tm}`
+      `/api/v1/admin/assessments?curriculum=${curr}&gradeLevel=${gr}${termQuery}`
     ).subscribe({
       next: (res) => {
         this.isLoading.set(false);
@@ -793,8 +768,8 @@ export class AssessmentStudioComponent implements OnInit {
           const untilIso = a.available_until ? new Date(a.available_until).toISOString() : null;
           return {
             id: a._id || a.id,
-            titleAr: a.title_ar || a.titleAr,
-            titleEn: a.title_en || a.titleEn || '',
+            titleAr: a.title_ar || a.titleAr || a.title_en || a.titleEn || a.title || '',
+            titleEn: a.title_en || a.titleEn || a.title_ar || a.titleAr || a.title || '',
             curriculum: a.curriculum,
             gradeLevel: a.grade_level || a.gradeLevel,
             term: a.academic_term || a.term || 'TERM_1',
@@ -986,8 +961,9 @@ export class AssessmentStudioComponent implements OnInit {
   saveNewAssessment(): void {
     this.createErrorMessage.set(null);
     const form = this.createForm();
-    if (!form.titleAr.trim()) {
-      this.showCreateError('يرجى إدخال عنوان الامتحان باللغة العربية!');
+    const rawTitle = (form.titleAr || form.titleEn || '').trim();
+    if (!rawTitle) {
+      this.showCreateError(this.langService.isArabic() ? 'يرجى إدخال عنوان الامتحان!' : 'Please enter assessment title!');
       return;
     }
 
@@ -1006,8 +982,8 @@ export class AssessmentStudioComponent implements OnInit {
 
     this.isSaving.set(true);
     const payload = {
-      title_ar: form.titleAr.trim(),
-      title_en: form.titleEn.trim() || form.titleAr.trim(),
+      title_ar: rawTitle,
+      title_en: (form.titleEn || rawTitle).trim(),
       curriculum: form.curriculum,
       grade_level: form.gradeLevel,
       academic_term: form.term,
@@ -1596,8 +1572,9 @@ export class AssessmentStudioComponent implements OnInit {
 
     this.editorErrorMessage.set(null);
 
-    if (!asm.titleAr.trim()) {
-      this.showEditorError('يرجى إدخال عنوان الامتحان باللغة العربية!', 'SETTINGS');
+    const rawTitle = (asm.titleAr || asm.titleEn || '').trim();
+    if (!rawTitle) {
+      this.showEditorError(this.langService.isArabic() ? 'يرجى إدخال عنوان الامتحان!' : 'Please enter assessment title!', 'SETTINGS');
       return;
     }
 
@@ -1654,8 +1631,8 @@ export class AssessmentStudioComponent implements OnInit {
 
     // Transform full assessment settings & questions into normalized schema for backend
     const payload = {
-      title_ar: asm.titleAr.trim(),
-      title_en: (asm.titleEn || '').trim() || asm.titleAr.trim(),
+      title_ar: rawTitle,
+      title_en: (asm.titleEn || rawTitle).trim(),
       curriculum: asm.curriculum,
       grade_level: asm.gradeLevel,
       academic_term: asm.term,

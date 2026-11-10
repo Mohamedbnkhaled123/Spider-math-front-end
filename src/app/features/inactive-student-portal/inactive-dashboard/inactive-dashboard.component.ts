@@ -21,7 +21,7 @@ import { UnitsSubscriptionsService } from '../../../core/services/units-subscrip
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { IUnitPackageItem } from '../../../core/services/units-subscriptions.models';
 import { ITrialLecture, IPlacementReportSummary } from './inactive-dashboard.models';
-import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import { CurriculumCode, AcademicTermCode, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
 
 @Component({
   selector: 'app-inactive-dashboard',
@@ -74,6 +74,7 @@ export class InactiveDashboardComponent implements OnInit {
   readonly curriculum = computed<CurriculumCode>(() => (this.student()?.curriculum as CurriculumCode) ?? 'EGYPTIAN');
   readonly gradeLevel = computed<string>(() => this.student()?.grade_level ?? '—');
   readonly term = computed<AcademicTermCode>(() => (this.student()?.academic_term as AcademicTermCode) ?? 'TERM_1');
+  readonly hasAcademicTerms = computed<boolean>(() => curriculumHasTerms(this.curriculum()));
 
   // UI Interactive States
   readonly isCopied = signal<boolean>(false);
@@ -173,7 +174,7 @@ export class InactiveDashboardComponent implements OnInit {
     this.unitsService.getUnitsCatalog({
       curriculum: this.curriculum(),
       gradeLevel: this.gradeLevel(),
-      term: this.term()
+      ...(this.hasAcademicTerms() ? { term: this.term() } : {})
     }).subscribe({
       next: units => {
         this.unitPackages.set(units);

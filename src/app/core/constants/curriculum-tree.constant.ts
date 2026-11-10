@@ -1,10 +1,10 @@
 /**
- * Spider Math Educational Platform — Canonical 5-Level Academic UI Hierarchy Tree
- * Version: v2.2
+ * Spider Math Educational Platform — Canonical Academic UI Hierarchy Tree
+ * Version: v2.3
  *
  * 1. Curriculum Track (CURRICULUMS)
  *    └── 2. Grade Level (GRADE_LEVELS_BY_CURRICULUM)
- *        └── 3. Academic Term (ACADEMIC_TERMS: TERM_1, TERM_2)
+ *        └── 3. Academic Term (ACADEMIC_TERMS: TERM_1, TERM_2 where applicable)
  *            └── 4. Unit Package (UnitPackage)
  *                └── 5. Lectures & Assessments
  */
@@ -21,6 +21,14 @@ export type CurriculumCode = (typeof CURRICULUM_CODES)[number];
 export const ACADEMIC_TERM_CODES = ['TERM_1', 'TERM_2'] as const;
 export type AcademicTermCode = (typeof ACADEMIC_TERM_CODES)[number];
 
+/**
+ * Pure helper function to determine whether a given curriculum operates on academic terms (Term 1 / Term 2).
+ * Only EGYPTIAN and GULF have academic terms. AMERICAN and INTERNATIONAL operate continuously without terms.
+ */
+export function curriculumHasTerms(curriculumCode: string | null | undefined): boolean {
+  return curriculumCode === 'EGYPTIAN' || curriculumCode === 'GULF';
+}
+
 export interface IGradeLevelMeta {
   readonly code: string;
   readonly titleAr: string;
@@ -29,6 +37,11 @@ export interface IGradeLevelMeta {
   readonly shortLabelEn: string;
   readonly stageAr: string;
   readonly stageEn: string;
+  readonly subjectAr?: string;
+  readonly subjectEn?: string;
+  readonly branchAr?: string;
+  readonly branchEn?: string;
+  readonly tracks?: readonly { readonly code: string; readonly titleAr: string; readonly titleEn: string; }[];
 }
 
 export interface ITermMeta {
@@ -54,6 +67,7 @@ export interface ICurriculumNode {
   readonly accentColorHex: string;
   readonly badgeTextAr: string;
   readonly badgeTextEn: string;
+  readonly hasTerms: boolean;
   readonly grades: readonly IGradeLevelMeta[];
   readonly terms: readonly ITermMeta[];
 }
@@ -76,7 +90,7 @@ export const CANONICAL_ACADEMIC_TERMS: readonly ITermMeta[] = [
 ] as const;
 
 export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
-  // 1. المنهج المصري (من 1 ابتدائي إلى 3 ثانوي)
+  // 1. المنهج المصري (الابتدائي، الإعدادي، الثانوي العام 2027، والبكالوريا)
   {
     code: 'EGYPTIAN',
     titleAr: 'المنهج المصري',
@@ -85,15 +99,17 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'From Fundamentals to Thanaweya Amma Excellence',
     taglineAr: 'من الأساسيات للتميّز',
     taglineEn: 'From Fundamentals to Excellence',
-    descriptionAr: 'تغطية شاملة ومبسطة لمادة الرياضيات لجميع المراحل من الابتدائي وحتى الثانوية العامة بأحدث طرق التدريس وحل نماذج الامتحانات الوزارية والتجريبية.',
-    descriptionEn: 'Comprehensive and structured mathematics curriculum from Primary 1 through Thanaweya Amma with intensive exam workouts.',
+    descriptionAr: 'تغطية شاملة ومبسطة لمادة الرياضيات لجميع المراحل من الابتدائي وحتى الثانوية العامة والبكالوريا بأحدث طرق التدريس وحل نماذج الامتحانات الوزارية والتجريبية.',
+    descriptionEn: 'Comprehensive and structured mathematics curriculum from Primary 1 through Thanaweya Amma & Baccalaureate with intensive exam workouts.',
     iconName: 'pyramid',
     mathWatermarkSymbol: 'π',
     accentColorHex: '#6D28D9',
     badgeTextAr: 'الأكثر طلباً',
     badgeTextEn: 'Most Popular',
+    hasTerms: true,
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
+      // المرحلة الابتدائية (الصفوف 1 - 6)
       {
         code: 'PRI_1',
         titleAr: 'الصف الأول الابتدائي',
@@ -148,64 +164,137 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         stageAr: 'المرحلة الابتدائية',
         stageEn: 'Primary Stage'
       },
+
+      // المرحلة الإعدادية (الصفوف 7 - 9: جبر + هندسة)
       {
         code: 'PREP_1',
-        titleAr: 'الصف الأول الإعدادي',
-        titleEn: 'Prep 1 (Grade 7)',
+        titleAr: 'الصف الأول الإعدادي (جبر + هندسة)',
+        titleEn: 'Prep 1 (Grade 7 — Algebra + Geometry)',
         shortLabelAr: '١ إعدادي',
         shortLabelEn: 'Prep 1',
         stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage'
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
       },
       {
         code: 'PREP_2',
-        titleAr: 'الصف الثاني الإعدادي',
-        titleEn: 'Prep 2 (Grade 8)',
+        titleAr: 'الصف الثاني الإعدادي (جبر + هندسة)',
+        titleEn: 'Prep 2 (Grade 8 — Algebra + Geometry)',
         shortLabelAr: '٢ إعدادي',
         shortLabelEn: 'Prep 2',
         stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage'
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
       },
       {
         code: 'PREP_3',
-        titleAr: 'الصف الثالث الإعدادي (الشهادة الإعدادية)',
-        titleEn: 'Prep 3 (Grade 9 — General Certificate)',
+        titleAr: 'الصف الثالث الإعدادي (الشهادة الإعدادية - جبر + هندسة)',
+        titleEn: 'Prep 3 (Grade 9 — General Certificate — Algebra + Geometry)',
         shortLabelAr: '٣ إعدادي',
         shortLabelEn: 'Prep 3',
         stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage'
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
       },
+
+      // المرحلة الثانوية — الفرع الأول: الثانوية العامة المصرية 2027
       {
         code: 'SEC_1',
         titleAr: 'الصف الأول الثانوي',
         titleEn: 'Secondary 1 (Grade 10)',
         shortLabelAr: '١ ثانوي',
         shortLabelEn: 'Sec 1',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'Secondary Stage'
+        stageAr: 'المرحلة الثانوية العامة',
+        stageEn: 'Secondary Stage (Thanaweya Amma)',
+        branchAr: 'الثانوية العامة',
+        branchEn: 'Thanaweya Amma'
       },
       {
         code: 'SEC_2',
         titleAr: 'الصف الثاني الثانوي (علمي / أدبي)',
-        titleEn: 'Secondary 2 (Grade 11 — Scientific / Arts)',
+        titleEn: 'Secondary 2 (Grade 11 — Science / Math / Literary)',
         shortLabelAr: '٢ ثانوي',
         shortLabelEn: 'Sec 2',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'Secondary Stage'
+        stageAr: 'المرحلة الثانوية العامة',
+        stageEn: 'Secondary Stage (Thanaweya Amma)',
+        branchAr: 'الثانوية العامة',
+        branchEn: 'Thanaweya Amma',
+        tracks: [
+          { code: 'SCIENCE', titleAr: 'علمي', titleEn: 'Science' },
+          { code: 'MATH', titleAr: 'علمي رياضة', titleEn: 'Math' },
+          { code: 'LITERARY', titleAr: 'أدبي', titleEn: 'Literary' }
+        ]
       },
       {
         code: 'SEC_3',
-        titleAr: 'الصف الثالث الثانوي (الثانوية العامة - علمي رياضة)',
-        titleEn: 'Secondary 3 (Grade 12 — Thanaweya Amma Math)',
+        titleAr: 'الصف الثالث الثانوي (الثانوية العامة - علمي / رياضة / أدبي)',
+        titleEn: 'Secondary 3 (Grade 12 — Thanaweya Amma — Science / Math / Literary)',
         shortLabelAr: '٣ ثانوي',
         shortLabelEn: 'Sec 3',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'Secondary Stage'
+        stageAr: 'المرحلة الثانوية العامة',
+        stageEn: 'Secondary Stage (Thanaweya Amma)',
+        branchAr: 'الثانوية العامة',
+        branchEn: 'Thanaweya Amma',
+        tracks: [
+          { code: 'SCIENCE', titleAr: 'علمي علوم', titleEn: 'Science' },
+          { code: 'MATH', titleAr: 'علمي رياضة', titleEn: 'Math' },
+          { code: 'LITERARY', titleAr: 'أدبي', titleEn: 'Literary' }
+        ]
+      },
+
+      // المرحلة الثانوية — الفرع الثاني: نظام البكالوريا 2027
+      {
+        code: 'BACC_10',
+        titleAr: 'الصف العاشر - المرحلة التمهيدية (البكالوريا)',
+        titleEn: 'Grade 10 — Preparatory Stage (Baccalaureate)',
+        shortLabelAr: '١٠ بكالوريا',
+        shortLabelEn: 'Bacc 10',
+        stageAr: 'مرحلة البكالوريا',
+        stageEn: 'Baccalaureate Stage',
+        branchAr: 'البكالوريا',
+        branchEn: 'Baccalaureate'
+      },
+      {
+        code: 'BACC_11',
+        titleAr: 'الصف الحادي عشر - المرحلة الأساسية (البكالوريا)',
+        titleEn: 'Grade 11 — Main Stage (Baccalaureate)',
+        shortLabelAr: '١١ بكالوريا',
+        shortLabelEn: 'Bacc 11',
+        stageAr: 'مرحلة البكالوريا',
+        stageEn: 'Baccalaureate Stage',
+        branchAr: 'البكالوريا',
+        branchEn: 'Baccalaureate',
+        tracks: [
+          { code: 'MEDICINE_LIFE_SCIENCE', titleAr: 'طب وعلوم الحياة', titleEn: 'Medicine & Life Science' },
+          { code: 'ENGINEERING_COMPUTER_SCIENCE', titleAr: 'هندسة وحاسبات', titleEn: 'Engineering & Computer Science' },
+          { code: 'BUSINESS', titleAr: 'أعمال وإدارة', titleEn: 'Business' },
+          { code: 'ARTS_HUMANITIES', titleAr: 'فنون وإنسانيات', titleEn: 'Arts & Humanities' }
+        ]
+      },
+      {
+        code: 'BACC_12',
+        titleAr: 'الصف الثاني عشر - المرحلة الأساسية (البكالوريا)',
+        titleEn: 'Grade 12 — Main Stage (Baccalaureate)',
+        shortLabelAr: '١٢ بكالوريا',
+        shortLabelEn: 'Bacc 12',
+        stageAr: 'مرحلة البكالوريا',
+        stageEn: 'Baccalaureate Stage',
+        branchAr: 'البكالوريا',
+        branchEn: 'Baccalaureate',
+        tracks: [
+          { code: 'MEDICINE_LIFE_SCIENCE', titleAr: 'طب وعلوم الحياة', titleEn: 'Medicine & Life Science' },
+          { code: 'ENGINEERING_COMPUTER_SCIENCE', titleAr: 'هندسة وحاسبات', titleEn: 'Engineering & Computer Science' },
+          { code: 'BUSINESS', titleAr: 'أعمال وإدارة', titleEn: 'Business' },
+          { code: 'ARTS_HUMANITIES', titleAr: 'فنون وإنسانيات', titleEn: 'Arts & Humanities' }
+        ]
       }
     ]
   },
 
-  // 2. المنهج الخليجي (من 1 ابتدائي إلى 12 توجيهي)
+  // 2. المنهج الخليجي (السعودية، قطر، الإمارات، الكويت — مع تطبيق الترمين الدراسيين)
   {
     code: 'GULF',
     titleAr: 'المنهج الخليجي',
@@ -214,461 +303,483 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     subtitleEn: 'Clear Explanations & Continuous Practice',
     taglineAr: 'شرح واضح وتدريب مستمر',
     taglineEn: 'Clear Explanation & Continuous Practice',
-    descriptionAr: 'منهج مخصص لطلاب دول الخليج العربي (السعودية، الإمارات، الكويت، قطر، عمان، البحرين) متوافق مع المعايير الوزارية والكتب المعتمدة من الابتدائي حتى الثانوي.',
-    descriptionEn: 'Custom curriculum tailored to Saudi, Emirati and GCC ministerial standards from Grade 1 through Grade 12 with continuous assessments.',
+    descriptionAr: 'منهج مخصص لطلاب دول الخليج العربي (السعودية، الإمارات، الكويت، قطر) متوافق مع المعايير الوزارية والتقسيمات الدراسية المعتمدة من الابتدائي حتى الثانوي.',
+    descriptionEn: 'Custom curriculum tailored to Saudi, Qatari, Emirati, and Kuwaiti ministerial standards from Grade 1 through Grade 12 with continuous assessments.',
     iconName: 'landmark',
     mathWatermarkSymbol: 'Σ',
     accentColorHex: '#0891B2',
     badgeTextAr: 'معتمد خليجياً',
     badgeTextEn: 'GCC Accredited',
+    hasTerms: true,
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
       {
         code: 'GRADE_1',
         titleAr: 'الصف الأول الابتدائي',
-        titleEn: 'Grade 1 (Primary 1)',
+        titleEn: 'Grade 1 (Primary / Cycle 1)',
         shortLabelAr: 'صف ١',
         shortLabelEn: 'Gr 1',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
       },
       {
         code: 'GRADE_2',
         titleAr: 'الصف الثاني الابتدائي',
-        titleEn: 'Grade 2 (Primary 2)',
+        titleEn: 'Grade 2 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٢',
         shortLabelEn: 'Gr 2',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
       },
       {
         code: 'GRADE_3',
         titleAr: 'الصف الثالث الابتدائي',
-        titleEn: 'Grade 3 (Primary 3)',
+        titleEn: 'Grade 3 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٣',
         shortLabelEn: 'Gr 3',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
       },
       {
         code: 'GRADE_4',
         titleAr: 'الصف الرابع الابتدائي',
-        titleEn: 'Grade 4 (Primary 4)',
+        titleEn: 'Grade 4 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٤',
         shortLabelEn: 'Gr 4',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
       },
       {
         code: 'GRADE_5',
         titleAr: 'الصف الخامس الابتدائي',
-        titleEn: 'Grade 5 (Primary 5)',
+        titleEn: 'Grade 5 (Primary / Cycle 2)',
         shortLabelAr: 'صف ٥',
         shortLabelEn: 'Gr 5',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 2 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 2 (UAE)'
       },
       {
         code: 'GRADE_6',
-        titleAr: 'الصف السادس الابتدائي',
-        titleEn: 'Grade 6 (Primary 6)',
+        titleAr: 'الصف السادس',
+        titleEn: 'Grade 6 (Primary / Intermediate / Cycle 2)',
         shortLabelAr: 'صف ٦',
         shortLabelEn: 'Gr 6',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary School'
+        stageAr: 'الابتدائية (السعودية، قطر) • المتوسطة (الكويت) • الحلقة 2 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar) • Intermediate (Kuwait) • Cycle 2 (UAE)'
       },
       {
         code: 'GRADE_7',
-        titleAr: 'الصف السابع (أول متوسط)',
-        titleEn: 'Grade 7 (Middle 1)',
+        titleAr: 'الصف السابع',
+        titleEn: 'Grade 7 (Intermediate / Prep / Cycle 2)',
         shortLabelAr: 'صف ٧',
         shortLabelEn: 'Gr 7',
-        stageAr: 'المرحلة المتوسطة',
-        stageEn: 'Middle School'
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
       },
       {
         code: 'GRADE_8',
-        titleAr: 'الصف الثامن (ثاني متوسط)',
-        titleEn: 'Grade 8 (Middle 2)',
+        titleAr: 'الصف الثامن',
+        titleEn: 'Grade 8 (Intermediate / Prep / Cycle 2)',
         shortLabelAr: 'صف ٨',
         shortLabelEn: 'Gr 8',
-        stageAr: 'المرحلة المتوسطة',
-        stageEn: 'Middle School'
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
       },
       {
         code: 'GRADE_9',
-        titleAr: 'الصف التاسع (ثالث متوسط)',
-        titleEn: 'Grade 9 (Middle 3)',
+        titleAr: 'الصف التاسع',
+        titleEn: 'Grade 9 (Intermediate / Prep / Cycle 3)',
         shortLabelAr: 'صف ٩',
         shortLabelEn: 'Gr 9',
-        stageAr: 'المرحلة المتوسطة',
-        stageEn: 'Middle School'
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 3 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 3 (UAE)'
       },
       {
         code: 'GRADE_10',
         titleAr: 'الصف العاشر (أول ثانوي)',
-        titleEn: 'Grade 10 (High School 1)',
+        titleEn: 'Grade 10 (Secondary 1 / Cycle 3)',
         shortLabelAr: 'صف ١٠',
         shortLabelEn: 'Gr 10',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'High School'
+        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
+        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
       },
       {
         code: 'GRADE_11',
         titleAr: 'الصف الحادي عشر (ثاني ثانوي)',
-        titleEn: 'Grade 11 (High School 2)',
+        titleEn: 'Grade 11 (Secondary 2 / Cycle 3)',
         shortLabelAr: 'صف ١١',
         shortLabelEn: 'Gr 11',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'High School'
+        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
+        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
       },
       {
         code: 'GRADE_12',
         titleAr: 'الصف الثاني عشر (توجيهي / ثالث ثانوي)',
-        titleEn: 'Grade 12 (Senior Year)',
+        titleEn: 'Grade 12 (Senior / Thanaweya / Cycle 3)',
         shortLabelAr: 'صف ١٢',
         shortLabelEn: 'Gr 12',
-        stageAr: 'المرحلة الثانوية',
-        stageEn: 'High School'
+        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
+        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
       }
     ]
   },
 
-  // 3. المناهج الدولية البريطانية (من Year 1 إلى A-Level)
+  // 3. المناهج الدولية (المنهج الأمريكي Gr 1-12 والمنهج البريطاني KS1-KS4 & A-Level — بدون ترم أول وثاني)
   {
     code: 'INTERNATIONAL',
-    titleAr: 'المناهج الدولية (IGCSE / British)',
-    titleEn: 'International Curricula (IGCSE / British)',
+    titleAr: 'المناهج الدولية (American & British Curriculum)',
+    titleEn: 'International Curricula (American & British Curriculum)',
     subtitleAr: 'رياضيات بمعايير عالمية',
     subtitleEn: 'World-Class Global Mathematical Standards',
     taglineAr: 'رياضيات بمعايير عالمية',
     taglineEn: 'World-Class Global Standards',
-    descriptionAr: 'برنامج مكثف لمناهج كامبريدج وبيرسون إديكسل (Cambridge & Edexcel) من المرحلة الابتدائية وحتى الـ A-Level، مع حل مستمر لامتحانات الـ Past Papers.',
-    descriptionEn: 'Specialized Cambridge & Edexcel curriculum from Primary through A-Level with comprehensive past paper workouts.',
+    descriptionAr: 'برنامج دولي شامل يغطي المنهج الأمريكي (Grades 1-12) ومناهج كامبريدج وإديكسل البريطانية (KS1-KS4 IGCSE & Sixth Form A-Level) بنظام سنوي مستمر دون تقسيم ترم أول وثان.',
+    descriptionEn: 'Comprehensive international program covering the American Curriculum (Grades 1-12) and British Curriculum (Cambridge & Edexcel IGCSE & A-Level) on a continuous yearly cycle without terms.',
     iconName: 'globe',
     mathWatermarkSymbol: '∞',
     accentColorHex: '#9333EA',
-    badgeTextAr: 'معايير كامبريدج وإديكسل',
-    badgeTextEn: 'Cambridge & Edexcel',
-    terms: CANONICAL_ACADEMIC_TERMS,
+    badgeTextAr: 'معايير كامبريدج وإديكسل والمنهج الأمريكي',
+    badgeTextEn: 'Cambridge & Edexcel & US Curriculum',
+    hasTerms: false,
+    terms: [],
     grades: [
+      // المسار الأمريكي: المرحلة الابتدائية (Elementary Grades 1-5)
+      {
+        code: 'US_GRADE_1',
+        titleAr: 'المنهج الأمريكي - الصف الأول (Grade 1)',
+        titleEn: 'American Curriculum — Grade 1 (Elementary)',
+        shortLabelAr: 'Gr 1 US',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School (Grades 1-5)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_2',
+        titleAr: 'المنهج الأمريكي - الصف الثاني (Grade 2)',
+        titleEn: 'American Curriculum — Grade 2 (Elementary)',
+        shortLabelAr: 'Gr 2 US',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School (Grades 1-5)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_3',
+        titleAr: 'المنهج الأمريكي - الصف الثالث (Grade 3)',
+        titleEn: 'American Curriculum — Grade 3 (Elementary)',
+        shortLabelAr: 'Gr 3 US',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School (Grades 1-5)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_4',
+        titleAr: 'المنهج الأمريكي - الصف الرابع (Grade 4)',
+        titleEn: 'American Curriculum — Grade 4 (Elementary)',
+        shortLabelAr: 'Gr 4 US',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School (Grades 1-5)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_5',
+        titleAr: 'المنهج الأمريكي - الصف الخامس (Grade 5)',
+        titleEn: 'American Curriculum — Grade 5 (Elementary)',
+        shortLabelAr: 'Gr 5 US',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'المرحلة الابتدائية الأمريكية',
+        stageEn: 'Elementary School (Grades 1-5)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+
+      // المسار الأمريكي: المرحلة المتوسطة (Middle School Grades 6-8)
+      {
+        code: 'US_GRADE_6',
+        titleAr: 'المنهج الأمريكي - الصف السادس (Grade 6)',
+        titleEn: 'American Curriculum — Grade 6 (Middle School)',
+        shortLabelAr: 'Gr 6 US',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School (Grades 6-8)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_7',
+        titleAr: 'المنهج الأمريكي - الصف السابع (Pre-Algebra)',
+        titleEn: 'American Curriculum — Grade 7 (Pre-Algebra)',
+        shortLabelAr: 'Gr 7 US',
+        shortLabelEn: 'Gr 7',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School (Grades 6-8)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_8',
+        titleAr: 'المنهج الأمريكي - الصف الثامن (Algebra Foundations)',
+        titleEn: 'American Curriculum — Grade 8 (Algebra Foundations)',
+        shortLabelAr: 'Gr 8 US',
+        shortLabelEn: 'Gr 8',
+        stageAr: 'المرحلة المتوسطة الأمريكية',
+        stageEn: 'Middle School (Grades 6-8)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+
+      // المسار الأمريكي: المرحلة الثانوية (High School Grades 9-12)
+      {
+        code: 'US_GRADE_9',
+        titleAr: 'المنهج الأمريكي - الصف التاسع (Algebra I)',
+        titleEn: 'American Curriculum — Grade 9 (Algebra I)',
+        shortLabelAr: 'Gr 9 US',
+        shortLabelEn: 'Gr 9',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School (Grades 9-12)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_10',
+        titleAr: 'المنهج الأمريكي - الصف العاشر (Geometry)',
+        titleEn: 'American Curriculum — Grade 10 (Geometry)',
+        shortLabelAr: 'Gr 10 US',
+        shortLabelEn: 'Gr 10',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School (Grades 9-12)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_11',
+        titleAr: 'المنهج الأمريكي - الصف الحادي عشر (Algebra II / Pre-Calc)',
+        titleEn: 'American Curriculum — Grade 11 (Algebra II / Pre-Calc)',
+        shortLabelAr: 'Gr 11 US',
+        shortLabelEn: 'Gr 11',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School (Grades 9-12)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_12',
+        titleAr: 'المنهج الأمريكي - الصف الثاني عشر (AP Calculus / Statistics)',
+        titleEn: 'American Curriculum — Grade 12 (AP Calculus & Stats)',
+        shortLabelAr: 'Gr 12 US',
+        shortLabelEn: 'Gr 12',
+        stageAr: 'المرحلة الثانوية الأمريكية',
+        stageEn: 'High School (Grades 9-12)',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+
+      // المسار البريطاني (British Curriculum: KS1-KS4 IGCSE & Sixth Form A-Level)
       {
         code: 'IGCSE_YEAR_1',
-        titleAr: 'السنة الأولى الدولية (Year 1 / Primary 1)',
-        titleEn: 'International Year 1 (Cambridge Primary Stage 1)',
+        titleAr: 'السنة الأولى البريطانية (Primary Key Stage 1 - Year 1)',
+        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 1)',
         shortLabelAr: 'Year 1',
         shortLabelEn: 'Yr 1',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 1)',
+        stageEn: 'British Primary (Key Stage 1)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_2',
-        titleAr: 'السنة الثانية الدولية (Year 2 / Primary 2)',
-        titleEn: 'International Year 2 (Cambridge Primary Stage 2)',
+        titleAr: 'السنة الثانية البريطانية (Primary Key Stage 1 - Year 2)',
+        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 2)',
         shortLabelAr: 'Year 2',
         shortLabelEn: 'Yr 2',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 1)',
+        stageEn: 'British Primary (Key Stage 1)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_3',
-        titleAr: 'السنة الثالثة الدولية (Year 3 / Primary 3)',
-        titleEn: 'International Year 3 (Cambridge Primary Stage 3)',
+        titleAr: 'السنة الثالثة البريطانية (Primary Key Stage 2 - Year 3)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 3)',
         shortLabelAr: 'Year 3',
         shortLabelEn: 'Yr 3',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
+        stageEn: 'British Primary (Key Stage 2)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_4',
-        titleAr: 'السنة الرابعة الدولية (Year 4 / Primary 4)',
-        titleEn: 'International Year 4 (Cambridge Primary Stage 4)',
+        titleAr: 'السنة الرابعة البريطانية (Primary Key Stage 2 - Year 4)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 4)',
         shortLabelAr: 'Year 4',
         shortLabelEn: 'Yr 4',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
+        stageEn: 'British Primary (Key Stage 2)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_5',
-        titleAr: 'السنة الخامسة الدولية (Year 5 / Primary 5)',
-        titleEn: 'International Year 5 (Cambridge Primary Stage 5)',
+        titleAr: 'السنة الخامسة البريطانية (Primary Key Stage 2 - Year 5)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 5)',
         shortLabelAr: 'Year 5',
         shortLabelEn: 'Yr 5',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
+        stageEn: 'British Primary (Key Stage 2)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_6',
-        titleAr: 'السنة السادسة الدولية (Year 6 / Primary 6)',
-        titleEn: 'International Year 6 (Cambridge Primary Stage 6)',
+        titleAr: 'السنة السادسة البريطانية (Primary Key Stage 2 - Year 6)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 6)',
         shortLabelAr: 'Year 6',
         shortLabelEn: 'Yr 6',
-        stageAr: 'المرحلة الابتدائية الدولية',
-        stageEn: 'Cambridge Primary'
+        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
+        stageEn: 'British Primary (Key Stage 2)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_7',
-        titleAr: 'السنة السابعة الدولية (Year 7 / Stage 8)',
-        titleEn: 'International Year 7 (Checkpoint Stage 8)',
+        titleAr: 'السنة السابعة البريطانية (Secondary Key Stage 3 - Year 7)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 7)',
         shortLabelAr: 'Year 7',
         shortLabelEn: 'Yr 7',
-        stageAr: 'المرحلة الإعدادية الدولية',
-        stageEn: 'Lower Secondary'
+        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
+        stageEn: 'Lower Secondary (Key Stage 3)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_8',
-        titleAr: 'السنة الثامنة الدولية (Year 8 / Stage 9)',
-        titleEn: 'International Year 8 (Checkpoint Stage 9)',
+        titleAr: 'السنة الثامنة البريطانية (Secondary Key Stage 3 - Year 8)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 8)',
         shortLabelAr: 'Year 8',
         shortLabelEn: 'Yr 8',
-        stageAr: 'المرحلة الإعدادية الدولية',
-        stageEn: 'Lower Secondary'
+        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
+        stageEn: 'Lower Secondary (Key Stage 3)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_YEAR_9',
-        titleAr: 'السنة التاسعة الدولية (Year 9 / Pre-IG)',
-        titleEn: 'International Year 9 (Pre-IGCSE)',
+        titleAr: 'السنة التاسعة البريطانية (Secondary Key Stage 3 - Year 9 / Pre-IG)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 9 / Pre-IGCSE)',
         shortLabelAr: 'Year 9',
         shortLabelEn: 'Yr 9',
-        stageAr: 'المرحلة الإعدادية الدولية',
-        stageEn: 'Pre-IGCSE'
+        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
+        stageEn: 'Lower Secondary (Key Stage 3)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_OL',
-        titleAr: 'المستوى العادي IGCSE Ordinary Level (Core & Extended)',
-        titleEn: 'IGCSE O-Level Math (Core & Extended)',
+        titleAr: 'مستوى IGCSE Ordinary Level (Key Stage 4 — Year 10-11)',
+        titleEn: 'IGCSE O-Level Math (Key Stage 4 — Year 10-11)',
         shortLabelAr: 'IGCSE OL',
         shortLabelEn: 'IG OL',
-        stageAr: 'مرحلة الـ IGCSE',
-        stageEn: 'IGCSE Stage'
+        stageAr: 'مرحلة شهادة الـ IGCSE (Key Stage 4)',
+        stageEn: 'Key Stage 4 (IGCSE)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_AS',
-        titleAr: 'المستوى التكميلي المتقدم IGCSE AS-Level (Pure & Mechanics)',
-        titleEn: 'IGCSE AS-Level Math (Pure & Mechanics)',
+        titleAr: 'مستوى IGCSE AS-Level (Sixth Form — Year 12)',
+        titleEn: 'IGCSE AS-Level Math (Sixth Form — Year 12)',
         shortLabelAr: 'IGCSE AS',
         shortLabelEn: 'IG AS',
-        stageAr: 'المستوى المتقدم',
-        stageEn: 'Advanced Subsidiary'
+        stageAr: 'المستوى المتقدم التكميلي (Sixth Form)',
+        stageEn: 'Sixth Form (AS-Level)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       },
       {
         code: 'IGCSE_AL',
-        titleAr: 'المستوى المتقدم الكامل IGCSE A-Level (A2 Pure & Stats/Mech)',
-        titleEn: 'IGCSE A-Level Math (Full A2)',
+        titleAr: 'مستوى IGCSE A-Level الكامل (Sixth Form — Year 13)',
+        titleEn: 'IGCSE Full A-Level Math (Sixth Form — Year 13)',
         shortLabelAr: 'IGCSE AL',
         shortLabelEn: 'IG AL',
-        stageAr: 'المستوى المتقدم الكامل',
-        stageEn: 'Full A-Level'
+        stageAr: 'المستوى المتقدم الكامل (Sixth Form)',
+        stageEn: 'Sixth Form (A-Level)',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
       }
     ]
   },
 
-  // 4. الدبلومة الأمريكية (من Grade 1 إلى اختبارات SAT / ACT / EST)
+  // 4. الدبلومة الأمريكية (امتحانات القبول الجامعي الخمسة: SAT • EST 1 • EST 2 • ACT 1 • ACT 2 — بدون ترم أول وثاني)
   {
     code: 'AMERICAN',
     titleAr: 'الدبلومة الأمريكية (SAT • EST • ACT)',
     titleEn: 'American Diploma (SAT • EST • ACT)',
-    subtitleAr: 'SAT • EST • ACT',
-    subtitleEn: 'Digital SAT • EST I & II • ACT Math Prep',
+    subtitleAr: 'امتحانات القبول الجامعي المؤهلة للجامعات',
+    subtitleEn: 'Standardized University Entrance Exams',
     taglineAr: 'SAT • EST • ACT',
     taglineEn: 'SAT • EST • ACT',
-    descriptionAr: 'منهج الدبلومة الأمريكية من المرحلة الابتدائية والمتوسطة وحتى الثانوية واختبارات القبول الجامعي (SAT • EST • ACT) مع احتراف الآلة الحاسبة البيانية (Desmos).',
-    descriptionEn: 'Complete American curriculum from Grade 1 through Grade 12 and standardized college readiness testing (SAT, EST, ACT) with Desmos mastery.',
+    descriptionAr: 'برنامج تحضيري مكثف لاختبارات الدبلومة الأمريكية المعتمدة للقبول الجامعي (SAT • EST 1 • EST 2 • ACT 1 • ACT 2) مع احتراف الآلة الحاسبة البيانية Desmos ونماذج المحاكاة الرسمية دون تقسيم ترم أول وثان.',
+    descriptionEn: 'Intensive standardized exam preparation for American Diploma entrance exams (SAT, EST 1, EST 2, ACT 1, ACT 2) with Desmos mastery and official practice tests without term divisions.',
     iconName: 'graduation-cap',
     mathWatermarkSymbol: '✦',
     accentColorHex: '#00B4D8',
     badgeTextAr: 'سكور 800 في الماث',
     badgeTextEn: 'Target 800 Math Score',
-    terms: CANONICAL_ACADEMIC_TERMS,
+    hasTerms: false,
+    terms: [],
     grades: [
       {
-        code: 'US_GRADE_1',
-        titleAr: 'الصف الأول الأمريكي (Grade 1)',
-        titleEn: 'Grade 1 (Elementary Math)',
-        shortLabelAr: 'Gr 1 US',
-        shortLabelEn: 'Gr 1',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School'
-      },
-      {
-        code: 'US_GRADE_2',
-        titleAr: 'الصف الثاني الأمريكي (Grade 2)',
-        titleEn: 'Grade 2 (Elementary Math)',
-        shortLabelAr: 'Gr 2 US',
-        shortLabelEn: 'Gr 2',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School'
-      },
-      {
-        code: 'US_GRADE_3',
-        titleAr: 'الصف الثالث الأمريكي (Grade 3)',
-        titleEn: 'Grade 3 (Elementary Math)',
-        shortLabelAr: 'Gr 3 US',
-        shortLabelEn: 'Gr 3',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School'
-      },
-      {
-        code: 'US_GRADE_4',
-        titleAr: 'الصف الرابع الأمريكي (Grade 4)',
-        titleEn: 'Grade 4 (Elementary Math)',
-        shortLabelAr: 'Gr 4 US',
-        shortLabelEn: 'Gr 4',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School'
-      },
-      {
-        code: 'US_GRADE_5',
-        titleAr: 'الصف الخامس الأمريكي (Grade 5)',
-        titleEn: 'Grade 5 (Elementary Math)',
-        shortLabelAr: 'Gr 5 US',
-        shortLabelEn: 'Gr 5',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School'
-      },
-      {
-        code: 'US_GRADE_6',
-        titleAr: 'الصف السادس الأمريكي (Grade 6)',
-        titleEn: 'Grade 6 (Middle School Math)',
-        shortLabelAr: 'Gr 6 US',
-        shortLabelEn: 'Gr 6',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School'
-      },
-      {
-        code: 'US_GRADE_7',
-        titleAr: 'الصف السابع الأمريكي (Grade 7 — Pre-Algebra)',
-        titleEn: 'Grade 7 (Pre-Algebra)',
-        shortLabelAr: 'Gr 7 US',
-        shortLabelEn: 'Gr 7',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School'
-      },
-      {
-        code: 'US_GRADE_8',
-        titleAr: 'الصف الثامن الأمريكي (Grade 8 — Algebra Prep)',
-        titleEn: 'Grade 8 (Algebra Foundations)',
-        shortLabelAr: 'Gr 8 US',
-        shortLabelEn: 'Gr 8',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School'
-      },
-      {
-        code: 'GRADE_9',
-        titleAr: 'الصف التاسع الأمريكي (Grade 9 — Algebra I)',
-        titleEn: 'Grade 9 (Algebra I & Intro Geometry)',
-        shortLabelAr: 'Gr 9 US',
-        shortLabelEn: 'Gr 9',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School'
-      },
-      {
-        code: 'GRADE_10',
-        titleAr: 'الصف العاشر الأمريكي (Grade 10 — Geometry & Algebra II)',
-        titleEn: 'Grade 10 (Geometry & Advanced Algebra II)',
-        shortLabelAr: 'Gr 10 US',
-        shortLabelEn: 'Gr 10',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School'
-      },
-      {
-        code: 'GRADE_11',
-        titleAr: 'الصف الحادي عشر الأمريكي (Grade 11 — Pre-Calculus / Trigonometry)',
-        titleEn: 'Grade 11 (Pre-Calculus & Trigonometry)',
-        shortLabelAr: 'Gr 11 US',
-        shortLabelEn: 'Gr 11',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School'
-      },
-      {
-        code: 'GRADE_12',
-        titleAr: 'الصف الثاني عشر الأمريكي (Grade 12 — AP Calculus / Statistics)',
-        titleEn: 'Grade 12 (AP Calculus & College Prep)',
-        shortLabelAr: 'Gr 12 US',
-        shortLabelEn: 'Gr 12',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School'
-      },
-      {
-        code: 'SAT_1',
-        titleAr: 'Digital SAT Math (Section 1 & 2 Modules)',
-        titleEn: 'Digital SAT Math (College Board Suite)',
-        shortLabelAr: 'SAT I',
-        shortLabelEn: 'SAT 1',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
-      },
-      {
-        code: 'SAT_2',
-        titleAr: 'SAT Subject Math Level 1 & 2',
-        titleEn: 'SAT Subject Math (Level 1 & Level 2)',
-        shortLabelAr: 'SAT II',
-        shortLabelEn: 'SAT 2',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
-      },
-      {
-        code: 'SAT_MATH',
-        titleAr: 'Digital SAT Math Mastery (Hard Modules)',
-        titleEn: 'Digital SAT Math Mastery',
-        shortLabelAr: 'SAT Math',
-        shortLabelEn: 'SAT Math',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
+        code: 'SAT',
+        titleAr: 'اختبار SAT (Digital SAT Math)',
+        titleEn: 'Digital SAT Math Exam',
+        shortLabelAr: 'SAT',
+        shortLabelEn: 'SAT',
+        stageAr: 'امتحانات القبول بالدبلومة الأمريكية',
+        stageEn: 'American Diploma (Entrance Exams)'
       },
       {
         code: 'EST_1',
-        titleAr: 'EST I Math (Egyptian Scholastic Test - Literacy I)',
-        titleEn: 'EST I Math (Literacy I Math Section)',
-        shortLabelAr: 'EST I',
+        titleAr: 'اختبار EST 1 (Egyptian Scholastic Test I)',
+        titleEn: 'EST 1 Math (Literacy I Math)',
+        shortLabelAr: 'EST 1',
         shortLabelEn: 'EST 1',
-        stageAr: 'اختبارات القبول المصرية',
-        stageEn: 'Egyptian Scholastic Test'
+        stageAr: 'امتحانات القبول بالدبلومة الأمريكية',
+        stageEn: 'American Diploma (Entrance Exams)'
       },
       {
         code: 'EST_2',
-        titleAr: 'EST II Math (Advanced Math)',
-        titleEn: 'EST II Math (Advanced Mathematics)',
-        shortLabelAr: 'EST II',
+        titleAr: 'اختبار EST 2 (Egyptian Scholastic Test II)',
+        titleEn: 'EST 2 Math (Advanced Mathematics)',
+        shortLabelAr: 'EST 2',
         shortLabelEn: 'EST 2',
-        stageAr: 'اختبارات القبول المصرية',
-        stageEn: 'Egyptian Scholastic Test'
-      },
-      {
-        code: 'EST_MATH',
-        titleAr: 'EST I & EST II Math Prep',
-        titleEn: 'EST Math Mastery',
-        shortLabelAr: 'EST Math',
-        shortLabelEn: 'EST Math',
-        stageAr: 'اختبارات القبول المصرية',
-        stageEn: 'Egyptian Scholastic Test'
+        stageAr: 'امتحانات القبول بالدبلومة الأمريكية',
+        stageEn: 'American Diploma (Entrance Exams)'
       },
       {
         code: 'ACT_1',
-        titleAr: 'ACT Math (60 Questions in 60 Minutes Drill)',
-        titleEn: 'ACT Math (60 Questions Drills)',
-        shortLabelAr: 'ACT I',
+        titleAr: 'اختبار ACT 1 (American College Testing I)',
+        titleEn: 'ACT 1 Math (60 Questions Drills)',
+        shortLabelAr: 'ACT 1',
         shortLabelEn: 'ACT 1',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
+        stageAr: 'امتحانات القبول بالدبلومة الأمريكية',
+        stageEn: 'American Diploma (Entrance Exams)'
       },
       {
         code: 'ACT_2',
-        titleAr: 'ACT Subject Math II',
-        titleEn: 'ACT Subject Math II (Advanced Trigonometry & Functions)',
-        shortLabelAr: 'ACT II',
+        titleAr: 'اختبار ACT 2 (American College Testing II)',
+        titleEn: 'ACT 2 Math (Advanced Trigonometry & Functions)',
+        shortLabelAr: 'ACT 2',
         shortLabelEn: 'ACT 2',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
-      },
-      {
-        code: 'ACT_MATH',
-        titleAr: 'ACT Math Mastery',
-        titleEn: 'ACT Mathematics Mastery',
-        shortLabelAr: 'ACT Math',
-        shortLabelEn: 'ACT Math',
-        stageAr: 'اختبارات القبول',
-        stageEn: 'College Entrance'
+        stageAr: 'امتحانات القبول بالدبلومة الأمريكية',
+        stageEn: 'American Diploma (Entrance Exams)'
       }
     ]
   }

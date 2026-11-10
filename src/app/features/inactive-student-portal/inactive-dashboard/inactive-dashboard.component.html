@@ -34,9 +34,11 @@
             <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
               {{ gradeLevel() }}
             </span>
-            <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
-              {{ term() }}
-            </span>
+            @if (hasAcademicTerms()) {
+              <span class="px-2.5 py-0.5 rounded-md bg-surface-bg border border-surface-border">
+                {{ term() }}
+              </span>
+            }
           </div>
 
           <!-- Quick Action: Open Full Student Dashboard -->

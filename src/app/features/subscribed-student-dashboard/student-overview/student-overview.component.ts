@@ -16,7 +16,7 @@ import { ClickOutsideDirective } from '../../../shared/directives/click-outside.
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
-import { AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
+import { AcademicTermCode, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import {
@@ -136,6 +136,7 @@ export class StudentOverviewComponent implements OnInit {
   readonly activeGrades = signal<string[]>([]);
   readonly currentUserGrade = computed(() => this.authService.currentUser()?.grade_level || 'SEC_3');
   readonly currentUserCurriculum = computed(() => this.authService.currentUser()?.curriculum || 'EGYPTIAN');
+  readonly hasAcademicTerms = computed<boolean>(() => curriculumHasTerms(this.currentUserCurriculum()));
   readonly isCurrentGradeActive = computed(() => this.activeGrades().includes(this.currentUserGrade()));
   readonly isLoadingUnits = signal<boolean>(true);
 
@@ -144,6 +145,9 @@ export class StudentOverviewComponent implements OnInit {
 
   // Filtered units by selected academic term
   readonly filteredUnits = computed(() => {
+    if (!this.hasAcademicTerms()) {
+      return this.units();
+    }
     const term = this.selectedTerm();
     return this.units().filter(u => u.term === term);
   });
@@ -318,8 +322,9 @@ export class StudentOverviewComponent implements OnInit {
     const grade = this.currentUserGrade();
     const term = this.selectedTerm();
 
+    const termQuery = this.hasAcademicTerms() ? `&term=${term}` : '';
     this.http.get<{ success: boolean; data: any[] }>(
-      `/api/v1/units?curriculum=${curr}&gradeLevel=${grade}&term=${term}`
+      `/api/v1/units?curriculum=${curr}&gradeLevel=${grade}${termQuery}`
     ).subscribe({
       next: (res) => {
         this.isLoadingUnits.set(false);
@@ -450,8 +455,9 @@ export class StudentOverviewComponent implements OnInit {
     const term = this.selectedTerm();
 
     // Strictly grade-isolated via backend session auth & filters
+    const termQuery = this.hasAcademicTerms() ? `&term=${term}` : '';
     this.http.get<{ success: boolean; data: any }>(
-      `/api/v1/assessments?curriculum=${curr}&gradeLevel=${grade}&term=${term}&limit=30`
+      `/api/v1/assessments?curriculum=${curr}&gradeLevel=${grade}${termQuery}&limit=30`
     ).subscribe({
       next: (res) => {
         const rawList: any[] = Array.isArray(res?.data)

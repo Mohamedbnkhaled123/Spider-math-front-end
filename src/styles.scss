@@ -848,3 +848,30 @@ code,
   }
 }
 
+// ==============================================================================
+// Pure Focus Exam Runner Environment: Zero Distractions (Requirement 5)
+// Suppress ambient floating math symbols, background formulas, and hovering particles
+// while keeping genuine KaTeX academic math in questions/answers fully intact.
+// ==============================================================================
+.assessment-runner-root,
+.placement-runner-root,
+app-assessment-attempt-view,
+app-placement-exam-runner,
+app-assessment-preview-modal,
+body:has(.assessment-runner-root),
+body:has(.placement-runner-root),
+body:has(app-assessment-attempt-view),
+body:has(app-placement-exam-runner) {
+  .animate-float-math,
+  .floating-math-symbol,
+  [class*="animate-float-math"],
+  [class*="floating-math"] {
+    display: none !important;
+    animation: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+

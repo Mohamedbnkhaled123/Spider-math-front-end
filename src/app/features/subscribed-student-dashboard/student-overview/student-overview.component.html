@@ -61,10 +61,12 @@
     <!-- Actions Group: Term Switcher & Notifications -->
     <div class="flex items-center gap-3 self-end lg:self-center">
       <!-- Active Academic Term Badge (Non-interactive) -->
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>{{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)') : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}</span>
-      </div>
+      @if (hasAcademicTerms()) {
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>{{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)') : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}</span>
+        </div>
+      }
 
       <!-- Notification Bell with Dropdown -->
       <div
@@ -144,7 +146,7 @@
           <span class="text-2xl sm:text-3xl font-black font-numeric text-text-primary">
             {{ overallWatchPercentage() }}%
           </span>
-          <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'من دروس الفصل' : 'of term lessons' }}</span>
+          <span class="text-[11px] text-text-muted">{{ hasAcademicTerms() ? (langService.isArabic() ? 'من دروس الفصل' : 'of term lessons') : (langService.isArabic() ? 'من إجمالي الدروس' : 'of all lessons') }}</span>
         </div>
         <div class="w-full h-2 rounded-full bg-surface-border overflow-hidden">
           <div
@@ -293,7 +295,7 @@
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
             <app-icon name="book-open" [size]="20" className="text-brand-primary dark:text-brand-accent" />
-            <span>{{ langService.isArabic() ? 'متابعة إنجاز الوحدات الدراسية واشتراكات الفصل' : 'Unit Progress & Term Subscriptions' }}</span>
+            <span>{{ hasAcademicTerms() ? (langService.isArabic() ? 'متابعة إنجاز الوحدات الدراسية واشتراكات الفصل' : 'Unit Progress & Term Subscriptions') : (langService.isArabic() ? 'متابعة إنجاز الوحدات الدراسية والاشتراكات' : 'Unit Progress & Subscriptions') }}</span>
           </h3>
           <span class="text-xs font-bold text-text-muted font-numeric">
             {{ langService.isArabic() ? (units().length + ' وحدات مفعلة') : (units().length + ' Active Units') }}
@@ -426,7 +428,7 @@
             <span>{{ langService.isArabic() ? 'سجل المحاضرات والدروس الهندسية' : 'Lectures & Lessons Log' }}</span>
           </div>
           <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-            {{ langService.isArabic() ? 'المحاضرات المكتملة والمتبقية في الفصل الدراسي' : 'Completed and Remaining Lectures in Term' }}
+            {{ hasAcademicTerms() ? (langService.isArabic() ? 'المحاضرات المكتملة والمتبقية في الفصل الدراسي' : 'Completed and Remaining Lectures in Term') : (langService.isArabic() ? 'المحاضرات المكتملة والمتبقية' : 'Completed and Remaining Lectures') }}
           </h2>
           <p class="text-xs text-text-secondary mt-1">
             {{ langService.isArabic() ? 'تابع حضورك للمحاضرات بدقة؛ إتمام المشاهدة بنسبة 85% يمنحك نقاط التميز ويفتح لك الكويز المرتبط.' : 'Track your lecture attendance carefully; completing 85% watch rate awards XP and unlocks the quiz.' }}
@@ -828,7 +830,9 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-            {{ langService.isArabic() ? ('الوحدات الدراسية المتاحة (' + (selectedTerm() === 'TERM_1' ? 'الفصل الأول' : 'الفصل الثاني') + ')') : ('Available Units (' + (selectedTerm() === 'TERM_1' ? 'Term 1' : 'Term 2') + ')') }}
+            {{ hasAcademicTerms()
+              ? (langService.isArabic() ? ('الوحدات الدراسية المتاحة (' + (selectedTerm() === 'TERM_1' ? 'الفصل الأول' : 'الفصل الثاني') + ')') : ('Available Units (' + (selectedTerm() === 'TERM_1' ? 'Term 1' : 'Term 2') + ')'))
+              : (langService.isArabic() ? 'الوحدات الدراسية المتاحة' : 'Available Study Units') }}
           </h2>
           <p class="text-xs text-text-secondary mt-1">
             {{ langService.isArabic() ? 'اضغط على الوحدة لمشاهدة المحاضرات المحمية وحل التقييمات التفاعلية.' : 'Click on a unit to watch protected lectures and solve assessments.' }}
@@ -889,7 +893,7 @@
         } @empty {
           <div class="col-span-full p-8 rounded-3xl border border-surface-border bg-surface-card text-center">
             <app-icon name="book-open" [size]="36" className="text-text-muted mx-auto mb-2" />
-            <h4 class="text-sm font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لا توجد وحدات دراسية مضافة في هذا الفصل الدراسي' : 'No units added for this academic term' }}</h4>
+            <h4 class="text-sm font-bold text-text-primary mb-1">{{ hasAcademicTerms() ? (langService.isArabic() ? 'لا توجد وحدات دراسية مضافة في هذا الفصل الدراسي' : 'No units added for this academic term') : (langService.isArabic() ? 'لا توجد وحدات دراسية مضافة حالياً' : 'No units added currently') }}</h4>
             <p class="text-xs text-text-secondary">{{ langService.isArabic() ? 'سيتم إضافة الوحدات والمحاضرات من قِبل المهندسة هبة عبد الوهاب قريباً.' : 'Units and lectures will be added soon by Eng. Heba Abdel-Wahab.' }}</p>
           </div>
         }
@@ -1159,12 +1163,18 @@
               (ngModelChange)="editCountry.set($event)"
               class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
             >
-              <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
-              <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
-              <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
-              <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
-              <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
-              <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
+              <optgroup [label]="langService.isArabic() ? 'جمهورية مصر العربية' : 'Egypt'">
+                <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
+              </optgroup>
+              <optgroup [label]="langService.isArabic() ? 'دول الخليج العربي' : 'Gulf Countries'">
+                <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
+                <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
+                <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
+                <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
+              </optgroup>
+              <optgroup [label]="langService.isArabic() ? 'دول أخرى' : 'Other Countries'">
+                <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
+              </optgroup>
             </select>
             <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
               <app-icon name="chevron-down" [size]="16" />

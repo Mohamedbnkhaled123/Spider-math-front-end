@@ -22,7 +22,8 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 import {
   CANONICAL_CURRICULUM_TREE,
   CurriculumCode,
-  AcademicTermCode
+  AcademicTermCode,
+  curriculumHasTerms
 } from '../../../core/constants/curriculum-tree.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
@@ -72,6 +73,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   readonly selectedCurriculumCode = signal<CurriculumCode>('EGYPTIAN');
   readonly selectedGradeCode = signal<string>('SEC_3');
   readonly selectedTermCode = signal<AcademicTermCode>('TERM_1');
+  readonly currentCurriculumHasTerms = computed<boolean>(() => curriculumHasTerms(this.selectedCurriculumCode()));
   readonly dynamicTree = signal<ICurriculumTreeItem[]>([]);
   readonly isLoading = signal<boolean>(true);
 
@@ -207,16 +209,17 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         return curr.availableGrades.filter(g => allowed.includes(g.code));
       }
       if (curr.code === 'AMERICAN') {
-        const allowed = ['GRADE_9', 'GRADE_10', 'GRADE_11', 'GRADE_12', 'SAT_1', 'SAT_2', 'EST_1', 'ACT_1'];
-        return curr.availableGrades.filter(g => allowed.includes(g.code));
+        // Standardized American Diploma exams: SAT, EST 1, EST 2, ACT 1, ACT 2
+        return curr.availableGrades;
       }
       if (curr.code === 'GULF') {
         const allowed = ['GRADE_5', 'GRADE_6', 'GRADE_7', 'GRADE_8', 'GRADE_9', 'GRADE_10', 'GRADE_11', 'GRADE_12'];
         return curr.availableGrades.filter(g => allowed.includes(g.code));
       }
       if (curr.code === 'INTERNATIONAL') {
-        const allowed = ['IGCSE_YEAR_5', 'IGCSE_YEAR_6', 'IGCSE_YEAR_7', 'IGCSE_YEAR_8', 'IGCSE_YEAR_9', 'IGCSE_OL', 'IGCSE_AS', 'IGCSE_AL'];
-        return curr.availableGrades.filter(g => allowed.includes(g.code));
+        const allowed = ['US_GRADE_9', 'US_GRADE_10', 'US_GRADE_11', 'US_GRADE_12', 'IGCSE_YEAR_9', 'IGCSE_OL', 'IGCSE_AS', 'IGCSE_AL'];
+        const matched = curr.availableGrades.filter(g => allowed.includes(g.code));
+        return matched.length > 0 ? matched : curr.availableGrades.slice(0, 8);
       }
       return curr.availableGrades.slice(0, 8);
     }
@@ -234,7 +237,6 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           code.startsWith('US_GRADE_3') ||
           code.startsWith('US_GRADE_4') ||
           code.startsWith('US_GRADE_5') ||
-          code.startsWith('US_GRADE_6') ||
           ['GRADE_1', 'GRADE_2', 'GRADE_3', 'GRADE_4', 'GRADE_5', 'GRADE_6'].includes(code) ||
           code.startsWith('IGCSE_YEAR_1') ||
           code.startsWith('IGCSE_YEAR_2') ||
@@ -249,6 +251,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           stageEn.includes('prep') ||
           stageEn.includes('middle') ||
           code.startsWith('PREP') ||
+          code === 'US_GRADE_6' ||
           code === 'US_GRADE_7' ||
           code === 'US_GRADE_8' ||
           code === 'GRADE_7' ||
@@ -264,10 +267,17 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           stageEn.includes('second') ||
           stageEn.includes('high') ||
           stageEn.includes('entrance') ||
+          stageEn.includes('bacc') ||
           code.startsWith('SEC') ||
+          code.startsWith('BACC') ||
+          code === 'SAT' ||
           code.startsWith('SAT') ||
           code.startsWith('EST') ||
           code.startsWith('ACT') ||
+          code.startsWith('US_GRADE_9') ||
+          code.startsWith('US_GRADE_10') ||
+          code.startsWith('US_GRADE_11') ||
+          code.startsWith('US_GRADE_12') ||
           code.startsWith('IGCSE_OL') ||
           code.startsWith('IGCSE_AS') ||
           code.startsWith('IGCSE_AL') ||
@@ -534,10 +544,11 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   loadUnitsForSelection(): void {
     this.isLoadingUnits.set(true);
     this.loadGradeQuizzes();
+    const term = this.currentCurriculumHasTerms() ? this.selectedTermCode() : undefined;
     this.discoveryService.getUnitsCatalog(
       this.selectedCurriculumCode(),
       this.selectedGradeCode(),
-      this.selectedTermCode()
+      term
     ).subscribe({
       next: units => {
         const allowedIds = this.landingUnitIds();
@@ -557,10 +568,11 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   loadGradeQuizzes(): void {
     this.isLoadingGradeQuizzes.set(true);
+    const term = this.currentCurriculumHasTerms() ? this.selectedTermCode() : undefined;
     this.discoveryService.getGradeQuizzes(
       this.selectedCurriculumCode(),
       this.selectedGradeCode(),
-      this.selectedTermCode()
+      term
     ).subscribe({
       next: (res) => {
         this.gradeQuizzesData.set(res || { units: [], generalQuizzes: [] });
@@ -697,13 +709,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   startPlacementExamForGrade(grade: IGradeLevelAvailability): void {
     this.selectedGradeCode.set(grade.code);
     this.closeTrackModal();
-    this.router.navigate(['/placement-test'], {
-      queryParams: {
-        curriculum: this.selectedCurriculumCode(),
-        gradeLevel: grade.code,
-        term: this.selectedTermCode()
-      }
-    });
+    const queryParams: Record<string, string> = {
+      curriculum: this.selectedCurriculumCode(),
+      gradeLevel: grade.code
+    };
+    if (this.currentCurriculumHasTerms()) {
+      queryParams['term'] = this.selectedTermCode();
+    }
+    this.router.navigate(['/placement-test'], { queryParams });
   }
 
   openTrackModal(code: CurriculumCode): void {
@@ -762,13 +775,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   startPlacementExamForCurrentGrade(): void {
     this.closeTrackModal();
-    this.router.navigate(['/placement-test'], {
-      queryParams: {
-        curriculum: this.selectedCurriculumCode(),
-        gradeLevel: this.selectedGradeCode(),
-        term: this.selectedTermCode()
-      }
-    });
+    const queryParams: Record<string, string> = {
+      curriculum: this.selectedCurriculumCode(),
+      gradeLevel: this.selectedGradeCode()
+    };
+    if (this.currentCurriculumHasTerms()) {
+      queryParams['term'] = this.selectedTermCode();
+    }
+    this.router.navigate(['/placement-test'], { queryParams });
   }
 
   openUnitPreview(unit: any): void {
@@ -891,6 +905,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       case 'US_GRADE_6': return isAr ? 'الصف السادس (الابتدائي)' : 'Grade 6';
       case 'US_GRADE_7': return isAr ? 'الصف السابع (المتوسط)' : 'Grade 7';
       case 'US_GRADE_8': return isAr ? 'الصف الثامن (المتوسط)' : 'Grade 8';
+      case 'US_GRADE_9': return isAr ? 'الصف التاسع (أمريكي)' : 'US Grade 9';
+      case 'US_GRADE_10': return isAr ? 'الصف العاشر (أمريكي)' : 'US Grade 10';
+      case 'US_GRADE_11': return isAr ? 'الصف الحادي عشر (أمريكي)' : 'US Grade 11';
+      case 'US_GRADE_12': return isAr ? 'الصف الثاني عشر (أمريكي)' : 'US Grade 12';
+      case 'BACC_10': return isAr ? 'العاشر (بكالوريا)' : 'Bacc 10';
+      case 'BACC_11': return isAr ? 'الحادي عشر (بكالوريا)' : 'Bacc 11';
+      case 'BACC_12': return isAr ? 'الثاني عشر (بكالوريا)' : 'Bacc 12';
+      case 'SAT': return 'Digital SAT';
       case 'SAT_1': return 'SAT 1';
       case 'SAT_2': return 'SAT 2';
       case 'SAT_MATH': return 'SAT Math';

@@ -1,6 +1,61 @@
 export const SUPPORTED_COUNTRIES = ['EG', 'SA', 'AE', 'KW', 'QA', 'OTHER'] as const;
 export type SupportedCountry = (typeof SUPPORTED_COUNTRIES)[number];
 
+export interface CountryOption {
+  readonly code: SupportedCountry;
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly dialCode: string;
+}
+
+export interface CountryGroup {
+  readonly id: 'EG' | 'GCC' | 'OTHER';
+  readonly labelAr: string;
+  readonly labelEn: string;
+  readonly countries: readonly CountryOption[];
+}
+
+export const COUNTRY_GROUPS: readonly CountryGroup[] = [
+  {
+    id: 'EG',
+    labelAr: 'جمهورية مصر العربية',
+    labelEn: 'Arab Republic of Egypt',
+    countries: [
+      { code: 'EG', nameAr: 'جمهورية مصر العربية (+20)', nameEn: 'Egypt (+20)', dialCode: '+20' }
+    ]
+  },
+  {
+    id: 'GCC',
+    labelAr: 'دول الخليج العربي',
+    labelEn: 'Gulf Countries (GCC)',
+    countries: [
+      { code: 'SA', nameAr: 'المملكة العربية السعودية (+966)', nameEn: 'Saudi Arabia (+966)', dialCode: '+966' },
+      { code: 'AE', nameAr: 'الإمارات العربية المتحدة (+971)', nameEn: 'United Arab Emirates (+971)', dialCode: '+971' },
+      { code: 'KW', nameAr: 'دولة الكويت (+965)', nameEn: 'Kuwait (+965)', dialCode: '+965' },
+      { code: 'QA', nameAr: 'دولة قطر (+974)', nameEn: 'Qatar (+974)', dialCode: '+974' }
+    ]
+  },
+  {
+    id: 'OTHER',
+    labelAr: 'دول أخرى',
+    labelEn: 'Other Countries',
+    countries: [
+      { code: 'OTHER', nameAr: 'دولة أخرى', nameEn: 'Other Country', dialCode: '' }
+    ]
+  }
+] as const;
+
+/**
+ * Returns available country groups based on the selected curriculum track.
+ * When curriculum is 'GULF', Egypt ('EG') is strictly excluded so only GCC and OTHER countries are selectable.
+ */
+export function getAvailableCountryGroups(curriculum?: string | null): CountryGroup[] {
+  if (curriculum === 'GULF') {
+    return COUNTRY_GROUPS.filter(g => g.id !== 'EG');
+  }
+  return [...COUNTRY_GROUPS];
+}
+
 export interface PhoneValidationResult {
   isValid: boolean;
   messageAr: string;

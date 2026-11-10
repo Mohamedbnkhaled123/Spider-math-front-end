@@ -122,8 +122,8 @@
         </button>
       </div>
 
-      <!-- 2. Grade Level Dropdown (4 cols) -->
-      <div class="sm:col-span-4 space-y-1">
+      <!-- 2. Grade Level Dropdown (4 or 7 cols) -->
+      <div [class]="currentCurriculumHasTerms() ? 'sm:col-span-4 space-y-1' : 'sm:col-span-7 space-y-1'">
         <div class="flex items-center justify-between px-1">
           <span class="text-[10px] font-bold text-text-muted">{{ langService.isArabic() ? 'الصف الدراسي المستهدف:' : 'Target Grade Level:' }}</span>
           @if (isGradeActive(selectedGrade())) {
@@ -157,27 +157,29 @@
       </div>
 
       <!-- 3. Academic Term Switcher (3 cols) -->
-      <div class="sm:col-span-3 flex items-center p-1 rounded-xl bg-surface-bg border border-surface-border">
-        <button
-          type="button"
-          (click)="selectTerm('TERM_1')"
-          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
-          [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
-          [class.text-white]="selectedTerm() === 'TERM_1'"
-        >
-          {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
-        </button>
+      @if (currentCurriculumHasTerms()) {
+        <div class="sm:col-span-3 flex items-center p-1 rounded-xl bg-surface-bg border border-surface-border">
+          <button
+            type="button"
+            (click)="selectTerm('TERM_1')"
+            class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+            [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
+            [class.text-white]="selectedTerm() === 'TERM_1'"
+          >
+            {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
+          </button>
 
-        <button
-          type="button"
-          (click)="selectTerm('TERM_2')"
-          class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
-          [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
-          [class.text-white]="selectedTerm() === 'TERM_2'"
-        >
-          {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
-        </button>
-      </div>
+          <button
+            type="button"
+            (click)="selectTerm('TERM_2')"
+            class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+            [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
+            [class.text-white]="selectedTerm() === 'TERM_2'"
+          >
+            {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
+          </button>
+        </div>
+      }
 
     </div>
   </div>
@@ -273,7 +275,7 @@
                 <h4 class="text-sm font-bold text-text-primary line-clamp-2">
                   {{ item.titleAr }}
                 </h4>
-                @if (item.titleEn) {
+                @if (item.titleEn && item.titleEn !== item.titleAr) {
                   <p class="text-xs text-text-muted mt-0.5 font-mono">
                     {{ item.titleEn }}
                   </p>
@@ -403,7 +405,9 @@
               <app-icon name="file-text" [size]="24" />
             </div>
             <h4 class="text-sm font-bold text-text-primary">
-              {{ langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً' : 'No assessments available for this grade in this term.' }}
+              {{ currentCurriculumHasTerms()
+                ? (langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً' : 'No assessments available for this grade in this term.')
+                : (langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف حالياً' : 'No assessments available for this grade currently.') }}
             </h4>
             <p class="text-xs text-text-muted max-w-sm mx-auto">
               {{ langService.isArabic() ? ('يمكنك الضغط على زر إنشاء امتحان جديد بالأعلى لتدشين كويز حصري لطلاب (' + selectedGrade() + ').') : ('Click "Create New Assessment" above to create a quiz for (' + selectedGrade() + ').') }}
@@ -488,21 +492,11 @@
 
         <div class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الامتحان (بالعربية):' : 'Assessment Title (Arabic):' }}</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'إضافة عنوان' : 'Add Title' }}</label>
             <input
               type="text"
               [(ngModel)]="createForm().titleAr"
-              [placeholder]="langService.isArabic() ? 'مثال: كويز التفاضل وتطبيقات القيم العظمى' : 'e.g.: Calculus Applications Quiz'"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-            />
-          </div>
-
-          <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان بالإنجليزية (اختياري):' : 'Assessment Title in English (Optional):' }}</label>
-            <input
-              type="text"
-              [(ngModel)]="createForm().titleEn"
-              [placeholder]="langService.isArabic() ? 'مثال: Calculus Applications Quiz' : 'e.g.: Calculus Applications Quiz'"
+              [placeholder]="langService.isArabic() ? 'أدخلي عنوان الامتحان (عربي أو إنجليزي)...' : 'Enter assessment title (Arabic or English)...'"
               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
             />
           </div>
@@ -545,22 +539,24 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
-              <div class="relative">
-                <select
-                  [(ngModel)]="createForm().term"
-                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
-                >
-                  <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
-                  <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
-                </select>
-                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                  <app-icon name="chevron-down" [size]="14" />
+          <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="currentCurriculumHasTerms()" [class.sm:grid-cols-2]="!currentCurriculumHasTerms()">
+            @if (currentCurriculumHasTerms()) {
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
+                <div class="relative">
+                  <select
+                    [(ngModel)]="createForm().term"
+                    class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                    <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
+                  </select>
+                  <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                    <app-icon name="chevron-down" [size]="14" />
+                  </div>
                 </div>
               </div>
-            </div>
+            }
 
             <div>
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
@@ -889,7 +885,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-3 mt-1">
               <p class="text-[11px] sm:text-xs text-text-secondary">
-                {{ langService.isArabic() ? ('المنهج: ' + asm.curriculum + ' | الترم: ' + (asm.term === 'TERM_1' ? 'الأول' : 'الثاني') + ' | المدة: ' + asm.durationMinutes + ' دقيقة | نسبة النجاح: ' + asm.passPercentage + '%') : ('Curriculum: ' + asm.curriculum + ' | Term: ' + (asm.term === 'TERM_1' ? '1' : '2') + ' | Duration: ' + asm.durationMinutes + ' mins | Pass: ' + asm.passPercentage + '%') }}
+                {{ langService.isArabic() ? ('المنهج: ' + asm.curriculum + (currentCurriculumHasTerms() ? (' | الترم: ' + (asm.term === 'TERM_1' ? 'الأول' : 'الثاني')) : '') + ' | المدة: ' + asm.durationMinutes + ' دقيقة | نسبة النجاح: ' + asm.passPercentage + '%') : ('Curriculum: ' + asm.curriculum + (currentCurriculumHasTerms() ? (' | Term: ' + (asm.term === 'TERM_1' ? '1' : '2')) : '') + ' | Duration: ' + asm.durationMinutes + ' mins | Pass: ' + asm.passPercentage + '%') }}
               </p>
 
               <!-- Auto-Save Status Badge (R2 & R4 Strict Compliance) -->
@@ -971,21 +967,11 @@
           @if (editorActiveTab() === 'SETTINGS') {
             <div class="space-y-4 animate-fade-in">
               <div>
-                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الامتحان (بالعربية):' : 'Assessment Title (Arabic):' }}</label>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'إضافة عنوان' : 'Add Title' }}</label>
                 <input
                   type="text"
                   [(ngModel)]="asm.titleAr"
-                  [placeholder]="langService.isArabic() ? 'مثال: كويز التفاضل وتطبيقات القيم العظمى' : 'e.g.: Calculus Applications Quiz'"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-                />
-              </div>
-
-              <div>
-                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان بالإنجليزية (اختياري):' : 'Assessment Title in English (Optional):' }}</label>
-                <input
-                  type="text"
-                  [(ngModel)]="asm.titleEn"
-                  [placeholder]="langService.isArabic() ? 'مثال: Calculus Applications Quiz' : 'e.g.: Calculus Applications Quiz'"
+                  [placeholder]="langService.isArabic() ? 'أدخلي عنوان الامتحان (عربي أو إنجليزي)...' : 'Enter assessment title (Arabic or English)...'"
                   class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
                 />
               </div>
@@ -1040,22 +1026,24 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
-                  <div class="relative">
-                    <select
-                      [(ngModel)]="asm.term"
-                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
-                    >
-                      <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
-                      <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
-                    </select>
-                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                      <app-icon name="chevron-down" [size]="14" />
+              <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="currentCurriculumHasTerms()" [class.sm:grid-cols-2]="!currentCurriculumHasTerms()">
+                @if (currentCurriculumHasTerms()) {
+                  <div>
+                    <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
+                    <div class="relative">
+                      <select
+                        [(ngModel)]="asm.term"
+                        class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
+                        <option value="TERM_2">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</option>
+                      </select>
+                      <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
+                        <app-icon name="chevron-down" [size]="14" />
+                      </div>
                     </div>
                   </div>
-                </div>
+                }
 
                 <div>
                   <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>

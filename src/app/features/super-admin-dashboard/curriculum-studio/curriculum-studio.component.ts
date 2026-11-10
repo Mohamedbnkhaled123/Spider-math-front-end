@@ -14,7 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
-import { CANONICAL_CURRICULUM_TREE } from '../../../core/constants/curriculum-tree.constant';
+import { CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import {
   AcademicTermCode,
@@ -124,45 +124,19 @@ export class CurriculumStudioComponent implements OnInit {
     return treeNode ? treeNode.grades : [];
   });
 
-  readonly allCurriculaTracks = signal<CurriculumTrackItem[]>([
-    {
-      code: 'EGYPTIAN' as CurriculumCode,
-      nameAr: 'المنهج المصري',
-      grades: [
-        { code: 'SEC_3', titleAr: 'الصف الثالث الثانوي (Thanaweya)', titleEn: 'Secondary 3' },
-        { code: 'SEC_2', titleAr: 'الصف الثاني الثانوي', titleEn: 'Secondary 2' },
-        { code: 'SEC_1', titleAr: 'الصف الأول الثانوي', titleEn: 'Secondary 1' },
-        { code: 'PREP_3', titleAr: 'الصف الثالث الإعدادي', titleEn: 'Prep 3' }
-      ]
-    },
-    {
-      code: 'GULF' as CurriculumCode,
-      nameAr: 'المنهج الخليجي',
-      grades: [
-        { code: 'GRADE_12', titleAr: 'الصف الثاني عشر (توجيهي)', titleEn: 'Grade 12' },
-        { code: 'GRADE_11', titleAr: 'الصف الحادي عشر', titleEn: 'Grade 11' },
-        { code: 'GRADE_10', titleAr: 'الصف العاشر', titleEn: 'Grade 10' }
-      ]
-    },
-    {
-      code: 'INTERNATIONAL' as CurriculumCode,
-      nameAr: 'IGCSE / البريطانية',
-      grades: [
-        { code: 'IGCSE_AL', titleAr: 'A-Level Mathematics (9709)', titleEn: 'Cambridge / Edexcel A-Level' },
-        { code: 'IGCSE_AS', titleAr: 'AS-Level Pure & Mechanics', titleEn: 'AS-Level Math' },
-        { code: 'IGCSE_OL', titleAr: 'O-Level Extended Math (0580)', titleEn: 'IGCSE O-Level' }
-      ]
-    },
-    {
-      code: 'AMERICAN' as CurriculumCode,
-      nameAr: 'SAT / الأمريكية',
-      grades: [
-        { code: 'SAT_MATH', titleAr: 'Digital SAT Math (Hard Modules)', titleEn: 'SAT Digital Math' },
-        { code: 'ACT_MATH', titleAr: 'ACT Math Mastery', titleEn: 'ACT Mathematics' },
-        { code: 'EST_MATH', titleAr: 'EST I & EST II Math', titleEn: 'EST Math' }
-      ]
-    }
-  ]);
+  readonly currentCurriculumHasTerms = computed<boolean>(() => curriculumHasTerms(this.selectedCurriculum()));
+
+  readonly allCurriculaTracks = signal<CurriculumTrackItem[]>(
+    CANONICAL_CURRICULUM_TREE.map(c => ({
+      code: c.code as CurriculumCode,
+      nameAr: c.titleAr,
+      grades: c.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn
+      }))
+    }))
+  );
 
   // Grade Options Scoped by Selected Curriculum
   readonly gradeOptions = computed<GradeOption[]>(() => {
@@ -1045,7 +1019,10 @@ export class CurriculumStudioComponent implements OnInit {
     const unit = this.activeUnitForAssessment();
     const form = this.newAssessmentForm();
     if (!form.titleAr.trim()) {
-      this.toastTriggered.emit({ text: 'يرجى كتابة عنوان التقييم أو الكويز!', type: 'error' });
+      this.toastTriggered.emit({
+        text: this.langService.isArabic() ? 'يرجى كتابة عنوان التقييم أو الكويز!' : 'Please enter assessment title!',
+        type: 'error'
+      });
       return;
     }
 
@@ -1409,6 +1386,7 @@ export class CurriculumStudioComponent implements OnInit {
     // Transform questions into normalized schema for backend
     const payload = {
       title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
+      title_en: asm.titleAr ? asm.titleAr.trim() : undefined,
       calculator_mode: asm.calculatorType,
       duration_minutes: asm.durationMinutes,
       reference_sheet_url: asm.referenceSheetUrl || null,
