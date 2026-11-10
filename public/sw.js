@@ -35,8 +35,8 @@ self.addEventListener('push', (event) => {
     const title = data.title || 'منصة سبايدر ماث التعليمية';
     const options = {
       body: data.body || '',
-      icon: data.icon || '/assets/branding/spider-math-logo.png',
-      badge: data.badge || '/assets/branding/spider-math-logo.png',
+      icon: data.icon || '/assets/branding/spider-math-logo-v2.png?v=2',
+      badge: data.badge || '/assets/branding/spider-math-logo-v2.png?v=2',
       vibrate: [200, 100, 200],
       tag: data.tag || 'spider-math-alert',
       data: { url: data.url || '/' }
