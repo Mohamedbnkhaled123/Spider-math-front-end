@@ -1078,6 +1078,36 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     }
   }
 
+  getCurriculumBgImage(code: CurriculumCode): string {
+    switch (code) {
+      case 'EGYPTIAN':
+        return '/assets/branding/curriculum-card-egyptian.webp';
+      case 'GULF':
+        return '/assets/branding/curriculum-card-gulf.webp';
+      case 'AMERICAN':
+        return '/assets/branding/curriculum-card-sat.webp';
+      case 'INTERNATIONAL':
+        return '/assets/branding/curriculum-card-british.webp';
+      default:
+        return '';
+    }
+  }
+
+  getCurriculumBgSrcset(code: CurriculumCode): string {
+    switch (code) {
+      case 'EGYPTIAN':
+        return '/assets/branding/curriculum-card-egyptian-sm.webp 320w, /assets/branding/curriculum-card-egyptian.webp 512w';
+      case 'GULF':
+        return '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w';
+      case 'AMERICAN':
+        return '/assets/branding/curriculum-card-sat-sm.webp 320w, /assets/branding/curriculum-card-sat.webp 512w';
+      case 'INTERNATIONAL':
+        return '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w';
+      default:
+        return '';
+    }
+  }
+
   private emitSelection(): void {
     this.selectionChange.emit({
       curriculum: this.selectedCurriculumCode(),

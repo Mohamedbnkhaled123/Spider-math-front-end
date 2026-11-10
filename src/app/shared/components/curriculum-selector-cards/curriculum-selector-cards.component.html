@@ -47,6 +47,23 @@
 
         >
 
+          <!-- Subtle Curriculum Identity Watermark Artwork -->
+          <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+            <img
+              [src]="getCurriculumBgImage(curriculum.code)"
+              [srcset]="getCurriculumBgSrcset(curriculum.code)"
+              sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
+              width="512"
+              height="512"
+              alt=""
+              role="presentation"
+              loading="lazy"
+              decoding="async"
+              class="curriculum-card-watermark-img"
+            />
+            <div class="curriculum-card-watermark-overlay"></div>
+          </div>
+
           <!-- Top Row: Title & Vector Art Icon -->
 
           <div>
@@ -244,6 +261,22 @@
             (click)="openTrackModal(curriculum.code)"
             class="curriculum-card rounded-2xl p-3.5 sm:p-5 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative min-h-[190px] sm:min-h-[240px]"
           >
+            <!-- Subtle Curriculum Identity Watermark Artwork -->
+            <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+              <img
+                [src]="getCurriculumBgImage(curriculum.code)"
+                [srcset]="getCurriculumBgSrcset(curriculum.code)"
+                sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
+                width="512"
+                height="512"
+                alt=""
+                role="presentation"
+                loading="lazy"
+                decoding="async"
+                class="curriculum-card-watermark-img"
+              />
+              <div class="curriculum-card-watermark-overlay"></div>
+            </div>
             <div>
               <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
                 <h3 class="text-xs sm:text-base font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight">
@@ -307,6 +340,22 @@
             (click)="openTrackModal(curriculum.code)"
             class="curriculum-card rounded-2xl p-3.5 sm:p-5 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative min-h-[190px] sm:min-h-[240px]"
           >
+            <!-- Subtle Curriculum Identity Watermark Artwork -->
+            <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+              <img
+                [src]="getCurriculumBgImage(curriculum.code)"
+                [srcset]="getCurriculumBgSrcset(curriculum.code)"
+                sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
+                width="512"
+                height="512"
+                alt=""
+                role="presentation"
+                loading="lazy"
+                decoding="async"
+                class="curriculum-card-watermark-img"
+              />
+              <div class="curriculum-card-watermark-overlay"></div>
+            </div>
             <div>
               <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
                 <h3 class="text-xs sm:text-base font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight">

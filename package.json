@@ -10,6 +10,7 @@
     "vercel-build": "ng build --configuration production && node scripts/prepare-browser-index.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "compress:images": "python scripts/compress-images.py",
     "serve:prod": "node dist/spider-math-frontend/server/server.mjs",
     "serve:ssr:spider-math-frontend": "node dist/spider-math-frontend/server/server.mjs"
   },
