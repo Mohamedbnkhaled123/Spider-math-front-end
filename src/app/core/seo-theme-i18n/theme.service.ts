@@ -9,7 +9,7 @@ export type AppTheme = 'light' | 'dark';
 export class ThemeService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly document = inject(DOCUMENT);
-  private readonly THEME_STORAGE_KEY = 'spider_math_theme_v2';
+  private readonly THEME_STORAGE_KEY = 'spider_math_theme_v3';
 
   // Signals
   readonly currentTheme = signal<AppTheme>('dark');

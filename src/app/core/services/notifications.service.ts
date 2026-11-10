@@ -155,8 +155,8 @@ export class NotificationsService {
     const title = opts.title || 'Spider Math Platform';
     const notifOptions: NotificationOptions = {
       body: opts.body,
-      icon: '/assets/branding/spider-math-logo-v2.png?v=2',
-      badge: '/assets/branding/spider-math-logo-v2.png?v=2',
+      icon: '/assets/branding/spider-math-logo-v3.png?v=3',
+      badge: '/assets/branding/spider-math-logo-v3.png?v=3',
       tag: opts.tag || `spider-${Date.now()}`,
       data: { url: opts.url || '/' }
     };

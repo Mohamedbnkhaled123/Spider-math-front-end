@@ -428,7 +428,7 @@ export class PublicDiscoveryService {
         bioEn: 'Over 14 years of excellence in teaching Egyptian, Gulf, IGCSE, and American Diploma Mathematics with deep interactive mastery of the Desmos Graphing Calculator.',
         yearsOfExperience: 14,
         totalStudentsTaught: 8500,
-        avatarUrl: '/assets/branding/spider-math-logo-v2.webp?v=2',
+        avatarUrl: '/assets/branding/spider-math-logo-v3.webp?v=3',
         qualifications: [
           'بكالوريوس هندسة — جامعة القاهرة مع مرتبة الشرف',
           'خبير معتمد ومحاضر دولي في حاسبة Desmos البيانية المتقدمة',
