@@ -136,6 +136,18 @@ export async function cropBoundingBoxToBlob(
 }
 
 /**
+ * Optimizes a Cloudinary delivery URL by injecting automatic format (`f_auto`),
+ * quality (`q_auto`), and width limit (`w_<maxWidth>,c_limit`) transformations.
+ * Ensures any future uploaded image is delivered at optimal size & format for the client.
+ */
+export function optimizeCloudinaryUrl(url: string, maxWidth: number = 1000): string {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
+  if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_auto')) return url;
+  return url.replace('/image/upload/', `/image/upload/f_auto,q_auto,w_${maxWidth},c_limit/`);
+}
+
+/**
  * Uploads an in-memory WebP blob directly to Cloudinary using a short-lived backend signature.
  * Zero binary routing through Express serverless function.
  */
@@ -158,6 +170,8 @@ export async function uploadBlobToCloudinary(
   formData.append('signature', sigData.signature);
   formData.append('folder', sigData.folder);
 
+  const maxW = target === 'question' ? 960 : 1200;
+
   try {
     const res = await fetch(sigData.uploadUrl, {
       method: 'POST',
@@ -170,14 +184,14 @@ export async function uploadBlobToCloudinary(
     }
 
     const result: { secure_url: string } = await res.json();
-    return result.secure_url;
+    return optimizeCloudinaryUrl(result.secure_url, maxW);
   } catch (fetchErr) {
     try {
       // Fallback to HttpClient (useful in unit test harnesses and restrictive WebViews)
       const httpResult = await firstValueFrom(
         http.post<{ secure_url: string }>(sigData.uploadUrl, formData)
       );
-      return httpResult.secure_url;
+      return optimizeCloudinaryUrl(httpResult.secure_url, maxW);
     } catch {
       throw fetchErr;
     }

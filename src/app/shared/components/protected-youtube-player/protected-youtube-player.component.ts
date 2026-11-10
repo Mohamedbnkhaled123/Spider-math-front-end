@@ -87,7 +87,11 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   // Computed Thumbnail for Facade
   readonly thumbnailUrl = computed<string | null>(() => {
     const videoId = this.resolveVideoId(this.encryptedVideoId());
-    return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : null;
+    if (!videoId) return null;
+    if (videoId === 'AOtzdDq7vrI') {
+      return '/assets/branding/hero-video-poster-v3.webp?v=4';
+    }
+    return `https://i.ytimg.com/vi_webp/${videoId}/hqdefault.webp`;
   });
 
   // 85% Gamification Celebration Signals (Animation 4.4)

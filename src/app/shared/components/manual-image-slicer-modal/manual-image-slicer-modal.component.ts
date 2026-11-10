@@ -77,6 +77,7 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
   }
 
   private prepareAndInitCropper(source: string | HTMLCanvasElement | Blob): void {
+    this.ensureCropperStylesLoaded();
     this.cleanupObjectUrl();
     this.destroyCropper();
     this.errorMessage.set(null);
@@ -248,8 +249,8 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
 
     try {
       const croppedCanvas = this.cropper.getCroppedCanvas({
-        maxWidth: 1600,
-        maxHeight: 1600,
+        maxWidth: 960,
+        maxHeight: 960,
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high'
       });
@@ -258,8 +259,8 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
         throw new Error('Could not retrieve cropped canvas');
       }
 
-      // Step-down quality compression to enforce <= 150KB budget
-      let quality = 0.85;
+      // Step-down quality compression to enforce <= 90KB budget
+      let quality = 0.80;
       let blob: Blob | null = null;
 
       for (let attempt = 0; attempt < 3; attempt++) {
@@ -267,10 +268,10 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
           croppedCanvas.toBlob((b) => resolve(b), 'image/webp', quality);
         });
 
-        if (blob && blob.size <= 150 * 1024) {
+        if (blob && blob.size <= 90 * 1024) {
           break;
         }
-        quality -= 0.15;
+        quality -= 0.12;
       }
 
       if (!blob) {
@@ -349,6 +350,16 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
     }
     this.isCropperReady.set(false);
     this.cleanupObjectUrl();
+  }
+
+  private ensureCropperStylesLoaded(): void {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('spider-cropper-css')) return;
+    const link = document.createElement('link');
+    link.id = 'spider-cropper-css';
+    link.rel = 'stylesheet';
+    link.href = '/cropper.min.css';
+    document.head.appendChild(link);
   }
 
   private cleanupObjectUrl(): void {

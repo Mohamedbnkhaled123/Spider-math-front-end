@@ -20,6 +20,7 @@ import {
   CompressedImageItem,
   UploadTarget
 } from './image-compressor-uploader.models';
+import { optimizeCloudinaryUrl } from '../../utils/box2d-cropper.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -283,9 +284,10 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
    * Compresses image to <= 150KB WebP using Web Worker with Canvas fallback.
    */
   private async compressToWebP(file: File): Promise<Blob> {
+    const isQuestion = this.uploadTarget() === 'question';
     const options = {
-      maxSizeMB: 0.15, // <= 150KB budget (RULES.md Section 5.2)
-      maxWidthOrHeight: 1600,
+      maxSizeMB: isQuestion ? 0.09 : 0.14, // <= 90KB for questions, <= 140KB for homework
+      maxWidthOrHeight: isQuestion ? 960 : 1280,
       useWebWorker: true,
       fileType: 'image/webp',
       initialQuality: 0.78
@@ -446,9 +448,11 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
           );
         }
 
-        item.remoteUrl = uploadResult.secure_url;
+        const maxW = this.uploadTarget() === 'question' ? 960 : 1280;
+        const optimizedUrl = optimizeCloudinaryUrl(uploadResult.secure_url, maxW);
+        item.remoteUrl = optimizedUrl;
         item.uploadStatus = 'SUCCESS';
-        uploadedUrls.push(uploadResult.secure_url);
+        uploadedUrls.push(optimizedUrl);
 
         const progress = Math.round(((i + 1) / list.length) * 100);
         this.uploadProgress.set(progress);

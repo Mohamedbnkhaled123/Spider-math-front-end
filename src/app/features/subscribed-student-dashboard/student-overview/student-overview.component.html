@@ -10,6 +10,9 @@
         <img
           [src]="authService.currentUser()?.avatar_url || presetAvatars[0].url"
           alt="Avatar"
+          width="80"
+          height="80"
+          decoding="async"
           class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-brand-primary/40 object-cover bg-surface-bg shadow-brand-glow"
         />
         <span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-primary text-white shadow-sm font-numeric">
@@ -1147,7 +1150,7 @@
                 [class.border-surface-border]="editAvatarUrl() !== av.url"
                 [title]="av.label"
               >
-                <img [src]="av.url" [alt]="av.label" class="w-10 h-10 rounded-xl object-cover" />
+                <img [src]="av.url" [alt]="av.label" width="40" height="40" loading="lazy" decoding="async" class="w-10 h-10 rounded-xl object-cover" />
                 @if (editAvatarUrl() === av.url) {
                   <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm">
                     <app-icon name="check" [size]="10" />
@@ -1177,7 +1180,7 @@
 
             @if (isCustomUploadedAvatar()) {
               <div class="flex items-center gap-2 text-xs font-bold text-emerald-500">
-                <img [src]="editAvatarUrl()" alt="Custom Avatar" class="w-7 h-7 rounded-lg object-cover border border-emerald-500/40" />
+                <img [src]="editAvatarUrl()" alt="Custom Avatar" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded-lg object-cover border border-emerald-500/40" />
                 <span>{{ langService.isArabic() ? 'تم تجهيز صورتك بنجاح' : 'Photo prepared successfully' }}</span>
                 <button
                   type="button"

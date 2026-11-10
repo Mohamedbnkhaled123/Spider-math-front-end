@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, shareReplay, tap, throwError } from 'rxjs';
 
 export interface TestimonialItem {
   id: string;
@@ -30,12 +30,25 @@ export interface AdminTestimonialItem extends TestimonialItem {
 })
 export class TestimonialsService {
   private readonly http = inject(HttpClient);
+  private approvedTestimonials$?: Observable<{ success: boolean; data: TestimonialItem[] }>;
 
   getApprovedTestimonials(): Observable<{ success: boolean; data: TestimonialItem[] }> {
-    return this.http.get<{ success: boolean; data: TestimonialItem[] }>('/api/v1/public/testimonials');
+    if (!this.approvedTestimonials$) {
+      this.approvedTestimonials$ = this.http
+        .get<{ success: boolean; data: TestimonialItem[] }>('/api/v1/public/testimonials')
+        .pipe(
+          catchError(err => {
+            this.approvedTestimonials$ = undefined;
+            return throwError(() => err);
+          }),
+          shareReplay({ bufferSize: 1, refCount: false })
+        );
+    }
+    return this.approvedTestimonials$;
   }
 
   submitTestimonial(data: { review_text: string; rating?: number }): Observable<{ success: boolean; data: { submitted: boolean; message: string } }> {
+    this.approvedTestimonials$ = undefined;
     return this.http.post<{ success: boolean; data: { submitted: boolean; message: string } }>('/api/v1/public/testimonials', data);
   }
 
@@ -44,10 +57,18 @@ export class TestimonialsService {
   }
 
   updateAdminTestimonial(id: string, data: Partial<AdminTestimonialItem>): Observable<{ success: boolean; data: any }> {
-    return this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/testimonials/${id}`, data);
+    return this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/testimonials/${id}`, data).pipe(
+      tap(() => {
+        this.approvedTestimonials$ = undefined;
+      })
+    );
   }
 
   deleteAdminTestimonial(id: string): Observable<{ success: boolean; data: { deleted: boolean } }> {
-    return this.http.delete<{ success: boolean; data: { deleted: boolean } }>(`/api/v1/admin/testimonials/${id}`);
+    return this.http.delete<{ success: boolean; data: { deleted: boolean } }>(`/api/v1/admin/testimonials/${id}`).pipe(
+      tap(() => {
+        this.approvedTestimonials$ = undefined;
+      })
+    );
   }
 }

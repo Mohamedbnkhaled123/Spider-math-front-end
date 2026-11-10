@@ -112,7 +112,7 @@
 
                   @if (q.questionImageUrl) {
                     <div class="rounded-xl overflow-hidden border border-surface-border max-w-sm">
-                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain" />
+                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" loading="lazy" decoding="async" class="w-full h-auto object-contain" />
                     </div>
                   }
 
@@ -144,7 +144,7 @@
                         (click)="openImagePreview(img.imageUrl)"
                         class="group relative aspect-video rounded-xl overflow-hidden border border-surface-border bg-black/5 hover:border-brand-primary transition-all cursor-pointer shadow-sm"
                       >
-                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
+                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
                           <app-icon name="maximize" [size]="14" />
                           <span>{{ langService.isArabic() ? 'تكبير' : 'Zoom' }}</span>
@@ -367,7 +367,7 @@
                       (click)="openImagePreview(qImg)"
                       class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
                     >
-                      <img [src]="qImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
+                      <img [src]="qImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" loading="lazy" decoding="async" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
                       <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'اضغط لتكبير صورة المسألة' : 'Click to zoom question image' }}</span>
                     </div>
                   }
@@ -449,7 +449,7 @@
                             (click)="openImagePreview(img.imageUrl)"
                             class="group relative aspect-video rounded-xl overflow-hidden border border-surface-border bg-black/5 hover:border-brand-primary transition-all cursor-pointer shadow-sm"
                           >
-                            <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
+                            <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-all" />
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
                               <app-icon name="maximize" [size]="14" />
                               <span>{{ langService.isArabic() ? 'تكبير الصورة' : 'Zoom Image' }}</span>
@@ -529,7 +529,7 @@
                           (click)="openImagePreview(mImg)"
                           class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
                         >
-                          <img [src]="mImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
+                          <img [src]="mImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" loading="lazy" decoding="async" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
                           <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'اضغط لتكبير صورة المسألة' : 'Click to zoom question image' }}</span>
                         </div>
                       }

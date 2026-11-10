@@ -11,7 +11,8 @@ import katex from 'katex';
 import {
   ISafeMathToken,
   parseMathTokens,
-  normalizeForKaTeX
+  normalizeForKaTeX,
+  ensureKatexStylesLoaded
 } from './math-formula.models';
 
 /**
@@ -49,6 +50,7 @@ export class MathFormulaComponent {
         return token;
       }
 
+      ensureKatexStylesLoaded();
       const isBlock = token.type === 'BLOCK_MATH' || (!this.inline() && rawTokens.length === 1);
       try {
         const katexInput = normalizeForKaTeX(token.raw);

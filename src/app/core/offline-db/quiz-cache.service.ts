@@ -9,6 +9,7 @@ import {
   CachedQuestion,
   UrgencyState
 } from './quiz-cache.models';
+import { optimizeCloudinaryUrl } from '../../shared/utils/box2d-cropper.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -98,7 +99,7 @@ export class QuizCacheService implements OnDestroy {
             question_type: q.question_type || q.questionType || q.type || ((q.options && q.options.length > 0) ? 'MCQ' : 'ESSAY'),
             question_text_ar: q.question_text_ar || q.question_text || q.textAr || '',
             question_text_en: q.question_text_en || q.textEn || '',
-            question_image_url: q.question_image_url || q.questionImageUrl || null,
+            question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
             options: (q.options || []).map((opt: any, oIdx: number) => ({
               option_index: typeof opt === 'object' && opt.option_index !== undefined ? opt.option_index : oIdx,
               text_ar: typeof opt === 'string' ? opt : (opt.text_ar || opt.text || ''),
@@ -143,7 +144,7 @@ export class QuizCacheService implements OnDestroy {
             idempotencyKey: data.idempotencyKey || cached?.idempotencyKey || undefined,
             title: asm.title_ar || asm.titleAr || data.title || cached?.title || 'Interactive Assessment',
             unitId: asm.unit_package_id || asm.unit_id || data.unit_id || cached?.unitId,
-            referenceSheetUrl: asm.reference_sheet_url || asm.referenceSheetUrl || data.reference_sheet_url || cached?.referenceSheetUrl || null,
+            referenceSheetUrl: optimizeCloudinaryUrl(asm.reference_sheet_url || asm.referenceSheetUrl || data.reference_sheet_url || cached?.referenceSheetUrl || null, 1280),
             durationMinutes,
             questions: sanitizedQuestions.length > 0 ? sanitizedQuestions : (cached?.questions || []),
             elapsedSeconds: finalElapsedSec,

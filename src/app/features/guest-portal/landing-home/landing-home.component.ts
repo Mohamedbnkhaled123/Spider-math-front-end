@@ -5,6 +5,9 @@ import {
   computed,
   inject,
   OnInit,
+  AfterViewInit,
+  OnDestroy,
+  NgZone,
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -32,7 +35,6 @@ import {
   IGradeLevelMeta
 } from '../../../core/constants/curriculum-tree.constant';
 import { AuthService } from '../../../core/auth/auth.service';
-import { FormsModule } from '@angular/forms';
 import {
   getUnitMathTheme,
   isUnitContentEmpty
@@ -43,7 +45,6 @@ import { TestimonialsService, TestimonialItem } from '../../../core/services/tes
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     AppIconComponent,
     CurriculumSelectorCardsComponent,
@@ -53,10 +54,11 @@ import { TestimonialsService, TestimonialItem } from '../../../core/services/tes
   styleUrl: './landing-home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LandingHomeComponent implements OnInit {
+export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly ngZone = inject(NgZone);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
@@ -64,6 +66,8 @@ export class LandingHomeComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
   private readonly testimonialsService = inject(TestimonialsService);
+  private testimonialsObserver?: IntersectionObserver;
+  private hasRequestedTestimonials = false;
 
   // Testimonials State
   readonly testimonials = signal<TestimonialItem[]>([]);
@@ -133,8 +137,8 @@ export class LandingHomeComponent implements OnInit {
   readonly selectedGradeLevel = signal<string>('SEC_3');
   readonly selectedTerm = signal<AcademicTermCode>('TERM_1');
   readonly activeUnitTab = signal<'STUDY_UNIT' | 'FINAL_REVISION'>('STUDY_UNIT');
-  // Landing Data Signal
-  readonly landingData = signal<IPublicLandingData | null>(null);
+  // Landing Data Signal (Pre-populated with default structure to prevent announcement banner CLS)
+  readonly landingData = signal<IPublicLandingData | null>(this.discoveryService.getDefaultLandingData());
   readonly isLoading = signal<boolean>(true);
   // Active Academic Term from CMS (Set by Admin, applies platform-wide)
   readonly activeAcademicTerm = computed<AcademicTermCode>(() => {
@@ -608,16 +612,50 @@ export class LandingHomeComponent implements OnInit {
       next: data => {
         this.landingData.set(data);
         this.isLoading.set(false);
-        this.checkPlacementAvailability();
       },
       error: () => {
         this.isLoading.set(false);
-        this.checkPlacementAvailability();
       }
 
     });
 
-    this.loadTestimonials();
+    if (!isPlatformBrowser(this.platformId) || typeof IntersectionObserver === 'undefined') {
+      this.loadTestimonials();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId) || this.hasRequestedTestimonials) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      this.loadTestimonials();
+      return;
+    }
+
+    this.ngZone.runOutsideAngular(() => {
+      const target = document.getElementById('testimonials');
+      if (!target) {
+        this.ngZone.run(() => this.loadTestimonials());
+        return;
+      }
+
+      this.testimonialsObserver = new IntersectionObserver(
+        (entries) => {
+          const isVisible = entries.some(entry => entry.isIntersecting);
+          if (isVisible) {
+            this.testimonialsObserver?.disconnect();
+            this.testimonialsObserver = undefined;
+            this.ngZone.run(() => this.loadTestimonials());
+          }
+        },
+        { rootMargin: '300px 0px' }
+      );
+      this.testimonialsObserver.observe(target);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.testimonialsObserver?.disconnect();
+    this.testimonialsObserver = undefined;
   }
 
   openPlacementModal(): void {
@@ -750,6 +788,8 @@ export class LandingHomeComponent implements OnInit {
   }
 
   loadTestimonials(): void {
+    if (this.hasRequestedTestimonials) return;
+    this.hasRequestedTestimonials = true;
     this.isLoadingTestimonials.set(true);
     this.testimonialsService.getApprovedTestimonials().subscribe({
       next: (res) => {

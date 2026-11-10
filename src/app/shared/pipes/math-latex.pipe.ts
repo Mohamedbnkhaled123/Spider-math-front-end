@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import katex from 'katex';
-import { parseMathTokens, normalizeForKaTeX } from '../components/math-formula/math-formula.models';
+import { parseMathTokens, normalizeForKaTeX, ensureKatexStylesLoaded } from '../components/math-formula/math-formula.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -26,6 +26,7 @@ export class MathLatexPipe implements PipeTransform {
         return `<span class="math-plain-text">${this.escapeHtml(token.raw)}</span>`;
       }
 
+      ensureKatexStylesLoaded();
       const isBlock = token.type === 'BLOCK_MATH';
       try {
         const katexInput = normalizeForKaTeX(token.raw);

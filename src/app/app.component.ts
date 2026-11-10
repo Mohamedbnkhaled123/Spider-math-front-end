@@ -7,6 +7,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { BrandHeaderComponent } from './shared/components/brand-header/brand-header.component';
 import { BrandFooterComponent } from './shared/components/brand-footer/brand-footer.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from './core/services/confirm-dialog.service';
 import { LangService } from './core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 
@@ -26,6 +27,7 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 })
 export class AppComponent implements OnInit {
   readonly langService = inject(LangService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);
 

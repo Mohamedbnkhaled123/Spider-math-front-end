@@ -15,21 +15,79 @@ const stylesFile = files.find((f) => /^styles(?:-[A-Za-z0-9_-]+)?\.css$/.test(f)
 const polyfillsFile = files.find((f) => /^polyfills(?:-[A-Za-z0-9_-]+)?\.js$/.test(f));
 const mainFile = files.find((f) => /^main(?:-[A-Za-z0-9_-]+)?\.js$/.test(f));
 
+function collectCriticalModulePreloads() {
+  const preloads = new Set();
+  if (mainFile) preloads.add(mainFile);
+
+  const extractStaticImports = (jsFile) => {
+    const filePath = path.join(browserDir, jsFile);
+    if (!fs.existsSync(filePath)) return [];
+    const content = fs.readFileSync(filePath, 'utf8');
+    const results = [];
+    const staticRe = /from\s*["']\.\/(chunk-[A-Za-z0-9_-]+\.js)["']/g;
+    let m;
+    while ((m = staticRe.exec(content)) !== null) {
+      results.push(m[1]);
+    }
+    return results;
+  };
+
+  if (mainFile) {
+    for (const chunk of extractStaticImports(mainFile)) {
+      preloads.add(chunk);
+    }
+    // Also find the landing-home chunk (first dynamic import in main or route table)
+    const mainContent = fs.readFileSync(path.join(browserDir, mainFile), 'utf8');
+    const dynMatch = mainContent.match(/import\(\s*["']\.\/(chunk-[A-Za-z0-9_-]+\.js)["']\s*\)/);
+    if (dynMatch && dynMatch[1]) {
+      const landingChunk = dynMatch[1];
+      preloads.add(landingChunk);
+      for (const subChunk of extractStaticImports(landingChunk)) {
+        preloads.add(subChunk);
+      }
+    }
+  }
+
+  return Array.from(preloads);
+}
+
+const criticalPreloads = collectCriticalModulePreloads();
+
 function injectBundles(html) {
   let updated = html;
 
-  if (stylesFile && !updated.includes(stylesFile)) {
-    updated = updated.replace(
-      '</head>',
-      `  <link rel="stylesheet" href="/${stylesFile}">\n</head>`
+  if (stylesFile) {
+    const nonBlockingCss = `  <link rel="preload" href="/${stylesFile}" as="style">\n  <link rel="stylesheet" href="/${stylesFile}" media="print" onload="this.media='all'">\n  <noscript><link rel="stylesheet" href="/${stylesFile}"></noscript>`;
+    // Replace any existing blocking stylesheet link for stylesFile or inject before </head>
+    const blockingLinkRe = new RegExp(
+      `<link[^>]*rel=["']stylesheet["'][^>]*href=["']\\/?${stylesFile.replace('.', '\\.')}["'][^>]*>`,
+      'i'
     );
+    if (!updated.includes(stylesFile)) {
+      updated = updated.replace('</head>', `${nonBlockingCss}\n</head>`);
+    } else if (blockingLinkRe.test(updated) && !updated.includes(`onload="this.media='all'"`)) {
+      updated = updated.replace(blockingLinkRe, nonBlockingCss.trim());
+    }
+    // Ensure root-relative href for stylesFile
+    updated = updated.replace(
+      new RegExp(`href=["']${stylesFile.replace('.', '\\.')}["']`, 'g'),
+      `href="/${stylesFile}"`
+    );
+  }
+
+  // Inject modulepreload links for critical chunks to flatten the network dependency waterfall
+  const preloadTags = criticalPreloads
+    .filter((chunk) => !updated.includes(`href="/${chunk}"`) && !updated.includes(`href="${chunk}"`))
+    .map((chunk) => `  <link rel="modulepreload" href="/${chunk}">`);
+  if (preloadTags.length > 0) {
+    updated = updated.replace('</head>', `${preloadTags.join('\n')}\n</head>`);
   }
 
   const scriptsToInject = [];
   if (polyfillsFile && !updated.includes(polyfillsFile)) {
     scriptsToInject.push(`  <script type="module" src="/${polyfillsFile}"></script>`);
   }
-  if (mainFile && !updated.includes(mainFile)) {
+  if (mainFile && !updated.includes(`src="/${mainFile}"`) && !updated.includes(`src="${mainFile}"`)) {
     scriptsToInject.push(`  <script type="module" src="/${mainFile}"></script>`);
   }
 

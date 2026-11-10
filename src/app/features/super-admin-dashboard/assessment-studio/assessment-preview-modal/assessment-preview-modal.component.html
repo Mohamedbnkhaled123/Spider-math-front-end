@@ -158,6 +158,8 @@
                   <img
                     [src]="q.questionImageUrl"
                     [alt]="langService.isArabic() ? 'شكل توضيحي للسؤال' : 'Question illustration'"
+                    loading="lazy"
+                    decoding="async"
                     class="w-full h-auto rounded-xl object-contain max-h-72"
                   />
                 </div>
@@ -419,7 +421,7 @@
                   <!-- Optional Image -->
                   @if (q.questionImageUrl) {
                     <div class="max-w-xs rounded-xl overflow-hidden border border-surface-border p-1 bg-surface-bg">
-                      <img [src]="q.questionImageUrl" alt="Question" class="w-full h-auto rounded-lg object-contain max-h-48" />
+                      <img [src]="q.questionImageUrl" alt="Question" loading="lazy" decoding="async" class="w-full h-auto rounded-lg object-contain max-h-48" />
                     </div>
                   }
 
@@ -564,6 +566,8 @@
           <img
             [src]="asm.referenceSheetUrl"
             alt="Reference Sheet"
+            loading="lazy"
+            decoding="async"
             class="max-w-full max-h-[75vh] object-contain rounded-xl"
           />
         </div>

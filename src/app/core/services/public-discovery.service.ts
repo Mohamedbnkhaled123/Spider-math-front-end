@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 
 import {
   ICurriculumTreeItem,
@@ -20,6 +20,7 @@ import {
   CurriculumCode,
   AcademicTermCode
 } from '../constants/curriculum-tree.constant';
+import { optimizeCloudinaryUrl } from '../../shared/utils/box2d-cropper.util';
 
 @Injectable({
   providedIn: 'root'
@@ -27,185 +28,213 @@ import {
 export class PublicDiscoveryService {
   private readonly http = inject(HttpClient);
   private readonly apiBase = '/api/v1';
+  private curriculumTree$?: Observable<ICurriculumTreeItem[]>;
+  private landingData$?: Observable<IPublicLandingData>;
+  private readonly unitsCatalogCache = new Map<string, Observable<any[]>>();
+  private readonly gradeQuizzesCache = new Map<string, Observable<IGradeQuizzesResponse>>();
 
   /**
    * Fetches dynamic 5-level curriculum taxonomy tree from MongoDB.
    * Hydrates availability flags (published units count).
    */
   getCurriculumTree(): Observable<ICurriculumTreeItem[]> {
-    return this.http.get<{ success: boolean; data: ICurriculumTreeItem[] }>(
-      `${this.apiBase}/public/curriculum-tree`
-    ).pipe(
-      map(res => res.data),
-      catchError(() => {
-        // Fallback: derive dynamic tree mapping from CANONICAL_CURRICULUM_TREE
-        const fallbackTree: ICurriculumTreeItem[] = CANONICAL_CURRICULUM_TREE.map(c => ({
-          curriculum: c.code,
-          hasPublishedUnits: true,
-          totalPublishedUnitsCount: 12,
-          gradeLevels: c.grades.map((g, idx) => ({
-            gradeLevel: g.code,
-            hasPublishedUnits: idx < 4, // highlight active grades, mark later grades as Coming Soon
-            totalPublishedUnitsCount: idx < 4 ? 6 : 0,
-            isAvailable: idx < 4,
-            terms: [
-              { term: 'TERM_1', publishedUnitsCount: idx < 4 ? 3 : 0, hasPublishedUnits: idx < 4, hasPlacementTest: true },
-              { term: 'TERM_2', publishedUnitsCount: idx < 4 ? 3 : 0, hasPublishedUnits: idx < 4, hasPlacementTest: true }
-            ]
-          }))
-        }));
-        return of(fallbackTree);
-      })
-    );
+    if (!this.curriculumTree$) {
+      this.curriculumTree$ = this.http.get<{ success: boolean; data: ICurriculumTreeItem[] }>(
+        `${this.apiBase}/public/curriculum-tree`
+      ).pipe(
+        map(res => res.data),
+        catchError(() => {
+          this.curriculumTree$ = undefined;
+          // Fallback: derive dynamic tree mapping from CANONICAL_CURRICULUM_TREE
+          const fallbackTree: ICurriculumTreeItem[] = CANONICAL_CURRICULUM_TREE.map(c => ({
+            curriculum: c.code,
+            hasPublishedUnits: true,
+            totalPublishedUnitsCount: 12,
+            gradeLevels: c.grades.map((g, idx) => ({
+              gradeLevel: g.code,
+              hasPublishedUnits: idx < 4, // highlight active grades, mark later grades as Coming Soon
+              totalPublishedUnitsCount: idx < 4 ? 6 : 0,
+              isAvailable: idx < 4,
+              terms: [
+                { term: 'TERM_1', publishedUnitsCount: idx < 4 ? 3 : 0, hasPublishedUnits: idx < 4, hasPlacementTest: true },
+                { term: 'TERM_2', publishedUnitsCount: idx < 4 ? 3 : 0, hasPublishedUnits: idx < 4, hasPlacementTest: true }
+              ]
+            }))
+          }));
+          return of(fallbackTree);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this.curriculumTree$;
+  }
+
+  /**
+   * Returns immediate default landing data for synchronous initial render (zero CLS).
+   * Uses `isAnnouncementActive: false` by default so the top announcement ribbon does not
+   * flash and collapse when the production CMS returns `isAnnouncementActive: false`.
+   */
+  getDefaultLandingData(): IPublicLandingData {
+    return {
+      ...this.getFallbackLandingData(),
+      isAnnouncementActive: false
+    };
   }
 
   /**
    * Fetches cached public landing CMS data (Bio, schedules, packages, testimonials).
    */
   getLandingData(): Observable<IPublicLandingData> {
-    return this.http.get<{ success: boolean; data: any }>(
-      `${this.apiBase}/public/landing-data`
-    ).pipe(
-      map(res => {
-        const raw = res?.data;
-        const fallback = this.getFallbackLandingData();
-        if (!raw) return fallback;
+    if (!this.landingData$) {
+      this.landingData$ = this.http.get<{ success: boolean; data: any }>(
+        `${this.apiBase}/public/landing-data`
+      ).pipe(
+        map(res => {
+          const raw = res?.data;
+          const fallback = this.getFallbackLandingData();
+          if (!raw) return fallback;
 
-        const rawSchedules = Array.isArray(raw.schedulesTable)
-          ? raw.schedulesTable
-          : Array.isArray(raw.schedules_table)
-            ? raw.schedules_table
-            : Array.isArray(raw.schedules)
-              ? raw.schedules
-              : [];
+          const rawSchedules = Array.isArray(raw.schedulesTable)
+            ? raw.schedulesTable
+            : Array.isArray(raw.schedules_table)
+              ? raw.schedules_table
+              : Array.isArray(raw.schedules)
+                ? raw.schedules
+                : [];
 
-        const normalizedSchedules: IScheduleItem[] = rawSchedules.map((s: any) => ({
-          curriculum: s.curriculum || 'EGYPTIAN',
-          gradeLevel: s.gradeLevel || s.grade_level || 'SEC_3',
-          term: s.term || s.academic_term || 'TERM_1',
-          dayOfWeekAr: s.dayOfWeekAr || s.days_ar || s.dayOfWeek || 'الأحد والثلاثاء',
-          dayOfWeekEn: s.dayOfWeekEn || s.days_en || 'Sun & Tue',
-          dayOfWeek: s.dayOfWeek || s.days_ar || s.dayOfWeekAr || 'الأحد والثلاثاء',
-          timeSlot: s.timeSlot || s.time_slot || '',
-          lectureTitleAr: s.lectureTitleAr || s.lectureSubject || s.lecture_subject || '',
-          lectureTitleEn: s.lectureTitleEn || '',
-          lectureSubject: s.lectureSubject || s.lecture_subject || s.lectureTitleAr || ''
-        }));
+          const normalizedSchedules: IScheduleItem[] = rawSchedules.map((s: any) => ({
+            curriculum: s.curriculum || 'EGYPTIAN',
+            gradeLevel: s.gradeLevel || s.grade_level || 'SEC_3',
+            term: s.term || s.academic_term || 'TERM_1',
+            dayOfWeekAr: s.dayOfWeekAr || s.days_ar || s.dayOfWeek || 'الأحد والثلاثاء',
+            dayOfWeekEn: s.dayOfWeekEn || s.days_en || 'Sun & Tue',
+            dayOfWeek: s.dayOfWeek || s.days_ar || s.dayOfWeekAr || 'الأحد والثلاثاء',
+            timeSlot: s.timeSlot || s.time_slot || '',
+            lectureTitleAr: s.lectureTitleAr || s.lectureSubject || s.lecture_subject || '',
+            lectureTitleEn: s.lectureTitleEn || '',
+            lectureSubject: s.lectureSubject || s.lecture_subject || s.lectureTitleAr || ''
+          }));
 
-        return {
-          heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || fallback.heroHeadlineAr,
-          heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || fallback.heroHeadlineEn,
-          heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || fallback.heroSubheadlineAr,
-          heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || fallback.heroSubheadlineEn,
-          heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || fallback.heroVideoUrl || '',
-          announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || fallback.announcementBannerText,
-          isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
-          activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
-          activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || fallback.activeAcademicTerm || 'TERM_1',
-          announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦',
+          return {
+            heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || fallback.heroHeadlineAr,
+            heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || fallback.heroHeadlineEn,
+            heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || fallback.heroSubheadlineAr,
+            heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || fallback.heroSubheadlineEn,
+            heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || fallback.heroVideoUrl || '',
+            announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || fallback.announcementBannerText,
+            isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
+            activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
+            activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || fallback.activeAcademicTerm || 'TERM_1',
+            announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦',
 
-          heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || 'Spider Math✦ المنظومة الهندسية الرائدة',
-          heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || 'Spider Math✦ Engineering Excellence',
-          heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || 'اختار منهجك وابدأ الآن',
-          heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || 'Choose Your Curriculum & Begin',
-          heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || 'امتحان تحديد المستوى المجاني',
-          heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || 'Free Placement Test',
+            heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || 'Spider Math✦ المنظومة الهندسية الرائدة',
+            heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || 'Spider Math✦ Engineering Excellence',
+            heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || 'اختار منهجك وابدأ الآن',
+            heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || 'Choose Your Curriculum & Begin',
+            heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || 'امتحان تحديد المستوى المجاني',
+            heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || 'Free Placement Test',
 
-          teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
-          teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
-          teacherTitleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
-          teacherTitleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
-          teacherBioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
-          teacherBioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
-          teacherQualificationsAr: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
-            ? raw.teacherQualificationsAr
-            : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
-              ? raw.teacher_qualifications_ar
-              : fallback.teacherBio.qualifications,
-          teacherQualificationsEn: (raw.teacherQualificationsEn && raw.teacherQualificationsEn.length > 0)
-            ? raw.teacherQualificationsEn
-            : (raw.teacher_qualifications_en && raw.teacher_qualifications_en.length > 0)
-              ? raw.teacher_qualifications_en
-              : [
-                'B.Sc. in Engineering — Cairo University with Honors',
-                'Certified International Desmos Graphing Calculator Specialist',
-                'Certified Instructor for SAT I/II, EST I/II and ACT Math',
-                'Consistent top scores and highest student rankings year over year'
-              ],
-          teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || 'تواصل مباشرة مع فريق م/ هبة عبر واتساب',
-          teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || 'Direct WhatsApp Consultation',
-
-          curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || 'المسارات الأكاديمية والمناهج',
-          curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || 'Academic Tracks & Curriculums',
-          curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || 'اختر منهجك الدراسي وابدأ رحلة التفوق',
-          curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || 'Choose Your Curriculum & Begin Mastery',
-          curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي',
-          curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || 'Comprehensive educational tracks designed with high engineering standards',
-
-          placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || 'اختبار تحديد المستوى وتشخيص المهارات الرياضية',
-          placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || 'Free Placement & Diagnostic Assessment',
-          placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك',
-          placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || 'Assess Your Skills & Discover Your Strengths',
-          placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.',
-          placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.',
-          placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || 'تقييم ذكي ومباشر',
-          placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || 'Instant Diagnostic Feedback',
-          placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || 'تقرير مفصل بنقاط القوة والضعف',
-          placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || 'Strengths & Weaknesses Report',
-          placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || 'متابعة شخصية من م/ هبة عبدالوهاب',
-          placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || 'Eng. Heba Follow-up',
-          placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ اختبار تحديد المستوى الآن',
-          placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start Diagnostic Assessment Now',
-
-          scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || 'جدول المواعيد والحصص',
-          scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || 'Live Lecture Schedule',
-          scheduleTitleAr: raw.scheduleTitleAr || raw.schedule_title_ar || 'مواعيد المحاضرات والبث المباشر',
-          scheduleTitleEn: raw.scheduleTitleEn || raw.schedule_title_en || 'Class Timetable & Streaming Schedule',
-          scheduleSubtitleAr: raw.scheduleSubtitleAr || raw.schedule_subtitle_ar || 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة',
-          scheduleSubtitleEn: raw.scheduleSubtitleEn || raw.schedule_subtitle_en || 'Times shown in Cairo Local Time (GMT+3)',
-
-          pricingBadgeAr: raw.pricingBadgeAr || raw.pricing_badge_ar || 'الباقات الدراسية والمراجعات',
-          pricingBadgeEn: raw.pricingBadgeEn || raw.pricing_badge_en || 'Packages & Tuition Plans',
-          pricingTitleAr: raw.pricingTitleAr || raw.pricing_title_ar || 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة',
-          pricingTitleEn: raw.pricingTitleEn || raw.pricing_title_en || 'Transparent Tuition & Revision Packages',
-          pricingSubtitleAr: raw.pricingSubtitleAr || raw.pricing_subtitle_ar || 'خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار',
-          pricingSubtitleEn: raw.pricingSubtitleEn || raw.pricing_subtitle_en || 'Flexible study units and intensive final revisions engineered for mastery',
-
-          teacherBio: {
-            nameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
-            nameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
-            titleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
-            titleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
-            bioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
-            bioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
-            yearsOfExperience: fallback.teacherBio.yearsOfExperience,
-            totalStudentsTaught: fallback.teacherBio.totalStudentsTaught,
-            avatarUrl: fallback.teacherBio.avatarUrl,
-            qualifications: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
+            teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
+            teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
+            teacherTitleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
+            teacherTitleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
+            teacherBioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
+            teacherBioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
+            teacherQualificationsAr: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
               ? raw.teacherQualificationsAr
               : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
                 ? raw.teacher_qualifications_ar
-                : fallback.teacherBio.qualifications
-          },
-          schedules: normalizedSchedules,
-          pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
-            ? raw.pricingPackages
-            : (raw.pricing_packages && raw.pricing_packages.length > 0)
-              ? raw.pricing_packages
-              : fallback.pricingPackages,
-          whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || raw.contact_channels?.subscription_whatsapp || fallback.whatsappSupportNumber,
-          contactChannels: raw.contact_channels || raw.contactChannels || {
-            subscription_whatsapp: raw.supportWhatsapp || '',
-            support_whatsapp: raw.supportWhatsapp || '',
-            telegram_url: raw.supportTelegram || raw.telegram_url || '',
-            facebook_url: raw.facebookUrl || raw.facebook_url || '',
-            youtube_channel_url: raw.youtubeUrl || raw.youtube_channel_url || ''
-          },
-          landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
-        };
-      }),
-      catchError(() => of(this.getFallbackLandingData()))
-    );
+                : fallback.teacherBio.qualifications,
+            teacherQualificationsEn: (raw.teacherQualificationsEn && raw.teacherQualificationsEn.length > 0)
+              ? raw.teacherQualificationsEn
+              : (raw.teacher_qualifications_en && raw.teacher_qualifications_en.length > 0)
+                ? raw.teacher_qualifications_en
+                : [
+                  'B.Sc. in Engineering — Cairo University with Honors',
+                  'Certified International Desmos Graphing Calculator Specialist',
+                  'Certified Instructor for SAT I/II, EST I/II and ACT Math',
+                  'Consistent top scores and highest student rankings year over year'
+                ],
+            teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || 'تواصل مباشرة مع فريق م/ هبة عبر واتساب',
+            teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || 'Direct WhatsApp Consultation',
+
+            curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || 'المسارات الأكاديمية والمناهج',
+            curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || 'Academic Tracks & Curriculums',
+            curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || 'اختر منهجك الدراسي وابدأ رحلة التفوق',
+            curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || 'Choose Your Curriculum & Begin Mastery',
+            curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي',
+            curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || 'Comprehensive educational tracks designed with high engineering standards',
+
+            placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || 'اختبار تحديد المستوى وتشخيص المهارات الرياضية',
+            placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || 'Free Placement & Diagnostic Assessment',
+            placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك',
+            placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || 'Assess Your Skills & Discover Your Strengths',
+            placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.',
+            placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.',
+            placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || 'تقييم ذكي ومباشر',
+            placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || 'Instant Diagnostic Feedback',
+            placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || 'تقرير مفصل بنقاط القوة والضعف',
+            placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || 'Strengths & Weaknesses Report',
+            placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || 'متابعة شخصية من م/ هبة عبدالوهاب',
+            placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || 'Eng. Heba Follow-up',
+            placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ اختبار تحديد المستوى الآن',
+            placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start Diagnostic Assessment Now',
+
+            scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || 'جدول المواعيد والحصص',
+            scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || 'Live Lecture Schedule',
+            scheduleTitleAr: raw.scheduleTitleAr || raw.schedule_title_ar || 'مواعيد المحاضرات والبث المباشر',
+            scheduleTitleEn: raw.scheduleTitleEn || raw.schedule_title_en || 'Class Timetable & Streaming Schedule',
+            scheduleSubtitleAr: raw.scheduleSubtitleAr || raw.schedule_subtitle_ar || 'يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة',
+            scheduleSubtitleEn: raw.scheduleSubtitleEn || raw.schedule_subtitle_en || 'Times shown in Cairo Local Time (GMT+3)',
+
+            pricingBadgeAr: raw.pricingBadgeAr || raw.pricing_badge_ar || 'الباقات الدراسية والمراجعات',
+            pricingBadgeEn: raw.pricingBadgeEn || raw.pricing_badge_en || 'Packages & Tuition Plans',
+            pricingTitleAr: raw.pricingTitleAr || raw.pricing_title_ar || 'استثمر في مستقبلك الأكاديمي بأعلى معايير الجودة',
+            pricingTitleEn: raw.pricingTitleEn || raw.pricing_title_en || 'Transparent Tuition & Revision Packages',
+            pricingSubtitleAr: raw.pricingSubtitleAr || raw.pricing_subtitle_ar || 'خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار',
+            pricingSubtitleEn: raw.pricingSubtitleEn || raw.pricing_subtitle_en || 'Flexible study units and intensive final revisions engineered for mastery',
+
+            teacherBio: {
+              nameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
+              nameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
+              titleAr: raw.teacherTitleAr || raw.teacher_title_ar || fallback.teacherBio.titleAr,
+              titleEn: raw.teacherTitleEn || raw.teacher_title_en || fallback.teacherBio.titleEn,
+              bioAr: raw.teacherBioAr || raw.teacher_bio_ar || fallback.teacherBio.bioAr,
+              bioEn: raw.teacherBioEn || raw.teacher_bio_en || fallback.teacherBio.bioEn,
+              yearsOfExperience: fallback.teacherBio.yearsOfExperience,
+              totalStudentsTaught: fallback.teacherBio.totalStudentsTaught,
+              avatarUrl: fallback.teacherBio.avatarUrl,
+              qualifications: (raw.teacherQualificationsAr && raw.teacherQualificationsAr.length > 0)
+                ? raw.teacherQualificationsAr
+                : (raw.teacher_qualifications_ar && raw.teacher_qualifications_ar.length > 0)
+                  ? raw.teacher_qualifications_ar
+                  : fallback.teacherBio.qualifications
+            },
+            schedules: normalizedSchedules,
+            pricingPackages: (raw.pricingPackages && raw.pricingPackages.length > 0)
+              ? raw.pricingPackages
+              : (raw.pricing_packages && raw.pricing_packages.length > 0)
+                ? raw.pricing_packages
+                : fallback.pricingPackages,
+            whatsappSupportNumber: raw.supportWhatsapp || raw.contact_channels?.support_whatsapp || raw.contact_channels?.subscription_whatsapp || fallback.whatsappSupportNumber,
+            contactChannels: raw.contact_channels || raw.contactChannels || {
+              subscription_whatsapp: raw.supportWhatsapp || '',
+              support_whatsapp: raw.supportWhatsapp || '',
+              telegram_url: raw.supportTelegram || raw.telegram_url || '',
+              facebook_url: raw.facebookUrl || raw.facebook_url || '',
+              youtube_channel_url: raw.youtubeUrl || raw.youtube_channel_url || ''
+            },
+            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
+          };
+        }),
+        catchError(() => {
+          this.landingData$ = undefined;
+          return of(this.getFallbackLandingData());
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this.landingData$;
   }
 
   /**
@@ -252,7 +281,7 @@ export class PublicDiscoveryService {
           questions: d.questions.map((q: any, qIdx: number) => ({
             question_id: q.question_id || q.id || `q_${qIdx}`,
             question_text: q.question_text || q.questionText || '',
-            question_image_url: q.question_image_url || q.questionImageUrl || null,
+            question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
             points: q.points || 5,
             has_desmos_calculator: q.has_desmos_calculator ?? (d.graphCalculator === 'DESMOS'),
             options: (q.options || []).map((opt: any, optIdx: number) => {
@@ -290,38 +319,58 @@ export class PublicDiscoveryService {
     term?: string,
     type?: string
   ): Observable<any[]> {
+    const cacheKey = `${curriculum || ''}|${gradeLevel || ''}|${term || ''}|${type || ''}`;
+    const cached = this.unitsCatalogCache.get(cacheKey);
+    if (cached) return cached;
+
     let params = new HttpParams();
     if (curriculum) params = params.set('curriculum', curriculum);
     if (gradeLevel) params = params.set('gradeLevel', gradeLevel);
     if (term) params = params.set('term', term);
     if (type) params = params.set('type', type);
 
-    return this.http.get<{ success: boolean; data: any[] }>(
+    const req$ = this.http.get<{ success: boolean; data: any[] }>(
       `${this.apiBase}/units`,
       { params }
     ).pipe(
       map(res => res?.data || []),
-      catchError(() => of([]))
+      catchError(() => {
+        this.unitsCatalogCache.delete(cacheKey);
+        return of([]);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+    this.unitsCatalogCache.set(cacheKey, req$);
+    return req$;
   }
 
   /**
    * Fetches published curriculum quizzes for a specific grade & term grouped by units.
    */
   getGradeQuizzes(curriculum: string, gradeLevel: string, term?: string): Observable<IGradeQuizzesResponse> {
+    const cacheKey = `${curriculum}|${gradeLevel}|${term || ''}`;
+    const cached = this.gradeQuizzesCache.get(cacheKey);
+    if (cached) return cached;
+
     let params = new HttpParams()
       .set('curriculum', curriculum)
       .set('gradeLevel', gradeLevel);
     if (term) {
       params = params.set('term', term);
     }
-    return this.http.get<{ success: boolean; data: IGradeQuizzesResponse }>(
+    const req$ = this.http.get<{ success: boolean; data: IGradeQuizzesResponse }>(
       `${this.apiBase}/public/grade-quizzes`,
       { params }
     ).pipe(
       map(res => res?.data || { units: [], generalQuizzes: [] }),
-      catchError(() => of({ units: [], generalQuizzes: [] }))
+      catchError(() => {
+        this.gradeQuizzesCache.delete(cacheKey);
+        return of({ units: [], generalQuizzes: [] });
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+    this.gradeQuizzesCache.set(cacheKey, req$);
+    return req$;
   }
 
   /**
@@ -428,7 +477,7 @@ export class PublicDiscoveryService {
         bioEn: 'Over 14 years of excellence in teaching Egyptian, Gulf, IGCSE, and American Diploma Mathematics with deep interactive mastery of the Desmos Graphing Calculator.',
         yearsOfExperience: 14,
         totalStudentsTaught: 8500,
-        avatarUrl: '/assets/branding/spider-math-logo-v3.webp?v=3',
+        avatarUrl: '/assets/branding/spider-math-logo-v3.webp?v=4',
         qualifications: [
           'بكالوريوس هندسة — جامعة القاهرة مع مرتبة الشرف',
           'خبير معتمد ومحاضر دولي في حاسبة Desmos البيانية المتقدمة',

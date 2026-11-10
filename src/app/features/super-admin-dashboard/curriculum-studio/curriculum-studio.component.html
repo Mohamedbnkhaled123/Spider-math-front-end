@@ -1085,6 +1085,10 @@
                     <img
                       [src]="asm.referenceSheetUrl"
                       alt="Reference Sheet"
+                      width="64"
+                      height="64"
+                      loading="lazy"
+                      decoding="async"
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
@@ -1180,7 +1184,7 @@
                 </div>
 
                 @if (q.questionImageUrl) {
-                  <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question image'" class="max-h-48 rounded-xl object-contain border border-surface-border" />
+                  <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question image'" loading="lazy" decoding="async" class="max-h-48 rounded-xl object-contain border border-surface-border" />
                 }
 
                 @if (q.type === 'MCQ') {
@@ -1910,6 +1914,10 @@
                     <img
                       [src]="newAssessmentForm().referenceSheetUrl"
                       alt="Reference Sheet"
+                      width="64"
+                      height="64"
+                      loading="lazy"
+                      decoding="async"
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">

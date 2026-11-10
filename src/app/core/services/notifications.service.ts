@@ -45,8 +45,12 @@ export class NotificationsService {
         this.isPromptDismissed.set(true);
       }
 
-      this.registerServiceWorker();
-      this.initBackgroundPolling();
+      this.ngZone.runOutsideAngular(() => {
+        setTimeout(() => {
+          this.registerServiceWorker();
+          this.initBackgroundPolling();
+        }, 2500);
+      });
     }
   }
 
@@ -155,8 +159,8 @@ export class NotificationsService {
     const title = opts.title || 'Spider Math Platform';
     const notifOptions: NotificationOptions = {
       body: opts.body,
-      icon: '/assets/branding/spider-math-logo-v3.png?v=3',
-      badge: '/assets/branding/spider-math-logo-v3.png?v=3',
+      icon: '/assets/branding/spider-math-logo-v3.png?v=4',
+      badge: '/assets/branding/spider-math-logo-v3.png?v=4',
       tag: opts.tag || `spider-${Date.now()}`,
       data: { url: opts.url || '/' }
     };

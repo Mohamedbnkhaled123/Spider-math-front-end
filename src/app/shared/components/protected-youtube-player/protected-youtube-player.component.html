@@ -17,9 +17,17 @@
     <!-- 1.1 Facade Poster Thumbnail (Ensures zero third-party cookies on initial landing) -->
     @if (!hasStarted() && thumbnailUrl()) {
       <div
-        class="absolute inset-0 w-full h-full bg-cover bg-center z-10 transition-transform duration-700 pointer-events-none"
-        [style.background-image]="'url(' + thumbnailUrl() + ')'"
+        class="absolute inset-0 w-full h-full z-10 transition-transform duration-700 pointer-events-none"
       >
+        <img
+          [src]="thumbnailUrl()"
+          alt=""
+          width="480"
+          height="270"
+          loading="lazy"
+          decoding="async"
+          class="w-full h-full object-cover"
+        />
         <div class="absolute inset-0 bg-gradient-to-t from-[#0A0D18]/90 via-[#0A0D18]/40 to-transparent"></div>
       </div>
     }

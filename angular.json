@@ -49,6 +49,16 @@
                 "glob": "**/*",
                 "input": "node_modules/katex/dist/fonts",
                 "output": "fonts"
+              },
+              {
+                "glob": "katex.min.css",
+                "input": "node_modules/katex/dist",
+                "output": "/"
+              },
+              {
+                "glob": "cropper.min.css",
+                "input": "node_modules/cropperjs/dist",
+                "output": "/"
               }
             ],
             "styles": [
@@ -76,7 +86,7 @@
                 "scripts": true,
                 "styles": {
                   "minify": true,
-                  "inlineCritical": false
+                  "inlineCritical": true
                 },
                 "fonts": false
               },
@@ -152,6 +162,16 @@
                 "glob": "**/*",
                 "input": "node_modules/katex/dist/fonts",
                 "output": "fonts"
+              },
+              {
+                "glob": "katex.min.css",
+                "input": "node_modules/katex/dist",
+                "output": "/"
+              },
+              {
+                "glob": "cropper.min.css",
+                "input": "node_modules/cropperjs/dist",
+                "output": "/"
               }
             ],
             "styles": [

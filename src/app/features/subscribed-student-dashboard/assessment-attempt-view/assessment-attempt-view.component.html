@@ -198,7 +198,7 @@
         <!-- Optional Prompt Image (from Cloudinary permanent questions folder) -->
         @if (q.imageUrl; as imgUrl) {
           <div class="my-6 max-w-lg rounded-2xl overflow-hidden border border-surface-border bg-surface-bg p-2">
-            <img [src]="imgUrl" [alt]="langService.isArabic() ? 'شكل توضيحي للسؤال' : 'Question illustration'" class="w-full h-auto rounded-xl object-contain" />
+            <img [src]="imgUrl" [alt]="langService.isArabic() ? 'شكل توضيحي للسؤال' : 'Question illustration'" loading="lazy" decoding="async" class="w-full h-auto rounded-xl object-contain" />
           </div>
         }
 
@@ -262,7 +262,7 @@
                   <div class="flex items-center gap-3">
                     @for (img of qImgs; track img.imageUrl) {
                       <div class="relative group">
-                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
+                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" loading="lazy" decoding="async" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
                         <button
                           type="button"
                           (click)="removeQuestionImage(q._id, img.imageUrl)"
@@ -310,7 +310,7 @@
                   <div class="flex items-center gap-3">
                     @for (img of qImgs; track img.imageUrl) {
                       <div class="relative group">
-                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
+                        <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" loading="lazy" decoding="async" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
                         <button
                           type="button"
                           (click)="removeQuestionImage(q._id, img.imageUrl)"

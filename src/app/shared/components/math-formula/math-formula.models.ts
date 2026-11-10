@@ -17,6 +17,23 @@ export interface ISafeMathToken extends IMathToken {
   safeHtml?: SafeHtml;
 }
 
+let katexStylesInjected = false;
+
+/**
+ * Lazily injects the self-hosted KaTeX stylesheet only when a mathematical formula
+ * is actually rendered on the page, keeping initial landing CSS completely free of unused KaTeX rules.
+ */
+export function ensureKatexStylesLoaded(): void {
+  if (katexStylesInjected || typeof document === 'undefined') return;
+  katexStylesInjected = true;
+  if (document.getElementById('spider-katex-css')) return;
+  const link = document.createElement('link');
+  link.id = 'spider-katex-css';
+  link.rel = 'stylesheet';
+  link.href = '/katex.min.css';
+  document.head.appendChild(link);
+}
+
 /**
  * Detects whether a string without dollar signs is a raw LaTeX expression
  * such as \frac{1}{2}, \sqrt{x}, single math variables (x, y, z), or pure algebraic notations.

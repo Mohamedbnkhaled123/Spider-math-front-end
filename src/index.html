@@ -8,29 +8,75 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/branding/favicon-32x32-v3.png?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <link
+    rel="preload"
+    as="image"
+    href="/assets/branding/spider-mascot-hero-book-ar-v3.webp?v=4"
+    imagesrcset="/assets/branding/spider-mascot-hero-book-ar-sm-v3.webp?v=4 480w, /assets/branding/spider-mascot-hero-book-ar-v3.webp?v=4 640w"
+    imagesizes="(max-width: 640px) 360px, (max-width: 1023px) 440px, 500px"
+    fetchpriority="high"
+  >
   <link
     rel="preload"
     as="style"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@400;500;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
   >
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@400;500;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
     media="print"
     onload="this.media='all'"
   >
   <noscript>
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@400;500;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
     >
   </noscript>
-  <link rel="preconnect" href="https://i.ytimg.com">
   <link rel="dns-prefetch" href="https://i.ytimg.com">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <meta name="theme-color" content="#2A1D37">
+  <style id="spider-critical-css">
+    *,::before,::after{box-sizing:border-box}
+    :root,.dark,[data-theme='dark']{--surface-bg-primary:#2A1D37;--surface-bg-secondary:#211931;--surface-bg-card:rgba(42,29,55,0.78);--surface-glass-header:rgba(33,25,49,0.90);--surface-gradient-bg:radial-gradient(circle at center,#342745 0%,#2A1D37 45%,#211931 70%,#120B1A 100%);--text-primary:#F8FAFC;--text-secondary:#D4C7E2;--text-muted:#9F8EB5;--color-brand-gold:#D4AF6A;--color-brand-primary:#D4AF6A;--surface-border:rgba(212,175,106,0.24);--font-arabic-heading:'Tajawal',system-ui,sans-serif;--font-arabic-body:'IBM Plex Sans Arabic',system-ui,sans-serif;--font-english:'Inter',system-ui,-apple-system,sans-serif}
+    .light,[data-theme='light']{--surface-bg-primary:#F8F1EB;--surface-bg-secondary:#F4EAE1;--surface-bg-card:rgba(250,243,237,0.88);--surface-glass-header:rgba(250,243,237,0.90);--surface-gradient-bg:linear-gradient(180deg,#FAF3ED 0%,#F8F1EB 50%,#F4EAE1 100%);--text-primary:#111629;--text-secondary:#3E4559;--text-muted:#6E7587;--color-brand-gold:#9E6F18;--color-brand-primary:#9E6F18;--surface-border:rgba(158,111,24,0.32)}
+    html,body{margin:0;padding:0;min-height:100vh;background-color:var(--surface-bg-primary);color:var(--text-primary);font-family:var(--font-arabic-body);overflow-x:clip;width:100%;max-width:100%}
+    img,svg,video,canvas{display:block;max-width:100%;height:auto}
+    .bg-chalkboard-math-layer{background-color:var(--surface-bg-primary);background-image:var(--surface-gradient-bg)}
+    app-root{display:block;min-height:100vh;width:100%}
+    .hidden{display:none}
+    .block{display:block}
+    .flex{display:flex}
+    .inline-flex{display:inline-flex}
+    .grid{display:grid}
+    .flex-col{flex-direction:column}
+    .flex-1{flex:1 1 0%}
+    .items-center{align-items:center}
+    .justify-center{justify-content:center}
+    .justify-between{justify-content:space-between}
+    .relative{position:relative}
+    .sticky{position:sticky}
+    .fixed{position:fixed}
+    .inset-0{inset:0px}
+    .top-0{top:0px}
+    .z-10{z-index:10}
+    .z-50{z-index:50}
+    .w-full{width:100%}
+    .w-7{width:1.75rem}
+    .h-7{height:1.75rem}
+    .w-9{width:2.25rem}
+    .h-9{height:2.25rem}
+    .h-14{height:3.5rem}
+    .h-auto{height:auto}
+    .min-h-screen{min-height:100vh}
+    .max-w-7xl{max-width:80rem}
+    .max-w-\[360px\]{max-width:360px}
+    .mx-auto{margin-left:auto;margin-right:auto}
+    .aspect-square{aspect-ratio:1/1}
+    .aspect-video{aspect-ratio:16/9}
+    .overflow-hidden{overflow:hidden}
+    @media(min-width:640px){.sm\:block{display:block}.sm\:hidden{display:none}.sm\:h-16{height:4rem}.sm\:w-10{width:2.5rem}.sm\:h-10{height:2.5rem}.sm\:max-w-\[440px\]{max-width:440px}}
+    @media(min-width:1024px){.lg\:block{display:block}.lg\:hidden{display:none}.lg\:max-w-\[500px\]{max-width:500px}}
+  </style>
 </head>
 <body class="bg-chalkboard-math-layer text-text-primary antialiased selection:bg-brand-primary selection:text-white min-h-screen">
   <app-root></app-root>

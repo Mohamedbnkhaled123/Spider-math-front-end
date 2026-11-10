@@ -762,6 +762,10 @@
                     <img
                       [src]="createForm().referenceSheetUrl"
                       alt="Reference Sheet"
+                      width="64"
+                      height="64"
+                      loading="lazy"
+                      decoding="async"
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
@@ -1261,6 +1265,10 @@
                         <img
                           [src]="asm.referenceSheetUrl"
                           alt="Reference Sheet"
+                          width="64"
+                          height="64"
+                          loading="lazy"
+                          decoding="async"
                           class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                         />
                         <div class="flex-1 min-w-0">
@@ -1702,7 +1710,7 @@
                     </div>
 
                     @if (q.questionImageUrl) {
-                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة المسألة' : 'Question image'" class="max-h-48 rounded-xl border border-surface-border object-contain" />
+                      <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة المسألة' : 'Question image'" loading="lazy" decoding="async" class="max-h-48 rounded-xl border border-surface-border object-contain" />
                     }
 
                     @if (q.type === 'MCQ') {

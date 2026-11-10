@@ -129,7 +129,7 @@
               [class.ring-amber-400/40]="thumb.pageNumber === currentPage()"
               [class.border-slate-700]="thumb.pageNumber !== currentPage()"
             >
-              <img [src]="thumb.dataUrl" [alt]="'صفحة ' + thumb.pageNumber" class="w-full h-full object-cover" />
+              <img [src]="thumb.dataUrl" [alt]="'صفحة ' + thumb.pageNumber" loading="lazy" decoding="async" class="w-full h-full object-cover" />
             </div>
             <span class="text-[10px] font-bold mt-1 text-slate-400 group-hover:text-amber-300"
               [class.text-amber-400]="thumb.pageNumber === currentPage()"
