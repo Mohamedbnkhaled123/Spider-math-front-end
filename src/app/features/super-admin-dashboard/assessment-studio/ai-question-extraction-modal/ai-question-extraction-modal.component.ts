@@ -16,9 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AppIconComponent } from '../../../../shared/components/app-icon/app-icon.component';
-import { MathFormulaComponent } from '../../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
-import { toVisualMath } from '../../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
+import { toVisualMath, stripLatexDelimiters } from '../../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import { PdfPageViewerComponent } from '../../../../shared/components/pdf-page-viewer/pdf-page-viewer.component';
 import { IPdfPageRenderEvent } from '../../../../shared/components/pdf-page-viewer/pdf-page-viewer.models';
 import { ManualImageSlicerModalComponent } from '../../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
@@ -41,7 +40,6 @@ import {
     CommonModule,
     FormsModule,
     AppIconComponent,
-    MathFormulaComponent,
     MathVirtualKeyboardComponent,
     PdfPageViewerComponent,
     ManualImageSlicerModalComponent
@@ -51,6 +49,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AiQuestionExtractionModalComponent {
+  readonly toVisualMath = toVisualMath;
+  readonly stripLatexDelimiters = stripLatexDelimiters;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -539,6 +539,26 @@ export class AiQuestionExtractionModalComponent {
 
   // --- Virtual Math Keyboard ---
 
+  toggleMathKeyboard(): void {
+    if (this.isMathKeyboardOpen()) {
+      this.isMathKeyboardOpen.set(false);
+    } else {
+      if (!this.activeMathKeyboardInput() && typeof document !== 'undefined') {
+        const firstField = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+          '.question-input-wrapper textarea, .question-input-wrapper input'
+        );
+        if (firstField) {
+          this.activeMathKeyboardInput.set(firstField);
+        }
+      }
+      this.isMathKeyboardOpen.set(true);
+    }
+  }
+
+  onFieldFocus(target: HTMLInputElement | HTMLTextAreaElement): void {
+    this.activeMathKeyboardInput.set(target);
+  }
+
   openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
     this.activeMathKeyboardInput.set(target);
     this.isMathKeyboardOpen.set(true);
@@ -547,7 +567,7 @@ export class AiQuestionExtractionModalComponent {
   onQuestionTextInput(q: IStagedQuestion, event: Event): void {
     const target = event.target as HTMLTextAreaElement;
     if (!target) return;
-    const visual = toVisualMath(target.value);
+    const visual = stripLatexDelimiters(target.value);
     if (visual !== target.value) {
       const pos = target.selectionStart ?? visual.length;
       target.value = visual;
@@ -559,7 +579,7 @@ export class AiQuestionExtractionModalComponent {
   onOptionInput(q: IStagedQuestion, index: number, event: Event): void {
     const target = event.target as HTMLInputElement;
     if (!target) return;
-    const visual = toVisualMath(target.value);
+    const visual = stripLatexDelimiters(target.value);
     if (visual !== target.value) {
       const pos = target.selectionStart ?? visual.length;
       target.value = visual;
@@ -571,7 +591,7 @@ export class AiQuestionExtractionModalComponent {
   onMathKeyboardValueChange(val: string): void {
     const target = this.activeMathKeyboardInput();
     if (target) {
-      const visual = toVisualMath(val);
+      const visual = stripLatexDelimiters(val);
       if (target.value !== visual) {
         const pos = target.selectionStart ?? visual.length;
         target.value = visual;

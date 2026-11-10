@@ -7,7 +7,11 @@ import {
   input,
   output,
   effect,
-  inject
+  inject,
+  viewChild,
+  ElementRef,
+  OnDestroy,
+  HostListener
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -44,7 +48,7 @@ import {
   styleUrl: './math-virtual-keyboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MathVirtualKeyboardComponent {
+export class MathVirtualKeyboardComponent implements OnDestroy {
   readonly langService = inject(LangService);
 
   // Model & Inputs
@@ -53,6 +57,14 @@ export class MathVirtualKeyboardComponent {
 
   // Outputs
   readonly valueChange = output<string>();
+
+  // Draggable Floating State
+  readonly keyboardContainerRef = viewChild<ElementRef<HTMLElement>>('keyboardContainer');
+  readonly dragPosition = signal<{ x: number; y: number } | null>(null);
+  readonly isDragging = signal<boolean>(false);
+
+  private dragStartPointer: { x: number; y: number } | null = null;
+  private dragStartRect: { x: number; y: number; width: number; height: number } | null = null;
 
   // State Signals
   readonly activeCategory = signal<MathKeyboardCategory>('BASIC');
@@ -465,6 +477,139 @@ export class MathVirtualKeyboardComponent {
       this.isNativeMobileKeyboardActive.set(true);
       el.focus();
     }
+  }
+
+  private readonly onWindowPointerMove = (e: PointerEvent): void => {
+    if (this.isDragging()) {
+      this.onDragMove(e);
+    }
+  };
+
+  private readonly onWindowPointerUp = (e: PointerEvent): void => {
+    if (this.isDragging()) {
+      this.onDragEnd(e);
+    }
+  };
+
+  /**
+   * Automatically re-clamps the keyboard position if the browser viewport shrinks
+   * so it never gets stranded off-screen.
+   */
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    const pos = this.dragPosition();
+    const containerEl = this.keyboardContainerRef()?.nativeElement;
+    if (!pos || !containerEl || typeof window === 'undefined') return;
+
+    const rect = containerEl.getBoundingClientRect();
+    const padding = 8;
+    const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+    const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
+
+    const maxX = Math.max(padding, viewportWidth - rect.width - padding);
+    const maxY = Math.max(padding, viewportHeight - rect.height - padding);
+
+    if (pos.x > maxX || pos.y > maxY) {
+      this.dragPosition.set({
+        x: Math.min(Math.max(padding, pos.x), maxX),
+        y: Math.min(Math.max(padding, pos.y), maxY)
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pointermove', this.onWindowPointerMove);
+      window.removeEventListener('pointerup', this.onWindowPointerUp);
+      window.removeEventListener('pointercancel', this.onWindowPointerUp);
+    }
+  }
+
+  /**
+   * Starts dragging the keyboard anywhere on screen using pointer events
+   * with pointer capture, window listeners fallback, and bounds clamping.
+   */
+  onDragStart(event: PointerEvent): void {
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
+
+    const targetEl = event.target as HTMLElement;
+    if (targetEl.closest('button') || targetEl.closest('input') || targetEl.closest('select')) {
+      return;
+    }
+
+    const containerEl = this.keyboardContainerRef()?.nativeElement;
+    if (!containerEl) return;
+
+    const rect = containerEl.getBoundingClientRect();
+    this.dragStartPointer = { x: event.clientX, y: event.clientY };
+    this.dragStartRect = {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+    this.isDragging.set(true);
+
+    const handleEl = event.currentTarget as HTMLElement;
+    try {
+      handleEl.setPointerCapture(event.pointerId);
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pointermove', this.onWindowPointerMove);
+      window.addEventListener('pointerup', this.onWindowPointerUp);
+      window.addEventListener('pointercancel', this.onWindowPointerUp);
+    }
+
+    event.preventDefault();
+  }
+
+  onDragMove(event: PointerEvent): void {
+    if (!this.isDragging() || !this.dragStartPointer || !this.dragStartRect || typeof window === 'undefined') return;
+
+    const deltaX = event.clientX - this.dragStartPointer.x;
+    const deltaY = event.clientY - this.dragStartPointer.y;
+
+    const rawX = this.dragStartRect.x + deltaX;
+    const rawY = this.dragStartRect.y + deltaY;
+
+    // Viewport boundaries padding (8px)
+    const padding = 8;
+    const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+    const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
+
+    const maxX = Math.max(padding, viewportWidth - this.dragStartRect.width - padding);
+    const maxY = Math.max(padding, viewportHeight - this.dragStartRect.height - padding);
+
+    const clampedX = Math.min(Math.max(padding, rawX), maxX);
+    const clampedY = Math.min(Math.max(padding, rawY), maxY);
+
+    this.dragPosition.set({ x: clampedX, y: clampedY });
+  }
+
+  onDragEnd(event: PointerEvent): void {
+    if (!this.isDragging()) return;
+
+    const handleEl = event.currentTarget as HTMLElement;
+    try {
+      if (handleEl && handleEl.hasPointerCapture && handleEl.hasPointerCapture(event.pointerId)) {
+        handleEl.releasePointerCapture(event.pointerId);
+      }
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pointermove', this.onWindowPointerMove);
+      window.removeEventListener('pointerup', this.onWindowPointerUp);
+      window.removeEventListener('pointercancel', this.onWindowPointerUp);
+    }
+
+    this.isDragging.set(false);
+    this.dragStartPointer = null;
+    this.dragStartRect = null;
+  }
+
+  resetDragPosition(): void {
+    this.dragPosition.set(null);
   }
 
   close(): void {

@@ -4,7 +4,21 @@
 
 .google-math-keyboard {
   box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.45), 0 4px 16px -2px rgba(196, 154, 69, 0.2);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.is-dragging {
+    transition: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+.drag-pill-container,
+.drag-handle-pill,
+.drag-header {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .numeric-grid {

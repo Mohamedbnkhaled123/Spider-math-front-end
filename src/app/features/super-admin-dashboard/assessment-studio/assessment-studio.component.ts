@@ -41,7 +41,7 @@ import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.model
 import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedule-alarm-picker/schedule-alarm-picker.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
-import { toVisualMath } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
+import { toVisualMath, stripLatexDelimiters } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal/ai-question-extraction-modal.component';
 import { ICachedFileSession } from './ai-question-extraction-modal/ai-question-extraction-modal.models';
 import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
@@ -86,6 +86,8 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssessmentStudioComponent implements OnInit {
+  readonly toVisualMath = toVisualMath;
+  readonly stripLatexDelimiters = stripLatexDelimiters;
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
@@ -284,6 +286,26 @@ export class AssessmentStudioComponent implements OnInit {
   readonly isManualSlicerOpen = signal<boolean>(false);
   readonly activeQuestionForSlicing = signal<AssessmentQuestionItem | null>(null);
 
+  toggleMathKeyboard(fallbackTarget?: HTMLInputElement | HTMLTextAreaElement): void {
+    if (this.isMathKeyboardOpen()) {
+      this.isMathKeyboardOpen.set(false);
+    } else {
+      if (!this.mathKeyboardTarget()) {
+        if (fallbackTarget) {
+          this.mathKeyboardTarget.set(fallbackTarget);
+        } else if (typeof document !== 'undefined') {
+          const firstTarget = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+            '.question-input-wrapper textarea, .question-input-wrapper input'
+          );
+          if (firstTarget) {
+            this.mathKeyboardTarget.set(firstTarget);
+          }
+        }
+      }
+      this.isMathKeyboardOpen.set(true);
+    }
+  }
+
   openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
     this.mathKeyboardTarget.set(target);
     this.isMathKeyboardOpen.set(true);
@@ -292,7 +314,7 @@ export class AssessmentStudioComponent implements OnInit {
   onMathKeyboardValueChange(val: string): void {
     const target = this.mathKeyboardTarget();
     if (!target) return;
-    const visualVal = toVisualMath(val);
+    const visualVal = stripLatexDelimiters(val);
     if (target.value !== visualVal) {
       const pos = target.selectionStart ?? visualVal.length;
       target.value = visualVal;
@@ -313,26 +335,14 @@ export class AssessmentStudioComponent implements OnInit {
   onQuestionTextInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
     if (!target) return;
-    const visualVal = toVisualMath(target.value);
-    if (visualVal !== target.value) {
-      const pos = target.selectionStart ?? visualVal.length;
-      target.value = visualVal;
-      target.setSelectionRange(pos, pos);
-    }
-    this.newQuestionTextAr.set(visualVal);
+    this.newQuestionTextAr.set(target.value);
     this.triggerDraftAutoSave(false);
   }
 
   onOptionInput(index: number, event: Event): void {
     const target = event.target as HTMLInputElement;
     if (!target) return;
-    const visualVal = toVisualMath(target.value);
-    if (visualVal !== target.value) {
-      const pos = target.selectionStart ?? visualVal.length;
-      target.value = visualVal;
-      target.setSelectionRange(pos, pos);
-    }
-    this.updateOption(index, visualVal);
+    this.updateOption(index, target.value);
     this.triggerDraftAutoSave(false);
   }
 
@@ -1312,10 +1322,10 @@ export class AssessmentStudioComponent implements OnInit {
     this.newQuestionType.set(q.type === 'ESSAY_PHOTO' ? 'ESSAY' : q.type);
     this.newQuestionTextAr.set(q.textAr || '');
     this.newQuestionImageUrl.set(q.questionImageUrl || null);
-    const opts = q.options && q.options.length === 4
+    const rawOpts = q.options && q.options.length === 4
       ? [...q.options]
       : (q.options?.length ? [...q.options, '', '', ''].slice(0, 4) : ['', '', '', '']);
-    this.newQuestionOptions.set(opts);
+    this.newQuestionOptions.set(rawOpts);
     this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
     this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
     this.newQuestionYoutubeUrl.set(q.youtubeSolutionUrl || '');

@@ -1,13 +1,35 @@
 @if (isOpen()) {
-  <!-- Google-Style Floating Virtual Math Keyboard (Compact footprint matching Google Keyboard reference) -->
+  <!-- Google-Style Floating & Draggable Virtual Math Keyboard -->
   <aside
-    class="google-math-keyboard fixed bottom-3 left-1/2 -translate-x-1/2 z-[150] w-[96vw] max-w-xl rounded-2xl border border-surface-border bg-surface-card/95 backdrop-blur-2xl shadow-2xl p-2 sm:p-2.5 space-y-1.5 animate-slide-up"
+    #keyboardContainer
+    class="google-math-keyboard fixed z-[150] w-[96vw] max-w-xl rounded-2xl border border-surface-border bg-surface-card/95 backdrop-blur-2xl shadow-2xl p-2 sm:p-2.5 space-y-1.5"
+    [class.bottom-3]="dragPosition() === null"
+    [class.left-1/2]="dragPosition() === null"
+    [class.-translate-x-1/2]="dragPosition() === null"
+    [class.animate-slide-up]="dragPosition() === null"
+    [class.is-dragging]="isDragging()"
+    [style.left.px]="dragPosition() ? dragPosition()!.x : null"
+    [style.top.px]="dragPosition() ? dragPosition()!.y : null"
+    [style.bottom]="dragPosition() ? 'auto' : null"
+    [style.transform]="dragPosition() ? 'none' : null"
     role="region"
     aria-label="Google-Style Visual Math Keyboard"
   >
-    <!-- Top Header: Prominent Close Button 'X' (Image 3), Title, and Prose Toggle -->
-    <div class="flex items-center justify-between gap-2 px-1 pb-1 border-b border-surface-border/50">
-      
+    <!-- Visual Drag Grabber Pill at Very Top (Generous touch target for mobile/tablet ergonomics) -->
+    <div
+      class="drag-pill-container py-1.5 -my-1 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
+      (pointerdown)="onDragStart($event)"
+      (dblclick)="resetDragPosition()"
+      [title]="langService.isArabic() ? 'اسحبي لتحريك لوحة الرموز في أي مكان على الشاشة (انقري مرتين لإعادة ضبط المكان)' : 'Drag to move keyboard anywhere on screen (double click to reset)'"
+    >
+      <div class="drag-handle-pill w-14 h-1.5 bg-surface-border hover:bg-brand-primary/70 rounded-full transition-colors pointer-events-none"></div>
+    </div>
+
+    <!-- Top Header: Draggable Header Bar with Grab Handle, Title, Reset, and Prose Toggle -->
+    <div
+      class="drag-header flex items-center justify-between gap-2 px-1 pb-1 border-b border-surface-border/50 cursor-grab active:cursor-grabbing select-none"
+      (pointerdown)="onDragStart($event)"
+    >
       <!-- Prominent Close Button 'X' (Matches Google Keyboard reference in Image 3) -->
       <button
         type="button"
@@ -19,30 +41,44 @@
         <app-icon name="x" [size]="15" />
       </button>
 
-      <!-- Center Title -->
-      <div class="flex items-center gap-1.5 flex-1 justify-center">
-        <app-icon name="calculator" [size]="13" className="text-brand-primary" />
+      <!-- Center Title with Drag Grip -->
+      <div class="flex items-center gap-1.5 flex-1 justify-center pointer-events-none">
+        <app-icon name="grid" [size]="12" className="text-text-muted" />
         <span class="text-xs font-bold text-text-primary">
-          {{ langService.isArabic() ? 'لوحة مفاتيح الرياضيات' : 'Math Keyboard' }}
+          {{ langService.isArabic() ? 'لوحة مفاتيح الرياضيات (قابلة للسحب)' : 'Math Keyboard (Draggable)' }}
         </span>
       </div>
 
-      <!-- Quick Toggle: Native Mobile Prose typing -->
-      <button
-        type="button"
-        (click)="toggleNativeKeyboard()"
-        class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer border"
-        [class.bg-brand-primary]="isNativeMobileKeyboardActive()"
-        [class.text-white]="isNativeMobileKeyboardActive()"
-        [class.border-brand-primary]="isNativeMobileKeyboardActive()"
-        [class.bg-surface-bg]="!isNativeMobileKeyboardActive()"
-        [class.text-text-secondary]="!isNativeMobileKeyboardActive()"
-        [class.border-surface-border]="!isNativeMobileKeyboardActive()"
-        [title]="langService.isArabic() ? 'التبديل بين كتابة النصوص العادية والرموز الرياضية' : 'Toggle between native typing and math symbols'"
-      >
-        <app-icon name="phone" [size]="11" />
-        <span>{{ langService.isArabic() ? 'كيبورد نص' : 'Prose' }}</span>
-      </button>
+      <!-- Right Actions: Reset Position & Native Mobile Prose typing -->
+      <div class="flex items-center gap-1.5">
+        @if (dragPosition() !== null) {
+          <button
+            type="button"
+            (click)="resetDragPosition()"
+            class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-surface-elevated border border-transparent hover:border-surface-border transition-colors cursor-pointer"
+            [title]="langService.isArabic() ? 'إعادة ضبط مكان اللوحة' : 'Reset position'"
+          >
+            <app-icon name="refresh" [size]="12" />
+          </button>
+        }
+
+        <!-- Quick Toggle: Native Mobile Prose typing -->
+        <button
+          type="button"
+          (click)="toggleNativeKeyboard()"
+          class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer border"
+          [class.bg-brand-primary]="isNativeMobileKeyboardActive()"
+          [class.text-white]="isNativeMobileKeyboardActive()"
+          [class.border-brand-primary]="isNativeMobileKeyboardActive()"
+          [class.bg-surface-bg]="!isNativeMobileKeyboardActive()"
+          [class.text-text-secondary]="!isNativeMobileKeyboardActive()"
+          [class.border-surface-border]="!isNativeMobileKeyboardActive()"
+          [title]="langService.isArabic() ? 'التبديل بين كتابة النصوص العادية والرموز الرياضية' : 'Toggle between native typing and math symbols'"
+        >
+          <app-icon name="phone" [size]="11" />
+          <span>{{ langService.isArabic() ? 'كيبورد نص' : 'Prose' }}</span>
+        </button>
+      </div>
 
     </div>
 

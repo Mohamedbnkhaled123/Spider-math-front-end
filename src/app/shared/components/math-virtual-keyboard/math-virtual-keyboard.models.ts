@@ -67,11 +67,18 @@ export interface INumericKey {
 
 /**
  * Converts raw LaTeX commands to clean visual mathematical symbols
- * ensuring no raw LaTeX syntax like \le or \neq is displayed as plain text.
+ * and strips raw LaTeX delimiters ($...$, $$...$$, \(...\), \[...\]),
+ * ensuring no raw LaTeX syntax or delimiters are ever displayed as plain text in the UI.
  */
 export function toVisualMath(text: string): string {
   if (!text) return '';
   return text
+    .replace(/\$\$/g, '')
+    .replace(/(?<!\\)\$/g, '')
+    .replace(/\\\[/g, '')
+    .replace(/\\\]/g, '')
+    .replace(/\\\(/g, '')
+    .replace(/\\\)/g, '')
     .replace(/\\le(?![a-zA-Z])/g, '≤')
     .replace(/\\leq(?![a-zA-Z])/g, '≤')
     .replace(/\\ge(?![a-zA-Z])/g, '≥')
@@ -144,6 +151,13 @@ export function toVisualMath(text: string): string {
     .replace(/\^3\b|\^\{3\}/g, '³')
     .replace(/\^n\b|\^\{n\}/g, 'ⁿ');
 }
+
+/**
+ * Strips raw LaTeX delimiters ($...$, $$...$$, \(...\), \[...\]) and formats math symbols
+ * cleanly so that users never see raw code delimiters in the user interface.
+ * Implemented as a direct alias to `toVisualMath` adhering strictly to DRY (RULES.md §1.1).
+ */
+export const stripLatexDelimiters = toVisualMath;
 
 export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate {
   switch (type) {

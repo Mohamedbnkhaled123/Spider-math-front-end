@@ -1432,6 +1432,23 @@
                       </button>
                     }
 
+                    <!-- Single Unified Math Keyboard Toggle Button (Adheres strictly to DRY) -->
+                    <button
+                      type="button"
+                      (click)="toggleMathKeyboard(qTextArea)"
+                      class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border"
+                      [class.bg-brand-primary]="isMathKeyboardOpen()"
+                      [class.text-white]="isMathKeyboardOpen()"
+                      [class.border-brand-primary]="isMathKeyboardOpen()"
+                      [class.bg-surface-card]="!isMathKeyboardOpen()"
+                      [class.text-brand-primary]="!isMathKeyboardOpen()"
+                      [class.border-surface-border]="!isMathKeyboardOpen()"
+                      [title]="langService.isArabic() ? 'فتح لوحة المفاتيح الرياضية العائمة لكتابة وتعديل الرموز' : 'Open Draggable Math Virtual Keyboard'"
+                    >
+                      <app-icon name="calculator" [size]="13" />
+                      <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
+                    </button>
+
                     <button
                       type="button"
                       (click)="newQuestionType.set('MCQ')"
@@ -1456,37 +1473,27 @@
                   </div>
                 </div>
 
-                <!-- Question Text -->
+                <!-- Question Text Area (Clean Single Display - No Preview Duplication) -->
                 <div>
                   <div class="flex items-center justify-between mb-1">
                     <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Math Problem Question Text:' }}</label>
-                    <button
-                      type="button"
-                      (click)="openMathKeyboard(qTextArea)"
-                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border border-brand-primary/20 flex items-center gap-1 cursor-pointer transition-all"
-                      [title]="langService.isArabic() ? 'فتح لوحة المفاتيح الرياضية لكتابة وتعديل الرموز' : 'Open Math Virtual Keyboard'"
-                    >
-                      <app-icon name="calculator" [size]="13" />
-                      <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
-                    </button>
                   </div>
-                  <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-bg focus-within:border-brand-primary transition-all p-2.5 space-y-2">
+                  <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-bg focus-within:border-brand-primary transition-all p-2.5">
                     <textarea
                       #qTextArea
                       rows="2"
-                      [value]="newQuestionTextAr()"
+                      [value]="stripLatexDelimiters(newQuestionTextAr())"
                       (input)="onQuestionTextInput($event)"
+                      (focus)="mathKeyboardTarget.set(qTextArea)"
                       [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا... واستخدمي لوحة الرموز لكتابة وتعديل المعادلات' : 'Type problem text or equation prompt here... and use Math Keyboard for formulas'"
                       class="w-full bg-transparent text-text-primary text-xs outline-none resize-y"
                     ></textarea>
 
-                    <!-- Real-time visual math formula display embedded directly inside active question field (No separate preview container) -->
+                    <!-- Accessible formula announcement for screen readers (Visually hidden - question appears only once to user) -->
                     @if (newQuestionTextAr().trim()) {
-                      <div class="active-question-display border-t border-surface-border/40 pt-1.5 flex items-center justify-between text-xs text-text-primary overflow-x-auto">
+                      <div class="sr-only active-question-display">
                         <span class="sr-only">{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
-                        <div class="flex-1 overflow-x-auto">
-                          <app-math-formula [text]="newQuestionTextAr()" />
-                        </div>
+                        <app-math-formula [text]="newQuestionTextAr()" />
                       </div>
                     }
                   </div>
@@ -1546,38 +1553,28 @@
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       @for (opt of newQuestionOptions(); track $index) {
-                        <div class="flex flex-col gap-1.5 p-2 rounded-xl border border-surface-border bg-surface-card transition-all">
-                          <div class="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name="correctChoice"
-                              [checked]="newQuestionCorrectIndex() === $index"
-                              (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
-                              class="accent-brand-primary cursor-pointer w-4 h-4 shrink-0"
-                              [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
-                            />
-                            <input
-                              #optInput
-                              type="text"
-                              [value]="opt"
-                              [attr.data-opt-index]="$index"
-                              (input)="onOptionInput($index, $event)"
-                              [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
-                              class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
-                            />
-                            <button
-                              type="button"
-                              (click)="openMathKeyboard(optInput)"
-                              class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer shrink-0"
-                              [title]="langService.isArabic() ? 'إدراج رموز رياضية في هذا الخيار' : 'Insert math symbols into this option'"
-                            >
-                              <app-icon name="calculator" [size]="13" />
-                            </button>
-                          </div>
-
-                          <!-- Real-time embedded visual math display for option (No separate preview container) -->
+                        <div class="flex items-center gap-2 p-2 rounded-xl border border-surface-border bg-surface-card transition-all">
+                          <input
+                            type="radio"
+                            name="correctChoice"
+                            [checked]="newQuestionCorrectIndex() === $index"
+                            (change)="newQuestionCorrectIndex.set($index); onMcqKeyChanged()"
+                            class="accent-brand-primary cursor-pointer w-4 h-4 shrink-0"
+                            [title]="langService.isArabic() ? 'تحديد كإجابة صحيحة' : 'Set as Correct Answer'"
+                          />
+                          <input
+                            #optInput
+                            type="text"
+                            [value]="stripLatexDelimiters(opt)"
+                            [attr.data-opt-index]="$index"
+                            (input)="onOptionInput($index, $event)"
+                            (focus)="mathKeyboardTarget.set(optInput)"
+                            [placeholder]="langService.isArabic() ? ('الخيار (' + ($index + 1) + ')') : ('Option (' + ($index + 1) + ')')"
+                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0"
+                          />
+                          <!-- Accessible formula announcement for screen readers (Visually hidden - option appears only once to user) -->
                           @if (opt.trim()) {
-                            <div class="active-option-display border-t border-surface-border/40 pt-1 text-xs text-text-primary overflow-x-auto">
+                            <div class="sr-only active-option-display">
                               <span class="sr-only">{{ langService.isArabic() ? 'معاينة فورية:' : 'Live Preview:' }}</span>
                               <app-math-formula [text]="opt" />
                             </div>
