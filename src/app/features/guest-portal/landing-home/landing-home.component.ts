@@ -33,6 +33,10 @@ import {
 } from '../../../core/constants/curriculum-tree.constant';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FormsModule } from '@angular/forms';
+import {
+  getUnitMathTheme,
+  isUnitContentEmpty
+} from '../../../core/utils/unit-math-art.util';
 import { TestimonialsService, TestimonialItem } from '../../../core/services/testimonials.service';
 @Component({
   selector: 'app-landing-home',
@@ -80,6 +84,50 @@ export class LandingHomeComponent implements OnInit {
   readonly studentUnits = signal<any[]>([]);
   readonly isLoadingStudentUnits = signal<boolean>(false);
   readonly showFullCurriculumExplorer = signal<boolean>(false);
+
+  // Coming Soon Modal & Toast State (When clicking on empty units)
+  readonly showComingSoonModal = signal<boolean>(false);
+  readonly comingSoonUnitTitle = signal<string>('');
+  readonly toastMessage = signal<string | null>(null);
+
+  getUnitMathArt(unit: any, idx: number) {
+    return getUnitMathTheme(unit, idx);
+  }
+
+  isUnitEmpty(unit: any): boolean {
+    return isUnitContentEmpty(unit);
+  }
+
+  handleStudentUnitClick(unit: any, event?: Event): void {
+    if (this.isUnitEmpty(unit)) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.triggerComingSoon(unit?.title_ar || unit?.title_en || unit?.titleAr);
+      return;
+    }
+    this.router.navigate(['/student/units', unit._id]);
+  }
+
+  triggerComingSoon(unitTitle?: string): void {
+    const title = unitTitle || (this.langService.isArabic() ? 'الوحدة الدراسية' : 'Study Unit');
+    this.comingSoonUnitTitle.set(title);
+    this.showComingSoonModal.set(true);
+    const toast = this.langService.isArabic()
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
+      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+    this.toastMessage.set(toast);
+    setTimeout(() => {
+      if (this.toastMessage() === toast) {
+        this.toastMessage.set(null);
+      }
+    }, 4500);
+  }
+
+  closeComingSoonModal(): void {
+    this.showComingSoonModal.set(false);
+  }
   // User Selection State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
   readonly selectedGradeLevel = signal<string>('SEC_3');

@@ -17,6 +17,11 @@ import { ConfirmDialogService } from '../../../core/services/confirm-dialog.serv
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AcademicTermCode, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
+import {
+  getUnitMathTheme,
+  isUnitContentEmpty,
+  COMING_SOON_DATA
+} from '../../../core/utils/unit-math-art.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import {
@@ -73,6 +78,51 @@ export class StudentOverviewComponent implements OnInit {
   readonly isNotificationsOpen = signal<boolean>(false);
   readonly isLoadingLeaderboard = signal<boolean>(false);
   readonly expandedUnitId = signal<string | null>(null);
+
+  // Coming Soon Modal & Toast State (When clicking on empty units)
+  readonly showComingSoonModal = signal<boolean>(false);
+  readonly comingSoonUnitTitle = signal<string>('');
+  readonly toastMessage = signal<string | null>(null);
+
+  getUnitMathArt(unit: any, idx: number) {
+    return getUnitMathTheme(unit, idx);
+  }
+
+  isUnitEmpty(unit: any): boolean {
+    return isUnitContentEmpty(unit);
+  }
+
+  handleUnitClick(unit: any, event?: Event): void {
+    if (this.isUnitEmpty(unit)) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.triggerComingSoon(unit?.titleAr || unit?.title_ar || unit?.titleEn);
+      return;
+    }
+    // Navigate to unit workspace
+    this.router.navigate(['/student/units', unit._id]);
+  }
+
+  triggerComingSoon(unitTitle?: string): void {
+    const title = unitTitle || (this.langService.isArabic() ? 'الوحدة الدراسية' : 'Study Unit');
+    this.comingSoonUnitTitle.set(title);
+    this.showComingSoonModal.set(true);
+    const toast = this.langService.isArabic()
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
+      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+    this.toastMessage.set(toast);
+    setTimeout(() => {
+      if (this.toastMessage() === toast) {
+        this.toastMessage.set(null);
+      }
+    }, 4500);
+  }
+
+  closeComingSoonModal(): void {
+    this.showComingSoonModal.set(false);
+  }
 
   toggleUnitLectures(unitId: string): void {
     if (this.expandedUnitId() === unitId) {

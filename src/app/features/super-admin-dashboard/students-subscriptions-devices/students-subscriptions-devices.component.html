@@ -64,7 +64,7 @@
           {{ langService.isArabic() ? 'إدارة حسابات الطلاب والمستخدمين والاشتراكات' : 'Students, Users & Subscriptions Management' }}
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          {{ langService.isArabic() ? 'تصنيف الحسابات (طلاب مشتركون، غير مشتركين، أولياء أمور، إدارة)، والبحث الفوري وتفعيل الوحدات المخصصة.' : 'Filter users (active, inactive, parents, admins), instant search, and activate custom unit access.' }}
+          {{ langService.isArabic() ? 'تصنيف الحسابات (طلاب باشتراك نشط، طلاب غير مشتركين، أولياء أمور)، والبحث الفوري وتفعيل الوحدات المخصصة.' : 'Filter students (active, inactive, parents), instant search, and activate custom unit access.' }}
         </p>
       </div>
 
@@ -155,24 +155,6 @@
           {{ userCounts().parents }}
         </span>
       </button>
-
-      <button
-        type="button"
-        (click)="setCategory('ADMINS')"
-        class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 shadow-sm"
-        [class.bg-purple-600]="activeCategory() === 'ADMINS'"
-        [class.text-white]="activeCategory() === 'ADMINS'"
-        [class.border-purple-600]="activeCategory() === 'ADMINS'"
-        [class.bg-surface-card]="activeCategory() !== 'ADMINS'"
-        [class.text-text-secondary]="activeCategory() !== 'ADMINS'"
-        [class.border-surface-border]="activeCategory() !== 'ADMINS'"
-      >
-        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-        <span>{{ langService.isArabic() ? 'فريق الإدارة' : 'Admin Team' }}</span>
-        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ADMINS'" [class.bg-surface-bg]="activeCategory() !== 'ADMINS'">
-          {{ userCounts().admins }}
-        </span>
-      </button>
     </div>
 
     <!-- Desktop Students Table (Large Screens) -->
@@ -197,8 +179,6 @@
                   <span class="font-bold text-text-primary text-sm">{{ student.name }}</span>
                   @if (student.role === 'PARENT') {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">{{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}</span>
-                  } @else if (student.role === 'SUPER_ADMIN') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">{{ langService.isArabic() ? 'إدارة' : 'Admin' }}</span>
                   } @else {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">{{ langService.isArabic() ? 'طالب' : 'Student' }}</span>
                   }
@@ -359,8 +339,6 @@
                 <span class="font-bold text-text-primary text-sm">{{ student.name }}</span>
                 @if (student.role === 'PARENT') {
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">{{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}</span>
-                } @else if (student.role === 'SUPER_ADMIN') {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">{{ langService.isArabic() ? 'إدارة' : 'Admin' }}</span>
                 } @else {
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">{{ langService.isArabic() ? 'طالب' : 'Student' }}</span>
                 }

@@ -26,14 +26,36 @@
     </span>
   </div>
 
-  <!-- Unit Title Headline -->
-  <div class="mb-6">
-    <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-academic-serif">
-      {{ workspaceData().titleAr }}
-    </h1>
-    <p class="text-xs text-text-secondary mt-1">
-      {{ langService.isArabic() ? 'محاضرات تفاعلية مصممة خصيصاً بنظام حلول ديسموس وحماية الملكية الفكرية.' : 'Interactive lectures designed with Desmos solutions and anti-tamper security.' }}
-    </p>
+  <!-- Unit Title Headline with Math Art Theme & Watermark -->
+  <div class="mb-6 relative overflow-hidden rounded-3xl spider-rim-glass-card p-6 sm:p-7">
+    <div class="absolute -bottom-4 -left-4 rtl:-left-auto rtl:-right-4 pointer-events-none select-none opacity-[0.07] font-serif text-8xl font-black text-brand-gold flex items-center gap-2" aria-hidden="true">
+      <svg viewBox="0 0 48 48" class="w-20 h-20 stroke-current fill-none shrink-0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path [attr.d]="mathTheme().svgPath" />
+      </svg>
+      <span>{{ mathTheme().badge }}</span>
+    </div>
+    <div class="absolute top-3 left-4 rtl:left-auto rtl:right-4 pointer-events-none select-none opacity-[0.05] font-mono text-xs text-brand-accent tracking-widest hidden sm:block" aria-hidden="true">
+      {{ mathTheme().formula }}
+    </div>
+
+    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 mb-2">
+          <span class="px-2.5 py-0.5 rounded-lg border text-xs font-mono font-bold" [class]="mathTheme().accentClass">
+            {{ mathTheme().badge }} • {{ langService.isArabic() ? mathTheme().tagAr : mathTheme().tagEn }}
+          </span>
+          <span class="text-xs text-brand-secondary font-bold">
+            {{ workspaceData().curriculum }} • {{ workspaceData().gradeLevel }}
+          </span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-academic-serif">
+          {{ workspaceData().titleAr }}
+        </h1>
+        <p class="text-xs text-text-secondary mt-1">
+          {{ langService.isArabic() ? 'محاضرات تفاعلية مصممة خصيصاً بنظام حلول ديسموس وحماية الملكية الفكرية.' : 'Interactive lectures designed with Desmos solutions and anti-tamper security.' }}
+        </p>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================================= -->

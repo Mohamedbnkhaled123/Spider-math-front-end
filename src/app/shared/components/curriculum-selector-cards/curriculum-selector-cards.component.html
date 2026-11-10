@@ -228,7 +228,7 @@
   <!-- 2. MOBILE & TABLET VIEW (< 1024px): 2x2 Radial Spider Architecture       -->
   <!-- ========================================================================= -->
 
-  <div #mobileCurriculaContainer class="lg:hidden relative py-6 px-4 sm:px-8 max-w-xl md:max-w-3xl mx-auto overflow-hidden">
+  <div #mobileCurriculaContainer class="lg:hidden relative pt-4 pb-8 px-4 sm:px-8 max-w-xl md:max-w-3xl mx-auto">
     <!-- Mobile/Tablet Verlet Silk Canvas: Covers the entire mobile section -->
     <canvas #silkCanvasMobile class="absolute inset-0 w-full h-full pointer-events-none z-10" [class.hidden]="isTrackModalOpen()"></canvas>
 
@@ -346,7 +346,7 @@
   <!-- ========================================================================= -->
 
   <ng-template #trackPanelTemplate>
-    <div class="track-panel-glass relative z-30 p-5 sm:p-8 animate-fade-in w-full max-w-6xl mx-auto -mt-16 lg:-mt-24">
+    <div class="track-panel-glass relative z-30 p-5 sm:p-8 animate-fade-in w-full max-w-6xl mx-auto mt-2 sm:mt-4 lg:-mt-24">
       <!-- Top Navigation Bar: Back Button (Left) & Close Button (Right) -->
       <div class="flex items-center justify-between pb-5 mb-5 border-b border-white/10">
         @if (modalStep() === 'UNITS') {
@@ -507,7 +507,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             @for (grade of filteredGradesForModal(); track grade.code) {
               <div
-                (click)="grade.hasPublishedUnits && grade.publishedUnitsCount > 0 ? openGradeUnits(grade.code) : (grade.hasPlacementTest ? startPlacementExamForGrade(grade) : null)"
+                (click)="handleGradeCardClick(grade)"
                 class="grade-glass-card p-5 flex flex-col justify-between group relative overflow-hidden cursor-pointer"
               >
                 <div>
@@ -662,24 +662,51 @@
                     </div>
                   } @else if (publishedUnits().length > 0) {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      @for (unit of publishedUnits(); track unit._id) {
-                        <div class="spider-rim-glass-card rounded-2xl p-5 border border-white/15 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl flex flex-col justify-between shadow-lg">
-                          <div>
-                            <!-- Unit Type Badge & Price -->
+                      @for (unit of publishedUnits(); track unit._id; let idx = $index) {
+                        @let mathTheme = getUnitMathArt(unit, idx);
+                        @let isEmpty = isUnitEmpty(unit);
+                        <div
+                          (click)="handleUnitCardClick(unit)"
+                          class="spider-rim-glass-card rounded-2xl p-5 border border-white/15 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-xl flex flex-col justify-between shadow-lg relative overflow-hidden group cursor-pointer hover:border-gold-accent/50 transition-all duration-300 hover:-translate-y-1"
+                        >
+                          <!-- Mathematical Watermark & Geometric Aura -->
+                          <div class="absolute -bottom-4 -left-4 rtl:-left-auto rtl:-right-4 pointer-events-none select-none opacity-[0.06] group-hover:opacity-[0.14] transition-opacity duration-300 font-serif text-7xl font-black text-brand-gold flex items-center gap-2" aria-hidden="true">
+                            <svg viewBox="0 0 48 48" class="w-16 h-16 stroke-current fill-none shrink-0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <path [attr.d]="mathTheme.svgPath" />
+                            </svg>
+                            <span>{{ mathTheme.badge }}</span>
+                          </div>
+                          <div class="absolute top-2 left-3 rtl:left-auto rtl:right-3 pointer-events-none select-none opacity-[0.04] group-hover:opacity-[0.09] font-mono text-[10px] text-brand-accent tracking-widest hidden sm:block" aria-hidden="true">
+                            {{ mathTheme.formula }}
+                          </div>
+
+                          <div class="relative z-10">
+                            <!-- Unit Type Badge, Math Symbol & Price -->
                             <div class="flex items-center justify-between gap-2 mb-3">
-                              <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[11px] font-bold">
-                                {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
-                              </span>
+                              <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[11px] font-bold">
+                                  {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
+                                </span>
+                                <!-- Mathematical Branch Badge -->
+                                <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
+                                  {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
+                                </span>
+                                @if (isEmpty) {
+                                  <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-500 border border-amber-500/30 text-[10px] font-bold animate-pulse">
+                                    {{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}
+                                  </span>
+                                }
+                              </div>
 
                               @if (unit.price_egp) {
-                                <span class="text-xs font-black text-brand-gold font-numeric">
+                                <span class="text-xs font-black text-brand-gold font-numeric shrink-0">
                                   {{ unit.price_egp }} EGP
                                 </span>
                               }
                             </div>
 
                             <!-- Unit Title -->
-                            <h5 class="text-base font-bold text-text-primary mb-2">
+                            <h5 class="text-base font-bold text-text-primary group-hover:text-brand-gold transition-colors mb-2">
                               {{ unit.title_ar }}
                             </h5>
 
@@ -706,10 +733,10 @@
                           </div>
 
                           <!-- Action Buttons -->
-                          <div class="pt-3 border-t border-surface-border/60 flex items-center gap-2">
+                          <div class="pt-3 border-t border-surface-border/60 flex items-center gap-2 relative z-10">
                             <button
                               type="button"
-                              (click)="openUnitPreview(unit)"
+                              (click)="$event.stopPropagation(); openUnitPreview(unit)"
                               class="flex-1 py-2 px-3 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <app-icon name="eye" [size]="14" />
@@ -718,11 +745,11 @@
 
                             <button
                               type="button"
-                              (click)="attemptWatchLecture(unit)"
+                              (click)="$event.stopPropagation(); attemptWatchLecture(unit)"
                               class="py-2 px-4 rounded-xl btn-gold-metallic text-slate-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                             >
                               <app-icon name="play" [size]="12" />
-                              <span>{{ langService.isArabic() ? 'مشاهدة' : 'Watch' }}</span>
+                              <span>{{ isEmpty ? (langService.isArabic() ? 'قريباً' : 'Soon') : (langService.isArabic() ? 'مشاهدة' : 'Watch') }}</span>
                             </button>
                           </div>
                         </div>
@@ -1172,6 +1199,72 @@
       </div>
 
     </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- 6. LUXURY COMING SOON MODAL (For Units without Published Content)           -->
+<!-- ========================================================================= -->
+@if (showComingSoonModal()) {
+  <div
+    class="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+    (click)="closeComingSoonModal()"
+  >
+    <div
+      class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-brand-gold/30 shadow-2xl text-center space-y-5 cursor-default spider-rim-glass-card"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Close X Button -->
+      <button
+        type="button"
+        (click)="closeComingSoonModal()"
+        class="absolute top-4 end-4 p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors cursor-pointer"
+        [attr.aria-label]="langService.isArabic() ? 'إغلاق' : 'Close'"
+      >
+        <app-icon name="x" [size]="18" />
+      </button>
+
+      <!-- Animated Clock / Hourglass Icon with Radial Glow -->
+      <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full bg-brand-gold/20 blur-xl animate-pulse"></div>
+        <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-gold/20 via-amber-500/15 to-purple-600/20 border border-brand-gold/40 text-brand-gold flex items-center justify-center shadow-lg">
+          <app-icon name="clock" [size]="32" />
+        </div>
+      </div>
+
+      <!-- Unit Title & Coming Soon Header -->
+      <div class="space-y-2">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
+          {{ langService.isArabic() ? 'المحتوى قيد الإعداد والمراجعة' : 'Content Under Preparation' }}
+        </span>
+        <h3 class="text-lg sm:text-xl font-black font-academic-serif text-text-primary">
+          {{ comingSoonUnitTitle() }}
+        </h3>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-sm mx-auto">
+          {{ langService.isArabic() ? 'تقوم المهندسة / هبة عبد الوهاب حالياً بتجهيز المحاضرات المشروحة والفيديوهات المحمية والتمارين الخاصة بهذه الوحدة لتكون متاحة قريباً بأعلى معايير الجودة!' : 'Eng. Heba Abdel-Wahab is currently recording lectures and preparing assignments for this unit. It will be available very soon!' }}
+        </p>
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-2">
+        <button
+          type="button"
+          (click)="closeComingSoonModal()"
+          class="w-full py-3 px-6 rounded-2xl btn-gold-metallic text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+        >
+          <app-icon name="check-circle" [size]="16" />
+          <span>{{ langService.isArabic() ? 'حسناً، فهمت — بانتظار الإتاحة' : 'Got it, waiting for launch' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Floating Notification Toast (Bottom Viewport) -->
+@if (toastMessage(); as msg) {
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[140] px-5 py-3 rounded-2xl bg-slate-950/95 text-white border border-brand-gold/50 shadow-2xl text-xs sm:text-sm font-bold flex items-center gap-2.5 animate-bounce-subtle backdrop-blur-xl max-w-[90vw]">
+    <app-icon name="clock" [size]="18" className="text-brand-gold shrink-0" />
+    <span>{{ msg }}</span>
   </div>
 }
 </div>

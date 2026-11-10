@@ -38,6 +38,11 @@ import {
 } from './curriculum-selector-cards.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
+import {
+  getUnitMathTheme,
+  isUnitContentEmpty,
+  COMING_SOON_DATA
+} from '../../../core/utils/unit-math-art.util';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
@@ -98,6 +103,11 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   readonly showLockedContentModal = signal<boolean>(false);
   readonly lockedContentTitle = signal<string>('');
   readonly landingData = signal<any>(null);
+
+  // Coming Soon Modal & Toast State (When clicking on empty units)
+  readonly showComingSoonModal = signal<boolean>(false);
+  readonly comingSoonUnitTitle = signal<string>('');
+  readonly toastMessage = signal<string | null>(null);
 
   readonly supportWhatsappNumber = computed<string>(() => {
     const data = this.landingData();
@@ -730,6 +740,24 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.activeStageFilter.set('ALL');
     this.isTrackModalOpen.set(true);
     this.emitSelection();
+
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        const panel = document.querySelector('.track-panel-glass') || document.querySelector('#curriculum-section');
+        if (panel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 60);
+    }
+  }
+
+  handleGradeCardClick(grade: any): void {
+    if (grade.hasPublishedUnits && grade.publishedUnitsCount > 0) {
+      this.openGradeUnits(grade.code);
+    } else {
+      const title = this.getGradeDisplayTitle(grade);
+      this.triggerComingSoon(title);
+    }
   }
 
   closeTrackModal(): void {
@@ -751,6 +779,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.modalStep.set('UNITS');
     this.emitSelection();
     this.loadUnitsForSelection();
+
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        const panel = document.querySelector('.track-panel-glass');
+        if (panel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 60);
+    }
   }
 
   backToGrades(): void {
@@ -785,7 +822,46 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.router.navigate(['/placement-test'], { queryParams });
   }
 
+  getUnitMathArt(unit: any, idx: number) {
+    return getUnitMathTheme(unit, idx);
+  }
+
+  isUnitEmpty(unit: any): boolean {
+    return isUnitContentEmpty(unit);
+  }
+
+  handleUnitCardClick(unit: any): void {
+    if (this.isUnitEmpty(unit)) {
+      this.triggerComingSoon(unit?.title_ar || unit?.title_en);
+      return;
+    }
+    this.openUnitPreview(unit);
+  }
+
+  triggerComingSoon(unitTitle?: string): void {
+    const title = unitTitle || (this.langService.isArabic() ? 'الوحدة الدراسية' : 'Study Unit');
+    this.comingSoonUnitTitle.set(title);
+    this.showComingSoonModal.set(true);
+    const toast = this.langService.isArabic()
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
+      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+    this.toastMessage.set(toast);
+    setTimeout(() => {
+      if (this.toastMessage() === toast) {
+        this.toastMessage.set(null);
+      }
+    }, 4500);
+  }
+
+  closeComingSoonModal(): void {
+    this.showComingSoonModal.set(false);
+  }
+
   openUnitPreview(unit: any): void {
+    if (this.isUnitEmpty(unit)) {
+      this.triggerComingSoon(unit?.title_ar || unit?.title_en);
+      return;
+    }
     this.selectedUnitForPreview.set(unit);
     this.isLoadingUnitContents.set(true);
     this.discoveryService.getUnitContents(unit._id).subscribe({
@@ -806,6 +882,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   attemptWatchLecture(unit: any): void {
+    if (this.isUnitEmpty(unit)) {
+      this.triggerComingSoon(unit?.title_ar || unit?.title_en);
+      return;
+    }
     if (unit?.isSubscribed) {
       this.closeTrackModal();
       this.router.navigate(['/student/units', unit._id]);

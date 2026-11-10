@@ -178,12 +178,20 @@ export class SuperAdminDashboardComponent implements OnInit {
   fetchRealAtlasData(): void {
     this.isLoading.set(true);
 
-    // 1. Fetch Students
+    // 1. Fetch Students (Strictly Student & Parent accounts, never Admin / Teacher)
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/users/students').subscribe({
       next: (res) => {
         if (res?.data) {
-          const mapped: StudentAdminSummary[] = res.data.map((u) => {
-            const role = (u.role || 'STUDENT') as 'STUDENT' | 'PARENT' | 'SUPER_ADMIN';
+          const studentOnlyUsers = res.data.filter((u) => {
+            const role = (u.role || 'STUDENT').toUpperCase();
+            const isAdminOrTeacher = role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'TEACHER';
+            const isAdminEmail = (u.email || '').toLowerCase().includes('admin@') || (u.email || '').toLowerCase().includes('teacher@');
+            const isTeacherOrAdminName = (u.full_name || u.name || '').includes('هبة عبد الوهاب') || (u.full_name || u.name || '').includes('مدير النظام');
+            return !isAdminOrTeacher && !isAdminEmail && !isTeacherOrAdminName;
+          });
+
+          const mapped: StudentAdminSummary[] = studentOnlyUsers.map((u) => {
+            const role = (u.role || 'STUDENT') as 'STUDENT' | 'PARENT';
             let roleCurriculum = u.curriculum || 'المصري';
             let roleGrade = u.grade_level || '—';
             let defaultCode = u.student_code || (u.is_profile_completed === false ? 'قيد التسجيل' : '—');
@@ -192,15 +200,11 @@ export class SuperAdminDashboardComponent implements OnInit {
               roleCurriculum = 'حساب ولي أمر';
               roleGrade = 'متابعة الأبناء';
               defaultCode = '—';
-            } else if (role === 'SUPER_ADMIN') {
-              roleCurriculum = 'إشراف المنصة';
-              roleGrade = 'مدير النظام';
-              defaultCode = 'ADMIN';
             }
 
             return {
               id: u._id,
-              name: u.full_name || (role === 'PARENT' ? 'ولي أمر' : (role === 'SUPER_ADMIN' ? 'الإدارة' : 'طالب مسجل')),
+              name: u.full_name || (role === 'PARENT' ? 'ولي أمر' : 'طالب مسجل'),
               role,
               haCode: defaultCode,
               email: u.email,

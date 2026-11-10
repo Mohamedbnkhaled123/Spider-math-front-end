@@ -18,6 +18,7 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
 import { IPlaybackProgress } from '../../../shared/components/protected-youtube-player/protected-youtube-player.models';
+import { getUnitMathTheme } from '../../../core/utils/unit-math-art.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -58,6 +59,10 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly playbackToken = signal<string>('');
   readonly isLectureLocked = signal<boolean>(false);
   readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
+
+  readonly mathTheme = computed(() => {
+    return getUnitMathTheme(this.workspaceData());
+  });
   readonly isAssessmentsOnly = computed(() => this.workspaceData().accessScope === 'ASSESSMENTS_ONLY');
 
   // Workspace Data

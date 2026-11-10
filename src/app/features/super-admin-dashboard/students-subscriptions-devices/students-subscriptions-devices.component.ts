@@ -53,17 +53,27 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // Search Signal
   readonly searchQuery = signal<string>('');
 
-  // User Category Filter
-  readonly activeCategory = signal<'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS' | 'ADMINS'>('ALL');
+  // User Category Filter (Strictly students and parents, admins/teachers are never students)
+  readonly activeCategory = signal<'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS'>('ALL');
+
+  // Filter out any Admin / Teacher accounts from the student management view
+  readonly sanitizedStudents = computed(() => {
+    return this.studentsList().filter((s) => {
+      const role = (s.role || 'STUDENT').toUpperCase();
+      const isAdminOrTeacher = role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'TEACHER';
+      const isAdminEmail = (s.email || '').toLowerCase().includes('admin@') || (s.email || '').toLowerCase().includes('teacher@');
+      const isTeacherOrAdminName = (s.name || '').includes('هبة عبد الوهاب') || (s.name || '').includes('مدير النظام');
+      return !isAdminOrTeacher && !isAdminEmail && !isTeacherOrAdminName;
+    });
+  });
 
   readonly userCounts = computed(() => {
-    const list = this.studentsList();
+    const list = this.sanitizedStudents();
     return {
       all: list.length,
       activeStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && s.hasActiveSubscription).length,
       inactiveStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription).length,
-      parents: list.filter((s) => s.role === 'PARENT').length,
-      admins: list.filter((s) => s.role === 'SUPER_ADMIN').length
+      parents: list.filter((s) => s.role === 'PARENT').length
     };
   });
 
@@ -79,7 +89,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly filteredStudents = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
     const cat = this.activeCategory();
-    let list = this.studentsList();
+    let list = this.sanitizedStudents();
 
     // 1. Category Filter
     if (cat === 'ACTIVE_STUDENTS') {
@@ -88,8 +98,6 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription);
     } else if (cat === 'PARENTS') {
       list = list.filter((s) => s.role === 'PARENT');
-    } else if (cat === 'ADMINS') {
-      list = list.filter((s) => s.role === 'SUPER_ADMIN');
     }
 
     // 2. Search Query Filter
@@ -142,7 +150,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS' | 'ADMINS'): void {
+  setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS'): void {
     this.activeCategory.set(cat);
     this.currentPage.set(1);
   }
