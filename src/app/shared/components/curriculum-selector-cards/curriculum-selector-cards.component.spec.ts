@@ -7,6 +7,7 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { CurriculumSelectorCardsComponent } from './curriculum-selector-cards.component';
 import { IGradeLevelAvailability } from './curriculum-selector-cards.models';
 import { IGradeQuizItem } from '../../../core/services/public-discovery.models';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
 describe('CurriculumSelectorCardsComponent', () => {
   let component: CurriculumSelectorCardsComponent;
@@ -158,7 +159,9 @@ describe('CurriculumSelectorCardsComponent', () => {
       expect(component.authGateActionMessage()).toBeTruthy();
     });
 
-    it('should navigate directly to assessment when authenticated user clicks a free quiz', () => {
+    it('should navigate directly to assessment when authenticated user clicks a free quiz', async () => {
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      spyOn(confirmDialogService, 'confirm').and.returnValue(Promise.resolve(true));
       spyOn(component.authService, 'isAuthenticated').and.returnValue(true);
       const navigateSpy = spyOn(router, 'navigate');
 
@@ -176,6 +179,7 @@ describe('CurriculumSelectorCardsComponent', () => {
       };
 
       component.onQuizClick(freeQuiz);
+      await fixture.whenStable();
       expect(component.showAuthGateModal()).toBeFalse();
       expect(navigateSpy).toHaveBeenCalledWith(['/student/assessments', 'quiz_free_2']);
     });

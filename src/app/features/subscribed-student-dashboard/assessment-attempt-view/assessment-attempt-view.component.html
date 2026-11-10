@@ -208,17 +208,19 @@
             @for (opt of q.options; track opt.optionIndex) {
               <div
                 (click)="selectOption(opt.optionIndex)"
-                class="mcq-option-card p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
-                [class.border-amber-400]="isOptionSelected(opt.optionIndex)"
-                [class.bg-amber-400/10]="isOptionSelected(opt.optionIndex)"
+                class="mcq-option-card p-4 rounded-2xl border-[3px] transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
+                [class.border-brand-gold]="isOptionSelected(opt.optionIndex)"
+                [class.bg-brand-gold/10]="isOptionSelected(opt.optionIndex)"
                 [class.shadow-gold-glow]="isOptionSelected(opt.optionIndex)"
+                [class.ring-2]="isOptionSelected(opt.optionIndex)"
+                [class.ring-brand-gold/30]="isOptionSelected(opt.optionIndex)"
                 [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
-                [class.hover:border-brand-accent/50]="!isOptionSelected(opt.optionIndex)"
+                [class.hover:border-brand-accent/60]="!isOptionSelected(opt.optionIndex)"
               >
                 <div
                   class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                  [class.border-amber-400]="isOptionSelected(opt.optionIndex)"
-                  [class.bg-amber-400]="isOptionSelected(opt.optionIndex)"
+                  [class.border-brand-gold]="isOptionSelected(opt.optionIndex)"
+                  [class.bg-brand-gold]="isOptionSelected(opt.optionIndex)"
                   [class.border-surface-border]="!isOptionSelected(opt.optionIndex)"
                 >
                   @if (isOptionSelected(opt.optionIndex)) {

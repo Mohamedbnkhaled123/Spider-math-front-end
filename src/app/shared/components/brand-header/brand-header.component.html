@@ -1,30 +1,27 @@
 <header class="header-glass-bar transition-colors duration-300 sticky top-0 z-layer-header w-full">
   
-  <!-- Real Web Notifications Permission Request Banner -->
+  <!-- Real Web Notifications Permission Request Banner (Solid Flat Background, No Descriptive Text, Allow & Disallow Actions Only) -->
   @if (authService.isAuthenticated() && notificationsService.permissionStatus() === 'default' && !notificationsService.isPromptDismissed()) {
-    <div class="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary text-white px-4 py-2 text-xs flex items-center justify-between gap-3 shadow-md border-b border-brand-accent/20 animate-fade-in relative z-50">
-      <div class="flex items-center gap-2 max-w-3xl">
-        <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping shrink-0"></span>
-        <app-icon name="bell" [size]="16" className="text-brand-accent shrink-0" />
-        <span class="font-bold leading-normal">
-          {{ langService.isArabic() ? 'تفعيل إشعارات المتصفح: هل ترغب في استقبال تنبيهات تصحيح الواجبات والامتحانات والدروس الجديدة حتى عندما تكون خارج المنصة؟' : 'Browser Notifications: Enable instant alerts for homework grading, exam results, and new lessons even when outside the platform.' }}
-        </span>
+    <div class="bg-surface-card border-b border-surface-border text-text-primary px-4 py-2 text-xs flex items-center justify-center sm:justify-end gap-3 shadow-sm animate-fade-in relative z-50">
+      <div class="flex items-center gap-2">
+        <app-icon name="bell" [size]="16" className="text-brand-gold shrink-0" />
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <button
           type="button"
           (click)="requestPermission()"
-          class="px-3 py-1.5 rounded-xl bg-white text-brand-primary font-black text-xs hover:bg-surface-bg shadow-sm transition-all cursor-pointer flex items-center gap-1"
+          class="px-4 py-1.5 rounded-xl bg-brand-primary text-white hover:bg-brand-primary-hover font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
         >
           <app-icon name="check" [size]="12" />
-          <span>{{ langService.isArabic() ? 'السماح بالإشعارات' : 'Allow Notifications' }}</span>
+          <span>{{ langService.isArabic() ? 'السماح' : 'Allow' }}</span>
         </button>
         <button
           type="button"
           (click)="dismissNotificationBanner()"
-          class="px-2 py-1.5 rounded-xl text-white/80 hover:text-white text-xs transition-all cursor-pointer"
+          class="px-4 py-1.5 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary hover:text-text-primary font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
         >
-          {{ langService.isArabic() ? 'لاحقاً' : 'Later' }}
+          <app-icon name="x" [size]="12" />
+          <span>{{ langService.isArabic() ? 'عدم السماح' : 'Disallow' }}</span>
         </button>
       </div>
     </div>
@@ -155,7 +152,12 @@
       </button>
 
       <!-- Notification Bell (Dropdown Trigger) (Desktop md+) -->
-      <div class="relative hidden md:block">
+      <div
+        class="relative hidden md:block"
+        [appClickOutside]
+        [clickOutsideEnabled]="notificationsService.isDropdownOpen()"
+        (appClickOutside)="notificationsService.closeDropdown()"
+      >
         <button
           type="button"
           (click)="toggleNotifications()"
@@ -298,7 +300,12 @@
 
   <!-- 4. Mobile Navigation Drawer / Dropdown -->
   @if (isMobileMenuOpen()) {
-    <div class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 drawer-smooth-05 space-y-4">
+    <div
+      class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 drawer-smooth-05 space-y-4"
+      [appClickOutside]
+      [clickOutsideEnabled]="isMobileMenuOpen()"
+      (appClickOutside)="closeMobileMenu()"
+    >
       <!-- Mobile Controls Row: Language, Theme & Notifications -->
       <div class="flex items-center justify-between pb-3 border-b border-surface-border/60">
         <div class="flex items-center gap-2">

@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
   GradingMistake,
@@ -40,7 +41,7 @@ let submissionsMemoryCache: SubmissionsMemoryCacheEntry | null = null;
 @Component({
   selector: 'app-interactive-grading-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppIconComponent],
+  imports: [CommonModule, FormsModule, AppIconComponent, MathFormulaComponent],
   templateUrl: './interactive-grading-studio.component.html',
   styleUrl: './interactive-grading-studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

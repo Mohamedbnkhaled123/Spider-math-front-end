@@ -176,6 +176,21 @@ html[dir="ltr"] {
   }
 }
 
+// ==============================================================================
+// KaTeX Universal Font & Layout Isolation Guard (Platform-Wide R5 Fix)
+// ==============================================================================
+.katex {
+  line-height: 1.2 !important;
+  box-sizing: content-box;
+}
+
+.math-katex-wrap {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left;
+  display: inline-block;
+}
+
 body {
   margin: 0;
   padding: 0;

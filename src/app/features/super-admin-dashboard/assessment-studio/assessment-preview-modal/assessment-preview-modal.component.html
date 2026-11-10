@@ -169,7 +169,7 @@
                   @for (opt of q.options; track $index; let optIdx = $index) {
                     <div
                       (click)="selectOption(q.id, optIdx)"
-                      class="p-4 rounded-xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
+                      class="p-4 rounded-xl border-[3px] transition-all duration-200 cursor-pointer flex items-center gap-3 select-none"
                       [class.border-brand-primary]="isOptionSelected(q.id, optIdx)"
                       [class.bg-brand-primary/10]="isOptionSelected(q.id, optIdx)"
                       [class.shadow-md]="isOptionSelected(q.id, optIdx)"
@@ -428,7 +428,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                       @for (opt of q.options; track $index; let optIdx = $index) {
                         <div
-                          class="p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2"
+                          class="p-2.5 rounded-xl border-[3px] text-xs flex items-center justify-between gap-2"
                           [class.border-emerald-500]="optIdx === q.correctOptionIndex"
                           [class.bg-emerald-500/10]="optIdx === q.correctOptionIndex"
                           [class.text-emerald-700]="optIdx === q.correctOptionIndex"

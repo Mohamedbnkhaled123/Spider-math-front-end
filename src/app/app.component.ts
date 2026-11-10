@@ -5,6 +5,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { BrandHeaderComponent } from './shared/components/brand-header/brand-header.component';
 import { BrandFooterComponent } from './shared/components/brand-footer/brand-footer.component';
+import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 import { LangService } from './core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 
@@ -15,7 +16,8 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
     CommonModule,
     RouterOutlet,
     BrandHeaderComponent,
-    BrandFooterComponent
+    BrandFooterComponent,
+    ConfirmDialogComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

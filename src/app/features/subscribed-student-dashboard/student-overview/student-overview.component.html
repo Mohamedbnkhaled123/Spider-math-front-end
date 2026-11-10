@@ -67,7 +67,12 @@
       </div>
 
       <!-- Notification Bell with Dropdown -->
-      <div class="relative">
+      <div
+        class="relative"
+        [appClickOutside]
+        [clickOutsideEnabled]="isNotificationsOpen()"
+        (appClickOutside)="closeNotifications()"
+      >
         <button
           type="button"
           (click)="toggleNotifications()"
@@ -714,13 +719,14 @@
                     <span>{{ langService.isArabic() ? ('تم التسليم (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة') + ') — مراجعة إجاباتي') : ('Submitted (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Under Review') + ') — Review Answers') }}</span>
                   </a>
                 } @else if (quiz.canStart !== false) {
-                  <a
-                    [routerLink]="quiz.assessmentUrl"
+                  <button
+                    type="button"
+                    (click)="startQuiz(quiz)"
                     class="w-full py-2.5 px-3 rounded-xl btn-gold-metallic font-extrabold text-xs shadow-gold-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <app-icon name="sparkles" [size]="14" />
                     <span>{{ langService.isArabic() ? ('بدء حل الكويز الآن (+' + quiz.xpReward + ' XP)') : ('Start Quiz Now (+' + quiz.xpReward + ' XP)') }}</span>
-                  </a>
+                  </button>
                 } @else {
                   <div
                     class="w-full py-2 px-3 rounded-xl bg-surface-border/50 text-text-muted font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none"
@@ -1016,8 +1022,14 @@
   <!-- 7. Profile Editor Modal (تعديل بيانات الطالب والصورة)                        -->
   <!-- ========================================================================= -->
   @if (isProfileModalOpen()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div class="w-full max-w-xl rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in cursor-pointer"
+      (click)="closeProfileModal()"
+    >
+      <div
+        class="w-full max-w-xl rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto cursor-default"
+        (click)="$event.stopPropagation()"
+      >
 
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-4 border-b border-surface-border">

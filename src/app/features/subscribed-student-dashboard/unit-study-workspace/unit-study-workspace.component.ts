@@ -8,13 +8,14 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { ProtectedYoutubePlayerComponent } from '../../../shared/components/protected-youtube-player/protected-youtube-player.component';
 import { ProtectedPdfCanvasComponent } from '../../../shared/components/protected-pdf-canvas/protected-pdf-canvas.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
 import { IPlaybackProgress } from '../../../shared/components/protected-youtube-player/protected-youtube-player.models';
 
@@ -45,9 +46,11 @@ import { IPlaybackProgress } from '../../../shared/components/protected-youtube-
 export class UnitStudyWorkspaceComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
 
   // Active view tab: video lecture or PDF handout
   readonly activeTab = signal<'video' | 'pdf'>('video');
@@ -244,5 +247,26 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   getAssessmentForLecture(assessmentId?: string): UnitAssessmentItem | undefined {
     if (!assessmentId) return undefined;
     return this.workspaceData().assessments.find(a => a._id === assessmentId);
+  }
+
+  async startAssessment(assessmentId: string, title?: string, returnHome?: boolean): Promise<void> {
+    const asm = this.getAssessmentForLecture(assessmentId) || this.workspaceData().assessments.find(a => a._id === assessmentId);
+    const displayTitle = title || asm?.titleAr || asm?.titleEn || '';
+
+    const confirmed = await this.confirmDialogService.confirm({
+      title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+      message: this.langService.isArabic()
+        ? `هل أنت مستعد لبدء الاختبار${displayTitle ? ` "${displayTitle}"` : ''} الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
+        : `Are you ready to start ${displayTitle ? `"${displayTitle}"` : 'the exam'} now? The countdown timer begins immediately and cannot be paused.`,
+      confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+      cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      icon: 'play-circle',
+      isDestructive: false
+    });
+
+    if (confirmed) {
+      const qp = returnHome ? { returnToHome: 'true' } : undefined;
+      this.router.navigate(['/student/assessments', assessmentId, 'attempt'], { queryParams: qp });
+    }
   }
 }

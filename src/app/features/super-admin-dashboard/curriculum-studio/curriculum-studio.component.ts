@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { CANONICAL_CURRICULUM_TREE } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import {
@@ -41,6 +42,7 @@ import {
     CommonModule,
     FormsModule,
     AppIconComponent,
+    MathFormulaComponent,
     ImageCompressorUploaderComponent
   ],
   templateUrl: './curriculum-studio.component.html',

@@ -19,6 +19,7 @@ import { QuizCacheService } from '../../../core/offline-db/quiz-cache.service';
 import { OfflineSyncQueueService } from '../../../core/offline-db/offline-sync-queue.service';
 import { spiderMathDb } from '../../../core/offline-db/spider-math-db';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { AssessmentAttemptBundle, AssessmentQuestionItem } from './assessment-attempt-view.models';
 
 /**
@@ -55,6 +56,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
   readonly quizCache = inject(QuizCacheService);
   readonly syncQueue = inject(OfflineSyncQueueService);
   readonly langService = inject(LangService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
 
   // Modal & Calculator State
   readonly isDesmosOpen = signal<boolean>(false);
@@ -297,6 +299,24 @@ export class AssessmentAttemptViewComponent implements OnInit {
         this.activeQuestionIdx.set(unanswered[0].index);
         return;
       }
+
+      const confirmed = await this.confirmDialogService.confirm({
+        title: this.langService.isArabic() ? 'تأكيد تسليم التقييم النهائي' : 'Confirm Final Exam Submission',
+        message: this.langService.isArabic()
+          ? 'هل أنت متأكد من تسليم إجاباتك نهائياً؟ بمجرد التسليم لن تتمكن من تعديل الإجابات.'
+          : 'Are you sure you want to submit your answers? Once submitted, no further changes can be made.',
+        confirmLabel: this.langService.isArabic() ? 'نعم، تسليم التقييم' : 'Yes, Submit Exam',
+        cancelLabel: this.langService.isArabic() ? 'مراجعة الإجابات' : 'Review Answers',
+        icon: 'check-circle',
+        isDestructive: false
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    } else {
+      // Immediate auto-submit on timer expiration: dismiss any open confirmation dialog
+      this.confirmDialogService.close();
     }
 
     this.submissionWarning.set('');

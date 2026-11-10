@@ -325,9 +325,9 @@
               @for (opt of q.options; track opt.option_text; let optIdx = $index) {
                 <div
                   (click)="selectOption(optIdx)"
-                  class="mcq-option p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-4 select-none"
+                  class="mcq-option p-4 rounded-2xl border-[3px] transition-all duration-200 cursor-pointer flex items-center gap-4 select-none"
                   [ngClass]="{
-                    'mcq-option--selected border-2 border-brand-gold ring-2 ring-brand-gold/30 bg-brand-gold/10 shadow-gold-glow':
+                    'mcq-option--selected border-brand-gold ring-2 ring-brand-gold/30 bg-brand-gold/10 shadow-gold-glow':
                       selectedAnswers()[q.question_id] === optIdx,
                     'border-surface-border bg-surface-bg hover:border-brand-secondary/60 hover:bg-surface-card':
                       selectedAnswers()[q.question_id] !== optIdx

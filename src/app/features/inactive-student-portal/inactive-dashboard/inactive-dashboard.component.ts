@@ -16,6 +16,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { UnitsSubscriptionsService } from '../../../core/services/units-subscriptions.service';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { IUnitPackageItem } from '../../../core/services/units-subscriptions.models';
@@ -33,6 +34,7 @@ import { CurriculumCode, AcademicTermCode } from '../../../core/constants/curric
 export class InactiveDashboardComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly unitsService = inject(UnitsSubscriptionsService);
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly platformId = inject(PLATFORM_ID);
@@ -233,7 +235,20 @@ export class InactiveDashboardComponent implements OnInit {
     }
   }
 
-  logout(): void {
-    this.authService.clearSession('/');
+  async logout(): Promise<void> {
+    const confirmed = await this.confirmDialogService.confirm({
+      title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
+      message: this.langService.isArabic()
+        ? 'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟'
+        : 'Are you sure you want to log out of your account?',
+      confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
+      cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      isDestructive: true,
+      icon: 'log-out'
+    });
+
+    if (confirmed) {
+      this.authService.clearSession('/');
+    }
   }
 }

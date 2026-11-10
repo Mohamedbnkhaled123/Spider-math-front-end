@@ -358,7 +358,7 @@
 
                   <!-- Question Text -->
                   <h4 class="text-xs sm:text-sm font-bold text-text-primary leading-relaxed">
-                    {{ q.questionText }}
+                    <app-math-formula [text]="q.questionText" />
                   </h4>
 
                   <!-- Question Image (if any) -->
@@ -377,7 +377,7 @@
                     <div class="space-y-2.5 pt-2">
                       @for (opt of q.options; track $index) {
                         <div
-                          class="p-3.5 rounded-2xl border transition-all flex items-center justify-between text-xs font-bold"
+                          class="p-3.5 rounded-2xl border-[3px] transition-all flex items-center justify-between text-xs font-bold"
                           [ngClass]="
                             $index === q.studentSelectedOptionIndex && q.isCorrect
                               ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20'
@@ -403,7 +403,7 @@
                             >
                               {{ langService.isArabic() ? (['أ', 'ب', 'ج', 'د', 'هـ'][$index] || ($index + 1)) : (['A', 'B', 'C', 'D', 'E'][$index] || ($index + 1)) }}
                             </span>
-                            <span>{{ opt }}</span>
+                            <app-math-formula [text]="opt" />
                           </div>
 
                           <div>
@@ -467,9 +467,9 @@
                         <app-icon name="shield" [size]="13" />
                         <span>{{ langService.isArabic() ? 'توجيه وملاحظة المعلمة هبة عبدالوهاب:' : 'Teacher Guidance & Feedback from Eng. Heba:' }}</span>
                       </span>
-                      <p class="text-xs text-text-primary leading-relaxed font-medium">
-                        {{ q.teacherNote }}
-                      </p>
+                      <div class="text-xs text-text-primary leading-relaxed font-medium">
+                        <app-math-formula [text]="q.teacherNote" />
+                      </div>
                     </div>
                   }
 
@@ -562,9 +562,9 @@
                           <span class="text-[11px] font-bold text-brand-secondary block mb-1">
                             {{ langService.isArabic() ? 'توجيه وملاحظة المعلمة:' : 'Teacher Guidance:' }}
                           </span>
-                          <p class="text-xs text-text-secondary leading-relaxed">
-                            {{ mistake.errorNote }}
-                          </p>
+                          <div class="text-xs text-text-secondary leading-relaxed">
+                            <app-math-formula [text]="mistake.errorNote" />
+                          </div>
                         </div>
                       }
 

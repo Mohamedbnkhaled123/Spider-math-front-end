@@ -1,0 +1,75 @@
+@if (dialogState().isOpen) {
+  <div
+    id="confirm-modal-backdrop"
+    class="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="dialogState().config.title"
+    (click)="onBackdropClick($event)"
+  >
+    <div
+      id="confirm-modal-card"
+      class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 sm:p-7 shadow-2xl space-y-5 text-center animate-scale-up relative cursor-default"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Close X Button -->
+      <button
+        type="button"
+        id="confirm-modal-close-btn"
+        (click)="cancel()"
+        class="absolute top-4 left-4 rtl:left-4 rtl:right-auto p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer"
+        aria-label="Close"
+      >
+        <app-icon name="x" [size]="18" />
+      </button>
+
+      <!-- Icon Container -->
+      <div
+        class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center"
+        [class.bg-rose-500/10]="dialogState().config.isDestructive"
+        [class.text-rose-500]="dialogState().config.isDestructive"
+        [class.bg-brand-primary/10]="!dialogState().config.isDestructive"
+        [class.text-brand-primary]="!dialogState().config.isDestructive"
+      >
+        <app-icon [name]="getIconName()" [size]="28" />
+      </div>
+
+      <!-- Title & Message -->
+      <div class="space-y-2">
+        <h3 id="confirm-modal-title" class="text-base sm:text-lg font-black text-text-primary">
+          {{ dialogState().config.title }}
+        </h3>
+        <p id="confirm-modal-message" class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+          {{ dialogState().config.message }}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          id="confirm-modal-cancel-btn"
+          (click)="cancel()"
+          class="px-5 py-2.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-text-primary hover:border-text-muted transition-all cursor-pointer"
+        >
+          {{ dialogState().config.cancelLabel || 'إلغاء' }}
+        </button>
+
+        <button
+          type="button"
+          id="confirm-modal-proceed-btn"
+          (click)="confirm()"
+          class="px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-md cursor-pointer"
+          [class.bg-rose-600]="dialogState().config.isDestructive"
+          [class.hover:bg-rose-700]="dialogState().config.isDestructive"
+          [class.text-white]="dialogState().config.isDestructive"
+          [class.btn-gold-metallic]="!dialogState().config.isDestructive"
+          [class.text-slate-950]="!dialogState().config.isDestructive"
+          [class.shadow-gold-glow]="!dialogState().config.isDestructive"
+        >
+          {{ dialogState().config.confirmLabel || 'تأكيد' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

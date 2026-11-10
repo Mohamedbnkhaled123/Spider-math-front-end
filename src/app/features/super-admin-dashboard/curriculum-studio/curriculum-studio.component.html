@@ -1173,9 +1173,9 @@
                   </div>
                 </div>
 
-                <p class="font-bold text-text-primary text-xs leading-relaxed">
-                  {{ q.textAr }}
-                </p>
+                <div class="font-bold text-text-primary text-xs leading-relaxed">
+                  <app-math-formula [text]="q.textAr" />
+                </div>
 
                 @if (q.questionImageUrl) {
                   <img [src]="q.questionImageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question image'" class="max-h-48 rounded-xl object-contain border border-surface-border" />
@@ -1191,7 +1191,7 @@
                         [class.text-emerald-600]="q.correctOptionIndex === $index"
                         [class.border-surface-border]="q.correctOptionIndex !== $index"
                       >
-                        <span>{{ opt }}</span>
+                        <app-math-formula [text]="opt" />
                         @if (q.correctOptionIndex === $index) {
                           <span class="text-[10px] font-bold flex items-center gap-1">
                             <app-icon name="check" [size]="12" />

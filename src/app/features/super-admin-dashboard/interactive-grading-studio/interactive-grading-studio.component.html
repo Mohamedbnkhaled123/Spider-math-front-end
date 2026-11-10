@@ -337,9 +337,9 @@
               {{ sub.assessmentTitle }}
             </h3>
 
-            <p class="text-xs text-text-secondary leading-relaxed max-w-2xl line-clamp-2">
-              {{ sub.questionText }}
-            </p>
+            <div class="text-xs text-text-secondary leading-relaxed max-w-2xl line-clamp-2">
+              <app-math-formula [text]="sub.questionText" />
+            </div>
           </div>
 
           <div class="flex items-center gap-3 shrink-0">
@@ -422,7 +422,7 @@
               </div>
 
               <h4 class="text-sm font-bold text-text-primary leading-relaxed">
-                {{ q.questionText }}
+                <app-math-formula [text]="q.questionText" />
               </h4>
 
               <!-- MCQ Options list -->
@@ -451,7 +451,7 @@
                         >
                           {{ optIdx + 1 }}
                         </span>
-                        <span>{{ opt }}</span>
+                        <app-math-formula [text]="opt" />
                       </div>
 
                       @if (optIdx === q.correctOptionIndex) {

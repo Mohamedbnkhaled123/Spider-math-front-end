@@ -38,6 +38,7 @@ import {
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
 export type StageFilterType = 'ALL' | 'PRIMARY' | 'PREPARATORY' | 'SECONDARY';
 
@@ -53,6 +54,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly router = inject(Router);
   readonly langService = inject(LangService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
 
@@ -614,7 +616,20 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
             }
           });
         } else {
-          this.router.navigate(['/student/assessments', quiz.id]);
+          this.confirmDialogService.confirm({
+            title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+            message: this.langService.isArabic()
+              ? `هل أنت مستعد لبدء "${quiz.titleAr || quiz.titleEn}" الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
+              : `Are you ready to start "${quiz.titleEn || quiz.titleAr}" now? The countdown timer begins immediately and cannot be paused.`,
+            confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+            cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+            icon: 'play-circle',
+            isDestructive: false
+          }).then(confirmed => {
+            if (confirmed) {
+              this.router.navigate(['/student/assessments', quiz.id]);
+            }
+          });
         }
       } else {
         const targetUrl = quiz.isPlacementTest

@@ -9,9 +9,11 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AcademicTermCode } from '../../../core/constants/curriculum-tree.constant';
@@ -48,7 +50,7 @@ import {
 @Component({
   selector: 'app-student-overview',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AppIconComponent, ClickOutsideDirective],
   templateUrl: './student-overview.component.html',
   styleUrls: ['./student-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -56,8 +58,10 @@ import {
 export class StudentOverviewComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly discoveryService = inject(PublicDiscoveryService, { optional: true });
 
   // Term Switcher Signal (Synchronized with teacher's active term from PublicDiscoveryService / student profile)
@@ -197,6 +201,28 @@ export class StudentOverviewComponent implements OnInit {
 
   setQuizFilter(filter: 'ALL' | 'GENERAL_QUIZ' | 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
     this.activeQuizFilter.set(filter);
+  }
+
+  async startQuiz(quiz: StudentDueQuizItem): Promise<void> {
+    const quizTitle = quiz.titleAr || (quiz as any).title || '';
+    const confirmed = await this.confirmDialogService.confirm({
+      title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+      message: this.langService.isArabic()
+        ? `هل أنت مستعد لبدء "${quizTitle}" الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
+        : `Are you ready to start "${quizTitle}" now? The countdown timer begins immediately and cannot be paused.`,
+      confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+      cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      icon: 'play-circle',
+      isDestructive: false
+    });
+
+    if (confirmed) {
+      if (quiz.assessmentUrl.startsWith('/')) {
+        this.router.navigateByUrl(quiz.assessmentUrl);
+      } else {
+        this.router.navigate([quiz.assessmentUrl]);
+      }
+    }
   }
 
   // =========================================================================
@@ -617,6 +643,10 @@ export class StudentOverviewComponent implements OnInit {
 
   toggleNotifications(): void {
     this.isNotificationsOpen.update(v => !v);
+  }
+
+  closeNotifications(): void {
+    this.isNotificationsOpen.set(false);
   }
 
   markAllNotificationsAsRead(): void {

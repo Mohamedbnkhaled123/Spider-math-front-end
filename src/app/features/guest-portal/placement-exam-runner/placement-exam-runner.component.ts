@@ -30,6 +30,7 @@ import {
 } from '../../../core/constants/curriculum-tree.constant';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
 @Component({
   selector: 'app-placement-exam-runner',
@@ -53,6 +54,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
 
   readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
 
@@ -271,16 +273,35 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     this.isDesmosActive.update(active => !active);
   }
 
-  submitExam(): void {
+  async submitExam(isAutoSubmit: boolean = false): Promise<void> {
     const answersMap = this.selectedAnswers();
     const answers = Object.entries(answersMap).map(([questionId, selectedOption]) => ({
       questionId,
       selectedOption
     }));
 
-    if (answers.length === 0) {
-      this.selectOption(0);
-      return;
+    if (!isAutoSubmit) {
+      if (answers.length === 0) {
+        this.selectOption(0);
+        return;
+      }
+
+      const confirmed = await this.confirmDialogService.confirm({
+        title: this.langService.isArabic() ? 'تأكيد تسليم امتحان تحديد المستوى' : 'Confirm Placement Exam Submission',
+        message: this.langService.isArabic()
+          ? 'هل أنت متأكد من رغبتك في إنهاء الامتحان وتسليم إجاباتك؟'
+          : 'Are you sure you want to finish the exam and submit your answers?',
+        confirmLabel: this.langService.isArabic() ? 'نعم، تسليم الامتحان' : 'Yes, Submit Exam',
+        cancelLabel: this.langService.isArabic() ? 'مراجعة الإجابات' : 'Review Answers',
+        icon: 'check-circle',
+        isDestructive: false
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    } else {
+      this.confirmDialogService.close();
     }
 
     this.isSubmitting.set(true);
@@ -353,7 +374,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
       this.timeRemainingSec.update(t => {
         if (t <= 1) {
           this.clearTimer();
-          this.submitExam();
+          this.submitExam(true);
           return 0;
         }
         return t - 1;

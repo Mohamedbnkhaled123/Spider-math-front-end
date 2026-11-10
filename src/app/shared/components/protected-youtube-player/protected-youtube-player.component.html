@@ -8,7 +8,7 @@
   <div class="player-ambient-backlight" aria-hidden="true"></div>
 
   <!-- Inner Glass Bezel Screen Frame -->
-  <div class="player-screen-chassis relative w-full h-full rounded-[22px] overflow-hidden bg-[#0A0D18]">
+  <div class="player-screen-chassis relative w-full h-full rounded-[24px] overflow-hidden bg-[#0A0D18]">
     <!-- 1. YouTube IFrame Mount Target (Rendered by YouTube IFrame API) -->
     <div class="absolute inset-0 w-full h-full pointer-events-none">
       <div #iframeMount class="w-full h-full"></div>
@@ -51,29 +51,15 @@
       </div>
     }
 
-    <!-- 5. 3D Glowing Glass Orb Play Button (When Paused) -->
-    @if (!isPlaying()) {
-      <button
-        type="button"
-        (click)="togglePlay()"
-        class="glass-play-orb"
-        aria-label="Play Lecture Video"
-      >
-        <svg viewBox="0 0 24 24" class="w-10 h-10 fill-white ml-1 rtl:mr-1 rtl:ml-0 drop-shadow-[0_2px_8px_rgba(255,255,255,0.85)]" aria-hidden="true">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      </button>
-    }
-
-    <!-- 6. Custom Video Controls & Scrubber (Matching User Mockup) -->
+    <!-- 6. Custom Video Controls & Scrubber (Simplified Minimal Interface) -->
     <div
-      class="player-controls-bar absolute inset-x-0 bottom-0 z-layer-player-controls px-5 py-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300"
+      class="player-controls-bar absolute inset-x-0 bottom-0 z-layer-player-controls px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300"
       [ngClass]="{ 'opacity-100': showControls() || !isPlaying(), 'opacity-0 pointer-events-none': !showControls() && isPlaying() }"
     >
-      <!-- Sleek Horizontal Scrubber (Exact Match to User Reference without chapters) -->
+      <!-- Sleek Horizontal Scrubber -->
       <div
         (click)="seek($event)"
-        class="relative w-full h-4 flex items-center cursor-pointer mb-3 group/seek"
+        class="relative w-full h-4 flex items-center cursor-pointer mb-2 sm:mb-3 group/seek"
         [title]="langService.isArabic() ? 'انقر للتقديم أو التأخير' : 'Click to seek'"
       >
         <!-- Background Track -->
@@ -83,100 +69,37 @@
             class="h-full rounded-full bg-gradient-to-r from-[#C49A45] via-[#E5C47E] to-[#F5D77F] relative shadow-[0_0_8px_rgba(229,196,126,0.6)]"
             [style.width]="progressPercentage() + '%'"
           >
-            <!-- Glowing Spherical Head / Thumb (Exact Match to Mockup) -->
+            <!-- Glowing Spherical Head / Thumb -->
             <div class="scrubber-thumb-orb absolute right-0 rtl:right-auto rtl:left-0 top-1/2 -translate-y-1/2 translate-x-1/2 rtl:-translate-x-1/2"></div>
           </div>
         </div>
       </div>
 
-      <!-- Controls Row -->
-      <div class="flex items-center justify-between text-white text-xs gap-3 font-semibold">
-        <!-- Left: Play/Pause, Volume, Time -->
-        <div class="flex items-center gap-3">
-          <button
-            type="button"
-            (click)="togglePlay()"
-            class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
-            [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
-          >
-            @if (isPlaying()) {
-              <span class="w-4 h-4 flex items-center justify-center font-bold">❚❚</span>
-            } @else {
-              <app-icon name="play" [size]="16" />
-            }
-          </button>
+      <!-- Controls Row: Play/Pause and Audio Toggle -->
+      <div class="flex items-center text-white text-xs gap-3 font-semibold">
+        <!-- Play / Pause Button -->
+        <button
+          type="button"
+          (click)="togglePlay()"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
+          [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+        >
+          @if (isPlaying()) {
+            <span class="w-4 h-4 flex items-center justify-center font-bold">❚❚</span>
+          } @else {
+            <app-icon name="play" [size]="16" />
+          }
+        </button>
 
-          <!-- Volume Toggle & Slider -->
-          <div class="flex items-center gap-2 group/vol">
-            <button
-              type="button"
-              (click)="toggleMute()"
-              [attr.aria-label]="isMuted() || volume() === 0 ? 'Unmute sound' : 'Mute sound'"
-              class="p-1.5 rounded-lg hover:bg-white/15 transition-colors cursor-pointer"
-            >
-              <app-icon [name]="isMuted() || volume() === 0 ? 'lock' : 'award'" [size]="14" />
-            </button>
-
-            <input
-              type="range"
-              min="0"
-              max="100"
-              [value]="isMuted() ? 0 : volume()"
-              (input)="onVolumeChange($event)"
-              aria-label="Volume slider"
-              class="w-16 h-1 rounded-full bg-white/30 accent-[#E5C47E] cursor-pointer hidden sm:inline"
-            />
-          </div>
-
-          <!-- Time Label -->
-          <div class="font-numeric text-xs font-bold text-white/90 tracking-tight">
-            <span>{{ formattedCurrentTime() }}</span>
-            <span class="text-white/50 mx-1">/</span>
-            <span>{{ formattedDuration() }}</span>
-          </div>
-        </div>
-
-        <!-- Right: Watch Pct, Speed Picker, Fullscreen -->
-        <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Live Watch Progress Badge -->
-          <div
-            class="px-2.5 py-1 rounded-lg text-[11px] font-black font-numeric flex items-center gap-1.5"
-            [ngClass]="{
-              'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30': watchPercentage() >= 85,
-              'bg-white/10 text-white/80 border border-white/15': watchPercentage() < 85
-            }"
-          >
-            <span class="text-[#E5C47E]">●</span>
-            <span>{{ watchPercentage() }}% {{ langService.isArabic() ? 'مكتمل' : 'Completed' }}</span>
-          </div>
-
-          <!-- Speed Selector Dropdown/Buttons -->
-          <div class="flex items-center rounded-lg bg-white/10 border border-white/15 p-0.5 text-[11px] font-bold">
-            @for (rate of availableSpeeds; track rate) {
-              <button
-                type="button"
-                (click)="setSpeed(rate)"
-                class="px-2 py-0.5 rounded transition-colors font-numeric cursor-pointer"
-                [ngClass]="{
-                  'bg-brand-primary text-white': playbackRate() === rate,
-                  'text-white/70 hover:text-white': playbackRate() !== rate
-                }"
-              >
-                {{ rate }}x
-              </button>
-            }
-          </div>
-
-          <!-- Fullscreen Button -->
-          <button
-            type="button"
-            (click)="toggleFullscreen()"
-            class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
-            [attr.aria-label]="isFullscreen() ? 'Exit Fullscreen' : 'Enter Fullscreen'"
-          >
-            <app-icon name="target" [size]="16" />
-          </button>
-        </div>
+        <!-- Audio Icon Button (Toggles Mute) -->
+        <button
+          type="button"
+          (click)="toggleMute()"
+          [attr.aria-label]="isMuted() || volume() === 0 ? 'Unmute sound' : 'Mute sound'"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
+        >
+          <app-icon [name]="isMuted() || volume() === 0 ? 'volume-x' : 'volume-2'" [size]="16" />
+        </button>
       </div>
     </div>
   </div>

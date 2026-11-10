@@ -34,6 +34,7 @@ export type AppIconName =
   | 'chevron-down'
   | 'chevron-up'
   | 'play'
+  | 'play-circle'
   | 'star'
   | 'arrow-right'
   | 'arrow-left'
@@ -73,7 +74,10 @@ export type AppIconName =
   | 'facebook'
   | 'youtube'
   | 'telegram'
-  | 'send';
+  | 'send'
+  | 'volume'
+  | 'volume-2'
+  | 'volume-x';
 
 @Component({
   selector: 'app-icon',

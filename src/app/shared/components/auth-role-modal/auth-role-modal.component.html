@@ -1,6 +1,12 @@
 @if (isOpen()) {
-  <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-    <div class="modal-dialog w-full max-w-2xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto animate-scale-up">
+  <div
+    class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in cursor-pointer"
+    (click)="close()"
+  >
+    <div
+      class="modal-dialog w-full max-w-2xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto animate-scale-up cursor-default"
+      (click)="$event.stopPropagation()"
+    >
 
       <!-- Close Button -->
       <button

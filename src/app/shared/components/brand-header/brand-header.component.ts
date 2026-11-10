@@ -18,12 +18,14 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
 import { NotificationsService } from '../../../core/services/notifications.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { INotificationItem } from '../../../core/services/notifications.models';
+import { ClickOutsideDirective } from '../../directives/click-outside.directive';
 
 @Component({
   selector: 'app-brand-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent, AuthRoleModalComponent],
+  imports: [CommonModule, RouterLink, TranslocoPipe, AppIconComponent, AuthRoleModalComponent, ClickOutsideDirective],
   templateUrl: './brand-header.component.html',
   styleUrl: './brand-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,6 +35,7 @@ export class BrandHeaderComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
   readonly notificationsService = inject(NotificationsService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
@@ -161,9 +164,23 @@ export class BrandHeaderComponent implements OnInit {
     this.router.navigate(['/'], { fragment: sectionId });
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
     this.closeMobileMenu();
     this.notificationsService.closeDropdown();
-    this.authService.clearSession('/');
+
+    const confirmed = await this.confirmDialogService.confirm({
+      title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
+      message: this.langService.isArabic()
+        ? 'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟'
+        : 'Are you sure you want to log out of your account?',
+      confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
+      cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
+      isDestructive: true,
+      icon: 'log-out'
+    });
+
+    if (confirmed) {
+      this.authService.clearSession('/');
+    }
   }
 }

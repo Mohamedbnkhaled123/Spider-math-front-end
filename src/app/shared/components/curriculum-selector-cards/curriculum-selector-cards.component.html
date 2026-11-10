@@ -980,8 +980,14 @@
 
 <!-- Unit Syllabus Preview Modal -->
 @if (selectedUnitForPreview()) {
-  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-    <div class="relative w-full max-w-lg p-6 sm:p-7 rounded-3xl bg-surface-card border border-surface-border shadow-2xl space-y-5">
+  <div
+    class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in cursor-pointer"
+    (click)="closeUnitPreview()"
+  >
+    <div
+      class="relative w-full max-w-lg p-6 sm:p-7 rounded-3xl bg-surface-card border border-surface-border shadow-2xl space-y-5 cursor-default"
+      (click)="$event.stopPropagation()"
+    >
       <div class="flex items-center justify-between pb-3 border-b border-surface-border">
         <div>
           <h4 class="text-base sm:text-lg font-bold text-text-primary">
@@ -1048,8 +1054,14 @@
 
 <!-- Locked Content WhatsApp Modal (Strict Zero Emojis & Exactly Approved Copy) -->
 @if (showLockedContentModal()) {
-  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-    <div class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-surface-border shadow-2xl text-center space-y-6">
+  <div
+    class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in cursor-pointer"
+    (click)="closeLockedContentModal()"
+  >
+    <div
+      class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-surface-border shadow-2xl text-center space-y-6 cursor-default"
+      (click)="$event.stopPropagation()"
+    >
       
       <button
         type="button"
@@ -1108,8 +1120,14 @@
 
 <!-- Auth Gate Modal for Free Content (Guests / Unauthenticated Visitors) -->
 @if (showAuthGateModal()) {
-  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-    <div class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-surface-border shadow-2xl text-center space-y-6">
+  <div
+    class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in cursor-pointer"
+    (click)="closeAuthGateModal()"
+  >
+    <div
+      class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-surface-border shadow-2xl text-center space-y-6 cursor-default"
+      (click)="$event.stopPropagation()"
+    >
       
       <button
         type="button"
