@@ -456,6 +456,9 @@ $axis-blue: #0284C7;
 .polar-web-bg {
   contain: strict;
   will-change: transform;
+  max-width: 100vw;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .logo-emblem-container,

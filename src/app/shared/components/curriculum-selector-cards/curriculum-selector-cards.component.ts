@@ -154,12 +154,25 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly ngZone = inject(NgZone);
   private silkAnimFrameId = 0;
-  private mobileAnimFrameId = 0;
+  private isSilkLoopRunning = false;
   private resizeObserver: ResizeObserver | null = null;
   private intersectionObserver: IntersectionObserver | null = null;
   private isSectionVisible = false;
   private isCurriculumTreeRequested = false;
-  private cardAnchorsDesktop: { x: number; y: number }[] = [];
+  private desktopSilkCache: {
+    W: number;
+    H: number;
+    dpr: number;
+    spiderOrigins: { x: number; y: number }[];
+    cardAnchors: { x: number; y: number }[];
+  } | null = null;
+  private mobileSilkCache: {
+    W: number;
+    H: number;
+    dpr: number;
+    spiderOrigins: { x: number; y: number }[];
+    cardAnchors: { x: number; y: number }[];
+  } | null = null;
 
   // Computed: Merges dynamic curricula tracks with dynamic availability flags from MongoDB
   readonly curriculumCards = computed<ICurriculumUiCard[]>(() => {
@@ -330,7 +343,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
     effect(() => {
       this.themeService.isDark();
+      this.langService.currentLang();
       if (isPlatformBrowser(this.platformId)) {
+        this.desktopSilkCache = null;
+        this.mobileSilkCache = null;
         this.scheduleSilkRender();
       }
     });
@@ -389,6 +405,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
             if (visible) {
               this.ngZone.run(() => this.ensureCurriculumTreeLoaded());
               this.scheduleSilkRender();
+            } else {
+              this.stopSilkLoop();
             }
           },
           { rootMargin: '200px 0px' }
@@ -403,6 +421,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
       if (typeof ResizeObserver !== 'undefined') {
         this.resizeObserver = new ResizeObserver(() => {
+          this.desktopSilkCache = null;
+          this.mobileSilkCache = null;
           if (this.isSectionVisible) {
             this.scheduleSilkRender();
           }
@@ -414,6 +434,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       const spiderDesktop = this.spiderDesktopRef?.nativeElement;
       const spiderMobile = this.spiderMobileRef?.nativeElement;
       const onImgLoad = () => {
+        this.desktopSilkCache = null;
+        this.mobileSilkCache = null;
         if (this.isSectionVisible) this.scheduleSilkRender();
       };
       if (spiderDesktop && !spiderDesktop.complete) {
@@ -426,40 +448,57 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   ngOnDestroy(): void {
-    if (this.silkAnimFrameId) cancelAnimationFrame(this.silkAnimFrameId);
-    if (this.mobileAnimFrameId) cancelAnimationFrame(this.mobileAnimFrameId);
+    this.stopSilkLoop();
     this.resizeObserver?.disconnect();
     this.intersectionObserver?.disconnect();
   }
 
   private scheduleSilkRender(): void {
     if (!isPlatformBrowser(this.platformId) || this.isTrackModalOpen()) return;
+    this.desktopSilkCache = null;
+    this.mobileSilkCache = null;
+    this.startSilkLoop();
+  }
+
+  private startSilkLoop(): void {
+    if (!isPlatformBrowser(this.platformId) || this.isSilkLoopRunning || !this.isSectionVisible || this.isTrackModalOpen()) return;
+
+    // Respect user prefers-reduced-motion preferences
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.renderCurrentSilkFrame(0);
+      return;
+    }
+
+    this.isSilkLoopRunning = true;
     this.ngZone.runOutsideAngular(() => {
-      if (this.silkAnimFrameId) cancelAnimationFrame(this.silkAnimFrameId);
-      this.silkAnimFrameId = requestAnimationFrame(() => {
-        this.silkAnimFrameId = 0;
-        this.initSilkCanvas();
-      });
+      const step = (timeMs: number) => {
+        if (!this.isSilkLoopRunning || !this.isSectionVisible || this.isTrackModalOpen()) {
+          this.isSilkLoopRunning = false;
+          this.silkAnimFrameId = 0;
+          return;
+        }
+        this.renderCurrentSilkFrame(timeMs * 0.001);
+        this.silkAnimFrameId = requestAnimationFrame(step);
+      };
+      this.silkAnimFrameId = requestAnimationFrame(step);
     });
   }
 
-  private initSilkCanvas(): void {
-    if (typeof window === 'undefined' || this.isTrackModalOpen()) return;
-    if (window.innerWidth >= 1024) {
-      this.initDesktopSilk();
-    } else {
-      this.initMobileSilk();
+  private stopSilkLoop(): void {
+    this.isSilkLoopRunning = false;
+    if (this.silkAnimFrameId) {
+      cancelAnimationFrame(this.silkAnimFrameId);
+      this.silkAnimFrameId = 0;
     }
   }
 
-  // ── Desktop Silk: 4 Card-Connected Branches (Zero Gap, Read-Before-Write to Prevent Forced Reflow) ──
-  private initDesktopSilk(): void {
+  // ── Desktop Silk Geometry Update (Read-Before-Write, Cached for 60fps Physics Sway) ──
+  private updateDesktopGeometry(): void {
     const canvasEl = this.silkCanvasDesktopRef?.nativeElement;
     const containerEl = this.desktopContainerRef?.nativeElement;
     const spiderEl = this.spiderDesktopRef?.nativeElement;
     if (!canvasEl || !containerEl || !spiderEl) return;
 
-    // PHASE 1: Read all geometric properties BEFORE any DOM/style writes (Zero Forced Reflow)
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const containerRect = containerEl.getBoundingClientRect();
     const W = containerRect.width;
@@ -480,53 +519,44 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     const spiderW = spiderRect.width;
     const spiderH = spiderRect.height;
 
+    // Zero air-gap: Origins tightly anchor to the bottom paws and book contours of the new mascot
     const spiderOrigins = [
-      { x: spiderX + spiderW * 0.20, y: spiderY + spiderH * 0.72 },
-      { x: spiderX + spiderW * 0.43, y: spiderY + spiderH * 0.67 },
-      { x: spiderX + spiderW * 0.57, y: spiderY + spiderH * 0.67 },
-      { x: spiderX + spiderW * 0.80, y: spiderY + spiderH * 0.72 },
+      { x: spiderX + spiderW * 0.22, y: spiderY + spiderH * 0.84 },
+      { x: spiderX + spiderW * 0.42, y: spiderY + spiderH * 0.86 },
+      { x: spiderX + spiderW * 0.58, y: spiderY + spiderH * 0.86 },
+      { x: spiderX + spiderW * 0.78, y: spiderY + spiderH * 0.84 },
     ];
 
-    this.cardAnchorsDesktop = [];
+    const cardAnchors: { x: number; y: number }[] = [];
     for (let i = 0; i < 4; i++) {
       if (cardRects[i]) {
         const r = cardRects[i];
-        this.cardAnchorsDesktop.push({
+        cardAnchors.push({
           x: r.left - containerRect.left + r.width * 0.5,
           y: r.top - containerRect.top + 1
         });
       } else {
-        this.cardAnchorsDesktop.push({ x: W * (0.125 + i * 0.25), y: H * 0.85 });
+        cardAnchors.push({ x: W * (0.125 + i * 0.25), y: H * 0.85 });
       }
     }
 
-    // PHASE 2: Write canvas dimensions & draw single crisp frame
     const targetW = Math.round(W * dpr);
     const targetH = Math.round(H * dpr);
     if (canvasEl.width !== targetW || canvasEl.height !== targetH) {
       canvasEl.width = targetW;
       canvasEl.height = targetH;
     }
-    const ctx = canvasEl.getContext('2d');
-    if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
 
-    const isDark = this.themeService.isDark();
-    renderCardConnectedWeb(ctx, spiderOrigins, this.cardAnchorsDesktop, 0, false, isDark, W, H);
-    for (const anchor of this.cardAnchorsDesktop) {
-      drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
-    }
+    this.desktopSilkCache = { W, H, dpr, spiderOrigins, cardAnchors };
   }
 
-  // ── Mobile Silk (2x2 Web Branching to Top 2 & Bottom 2 Cards, Read-Before-Write) ──
-  private initMobileSilk(): void {
+  // ── Mobile Silk Geometry Update (Read-Before-Write, Cached for 60fps Physics Sway) ──
+  private updateMobileGeometry(): void {
     const canvasEl = this.silkCanvasMobileRef?.nativeElement;
     const containerEl = this.mobileContainerRef?.nativeElement;
     const spiderEl = this.spiderMobileRef?.nativeElement;
     if (!canvasEl || !containerEl || !spiderEl) return;
 
-    // PHASE 1: Read all geometric properties BEFORE any DOM/style writes (Zero Forced Reflow)
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const curContainerRect = containerEl.getBoundingClientRect();
     const W = curContainerRect.width;
@@ -572,26 +602,60 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
       spiderOrigins[0] = { x: sx + sw * 0.20, y: sy + sh * 0.46 };
       spiderOrigins[1] = { x: sx + sw * 0.80, y: sy + sh * 0.46 };
-      spiderOrigins[2] = { x: sx + sw * 0.16, y: sy + sh * 0.86 };
-      spiderOrigins[3] = { x: sx + sw * 0.84, y: sy + sh * 0.86 };
+      spiderOrigins[2] = { x: sx + sw * 0.22, y: sy + sh * 0.84 };
+      spiderOrigins[3] = { x: sx + sw * 0.78, y: sy + sh * 0.84 };
     }
 
-    // PHASE 2: Write canvas dimensions & draw single crisp frame
     const targetW = Math.round(W * dpr);
     const targetH = Math.round(H * dpr);
     if (canvasEl.width !== targetW || canvasEl.height !== targetH) {
       canvasEl.width = targetW;
       canvasEl.height = targetH;
     }
-    const ctx = canvasEl.getContext('2d');
-    if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
 
+    this.mobileSilkCache = { W, H, dpr, spiderOrigins, cardAnchors };
+  }
+
+  // ── Render Silk Frame with Organic Harmonic Sway (Zero Layout Measurement inside RAF) ──
+  private renderCurrentSilkFrame(timeSec: number): void {
+    if (typeof window === 'undefined' || this.isTrackModalOpen()) return;
+    const isDesktop = window.innerWidth >= 1024;
     const isDark = this.themeService.isDark();
-    renderCardConnectedWeb(ctx, spiderOrigins, cardAnchors, 0, true, isDark, W, H);
-    for (const anchor of cardAnchors) {
-      drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
+
+    if (isDesktop) {
+      const canvasEl = this.silkCanvasDesktopRef?.nativeElement;
+      if (!canvasEl) return;
+      if (!this.desktopSilkCache) {
+        this.updateDesktopGeometry();
+      }
+      const geom = this.desktopSilkCache;
+      if (!geom) return;
+
+      const ctx = canvasEl.getContext('2d');
+      if (!ctx) return;
+      ctx.setTransform(geom.dpr, 0, 0, geom.dpr, 0, 0);
+      ctx.clearRect(0, 0, geom.W, geom.H);
+      renderCardConnectedWeb(ctx, geom.spiderOrigins, geom.cardAnchors, timeSec, false, isDark, geom.W, geom.H);
+      for (const anchor of geom.cardAnchors) {
+        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
+      }
+    } else {
+      const canvasEl = this.silkCanvasMobileRef?.nativeElement;
+      if (!canvasEl) return;
+      if (!this.mobileSilkCache) {
+        this.updateMobileGeometry();
+      }
+      const geom = this.mobileSilkCache;
+      if (!geom) return;
+
+      const ctx = canvasEl.getContext('2d');
+      if (!ctx) return;
+      ctx.setTransform(geom.dpr, 0, 0, geom.dpr, 0, 0);
+      ctx.clearRect(0, 0, geom.W, geom.H);
+      renderCardConnectedWeb(ctx, geom.spiderOrigins, geom.cardAnchors, timeSec, true, isDark, geom.W, geom.H);
+      for (const anchor of geom.cardAnchors) {
+        drawSubtleCardAnchorFlare(ctx, anchor.x, anchor.y, isDark);
+      }
     }
   }
 
@@ -774,6 +838,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   openTrackModal(code: CurriculumCode): void {
+    this.stopSilkLoop();
     this.ensureCurriculumTreeLoaded();
     this.selectedCurriculumCode.set(code);
     const curr = this.curriculumCards().find(c => c.code === code);

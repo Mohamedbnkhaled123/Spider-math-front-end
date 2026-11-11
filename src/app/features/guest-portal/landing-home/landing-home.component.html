@@ -138,9 +138,9 @@
             <!-- 3D Mascot Image with Book (Transparent WebP with Gentle Float) -->
             <div class="relative z-10 w-full flex items-center justify-center pt-6">
               <img
-                [attr.srcset]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar-sm-v3.webp?v=5 480w, /assets/branding/spider-mascot-hero-book-ar-v3.webp?v=5 640w' : '/assets/branding/spider-mascot-hero-book-sm-v3.webp?v=5 480w, /assets/branding/spider-mascot-hero-book-v3.webp?v=5 640w'"
+                [attr.srcset]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar-sm-v3.webp?v=6 480w, /assets/branding/spider-mascot-hero-book-ar-v3.webp?v=6 640w' : '/assets/branding/spider-mascot-hero-book-sm-v3.webp?v=6 480w, /assets/branding/spider-mascot-hero-book-v3.webp?v=6 640w'"
                 sizes="(max-width: 640px) 360px, (max-width: 1023px) 440px, 500px"
-                [src]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar-v3.webp?v=5' : '/assets/branding/spider-mascot-hero-book-v3.webp?v=5'"
+                [src]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar-v3.webp?v=6' : '/assets/branding/spider-mascot-hero-book-v3.webp?v=6'"
                 [alt]="langService.isArabic() ? 'رفيق سبايدر ماث الذكي للمذاكرة' : 'Spider Math AI Study Partner'"
                 width="640"
                 height="640"
@@ -161,7 +161,7 @@
 
   <!-- ========================================================================= -->
 
-  <section id="about-section" class="py-16 sm:py-24 border-b border-surface-border relative overflow-hidden">
+  <section id="about-section" class="w-full min-w-0 max-w-full py-16 sm:py-24 border-b border-surface-border relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-layer-content">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
         <!-- =================================================================== -->
@@ -269,7 +269,7 @@
 
   <!-- ========================================================================= -->
 
-  <section id="curriculum-section" class="pt-12 pb-24 sm:pt-20 sm:pb-32 border-b border-surface-border relative z-10 scroll-mt-20 sm:scroll-mt-24">
+  <section id="curriculum-section" class="w-full min-w-0 max-w-full pt-12 pb-24 sm:pt-20 sm:pb-32 border-b border-surface-border relative z-10 scroll-mt-20 sm:scroll-mt-24 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Scenario A: Logged-in Student View (Only shows their enrolled curriculum & units) -->
 
@@ -504,10 +504,10 @@
 
   <!-- ========================================================================= -->
 
-  <section id="placement-test-section" class="py-20 sm:py-28 border-b border-surface-border relative overflow-hidden">
+  <section id="placement-test-section" class="w-full min-w-0 max-w-full py-20 sm:py-28 border-b border-surface-border relative overflow-hidden">
     <!-- Ambient Specular Spotlights -->
-    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-[85vw] h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
-    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-[85vw] h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
+    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Luxury Floating Glass Card -->
@@ -677,7 +677,7 @@
   <!-- ========================================================================= -->
 
   @if (schedulesList().length > 0) {
-    <section id="schedule-section" class="py-16 sm:py-24 border-b border-surface-border relative">
+    <section id="schedule-section" class="w-full min-w-0 max-w-full py-16 sm:py-24 border-b border-surface-border relative overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-12">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
@@ -758,7 +758,7 @@
   <!-- ========================================================================= -->
 
   @if (showPricingPackagesSection()) {
-    <section id="pricing-packages" class="py-16 sm:py-24 border-b border-surface-border relative content-auto">
+    <section id="pricing-packages" class="w-full min-w-0 max-w-full py-16 sm:py-24 border-b border-surface-border relative overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-10">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 text-xs font-bold mb-3">
@@ -913,12 +913,12 @@
 
   <!-- ========================================================================= -->
 
-  <section id="hall-of-fame-section" class="py-20 sm:py-28 border-b border-surface-border relative overflow-hidden">
-    <!-- Ambient Mathematical Spotlights -->
-    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-[85vw] h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none" aria-hidden="true"></div>
-    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-[85vw] h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none" aria-hidden="true"></div>
+  <section id="hall-of-fame-section" class="w-full min-w-0 max-w-full py-20 sm:py-28 border-b border-surface-border relative overflow-hidden">
+    <!-- Ambient Mathematical Spotlights (Clamped to prevent horizontal scroll bleed) -->
+    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none" aria-hidden="true"></div>
+    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none" aria-hidden="true"></div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-layer-content">
+    <div class="w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-layer-content">
       <!-- Section Header -->
       <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
         <h2 class="font-academic-serif text-3xl sm:text-5xl font-black text-text-primary tracking-tight">
@@ -940,11 +940,11 @@
 
       <!-- 3-Card Olympic Podium Grid (Ranks 2, 1, 3) -->
       @if (topThree().length > 0) {
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end max-w-5xl mx-auto pt-6 pb-8">
+        <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end pt-6 pb-8">
           
           <!-- Rank 2: Silver (Left) -->
           @if (topThree().length > 1) {
-            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
               <!-- Top Specular Silver Flare -->
               <div class="hidden sm:block absolute -top-16 -left-16 w-48 h-48 bg-slate-300/15 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1000,7 +1000,7 @@
 
           <!-- Rank 1: Gold Champion (Center & Elevated) -->
           @if (topThree().length > 0) {
-            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between">
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-8 relative overflow-hidden text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between">
               <!-- Radiant Golden Glow Behind Card -->
               <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -1061,7 +1061,7 @@
 
           <!-- Rank 3: Bronze (Right) -->
           @if (topThree().length > 2) {
-            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
               <!-- Top Specular Bronze Flare -->
               <div class="hidden sm:block absolute -top-16 -right-16 w-48 h-48 bg-amber-700/15 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1120,13 +1120,13 @@
 
       <!-- Honorable Top Scorers Grid (Ranks 4+) -->
       @if (honorsList().length > 0) {
-        <div class="mt-12 pt-10 border-t border-surface-border/60">
+        <div class="w-full min-w-0 max-w-full mt-12 pt-10 border-t border-surface-border/60">
           <h3 class="font-academic-serif text-center text-sm font-extrabold text-text-secondary uppercase tracking-wider mb-6">
             {{ langService.isArabic() ? 'قائمة الشرف الأكاديمي' : 'Distinguished Honor Roll' }}
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @for (honoree of honorsList(); track (honoree.id || honoree.rank)) {
-              <div class="spider-rim-glass-card p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
+              <div class="spider-rim-glass-card w-full min-w-0 max-w-full p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-numeric font-black flex items-center justify-center text-sm shrink-0">
                     #{{ honoree.rank }}
@@ -1156,7 +1156,7 @@
       }
 
       <!-- Placement Test Action Banner -->
-      <div class="mt-14 max-w-3xl mx-auto text-center p-8 sm:p-10 rounded-[2rem] spider-rim-glass-card border border-surface-border relative overflow-hidden shadow-xl">
+      <div class="w-full min-w-0 max-w-3xl mx-auto mt-14 text-center p-8 sm:p-10 rounded-[2rem] spider-rim-glass-card border border-surface-border relative overflow-hidden shadow-xl">
         <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-gold/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="relative z-10 space-y-3">
           <h4 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary">
@@ -1185,7 +1185,7 @@
   <!-- ========================================================================= -->
   <!-- 6. Wall of Excellence & Testimonials (آراء الطلاب وأولياء الأمور)           -->
   <!-- ========================================================================= -->
-  <section id="testimonials" class="py-16 sm:py-24 relative overflow-hidden bg-surface-bg/40 border-t border-surface-border">
+  <section id="testimonials" class="w-full min-w-0 max-w-full py-16 sm:py-24 relative overflow-hidden bg-surface-bg/40 border-t border-surface-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
       <!-- Section Header -->
