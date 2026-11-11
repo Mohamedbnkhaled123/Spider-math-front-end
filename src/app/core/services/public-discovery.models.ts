@@ -94,6 +94,25 @@ export interface IContactChannels {
   telegram_channel?: string;
 }
 
+export interface IHonorBoardItem {
+  id?: string;
+  rank: number;
+  nameAr: string;
+  nameEn?: string;
+  systemAr: string;
+  systemEn?: string;
+  achievementAr: string;
+  achievementEn?: string;
+  locationAr?: string;
+  locationEn?: string;
+  xp?: number;
+  accuracy?: number;
+  badgeAr?: string;
+  badgeEn?: string;
+  avatarUrl?: string;
+  is_active?: boolean;
+}
+
 export interface IPublicLandingData {
   heroHeadlineAr?: string;
   heroHeadlineEn?: string;
@@ -160,6 +179,14 @@ export interface IPublicLandingData {
   pricingTitleEn?: string;
   pricingSubtitleAr?: string;
   pricingSubtitleEn?: string;
+
+  hallOfFameBadgeAr?: string;
+  hallOfFameBadgeEn?: string;
+  hallOfFameTitleAr?: string;
+  hallOfFameTitleEn?: string;
+  hallOfFameSubtitleAr?: string;
+  hallOfFameSubtitleEn?: string;
+  honorBoardList?: IHonorBoardItem[];
 
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];

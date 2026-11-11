@@ -23,7 +23,8 @@ import {
   IScheduleItem,
   IPricingPackage,
   IPlacementTestResponse,
-  IGradeItemData
+  IGradeItemData,
+  IHonorBoardItem
 } from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
@@ -465,9 +466,11 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   });
   // Temporarily hidden pricing & packages section (consult user before public release whether to re-enable)
   readonly showPricingPackagesSection = signal<boolean>(false);
-  // Hard-Coded Wall of Fame & Top Scorers (لوحة شرف أوائل الطلبة)
-  readonly hardcodedTopThree = [
+
+  // Default Fallback Wall of Fame & Top Scorers
+  readonly defaultTopThree: IHonorBoardItem[] = [
     {
+      id: 'honor_1',
       rank: 1,
       nameAr: 'سارة أحمد محمود',
       nameEn: 'Sarah Ahmed Mahmoud',
@@ -477,11 +480,14 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '100% Final Score in Calculus & Analysis',
       locationAr: 'القاهرة — مدرسة المتفوقين STEM',
       locationEn: 'Cairo — STEM High School',
-      xp: 2950,
+      xp: 14850,
+      accuracy: 99.8,
       badgeAr: 'المركز الأول على مستوى المنصة',
-      badgeEn: 'Rank #1 Platform Champion'
+      badgeEn: 'Rank #1 Platform Champion',
+      is_active: true
     },
     {
+      id: 'honor_2',
       rank: 2,
       nameAr: 'عمر خالد الشناوي',
       nameEn: 'Omar Khaled El-Shenawy',
@@ -491,11 +497,14 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '800 / 800 Perfect Math Score',
       locationAr: 'الجيزة — مدرسة الألسن الدولية',
       locationEn: 'Giza — Al-Alson Int. School',
-      xp: 2780,
+      xp: 13420,
+      accuracy: 98.5,
       badgeAr: 'الدرجة الكاملة SAT',
-      badgeEn: 'Perfect SAT Score'
+      badgeEn: 'Perfect SAT Score',
+      is_active: true
     },
     {
+      id: 'honor_3',
       rank: 3,
       nameAr: 'مريم يوسف عبد الرحمن',
       nameEn: 'Mariam Youssef Abdel-Rahman',
@@ -505,14 +514,17 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '99.8% in Advanced Mathematics',
       locationAr: 'الرياض — مدارس الرواد',
       locationEn: 'Riyadh — Al-Rowad Schools',
-      xp: 2620,
+      xp: 12910,
+      accuracy: 97.2,
       badgeAr: 'تفوق استثنائي',
-      badgeEn: 'Exceptional Mastery'
+      badgeEn: 'Exceptional Mastery',
+      is_active: true
     }
-
   ];
-  readonly hardcodedHonorsList = [
+
+  readonly defaultHonorsList: IHonorBoardItem[] = [
     {
+      id: 'honor_4',
       rank: 4,
       nameAr: 'زياد طارق إبراهيم',
       nameEn: 'Ziad Tarek Ibrahim',
@@ -522,11 +534,14 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '100% Final Score',
       locationAr: 'الإسكندرية',
       locationEn: 'Alexandria',
-      xp: 2450,
+      xp: 11450,
+      accuracy: 96.5,
       badgeAr: 'عبقري الجبر',
-      badgeEn: 'Algebra Master'
+      badgeEn: 'Algebra Master',
+      is_active: true
     },
     {
+      id: 'honor_5',
       rank: 5,
       nameAr: 'ياسمين حازم المهدي',
       nameEn: 'Yasmine Hazem El-Mahdy',
@@ -536,11 +551,14 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: 'Grade A* in Further Pure Math',
       locationAr: 'القاهرة',
       locationEn: 'Cairo',
-      xp: 2390,
+      xp: 10900,
+      accuracy: 98.0,
       badgeAr: 'امتياز كامبريدج',
-      badgeEn: 'Cambridge A*'
+      badgeEn: 'Cambridge A*',
+      is_active: true
     },
     {
+      id: 'honor_6',
       rank: 6,
       nameAr: 'أحمد هشام النجار',
       nameEn: 'Ahmed Hesham El-Naggar',
@@ -550,11 +568,14 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '100% in Applied Math',
       locationAr: 'الدقهلية — المنصورة',
       locationEn: 'Mansoura',
-      xp: 2280,
+      xp: 9880,
+      accuracy: 95.5,
       badgeAr: 'فارس الميكانيكا',
-      badgeEn: 'Mechanics Pro'
+      badgeEn: 'Mechanics Pro',
+      is_active: true
     },
     {
+      id: 'honor_7',
       rank: 7,
       nameAr: 'نور الدين وليد',
       nameEn: 'Nour Eldin Walid',
@@ -564,12 +585,49 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       achievementEn: '36 / 36 Perfect ACT Score',
       locationAr: 'الغربية — طنطا',
       locationEn: 'Tanta',
-      xp: 2190,
+      xp: 9190,
+      accuracy: 99.0,
       badgeAr: 'الدرجة الكاملة ACT',
-      badgeEn: 'Perfect ACT 36'
+      badgeEn: 'Perfect ACT 36',
+      is_active: true
     }
-
   ];
+
+  // Dynamic Honor Board List (derived from Landing CMS API with fallback)
+  readonly activeHonorBoard = computed<IHonorBoardItem[]>(() => {
+    const list = this.landingData()?.honorBoardList;
+    if (Array.isArray(list) && list.length > 0) {
+      const activeOnly = list.filter(item => item.is_active !== false);
+      if (activeOnly.length > 0) {
+        return [...activeOnly].sort((a, b) => (Number(a.rank) || 999) - (Number(b.rank) || 999));
+      }
+    }
+    return [...this.defaultTopThree, ...this.defaultHonorsList];
+  });
+
+  readonly topThree = computed<IHonorBoardItem[]>(() => {
+    return this.activeHonorBoard().slice(0, 3);
+  });
+
+  readonly honorsList = computed<IHonorBoardItem[]>(() => {
+    return this.activeHonorBoard().slice(3);
+  });
+
+  readonly hallOfFameSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.hallOfFameBadgeAr || 'لوحة الشرف • أبطال الرياضيات')
+        : (data?.hallOfFameBadgeEn || 'Hall of Fame • Top Math Masters'),
+      title: isAr
+        ? (data?.hallOfFameTitleAr || 'لوحة الشرف والتفوق الأكاديمي')
+        : (data?.hallOfFameTitleEn || 'Academic Hall of Fame & Honor Roll'),
+      subtitle: isAr
+        ? (data?.hallOfFameSubtitleAr || 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.')
+        : (data?.hallOfFameSubtitleEn || 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.')
+    };
+  });
   ngOnInit(): void {
     const hasPublicViewParam =
       this.route.snapshot.queryParamMap.get('view') === 'public' ||

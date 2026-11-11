@@ -103,7 +103,14 @@ export class SuperAdminDashboardComponent implements OnInit {
     activeAcademicYear: '2026 / 2027',
     activeAcademicTerm: 'TERM_1',
     schedulesTable: [],
-    landingUnitIds: []
+    landingUnitIds: [],
+    hallOfFameBadgeAr: 'لوحة الشرف • أبطال الرياضيات',
+    hallOfFameBadgeEn: 'Hall of Fame • Top Math Masters',
+    hallOfFameTitleAr: 'لوحة الشرف والتفوق الأكاديمي',
+    hallOfFameTitleEn: 'Academic Hall of Fame & Honor Roll',
+    hallOfFameSubtitleAr: 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.',
+    hallOfFameSubtitleEn: 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.',
+    honorBoardList: []
   });
 
   // Batched Notifications Center (Consolidating alerts every 5 submissions)
@@ -491,7 +498,16 @@ export class SuperAdminDashboardComponent implements OnInit {
                     lectureSubject: s.lecture_subject || s.lectureSubject || ''
                   }))
                 : []),
-            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
+            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || [],
+            hallOfFameBadgeAr: raw.hallOfFameBadgeAr || raw.hall_of_fame_badge_ar || current.hallOfFameBadgeAr || '',
+            hallOfFameBadgeEn: raw.hallOfFameBadgeEn || raw.hall_of_fame_badge_en || current.hallOfFameBadgeEn || '',
+            hallOfFameTitleAr: raw.hallOfFameTitleAr || raw.hall_of_fame_title_ar || current.hallOfFameTitleAr || '',
+            hallOfFameTitleEn: raw.hallOfFameTitleEn || raw.hall_of_fame_title_en || current.hallOfFameTitleEn || '',
+            hallOfFameSubtitleAr: raw.hallOfFameSubtitleAr || raw.hall_of_fame_subtitle_ar || current.hallOfFameSubtitleAr || '',
+            hallOfFameSubtitleEn: raw.hallOfFameSubtitleEn || raw.hall_of_fame_subtitle_en || current.hallOfFameSubtitleEn || '',
+            honorBoardList: Array.isArray(raw.honorBoardList)
+              ? raw.honorBoardList
+              : (Array.isArray(raw.honor_board_list) ? raw.honor_board_list : (current.honorBoardList || []))
           });
         }
       }

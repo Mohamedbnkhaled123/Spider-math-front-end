@@ -39,6 +39,7 @@ export type AppIconName =
   | 'arrow-right'
   | 'arrow-left'
   | 'arrow-up'
+  | 'arrow-down'
   | 'calculator'
   | 'grid'
   | 'minus'

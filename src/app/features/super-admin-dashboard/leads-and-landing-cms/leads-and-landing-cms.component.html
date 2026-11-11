@@ -267,6 +267,21 @@
           </span>
         }
       </button>
+
+      <button
+        type="button"
+        (click)="activeCmsTab.set('HONOR_BOARD')"
+        class="px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center gap-2"
+        [class.bg-brand-primary]="activeCmsTab() === 'HONOR_BOARD'"
+        [class.text-white]="activeCmsTab() === 'HONOR_BOARD'"
+        [class.shadow-md]="activeCmsTab() === 'HONOR_BOARD'"
+        [class.bg-surface-bg]="activeCmsTab() !== 'HONOR_BOARD'"
+        [class.text-text-secondary]="activeCmsTab() !== 'HONOR_BOARD'"
+        [class.hover:bg-surface-card]="activeCmsTab() !== 'HONOR_BOARD'"
+      >
+        <app-icon name="award" [size]="14" />
+        <span>{{ langService.isArabic() ? ('لوحة الشرف والتكريم (' + (editableCms().honorBoardList?.length || 0) + ')') : ('Honor Board (' + (editableCms().honorBoardList?.length || 0) + ')') }}</span>
+      </button>
     </div>
 
     <!-- ========================================================================= -->
@@ -1490,6 +1505,583 @@
             }
           </div>
         }
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- TAB 6: HONOR BOARD (لوحة الشرف والتفوق الأكاديمي)                          -->
+    <!-- ========================================================================= -->
+    @if (activeCmsTab() === 'HONOR_BOARD') {
+      <div class="space-y-6">
+        
+        <!-- Header Information Card -->
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm border border-brand-gold/30 relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-40 h-40 bg-brand-gold/15 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="p-2 rounded-xl bg-brand-gold/20 text-brand-gold">
+                  <app-icon name="award" [size]="18" />
+                </span>
+                <h3 class="text-base font-black text-text-primary font-academic-serif">
+                  {{ langService.isArabic() ? 'إدارة لوحة الشرف وأبطال الرياضيات' : 'Hall of Fame & Top Scorers Manager' }}
+                </h3>
+              </div>
+              <p class="text-xs text-text-secondary max-w-2xl leading-relaxed">
+                {{ langService.isArabic()
+                  ? 'تحكمي بالكامل في لوحة الشرف المعروضة على الصفحة الرئيسية: يمكنك إضافة وتعديل وحذف الطلاب، ترتيب المراكز، كتابة الإنجازات والدرجات، وتفعيل أو إخفاء أي طالب فورياً.'
+                  : 'Full control over the landing page Hall of Fame: Add, edit, remove students, set ranks and scores, write custom achievements, and toggle active visibility.' }}
+              </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <button
+                type="button"
+                (click)="populateDefaultHonorees()"
+                class="px-3.5 py-2 rounded-xl border border-surface-border hover:border-brand-gold/40 text-xs font-bold text-text-secondary hover:text-text-primary bg-surface-card transition-all cursor-pointer flex items-center gap-1.5"
+                [title]="langService.isArabic() ? 'استعادة النموذج الأولي' : 'Load Default Template'"
+              >
+                <app-icon name="refresh" [size]="14" />
+                <span>{{ langService.isArabic() ? 'استعادة النموذج الافتراضي' : 'Load Defaults' }}</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="openAddHonoreeModal()"
+                class="px-4 py-2 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <app-icon name="plus" [size]="14" />
+                <span>{{ langService.isArabic() ? 'إضافة طالب متميز' : 'Add Honoree' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Title & Subtitle Settings -->
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+            <h4 class="text-sm font-black text-text-primary flex items-center gap-2">
+              <app-icon name="file-text" [size]="15" className="text-brand-gold" />
+              <span>{{ langService.isArabic() ? 'عناوين ونصوص قسم لوحة الشرف' : 'Hall of Fame Section Titles' }}</span>
+            </h4>
+            <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'تظهر في رأس القسم بالصفحة الرئيسية' : 'Displays in landing section header' }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Badge AR & EN -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'شارة القسم بالعربية (Badge AR)' : 'Badge Label (AR)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameBadgeAr"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="لوحة الشرف • أبطال الرياضيات"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'شارة القسم بالإنجليزية (Badge EN)' : 'Badge Label (EN)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameBadgeEn"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="Hall of Fame • Top Math Masters"
+              />
+            </div>
+
+            <!-- Title AR & EN -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'عنوان القسم بالعربية (Title AR)' : 'Section Title (AR)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameTitleAr"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="لوحة الشرف والتفوق الأكاديمي"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'عنوان القسم بالإنجليزية (Title EN)' : 'Section Title (EN)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameTitleEn"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="Academic Hall of Fame & Honor Roll"
+              />
+            </div>
+
+            <!-- Subtitle AR & EN -->
+            <div class="space-y-1.5 md:col-span-2">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'الوصف التقديمي بالعربية (Subtitle AR)' : 'Subtitle (AR)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameSubtitleAr"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي."
+              />
+            </div>
+            <div class="space-y-1.5 md:col-span-2">
+              <label class="text-xs font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'الوصف التقديمي بالإنجليزية (Subtitle EN)' : 'Subtitle (EN)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().hallOfFameSubtitleEn"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                placeholder="Elite students who achieved perfect scores and mathematical excellence across all academic curricula."
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Honorees List Cards -->
+        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+            <div class="flex items-center gap-2">
+              <h4 class="text-sm font-black text-text-primary font-academic-serif">
+                {{ langService.isArabic() ? 'قائمة الطلاب المتميزين المكرمين' : 'Honored Students List' }}
+              </h4>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-gold/20 text-brand-gold">
+                {{ (editableCms().honorBoardList || []).length }} {{ langService.isArabic() ? 'طلاب' : 'students' }}
+              </span>
+            </div>
+            <p class="text-[11px] text-text-muted hidden sm:block">
+              {{ langService.isArabic() ? 'المراكز 1 و 2 و 3 تظهر على منصة التتويج الأولمبية؛ والمراكز التالية تظهر في قائمة الشرف' : 'Ranks 1-3 appear on the podium; remaining appear on the honor roll' }}
+            </p>
+          </div>
+
+          @if (!editableCms().honorBoardList || editableCms().honorBoardList?.length === 0) {
+            <div class="p-10 text-center rounded-2xl border border-dashed border-surface-border text-text-muted space-y-3">
+              <app-icon name="award" [size]="36" className="mx-auto text-brand-gold/60" />
+              <p class="text-xs">
+                {{ langService.isArabic() ? 'لا يوجد طلاب مضافون في لوحة الشرف حالياً.' : 'No students added to the honor board yet.' }}
+              </p>
+              <div class="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  (click)="populateDefaultHonorees()"
+                  class="px-3.5 py-1.5 rounded-xl border border-surface-border text-xs font-bold text-text-primary hover:bg-surface-card"
+                >
+                  {{ langService.isArabic() ? 'تحميل النموذج الافتراضي' : 'Load Default Template' }}
+                </button>
+                <button
+                  type="button"
+                  (click)="openAddHonoreeModal()"
+                  class="px-3.5 py-1.5 rounded-xl bg-brand-primary text-xs font-bold text-white hover:bg-brand-primary/90"
+                >
+                  {{ langService.isArabic() ? '+ إضافة طالب الآن' : '+ Add Student Now' }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (honoree of (editableCms().honorBoardList || []); track (honoree.id || $index)) {
+                <div
+                  class="p-4 rounded-2xl border transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  [class.bg-brand-gold/5]="honoree.rank === 1"
+                  [class.border-brand-gold/40]="honoree.rank === 1"
+                  [class.bg-surface-card]="honoree.rank !== 1"
+                  [class.border-surface-border]="honoree.rank !== 1"
+                  [class.opacity-60]="honoree.is_active === false"
+                >
+                  <!-- Left: Rank & Avatar & Details -->
+                  <div class="flex items-center gap-3.5 min-w-0">
+                    <!-- Rank Badge -->
+                    <div
+                      class="w-10 h-10 rounded-2xl flex items-center justify-center font-numeric font-black text-sm shrink-0 border shadow-sm"
+                      [class.bg-brand-gold/25]="honoree.rank === 1"
+                      [class.border-brand-gold]="honoree.rank === 1"
+                      [class.text-brand-gold]="honoree.rank === 1"
+                      [class.bg-slate-300/20]="honoree.rank === 2"
+                      [class.border-slate-300/50]="honoree.rank === 2"
+                      [class.text-text-primary]="honoree.rank === 2"
+                      [class.bg-amber-700/20]="honoree.rank === 3"
+                      [class.border-amber-700/50]="honoree.rank === 3"
+                      [class.text-amber-600]="honoree.rank === 3"
+                      [class.bg-surface-bg]="honoree.rank > 3"
+                      [class.border-surface-border]="honoree.rank > 3"
+                      [class.text-text-muted]="honoree.rank > 3"
+                    >
+                      #{{ honoree.rank }}
+                    </div>
+
+                    <!-- Avatar Preview -->
+                    <div class="w-10 h-10 rounded-full border border-surface-border overflow-hidden bg-surface-bg flex items-center justify-center shrink-0">
+                      @if (honoree.avatarUrl) {
+                        <img [src]="honoree.avatarUrl" [alt]="honoree.nameAr" class="w-full h-full object-cover">
+                      } @else {
+                        <app-icon name="user" [size]="18" className="text-text-muted" />
+                      }
+                    </div>
+
+                    <!-- Text Details -->
+                    <div class="min-w-0 space-y-0.5">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-bold text-text-primary">
+                          {{ honoree.nameAr }}
+                        </span>
+                        @if (honoree.nameEn) {
+                          <span class="text-[11px] text-text-muted">
+                            ({{ honoree.nameEn }})
+                          </span>
+                        }
+                        @if (honoree.is_active === false) {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30">
+                            {{ langService.isArabic() ? 'غير مفعّل (مخفي)' : 'Hidden' }}
+                          </span>
+                        }
+                        @if (honoree.badgeAr) {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
+                            {{ honoree.badgeAr }}
+                          </span>
+                        }
+                      </div>
+
+                      <div class="text-[11px] text-text-secondary flex items-center gap-2 flex-wrap">
+                        <span class="font-medium text-text-muted">{{ honoree.systemAr }}</span>
+                        @if (honoree.achievementAr) {
+                          <span class="text-brand-secondary font-semibold">• {{ honoree.achievementAr }}</span>
+                        }
+                      </div>
+
+                      <div class="text-[10px] text-text-muted flex items-center gap-3">
+                        @if (honoree.locationAr) {
+                          <span>📍 {{ honoree.locationAr }}</span>
+                        }
+                        <span class="font-numeric font-bold text-brand-gold">⚡ {{ honoree.xp || 0 }} XP</span>
+                        <span class="font-numeric font-bold text-emerald-500">🎯 {{ honoree.accuracy || 100 }}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right: Controls & Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0 self-end md:self-center">
+                    <!-- Move Up / Down -->
+                    <button
+                      type="button"
+                      (click)="moveHonoreeUp($index)"
+                      [disabled]="$index === 0"
+                      class="p-1.5 rounded-lg border border-surface-border hover:bg-surface-bg disabled:opacity-30 disabled:pointer-events-none text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'رفع الترتيب للأعلى' : 'Move Up'"
+                    >
+                      <app-icon name="arrow-up" [size]="13" />
+                    </button>
+                    <button
+                      type="button"
+                      (click)="moveHonoreeDown($index)"
+                      [disabled]="$index === ((editableCms().honorBoardList?.length || 0) - 1)"
+                      class="p-1.5 rounded-lg border border-surface-border hover:bg-surface-bg disabled:opacity-30 disabled:pointer-events-none text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'خفض الترتيب للأسفل' : 'Move Down'"
+                    >
+                      <app-icon name="arrow-down" [size]="13" />
+                    </button>
+
+                    <!-- Toggle Active Visibility -->
+                    <button
+                      type="button"
+                      (click)="toggleHonoreeStatus($index)"
+                      class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                      [class.border-emerald-500/40]="honoree.is_active !== false"
+                      [class.text-emerald-500]="honoree.is_active !== false"
+                      [class.bg-emerald-500/10]="honoree.is_active !== false"
+                      [class.border-surface-border]="honoree.is_active === false"
+                      [class.text-text-muted]="honoree.is_active === false"
+                      [title]="honoree.is_active !== false ? (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide') : (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show')"
+                    >
+                      <app-icon [name]="honoree.is_active !== false ? 'check' : 'eye-off'" [size]="12" />
+                      <span>{{ honoree.is_active !== false ? (langService.isArabic() ? 'نشط' : 'Active') : (langService.isArabic() ? 'مخفي' : 'Hidden') }}</span>
+                    </button>
+
+                    <!-- Edit Button -->
+                    <button
+                      type="button"
+                      (click)="openEditHonoreeModal($index)"
+                      class="p-1.5 rounded-lg border border-surface-border hover:border-brand-primary text-text-muted hover:text-brand-primary transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'تعديل بيانات الطالب' : 'Edit Honoree'"
+                    >
+                      <app-icon name="edit" [size]="13" />
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button
+                      type="button"
+                      (click)="deleteHonoree($index)"
+                      class="p-1.5 rounded-lg border border-surface-border hover:border-rose-500 text-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'حذف الطالب' : 'Delete Honoree'"
+                    >
+                      <app-icon name="trash" [size]="13" />
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- Add / Edit Honoree Modal -->
+    @if (isHonoreeModalOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+        <div class="spider-rim-glass-card rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-brand-gold/40 shadow-2xl max-h-[90vh] overflow-y-auto space-y-6">
+          
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-surface-border">
+            <div class="flex items-center gap-2">
+              <span class="p-2 rounded-xl bg-brand-gold/20 text-brand-gold">
+                <app-icon name="award" [size]="18" />
+              </span>
+              <h3 class="text-base font-black text-text-primary font-academic-serif">
+                {{ editingHonoreeIndex() !== null
+                  ? (langService.isArabic() ? 'تعديل بيانات الطالب المكرم' : 'Edit Honoree Details')
+                  : (langService.isArabic() ? 'إضافة طالب جديد للوحة الشرف' : 'Add New Honoree') }}
+              </h3>
+            </div>
+            <button
+              type="button"
+              (click)="closeHonoreeModal()"
+              class="p-1.5 rounded-xl border border-surface-border hover:bg-surface-card text-text-muted hover:text-text-primary cursor-pointer"
+            >
+              <app-icon name="x" [size]="16" />
+            </button>
+          </div>
+
+          <!-- Modal Body Form -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            
+            <!-- Student Arabic Name -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary flex items-center gap-1">
+                <span>{{ langService.isArabic() ? 'اسم الطالب بالعربية' : 'Student Name (Arabic)' }}</span>
+                <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().nameAr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="مثال: سارة أحمد محمود"
+              />
+            </div>
+
+            <!-- Student English Name -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'اسم الطالب بالإنجليزية' : 'Student Name (English)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().nameEn"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="e.g. Sarah Ahmed Mahmoud"
+              />
+            </div>
+
+            <!-- Rank Number & Active Toggle -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'الترتيب / المركز (Rank)' : 'Rank #' }}
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="999"
+                [(ngModel)]="honoreeForm().rank"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1 flex flex-col justify-end">
+              <label class="font-bold text-text-secondary mb-1">
+                {{ langService.isArabic() ? 'حالة التفعيل والظهور' : 'Visibility Status' }}
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer py-2 px-3 rounded-xl border border-surface-border bg-surface-bg">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="honoreeForm().is_active"
+                  class="rounded border-surface-border text-brand-primary focus:ring-0"
+                />
+                <span class="font-bold text-text-primary">
+                  {{ langService.isArabic() ? 'إظهار الطالب على لوحة الشرف العامة' : 'Show on Public Hall of Fame' }}
+                </span>
+              </label>
+            </div>
+
+            <!-- System / Curriculum Track AR & EN -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'المنهج / المسار الدراسي بالعربية' : 'Curriculum Track (Arabic)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().systemAr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="مثال: ثانوية عامة (علمي رياضة)"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'المنهج / المسار الدراسي بالإنجليزية' : 'Curriculum Track (English)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().systemEn"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="e.g. Egyptian Curriculum (Thanaweya)"
+              />
+            </div>
+
+            <!-- Achievement AR & EN -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'الإنجاز والدرجة بالعربية' : 'Achievement (Arabic)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().achievementAr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="مثال: 100% الدرجة النهائية في التفاضل والتكامل"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'الإنجاز والدرجة بالإنجليزية' : 'Achievement (English)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().achievementEn"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="e.g. 100% Final Score in Calculus & Analysis"
+              />
+            </div>
+
+            <!-- City / Location AR & EN -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'المحافظة / المدرسة بالعربية' : 'Location / School (Arabic)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().locationAr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="مثال: القاهرة — مدرسة المتفوقين STEM"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'المحافظة / المدرسة بالإنجليزية' : 'Location / School (English)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().locationEn"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="e.g. Cairo — STEM High School"
+              />
+            </div>
+
+            <!-- Custom Badge AR & EN -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'شارة التميز المخصصة بالعربية' : 'Custom Badge Pill (Arabic)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().badgeAr"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="مثال: المركز الأول على مستوى المنصة"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'شارة التميز المخصصة بالإنجليزية' : 'Custom Badge Pill (English)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().badgeEn"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="e.g. Rank #1 Platform Champion"
+              />
+            </div>
+
+            <!-- XP & Accuracy -->
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'مجموع نقاط الخبرة (XP)' : 'Total XP Points' }}
+              </label>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="honoreeForm().xp"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="14850"
+              />
+            </div>
+
+            <div class="space-y-1 sm:col-span-1">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'نسبة الدقة % (Accuracy)' : 'Accuracy %' }}
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                [(ngModel)]="honoreeForm().accuracy"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="99.8"
+              />
+            </div>
+
+            <!-- Avatar Image URL -->
+            <div class="space-y-1 sm:col-span-2">
+              <label class="font-bold text-text-secondary">
+                {{ langService.isArabic() ? 'رابط صورة الطالب (اختياري - Avatar URL)' : 'Student Photo URL (Optional)' }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="honoreeForm().avatarUrl"
+                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary focus:outline-none focus:border-brand-primary"
+                placeholder="https://... أو مسار صورة"
+              />
+            </div>
+
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-border">
+            <button
+              type="button"
+              (click)="closeHonoreeModal()"
+              class="px-5 py-2.5 rounded-xl border border-surface-border text-xs font-bold text-text-secondary hover:bg-surface-card cursor-pointer"
+            >
+              {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+            </button>
+
+            <button
+              type="button"
+              (click)="saveHonoreeModal()"
+              class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 cursor-pointer flex items-center gap-1.5"
+            >
+              <app-icon name="check" [size]="14" />
+              <span>{{ langService.isArabic() ? 'حفظ بيانات الطالب في القائمة' : 'Save Honoree' }}</span>
+            </button>
+          </div>
+
+        </div>
       </div>
     }
 

@@ -896,198 +896,238 @@
       <!-- Section Header -->
       <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
         <h2 class="font-academic-serif text-3xl sm:text-5xl font-black text-text-primary tracking-tight">
-          @if (langService.isArabic()) {
-            <span class="text-gold-accent">لوحة الشرف</span> • أبطال الرياضيات <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
-          } @else {
-            <span class="text-gold-accent">Hall of Fame</span> • Top Math Masters <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
-          }
+          <span class="text-gold-accent">{{ hallOfFameSection().title }}</span>
+          <span class="inline-flex items-center text-brand-gold ml-2 align-middle">
+            <svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/>
+              <path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/>
+            </svg>
+          </span>
         </h2>
         <p class="mt-3 text-sm sm:text-base text-text-secondary leading-relaxed font-normal max-w-xl mx-auto">
-          {{ langService.isArabic()
-            ? 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.'
-            : 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.' }}
+          {{ hallOfFameSection().subtitle }}
         </p>
       </div>
 
       <!-- 3-Card Olympic Podium Grid (Ranks 2, 1, 3) -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end max-w-5xl mx-auto pt-6 pb-8">
-        
-        <!-- Rank 2: Silver (Left) -->
-        <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
-          <!-- Top Specular Silver Flare -->
-          <div class="hidden sm:block absolute -top-16 -left-16 w-48 h-48 bg-slate-300/15 rounded-full blur-2xl pointer-events-none"></div>
+      @if (topThree().length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end max-w-5xl mx-auto pt-6 pb-8">
+          
+          <!-- Rank 2: Silver (Left) -->
+          @if (topThree().length > 1) {
+            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+              <!-- Top Specular Silver Flare -->
+              <div class="hidden sm:block absolute -top-16 -left-16 w-48 h-48 bg-slate-300/15 rounded-full blur-2xl pointer-events-none"></div>
 
-          <div>
-            <!-- Card Header: Rank Number & Pill Badge -->
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-2xl font-black font-numeric text-text-primary/90">#2</span>
-              <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 dark:bg-white/10 text-text-secondary border border-white/20 shadow-sm">
-                {{ langService.isArabic() ? 'المركز الثاني' : '2nd' }}
-              </span>
-            </div>
-
-            <!-- Student Avatar -->
-            <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-purple-500/40 via-slate-300/40 to-blue-400/40 shadow-lg">
-              <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-white/30">
-                <app-icon name="user" [size]="36" className="text-purple-400 dark:text-purple-300" />
-              </div>
-            </div>
-
-            <!-- Student Name -->
-            <h3 class="font-academic-serif text-lg sm:text-xl font-bold text-text-primary mt-2">
-              {{ langService.isArabic() ? hardcodedTopThree[1].nameAr : hardcodedTopThree[1].nameEn }}
-            </h3>
-
-            <!-- Track / System -->
-            <p class="text-xs text-text-muted mt-1 font-medium">
-              {{ langService.isArabic() ? hardcodedTopThree[1].systemAr : hardcodedTopThree[1].systemEn }}
-            </p>
-          </div>
-
-          <!-- Dual Stat Box -->
-          <div class="mt-6 rounded-2xl bg-surface-bg/70 border border-surface-border p-3.5 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-surface-border text-center">
-            <div>
-              <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">13,420</span>
-              <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">XP</span>
-            </div>
-            <div>
-              <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">98.5%</span>
-              <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Rank 1: Gold Champion (Center & Elevated) -->
-        <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between">
-          <!-- Radiant Golden Glow Behind Card -->
-          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl pointer-events-none"></div>
-
-          <!-- Golden 3D Crown Floating On Top -->
-          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
-            <span class="text-2xl filter drop-shadow"><span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></span>
-          </div>
-
-          <div class="pt-2">
-            <!-- Card Header: Rank Number & Pill Badge -->
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-3xl font-black font-numeric text-brand-gold">#1</span>
-              <span class="px-3.5 py-1 rounded-full text-xs font-black bg-brand-gold/20 text-brand-gold border border-brand-gold/50 shadow-sm">
-                {{ langService.isArabic() ? 'المركز الأول' : '1st' }}
-              </span>
-            </div>
-
-            <!-- Student Avatar with Golden Ring & Glow -->
-            <div class="relative w-22 h-22 sm:w-24 sm:h-24 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 shadow-gold-glow">
-              <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-brand-gold/60">
-                <app-icon name="user" [size]="42" className="text-brand-gold" />
-              </div>
-            </div>
-
-            <!-- Student Name -->
-            <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary mt-2">
-              {{ langService.isArabic() ? hardcodedTopThree[0].nameAr : hardcodedTopThree[0].nameEn }}
-            </h3>
-
-            <!-- Track / System -->
-            <p class="text-xs sm:text-sm text-brand-gold font-bold mt-1">
-              {{ langService.isArabic() ? hardcodedTopThree[0].systemAr : hardcodedTopThree[0].systemEn }}
-            </p>
-          </div>
-
-          <!-- Dual Stat Box: Luxurious Gold Theme -->
-          <div class="mt-6 rounded-2xl bg-brand-gold/15 border border-brand-gold/35 p-4 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-brand-gold/35 text-center shadow-sm">
-            <div>
-              <span class="text-lg sm:text-xl font-black font-numeric text-brand-gold block">14,850</span>
-              <span class="text-[10px] text-brand-gold/90 uppercase font-black tracking-wider">XP</span>
-            </div>
-            <div>
-              <span class="text-lg sm:text-xl font-black font-numeric text-brand-gold block">99.8%</span>
-              <span class="text-[10px] text-brand-gold/90 uppercase font-black tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Rank 3: Bronze (Right) -->
-        <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
-          <!-- Top Specular Bronze Flare -->
-          <div class="hidden sm:block absolute -top-16 -right-16 w-48 h-48 bg-amber-700/15 rounded-full blur-2xl pointer-events-none"></div>
-
-          <div>
-            <!-- Card Header: Rank Number & Pill Badge -->
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-2xl font-black font-numeric text-amber-700 dark:text-amber-500">#3</span>
-              <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-600/15 text-amber-700 dark:text-amber-400 border border-amber-600/30 shadow-sm">
-                {{ langService.isArabic() ? 'المركز الثالث' : '3rd' }}
-              </span>
-            </div>
-
-            <!-- Student Avatar -->
-            <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-800 via-amber-600 to-amber-400 shadow-md">
-              <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-amber-700/30">
-                <app-icon name="user" [size]="36" className="text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-
-            <!-- Student Name -->
-            <h3 class="font-academic-serif text-lg sm:text-xl font-bold text-text-primary mt-2">
-              {{ langService.isArabic() ? hardcodedTopThree[2].nameAr : hardcodedTopThree[2].nameEn }}
-            </h3>
-
-            <!-- Track / System -->
-            <p class="text-xs text-text-muted mt-1 font-medium">
-              {{ langService.isArabic() ? hardcodedTopThree[2].systemAr : hardcodedTopThree[2].systemEn }}
-            </p>
-          </div>
-
-          <!-- Dual Stat Box -->
-          <div class="mt-6 rounded-2xl bg-surface-bg/70 border border-surface-border p-3.5 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-surface-border text-center">
-            <div>
-              <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">12,910</span>
-              <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">XP</span>
-            </div>
-            <div>
-              <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">97.2%</span>
-              <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Honorable Top Scorers Grid (Ranks 4-7) -->
-      <div class="mt-12 pt-10 border-t border-surface-border/60">
-        <h3 class="font-academic-serif text-center text-sm font-extrabold text-text-secondary uppercase tracking-wider mb-6">
-          {{ langService.isArabic() ? 'قائمة الشرف الأكاديمي' : 'Distinguished Honor Roll' }}
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          @for (honoree of hardcodedHonorsList; track honoree.rank) {
-            <div class="spider-rim-glass-card p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-numeric font-black flex items-center justify-center text-sm shrink-0">
-                  #{{ honoree.rank }}
+              <div>
+                <!-- Card Header: Rank Number & Pill Badge -->
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-2xl font-black font-numeric text-text-primary/90">#{{ topThree()[1].rank || 2 }}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 dark:bg-white/10 text-text-secondary border border-white/20 shadow-sm">
+                    {{ (langService.isArabic() ? topThree()[1].badgeAr : topThree()[1].badgeEn) || (langService.isArabic() ? 'المركز الثاني' : '2nd') }}
+                  </span>
                 </div>
-                <div class="min-w-0">
-                  <p class="text-xs font-bold text-text-primary truncate">
-                    {{ langService.isArabic() ? honoree.nameAr : honoree.nameEn }}
-                  </p>
-                  <p class="text-[10px] text-text-muted truncate">
-                    {{ langService.isArabic() ? honoree.systemAr : honoree.systemEn }}
-                  </p>
-                  <p class="text-[10px] text-brand-gold font-semibold truncate">
-                    {{ langService.isArabic() ? honoree.achievementAr : honoree.achievementEn }}
-                  </p>
+
+                <!-- Student Avatar -->
+                <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-purple-500/40 via-slate-300/40 to-blue-400/40 shadow-lg">
+                  <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-white/30">
+                    @if (topThree()[1].avatarUrl) {
+                      <img [src]="topThree()[1].avatarUrl" [alt]="topThree()[1].nameAr" class="w-full h-full object-cover">
+                    } @else {
+                      <app-icon name="user" [size]="36" className="text-purple-400 dark:text-purple-300" />
+                    }
+                  </div>
                 </div>
+
+                <!-- Student Name -->
+                <h3 class="font-academic-serif text-lg sm:text-xl font-bold text-text-primary mt-2">
+                  {{ langService.isArabic() ? topThree()[1].nameAr : (topThree()[1].nameEn || topThree()[1].nameAr) }}
+                </h3>
+
+                <!-- Track / System -->
+                <p class="text-xs text-text-muted mt-1 font-medium">
+                  {{ langService.isArabic() ? topThree()[1].systemAr : (topThree()[1].systemEn || topThree()[1].systemAr) }}
+                </p>
+                @if (topThree()[1].achievementAr) {
+                  <p class="text-[11px] text-brand-secondary font-semibold mt-1">
+                    {{ langService.isArabic() ? topThree()[1].achievementAr : (topThree()[1].achievementEn || topThree()[1].achievementAr) }}
+                  </p>
+                }
               </div>
-              <div class="text-end shrink-0">
-                <span class="text-xs font-numeric font-extrabold text-brand-gold block">
-                  {{ honoree.xp }}
-                </span>
-                <span class="text-[9px] text-text-muted uppercase font-bold">XP</span>
+
+              <!-- Dual Stat Box -->
+              <div class="mt-6 rounded-2xl bg-surface-bg/70 border border-surface-border p-3.5 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-surface-border text-center">
+                <div>
+                  <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">{{ (topThree()[1].xp || 0) | number }}</span>
+                  <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">XP</span>
+                </div>
+                <div>
+                  <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">{{ topThree()[1].accuracy ?? 98.5 }}%</span>
+                  <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
+                </div>
               </div>
             </div>
           }
+
+          <!-- Rank 1: Gold Champion (Center & Elevated) -->
+          @if (topThree().length > 0) {
+            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between">
+              <!-- Radiant Golden Glow Behind Card -->
+              <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl pointer-events-none"></div>
+
+              <!-- Golden 3D Crown Floating On Top -->
+              <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+                <span class="text-2xl filter drop-shadow"><span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></span>
+              </div>
+
+              <div class="pt-2">
+                <!-- Card Header: Rank Number & Pill Badge -->
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-3xl font-black font-numeric text-brand-gold">#{{ topThree()[0].rank || 1 }}</span>
+                  <span class="px-3.5 py-1 rounded-full text-xs font-black bg-brand-gold/20 text-brand-gold border border-brand-gold/50 shadow-sm">
+                    {{ (langService.isArabic() ? topThree()[0].badgeAr : topThree()[0].badgeEn) || (langService.isArabic() ? 'المركز الأول' : '1st') }}
+                  </span>
+                </div>
+
+                <!-- Student Avatar with Golden Ring & Glow -->
+                <div class="relative w-22 h-22 sm:w-24 sm:h-24 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 shadow-gold-glow">
+                  <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-brand-gold/60">
+                    @if (topThree()[0].avatarUrl) {
+                      <img [src]="topThree()[0].avatarUrl" [alt]="topThree()[0].nameAr" class="w-full h-full object-cover">
+                    } @else {
+                      <app-icon name="user" [size]="42" className="text-brand-gold" />
+                    }
+                  </div>
+                </div>
+
+                <!-- Student Name -->
+                <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary mt-2">
+                  {{ langService.isArabic() ? topThree()[0].nameAr : (topThree()[0].nameEn || topThree()[0].nameAr) }}
+                </h3>
+
+                <!-- Track / System -->
+                <p class="text-xs sm:text-sm text-brand-gold font-bold mt-1">
+                  {{ langService.isArabic() ? topThree()[0].systemAr : (topThree()[0].systemEn || topThree()[0].systemAr) }}
+                </p>
+                @if (topThree()[0].achievementAr) {
+                  <p class="text-xs text-text-secondary font-semibold mt-1">
+                    {{ langService.isArabic() ? topThree()[0].achievementAr : (topThree()[0].achievementEn || topThree()[0].achievementAr) }}
+                  </p>
+                }
+              </div>
+
+              <!-- Dual Stat Box: Luxurious Gold Theme -->
+              <div class="mt-6 rounded-2xl bg-brand-gold/15 border border-brand-gold/35 p-4 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-brand-gold/35 text-center shadow-sm">
+                <div>
+                  <span class="text-lg sm:text-xl font-black font-numeric text-brand-gold block">{{ (topThree()[0].xp || 0) | number }}</span>
+                  <span class="text-[10px] text-brand-gold/90 uppercase font-black tracking-wider">XP</span>
+                </div>
+                <div>
+                  <span class="text-lg sm:text-xl font-black font-numeric text-brand-gold block">{{ topThree()[0].accuracy ?? 99.8 }}%</span>
+                  <span class="text-[10px] text-brand-gold/90 uppercase font-black tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Rank 3: Bronze (Right) -->
+          @if (topThree().length > 2) {
+            <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+              <!-- Top Specular Bronze Flare -->
+              <div class="hidden sm:block absolute -top-16 -right-16 w-48 h-48 bg-amber-700/15 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div>
+                <!-- Card Header: Rank Number & Pill Badge -->
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-2xl font-black font-numeric text-amber-700 dark:text-amber-500">#{{ topThree()[2].rank || 3 }}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-600/15 text-amber-700 dark:text-amber-400 border border-amber-600/30 shadow-sm">
+                    {{ (langService.isArabic() ? topThree()[2].badgeAr : topThree()[2].badgeEn) || (langService.isArabic() ? 'المركز الثالث' : '3rd') }}
+                  </span>
+                </div>
+
+                <!-- Student Avatar -->
+                <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-800 via-amber-600 to-amber-400 shadow-md">
+                  <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-amber-700/30">
+                    @if (topThree()[2].avatarUrl) {
+                      <img [src]="topThree()[2].avatarUrl" [alt]="topThree()[2].nameAr" class="w-full h-full object-cover">
+                    } @else {
+                      <app-icon name="user" [size]="36" className="text-amber-600 dark:text-amber-400" />
+                    }
+                  </div>
+                </div>
+
+                <!-- Student Name -->
+                <h3 class="font-academic-serif text-lg sm:text-xl font-bold text-text-primary mt-2">
+                  {{ langService.isArabic() ? topThree()[2].nameAr : (topThree()[2].nameEn || topThree()[2].nameAr) }}
+                </h3>
+
+                <!-- Track / System -->
+                <p class="text-xs text-text-muted mt-1 font-medium">
+                  {{ langService.isArabic() ? topThree()[2].systemAr : (topThree()[2].systemEn || topThree()[2].systemAr) }}
+                </p>
+                @if (topThree()[2].achievementAr) {
+                  <p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">
+                    {{ langService.isArabic() ? topThree()[2].achievementAr : (topThree()[2].achievementEn || topThree()[2].achievementAr) }}
+                  </p>
+                }
+              </div>
+
+              <!-- Dual Stat Box -->
+              <div class="mt-6 rounded-2xl bg-surface-bg/70 border border-surface-border p-3.5 grid grid-cols-2 divide-x rtl:divide-x-reverse divide-surface-border text-center">
+                <div>
+                  <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">{{ (topThree()[2].xp || 0) | number }}</span>
+                  <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">XP</span>
+                </div>
+                <div>
+                  <span class="text-base sm:text-lg font-black font-numeric text-text-primary block">{{ topThree()[2].accuracy ?? 97.2 }}%</span>
+                  <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">{{ langService.isArabic() ? 'الدقة' : 'Accuracy' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
         </div>
-      </div>
+      }
+
+      <!-- Honorable Top Scorers Grid (Ranks 4+) -->
+      @if (honorsList().length > 0) {
+        <div class="mt-12 pt-10 border-t border-surface-border/60">
+          <h3 class="font-academic-serif text-center text-sm font-extrabold text-text-secondary uppercase tracking-wider mb-6">
+            {{ langService.isArabic() ? 'قائمة الشرف الأكاديمي' : 'Distinguished Honor Roll' }}
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            @for (honoree of honorsList(); track (honoree.id || honoree.rank)) {
+              <div class="spider-rim-glass-card p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-numeric font-black flex items-center justify-center text-sm shrink-0">
+                    #{{ honoree.rank }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-text-primary truncate">
+                      {{ langService.isArabic() ? honoree.nameAr : (honoree.nameEn || honoree.nameAr) }}
+                    </p>
+                    <p class="text-[10px] text-text-muted truncate">
+                      {{ langService.isArabic() ? honoree.systemAr : (honoree.systemEn || honoree.systemAr) }}
+                    </p>
+                    <p class="text-[10px] text-brand-gold font-semibold truncate">
+                      {{ langService.isArabic() ? honoree.achievementAr : (honoree.achievementEn || honoree.achievementAr) }}
+                    </p>
+                  </div>
+                </div>
+                <div class="text-end shrink-0">
+                  <span class="text-xs font-numeric font-extrabold text-brand-gold block">
+                    {{ (honoree.xp || 0) | number }}
+                  </span>
+                  <span class="text-[9px] text-text-muted uppercase font-bold">XP</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
 
       <!-- Placement Test Action Banner -->
       <div class="mt-14 max-w-3xl mx-auto text-center p-8 sm:p-10 rounded-[2rem] spider-rim-glass-card border border-surface-border relative overflow-hidden shadow-xl">

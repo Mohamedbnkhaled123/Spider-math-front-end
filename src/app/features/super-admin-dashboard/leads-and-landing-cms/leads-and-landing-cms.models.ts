@@ -27,6 +27,25 @@ export interface ScheduleRow {
   lectureSubject: string;
 }
 
+export interface HonorBoardItem {
+  id?: string;
+  rank: number;
+  nameAr: string;
+  nameEn?: string;
+  systemAr: string;
+  systemEn?: string;
+  achievementAr: string;
+  achievementEn?: string;
+  locationAr?: string;
+  locationEn?: string;
+  xp?: number;
+  accuracy?: number;
+  badgeAr?: string;
+  badgeEn?: string;
+  avatarUrl?: string;
+  is_active?: boolean;
+}
+
 export interface CmsConfigAdminItem {
   // Announcement
   announcementBannerText?: string;
@@ -97,6 +116,15 @@ export interface CmsConfigAdminItem {
   pricingTitleEn?: string;
   pricingSubtitleAr?: string;
   pricingSubtitleEn?: string;
+
+  // Hall of Fame / Honor Board
+  hallOfFameBadgeAr?: string;
+  hallOfFameBadgeEn?: string;
+  hallOfFameTitleAr?: string;
+  hallOfFameTitleEn?: string;
+  hallOfFameSubtitleAr?: string;
+  hallOfFameSubtitleEn?: string;
+  honorBoardList?: HonorBoardItem[];
 
   // General & Contact
   supportWhatsapp?: string;

@@ -16,7 +16,8 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
   CmsConfigAdminItem,
-  LeadAdminItem
+  LeadAdminItem,
+  HonorBoardItem
 } from './leads-and-landing-cms.models';
 import { TestimonialsService, AdminTestimonialItem } from '../../../core/services/testimonials.service';
 
@@ -50,8 +51,8 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly leadStatusUpdated = output<{ leadId: string; status: 'NEW' | 'CONTACTED' | 'REGISTERED' }>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
-  // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units) | 'TESTIMONIALS'
-  readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS' | 'TESTIMONIALS'>('AR');
+  // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units) | 'TESTIMONIALS' | 'HONOR_BOARD'
+  readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS' | 'TESTIMONIALS' | 'HONOR_BOARD'>('AR');
 
   // Testimonials State
   readonly adminTestimonials = signal<AdminTestimonialItem[]>([]);
@@ -135,6 +136,14 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     pricingTitleEn: '',
     pricingSubtitleAr: '',
     pricingSubtitleEn: '',
+
+    hallOfFameBadgeAr: 'لوحة الشرف • أبطال الرياضيات',
+    hallOfFameBadgeEn: 'Hall of Fame • Top Math Masters',
+    hallOfFameTitleAr: 'لوحة الشرف والتفوق الأكاديمي',
+    hallOfFameTitleEn: 'Academic Hall of Fame & Honor Roll',
+    hallOfFameSubtitleAr: 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.',
+    hallOfFameSubtitleEn: 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.',
+    honorBoardList: [],
 
     supportWhatsapp: '01012345678',
     supportTelegram: '',
@@ -424,5 +433,273 @@ export class LeadsAndLandingCmsComponent implements OnInit {
       formatted = formatted.replace(new RegExp(`\\b${key}\\b`, 'g'), val);
     }
     return formatted;
+  }
+
+  // =========================================================================
+  // Honor Board (لوحة الشرف والتفوق الأكاديمي) Management
+  // =========================================================================
+  readonly defaultHonorBoardTemplate: HonorBoardItem[] = [
+    {
+      id: 'honor_1',
+      rank: 1,
+      nameAr: 'سارة أحمد محمود',
+      nameEn: 'Sarah Ahmed Mahmoud',
+      systemAr: 'ثانوية عامة (علمي رياضة)',
+      systemEn: 'Egyptian Curriculum (Thanaweya)',
+      achievementAr: '100% الدرجة النهائية في التفاضل والتكامل',
+      achievementEn: '100% Final Score in Calculus & Analysis',
+      locationAr: 'القاهرة — مدرسة المتفوقين STEM',
+      locationEn: 'Cairo — STEM High School',
+      xp: 14850,
+      accuracy: 99.8,
+      badgeAr: 'المركز الأول على مستوى المنصة',
+      badgeEn: 'Rank #1 Platform Champion',
+      avatarUrl: '',
+      is_active: true
+    },
+    {
+      id: 'honor_2',
+      rank: 2,
+      nameAr: 'عمر خالد الشناوي',
+      nameEn: 'Omar Khaled El-Shenawy',
+      systemAr: 'الدبلومة الأمريكية (Digital SAT)',
+      systemEn: 'American Diploma (Digital SAT Math)',
+      achievementAr: '800 / 800 الدرجة الكاملة في الرياضيات',
+      achievementEn: '800 / 800 Perfect Math Score',
+      locationAr: 'الجيزة — مدرسة الألسن الدولية',
+      locationEn: 'Giza — Al-Alson Int. School',
+      xp: 13420,
+      accuracy: 98.5,
+      badgeAr: 'الدرجة الكاملة SAT',
+      badgeEn: 'Perfect SAT Score',
+      avatarUrl: '',
+      is_active: true
+    },
+    {
+      id: 'honor_3',
+      rank: 3,
+      nameAr: 'مريم يوسف عبد الرحمن',
+      nameEn: 'Mariam Youssef Abdel-Rahman',
+      systemAr: 'المنهج الخليجي (الصف 12 متقدم)',
+      systemEn: 'Gulf Curriculum (Grade 12 Advanced)',
+      achievementAr: '99.8% في الرياضيات المتقدمة',
+      achievementEn: '99.8% in Advanced Mathematics',
+      locationAr: 'الرياض — مدارس الرواد',
+      locationEn: 'Riyadh — Al-Rowad Schools',
+      xp: 12910,
+      accuracy: 97.2,
+      badgeAr: 'تفوق استثنائي',
+      badgeEn: 'Exceptional Mastery',
+      avatarUrl: '',
+      is_active: true
+    },
+    {
+      id: 'honor_4',
+      rank: 4,
+      nameAr: 'زياد طارق إبراهيم',
+      nameEn: 'Ziad Tarek Ibrahim',
+      systemAr: 'ثانوية عامة (الجبر والهندسة الفراغية)',
+      systemEn: 'Egyptian Curriculum (Algebra & Solid Geom)',
+      achievementAr: '100% الدرجة النهائية',
+      achievementEn: '100% Final Score',
+      locationAr: 'الإسكندرية',
+      locationEn: 'Alexandria',
+      xp: 11450,
+      accuracy: 96.5,
+      badgeAr: 'عبقري الجبر',
+      badgeEn: 'Algebra Master',
+      avatarUrl: '',
+      is_active: true
+    },
+    {
+      id: 'honor_5',
+      rank: 5,
+      nameAr: 'ياسمين حازم المهدي',
+      nameEn: 'Yasmine Hazem El-Mahdy',
+      systemAr: 'البريطاني الدولي (IGCSE Cambridge)',
+      systemEn: 'British Curriculum (IGCSE Cambridge)',
+      achievementAr: 'Grade A* في الرياضيات البحتة المتقدمة',
+      achievementEn: 'Grade A* in Further Pure Math',
+      locationAr: 'القاهرة',
+      locationEn: 'Cairo',
+      xp: 10900,
+      accuracy: 98.0,
+      badgeAr: 'امتياز كامبريدج',
+      badgeEn: 'Cambridge A*',
+      avatarUrl: '',
+      is_active: true
+    }
+  ];
+
+  readonly isHonoreeModalOpen = signal<boolean>(false);
+  readonly editingHonoreeIndex = signal<number | null>(null);
+
+  readonly honoreeForm = signal<HonorBoardItem>({
+    id: '',
+    rank: 1,
+    nameAr: '',
+    nameEn: '',
+    systemAr: '',
+    systemEn: '',
+    achievementAr: '',
+    achievementEn: '',
+    locationAr: '',
+    locationEn: '',
+    xp: 10000,
+    accuracy: 99.0,
+    badgeAr: '',
+    badgeEn: '',
+    avatarUrl: '',
+    is_active: true
+  });
+
+  openAddHonoreeModal(): void {
+    const nextRank = (this.editableCms().honorBoardList?.length || 0) + 1;
+    this.editingHonoreeIndex.set(null);
+    this.honoreeForm.set({
+      id: 'honor_' + Date.now(),
+      rank: nextRank,
+      nameAr: '',
+      nameEn: '',
+      systemAr: '',
+      systemEn: '',
+      achievementAr: '',
+      achievementEn: '',
+      locationAr: '',
+      locationEn: '',
+      xp: 10000,
+      accuracy: 99.0,
+      badgeAr: '',
+      badgeEn: '',
+      avatarUrl: '',
+      is_active: true
+    });
+    this.isHonoreeModalOpen.set(true);
+  }
+
+  openEditHonoreeModal(index: number): void {
+    const list = this.editableCms().honorBoardList || [];
+    const item = list[index];
+    if (!item) return;
+    this.editingHonoreeIndex.set(index);
+    this.honoreeForm.set({ ...item });
+    this.isHonoreeModalOpen.set(true);
+  }
+
+  closeHonoreeModal(): void {
+    this.isHonoreeModalOpen.set(false);
+    this.editingHonoreeIndex.set(null);
+  }
+
+  saveHonoreeModal(): void {
+    const item = { ...this.honoreeForm() };
+    if (!item.nameAr || !item.nameAr.trim()) {
+      this.toastTriggered.emit({ text: 'يرجى كتابة اسم الطالب بالعربية على الأقل.', type: 'warning' });
+      return;
+    }
+    item.nameAr = item.nameAr.trim();
+    if (item.nameEn) item.nameEn = item.nameEn.trim();
+    if (item.systemAr) item.systemAr = item.systemAr.trim();
+    if (item.systemEn) item.systemEn = item.systemEn.trim();
+    if (item.achievementAr) item.achievementAr = item.achievementAr.trim();
+    if (item.achievementEn) item.achievementEn = item.achievementEn.trim();
+    if (item.locationAr) item.locationAr = item.locationAr.trim();
+    if (item.locationEn) item.locationEn = item.locationEn.trim();
+    if (item.badgeAr) item.badgeAr = item.badgeAr.trim();
+    if (item.badgeEn) item.badgeEn = item.badgeEn.trim();
+    if (item.avatarUrl) item.avatarUrl = item.avatarUrl.trim();
+    if (!item.id) item.id = 'honor_' + Date.now();
+    item.rank = Number(item.rank) || 1;
+    item.xp = Number(item.xp) || 0;
+    item.accuracy = Number(item.accuracy) || 100;
+    if (item.is_active === undefined) item.is_active = true;
+
+    const idx = this.editingHonoreeIndex();
+    this.editableCms.update(cfg => {
+      const currentList = [...(cfg.honorBoardList || [])];
+      if (idx !== null && idx >= 0 && idx < currentList.length) {
+        currentList[idx] = item;
+      } else {
+        currentList.push(item);
+      }
+      return {
+        ...cfg,
+        honorBoardList: currentList
+      };
+    });
+
+    this.closeHonoreeModal();
+    this.toastTriggered.emit({ text: 'تم حفظ بيانات الطالب في القائمة بنجاح! تذكري الضغط على "حفظ التعديلات" بالأسفل لنشرها على الموقع.', type: 'success' });
+  }
+
+  deleteHonoree(index: number): void {
+    if (!confirm('هل أنتِ متأكدة من حذف هذا الطالب من لوحة الشرف؟')) return;
+    this.editableCms.update(cfg => {
+      const currentList = (cfg.honorBoardList || []).filter((_, i) => i !== index);
+      const reindexed = currentList.map((h, i) => ({ ...h, rank: i + 1 }));
+      return {
+        ...cfg,
+        honorBoardList: reindexed
+      };
+    });
+    this.toastTriggered.emit({ text: 'تم حذف الطالب من لوحة الشرف.', type: 'warning' });
+  }
+
+  toggleHonoreeStatus(index: number): void {
+    this.editableCms.update(cfg => {
+      const currentList = [...(cfg.honorBoardList || [])];
+      if (currentList[index]) {
+        currentList[index] = {
+          ...currentList[index],
+          is_active: currentList[index].is_active === false ? true : false
+        };
+      }
+      return {
+        ...cfg,
+        honorBoardList: currentList
+      };
+    });
+  }
+
+  moveHonoreeUp(index: number): void {
+    if (index <= 0) return;
+    this.editableCms.update(cfg => {
+      const currentList = [...(cfg.honorBoardList || [])];
+      const temp = currentList[index];
+      currentList[index] = currentList[index - 1];
+      currentList[index - 1] = temp;
+      const reindexed = currentList.map((h, i) => ({ ...h, rank: i + 1 }));
+      return {
+        ...cfg,
+        honorBoardList: reindexed
+      };
+    });
+  }
+
+  moveHonoreeDown(index: number): void {
+    const list = this.editableCms().honorBoardList || [];
+    if (index >= list.length - 1) return;
+    this.editableCms.update(cfg => {
+      const currentList = [...(cfg.honorBoardList || [])];
+      const temp = currentList[index];
+      currentList[index] = currentList[index + 1];
+      currentList[index + 1] = temp;
+      const reindexed = currentList.map((h, i) => ({ ...h, rank: i + 1 }));
+      return {
+        ...cfg,
+        honorBoardList: reindexed
+      };
+    });
+  }
+
+  populateDefaultHonorees(): void {
+    if ((this.editableCms().honorBoardList || []).length > 0) {
+      if (!confirm('هذا الإجراء سيستبدل قائمة لوحة الشرف الحالية بالنموذج الافتراضي. هل تريدين المتابعة؟')) return;
+    }
+    this.editableCms.update(cfg => ({
+      ...cfg,
+      honorBoardList: JSON.parse(JSON.stringify(this.defaultHonorBoardTemplate))
+    }));
+    this.toastTriggered.emit({ text: 'تم تحميل نموذج لوحة الشرف بنجاح. يمكنك تعديل أسماء وبيانات الطلاب والضغط على حفظ.', type: 'success' });
   }
 }
