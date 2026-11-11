@@ -69,8 +69,8 @@
       height: 100%;
       object-fit: cover;
       object-position: center 25%;
-      opacity: 0.18;
-      filter: saturate(1.15) contrast(1.10);
+      opacity: 0.50;
+      filter: saturate(1.25) contrast(1.15);
       transform: scale(1.0);
       transform-origin: center center;
       transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
@@ -80,8 +80,8 @@
     .curriculum-card-watermark-overlay {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 35%, rgba(33, 25, 49, 0.45) 20%, rgba(22, 14, 34, 0.85) 80%),
-                  linear-gradient(180deg, rgba(33, 25, 49, 0.40) 0%, rgba(22, 14, 34, 0.90) 100%);
+      background: radial-gradient(circle at 50% 35%, transparent 30%, rgba(22, 14, 34, 0.55) 85%),
+                  linear-gradient(180deg, rgba(33, 25, 49, 0.20) 0%, rgba(22, 14, 34, 0.65) 100%);
       pointer-events: none;
       transition: opacity 0.45s ease;
     }
@@ -89,10 +89,11 @@
 
   // Enhanced contrast typography for dark mode
   h3 {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 1px rgba(0, 0, 0, 0.90);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.90);
+    font-weight: 900 !important;
   }
   p {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.90), 0 0 1px rgba(0, 0, 0, 0.85);
   }
 
   &:hover {
@@ -116,11 +117,11 @@
 
     .curriculum-card-watermark {
       .curriculum-card-watermark-img {
-        opacity: 0.26;
+        opacity: 0.65;
         transform: scale(1.05);
       }
       .curriculum-card-watermark-overlay {
-        opacity: 0.85;
+        opacity: 0.50;
       }
     }
   }
@@ -309,23 +310,25 @@
       mask-image: radial-gradient(ellipse 90% 85% at 50% 35%, #000 35%, transparent 92%);
 
       .curriculum-card-watermark-img {
-        opacity: 0.22;
-        filter: saturate(1.20) contrast(1.15) brightness(1.02);
+        opacity: 0.65;
+        filter: saturate(1.25) contrast(1.15) brightness(1.02);
       }
       .curriculum-card-watermark-overlay {
-        background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.70) 20%, rgba(248, 244, 235, 0.88) 85%),
-                    linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(248, 244, 235, 0.92) 100%);
+        background: radial-gradient(circle at 50% 35%, transparent 35%, rgba(248, 244, 235, 0.40) 85%),
+                    linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(248, 244, 235, 0.50) 100%);
         transition: opacity 0.45s ease;
       }
     }
 
     h3 {
-      color: #0F172A !important;
-      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+      color: #0A0F1D !important;
+      font-weight: 900 !important;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 1px #fff;
     }
     p {
-      color: #1E293B !important;
-      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
+      color: #111827 !important;
+      font-weight: 700 !important;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 1px #fff;
     }
 
     &:hover {
@@ -348,11 +351,11 @@
 
       .curriculum-card-watermark {
         .curriculum-card-watermark-img {
-          opacity: 0.32;
+          opacity: 0.75;
           transform: scale(1.05);
         }
         .curriculum-card-watermark-overlay {
-          opacity: 0.80;
+          opacity: 0.35;
         }
       }
     }
