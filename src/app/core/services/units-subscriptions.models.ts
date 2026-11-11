@@ -9,7 +9,9 @@ export interface IUnitPackageItem {
   readonly description_ar: string;
   readonly description_en: string;
   readonly price_egp: number;
-  readonly original_price_egp?: number;
+  readonly original_price_egp?: number | null;
+  readonly discount_percentage?: number | null;
+  readonly is_discounted?: boolean;
   readonly total_lectures_count: number;
   readonly total_questions_count: number;
   readonly is_popular?: boolean;

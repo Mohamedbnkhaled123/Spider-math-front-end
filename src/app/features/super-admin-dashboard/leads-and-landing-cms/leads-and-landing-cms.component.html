@@ -1251,6 +1251,13 @@
                       <span>{{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}</span>
                       @if (unit.price_egp) {
                         <span>•</span>
+                        @if (unit.original_price_egp && unit.original_price_egp > unit.price_egp) {
+                          <span class="unit-discount-luxury-badge text-[9px] py-0 px-1.5">
+                            <app-icon name="sparkles" [size]="9" />
+                            <span>{{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}</span>
+                          </span>
+                          <span class="line-through text-text-muted">{{ unit.original_price_egp }}</span>
+                        }
                         <span class="font-bold text-brand-primary">{{ unit.price_egp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}</span>
                       }
                     </div>

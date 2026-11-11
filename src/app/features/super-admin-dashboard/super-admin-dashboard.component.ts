@@ -355,6 +355,9 @@ export class SuperAdminDashboardComponent implements OnInit {
             type: u.package_type || 'STUDY_UNIT',
             isPublished: !!u.is_published,
             priceEgp: u.price_egp || 0,
+            originalPriceEgp: u.original_price_egp || null,
+            discountPercentage: u.discount_percentage || null,
+            isDiscounted: !!(u.is_discounted || (u.original_price_egp && u.original_price_egp > u.price_egp)),
             lectures: [],
             assessments: []
           }));

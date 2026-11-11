@@ -370,6 +370,12 @@
                         <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
                           {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
                         </span>
+                        @if (hasUnitDiscount(unit)) {
+                          <span class="unit-discount-luxury-badge">
+                            <app-icon name="sparkles" [size]="11" />
+                            <span>{{ langService.isArabic() ? ('خصم ' + getUnitDiscountPct(unit) + '%') : (getUnitDiscountPct(unit) + '% OFF') }}</span>
+                          </span>
+                        }
                         @if (isEmpty) {
                           <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-500 border border-amber-500/30 text-[10px] font-bold animate-pulse">
                             {{ langService.isArabic() ? 'قريباً' : 'Soon' }}
@@ -388,9 +394,19 @@
                     </div>
 
                     <div class="pt-3 border-t border-surface-border flex items-center justify-between gap-2 relative z-10">
-                      <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 font-numeric">
-                        {{ unit.total_lectures_count || 0 }} {{ langService.isArabic() ? 'محاضرات' : 'Lectures' }}
-                      </span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 font-numeric">
+                          {{ unit.total_lectures_count || 0 }} {{ langService.isArabic() ? 'محاضرات' : 'Lectures' }}
+                        </span>
+                        @if (unit.price_egp) {
+                          <div class="flex items-baseline gap-1 font-numeric text-xs">
+                            @if (hasUnitDiscount(unit) && getUnitOriginalPrice(unit) > unit.price_egp) {
+                              <span class="text-[10px] text-text-muted line-through mr-0.5">{{ getUnitOriginalPrice(unit) }}</span>
+                            }
+                            <span class="font-bold text-brand-gold">{{ unit.price_egp }} EGP</span>
+                          </div>
+                        }
+                      </div>
                       <button
                         type="button"
                         (click)="handleStudentUnitClick(unit, $event)"
@@ -798,38 +814,37 @@
                 }
 
                 <div>
-                  <div class="mb-4">
+                  <div class="mb-4 flex items-center gap-2 flex-wrap">
                     <span class="text-xs font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300">
                       {{ pkg.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Final Revision') : (langService.isArabic() ? 'حزمة وحدة دراسية' : 'Study Unit') }}
-
                     </span>
+                    @if (hasPackageDiscount(pkg)) {
+                      <span class="unit-discount-luxury-badge">
+                        <app-icon name="sparkles" [size]="11" />
+                        <span>{{ langService.isArabic() ? ('خصم ' + getPackageDiscountPct(pkg) + '%') : (getPackageDiscountPct(pkg) + '% OFF') }}</span>
+                      </span>
+                    }
                   </div>
 
                   <h3 class="text-xl font-black text-text-primary mb-2">
                     {{ langService.isArabic() ? pkg.titleAr : pkg.titleEn }}
-
                   </h3>
                   <p class="text-xs text-text-secondary leading-relaxed mb-6">
                     {{ langService.isArabic() ? pkg.descriptionAr : pkg.descriptionEn }}
-
                   </p>
                   <!-- Price Box -->
-
                   <div class="flex items-baseline gap-2 mb-6 font-numeric">
-                    <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
-                      {{ pkg.priceEgp }}
-
-                    </span>
-                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
-                      {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
-
-                    </span>
-                    @if (pkg.originalPriceEgp) {
-                      <span class="text-xs text-slate-500 dark:text-slate-400 line-through mr-2">
+                    @if (hasPackageDiscount(pkg) && pkg.originalPriceEgp) {
+                      <span class="text-sm text-slate-500 dark:text-slate-400 line-through mr-1">
                         {{ pkg.originalPriceEgp }} EGP
                       </span>
                     }
-
+                    <span class="text-4xl font-black text-brand-primary dark:text-cyan-400">
+                      {{ pkg.priceEgp }}
+                    </span>
+                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
+                      {{ langService.isArabic() ? 'جنيه مصري / للباقة كاملة' : 'EGP / Full Package' }}
+                    </span>
                   </div>
 
                   <!-- Features Checklist -->

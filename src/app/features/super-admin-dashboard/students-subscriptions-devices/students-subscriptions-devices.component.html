@@ -641,7 +641,7 @@
           >
             @for (unit of studentMatchingUnits(); track (unit.id || unit._id)) {
               <option [value]="unit.id || unit._id">
-                {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}
+                {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}@if ((unit.originalPriceEgp || unit.original_price_egp) > (unit.priceEgp || unit.price_egp)) { ({{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}) }
               </option>
             } @empty {
               <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units available matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>

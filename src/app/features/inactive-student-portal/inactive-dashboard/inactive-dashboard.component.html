@@ -327,6 +327,13 @@
                 <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
                   {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
                 </span>
+                <!-- Luxury Promotional Discount Badge -->
+                @if (hasDiscount(unit)) {
+                  <span class="unit-discount-luxury-badge">
+                    <app-icon name="sparkles" [size]="11" />
+                    <span>{{ langService.isArabic() ? ('خصم ' + getDiscountPct(unit) + '%') : (getDiscountPct(unit) + '% OFF') }}</span>
+                  </span>
+                }
                 @if (isEmpty) {
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
                     {{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}
@@ -343,17 +350,17 @@
 
               <!-- Price Box -->
               <div class="flex items-baseline gap-2 mb-5 font-numeric">
+                @if (hasDiscount(unit) && getOriginalPrice(unit) > unit.price_egp) {
+                  <span class="text-sm text-text-muted line-through mr-1">
+                    {{ getOriginalPrice(unit) }} EGP
+                  </span>
+                }
                 <span class="text-3xl font-black text-gold-accent font-academic-serif">
                   {{ unit.price_egp }}
                 </span>
                 <span class="text-xs font-bold text-text-muted">
                   {{ langService.isArabic() ? 'جنيه مصري' : 'EGP' }}
                 </span>
-                @if (unit.original_price_egp) {
-                  <span class="text-xs text-text-muted line-through mr-1">
-                    {{ unit.original_price_egp }} EGP
-                  </span>
-                }
               </div>
 
               <!-- Features Checklist -->

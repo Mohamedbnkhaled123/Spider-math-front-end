@@ -56,7 +56,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly lectureId = input<string>('hero-promo');
   readonly isPublicHeroPromo = input<boolean>(false);
   readonly encryptedVideoId = input<string>(''); // Session video token or direct ID
-  readonly videoDurationSec = input<number>(1800); // 30 minutes default
+  readonly videoDurationSec = input<number>(0); // 0 default until metadata loaded
   readonly resumePositionSec = input<number>(0);
   readonly completionThresholdPct = input<number>(85);
   readonly watermarkText = input<string>('Spider Math | HA1001');
@@ -77,7 +77,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly isPlaying = signal<boolean>(false);
   readonly hasStarted = signal<boolean>(false);
   readonly currentTimeSec = signal<number>(0);
-  readonly duration = signal<number>(1800);
+  readonly duration = signal<number>(0);
   readonly volume = signal<number>(100);
   readonly isMuted = signal<boolean>(false);
   readonly playbackRate = signal<PlaybackRate>(1);
@@ -99,6 +99,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly xpAwarded = signal<boolean>(false);
 
   private ytPlayer: any = null;
+  private pendingPlay = false;
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private hideControlsTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -116,12 +117,16 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     return Math.min(100, (this.currentTimeSec() / dur) * 100);
   });
 
+  readonly hasHours = computed<boolean>(() => this.duration() >= 3600);
+
   readonly formattedCurrentTime = computed<string>(() => {
-    return this.formatTime(this.currentTimeSec());
+    return this.formatTime(this.currentTimeSec(), this.hasHours());
   });
 
   readonly formattedDuration = computed<string>(() => {
-    return this.formatTime(this.duration());
+    const total = this.duration();
+    if (total <= 0) return '--:--';
+    return this.formatTime(total, this.hasHours());
   });
 
   constructor() {
@@ -156,11 +161,18 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     });
   }
 
+  private readonly handleFullscreenChange = () => {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isFullscreen.set(!!document.fullscreenElement);
+    }
+  };
+
   ngOnInit(): void {
     this.duration.set(this.videoDurationSec());
     this.currentTimeSec.set(this.resumePositionSec());
 
     if (isPlatformBrowser(this.platformId)) {
+      document.addEventListener('fullscreenchange', this.handleFullscreenChange);
       if (!this.isPublicHeroPromo()) {
         this.hasStarted.set(true);
         this.initYouTubeIframe();
@@ -169,6 +181,9 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
+    }
     this.dispatchHeartbeat();
     this.cleanup();
   }
@@ -189,10 +204,17 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
       }
       return;
     }
-    if (!this.ytPlayer) return;
+    if (!this.ytPlayer) {
+      this.pendingPlay = true;
+      return;
+    }
     if (this.isPlaying()) {
       this.ytPlayer.pauseVideo?.();
     } else {
+      if (this.duration() > 0 && this.currentTimeSec() >= this.duration()) {
+        this.ytPlayer.seekTo?.(0, true);
+        this.currentTimeSec.set(0);
+      }
       this.ytPlayer.playVideo?.();
     }
   }
@@ -342,7 +364,8 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           if (this.resumePositionSec() > 0) {
             e.target.seekTo(this.resumePositionSec(), true);
           }
-          if (autoPlay) {
+          if (autoPlay || this.pendingPlay) {
+            this.pendingPlay = false;
             e.target.playVideo();
           }
           const dur = e.target.getDuration();
@@ -353,13 +376,14 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           }
         },
         onStateChange: (e: any) => {
-          // YT.PlayerState.PLAYING = 1, PAUSED = 2, ENDED = 0
+          // YT.PlayerState.PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3, CUED = 5
+          const dur = Math.round(e.target?.getDuration?.() || 0);
+          if (dur > 0 && Math.abs(this.duration() - dur) > 1) {
+            this.duration.set(dur);
+            this.syncRealDuration(dur);
+          }
+
           if (e.data === 1) {
-            const dur = Math.round(e.target?.getDuration?.() || 0);
-            if (dur > 0 && Math.abs(this.duration() - dur) > 2) {
-              this.duration.set(dur);
-              this.syncRealDuration(dur);
-            }
             this.isPlaying.set(true);
             this.startTracking();
           } else {
@@ -402,6 +426,12 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
       const currentSec = Math.round(this.ytPlayer.getCurrentTime?.() || 0);
       this.currentTimeSec.set(currentSec);
+
+      // Keep duration continuously synchronized with actual stream length
+      const realDur = Math.round(this.ytPlayer.getDuration?.() || 0);
+      if (realDur > 0 && Math.abs(this.duration() - realDur) > 2) {
+        this.duration.set(realDur);
+      }
 
       const pct = this.watchPercentage();
       this.progressUpdated.emit({
@@ -486,9 +516,16 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     }, 5000);
   }
 
-  private formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
+  private formatTime(seconds: number, forceHours: boolean = false): string {
+    if (!seconds || isNaN(seconds) || seconds < 0) {
+      return forceHours ? '00:00:00' : '00:00';
+    }
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
+    if (forceHours || hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 

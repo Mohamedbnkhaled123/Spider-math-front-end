@@ -747,7 +747,7 @@
                           </div>
 
                           <div class="relative z-10">
-                            <!-- Unit Type Badge, Math Symbol & Price -->
+                            <!-- Unit Type Badge, Math Symbol, Discount Badge & Price -->
                             <div class="flex items-center justify-between gap-2 mb-3">
                               <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[11px] font-bold">
@@ -757,6 +757,13 @@
                                 <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
                                   {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
                                 </span>
+                                <!-- Promotional Discount Luxury Badge -->
+                                @if (hasDiscount(unit)) {
+                                  <span class="unit-discount-luxury-badge">
+                                    <app-icon name="sparkles" [size]="11" />
+                                    <span>{{ langService.isArabic() ? ('خصم ' + getDiscountPercentage(unit) + '%') : (getDiscountPercentage(unit) + '% OFF') }}</span>
+                                  </span>
+                                }
                                 @if (isEmpty) {
                                   <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-500 border border-amber-500/30 text-[10px] font-bold animate-pulse">
                                     {{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}
@@ -765,9 +772,16 @@
                               </div>
 
                               @if (unit.price_egp) {
-                                <span class="text-xs font-black text-brand-gold font-numeric shrink-0">
-                                  {{ unit.price_egp }} EGP
-                                </span>
+                                <div class="flex items-baseline gap-1.5 font-numeric shrink-0">
+                                  @if (hasDiscount(unit) && getOriginalPrice(unit) > unit.price_egp) {
+                                    <span class="text-[11px] line-through text-text-muted">
+                                      {{ getOriginalPrice(unit) }} EGP
+                                    </span>
+                                  }
+                                  <span class="text-xs font-black text-brand-gold">
+                                    {{ unit.price_egp }} EGP
+                                  </span>
+                                </div>
                               }
                             </div>
 

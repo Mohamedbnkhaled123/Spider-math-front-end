@@ -102,6 +102,43 @@ export class InactiveDashboardComponent implements OnInit {
     return isUnitContentEmpty(unit);
   }
 
+  hasDiscount(unit: any): boolean {
+    if (!unit) return false;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    return !!(
+      unit.is_discounted ||
+      unit.isDiscounted ||
+      (orig && orig > price) ||
+      (unit.discount_percentage && unit.discount_percentage > 0) ||
+      (unit.discountPercentage && unit.discountPercentage > 0)
+    );
+  }
+
+  getDiscountPct(unit: any): number {
+    if (!unit) return 0;
+    if (unit.discount_percentage && unit.discount_percentage > 0) return unit.discount_percentage;
+    if (unit.discountPercentage && unit.discountPercentage > 0) return unit.discountPercentage;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    if (orig && orig > price) {
+      return Math.round(((orig - price) / orig) * 100);
+    }
+    return 0;
+  }
+
+  getOriginalPrice(unit: any): number {
+    if (!unit) return 0;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    if (orig) return orig;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    const pct = unit.discount_percentage ?? unit.discountPercentage;
+    if (price && pct && pct < 100) {
+      return Math.round(price / (1 - pct / 100));
+    }
+    return 0;
+  }
+
   handleUnitCardClick(unit: any): void {
     if (this.isUnitEmpty(unit)) {
       this.triggerComingSoon(unit?.title_ar || unit?.title_en);

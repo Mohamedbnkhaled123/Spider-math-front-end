@@ -34,6 +34,7 @@ export type AppIconName =
   | 'chevron-down'
   | 'chevron-up'
   | 'play'
+  | 'pause'
   | 'play-circle'
   | 'star'
   | 'arrow-right'

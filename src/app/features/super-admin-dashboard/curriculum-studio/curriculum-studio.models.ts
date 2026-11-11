@@ -74,6 +74,9 @@ export interface UnitPackageAdminItem {
   type: 'STUDY_UNIT' | 'REVISION_PACKAGE';
   isPublished: boolean;
   priceEgp: number;
+  originalPriceEgp?: number | null;
+  discountPercentage?: number | null;
+  isDiscounted?: boolean;
   lectures: LectureAdminItem[];
   assessments: AssessmentAdminItem[];
 }

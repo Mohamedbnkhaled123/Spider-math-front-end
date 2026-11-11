@@ -990,5 +990,46 @@ body:has(app-assessment-preview-modal) {
   animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+// ==============================================================================
+// Unit Discount Luxury Badge (Light Mode & Dark Mode High Contrast)
+// ==============================================================================
+.unit-discount-luxury-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  user-select: none;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+
+  // Light Mode: High-contrast rich ruby-amber gradient with pure white text
+  background: linear-gradient(135deg, #B91C1C 0%, #C2410C 100%);
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px -1px rgba(185, 28, 28, 0.4), 0 1px 3px rgba(0, 0, 0, 0.15);
+
+  // Dark Mode: Royal ruby-purple shimmer + luminous champagne gold border
+  .dark &,
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, #B91C1C 0%, #6B21A8 55%, #2A1D37 100%);
+    color: #FFFBEB !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    border: 1px solid #D4AF6A;
+    box-shadow: 0 0 12px rgba(212, 175, 106, 0.4), 0 0 8px rgba(185, 28, 28, 0.35);
+  }
+
+  &:hover {
+    transform: translateY(-1px) scale(1.04);
+  }
+}
+
+
 
 

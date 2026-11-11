@@ -155,11 +155,17 @@ export class CurriculumStudioComponent implements OnInit {
     titleAr: string;
     titleEn: string;
     priceEgp: number;
+    originalPriceEgp: number | null;
+    discountPercentage: number | null;
+    isDiscounted: boolean;
     type: 'STUDY_UNIT' | 'REVISION_PACKAGE';
   }>({
     titleAr: '',
     titleEn: '',
     priceEgp: 300,
+    originalPriceEgp: null,
+    discountPercentage: null,
+    isDiscounted: false,
     type: 'STUDY_UNIT'
   });
 
@@ -167,11 +173,17 @@ export class CurriculumStudioComponent implements OnInit {
     titleAr: string;
     titleEn: string;
     priceEgp: number;
+    originalPriceEgp: number | null;
+    discountPercentage: number | null;
+    isDiscounted: boolean;
     type: 'STUDY_UNIT' | 'REVISION_PACKAGE';
   }>({
     titleAr: '',
     titleEn: '',
     priceEgp: 300,
+    originalPriceEgp: null,
+    discountPercentage: null,
+    isDiscounted: false,
     type: 'STUDY_UNIT'
   });
 
@@ -606,11 +618,104 @@ export class CurriculumStudioComponent implements OnInit {
     );
   }
 
+  // -------------------------------------------------------------------------
+  // Unit Discount Calculations & Helpers
+  // -------------------------------------------------------------------------
+  hasDiscount(unit: UnitPackageAdminItem): boolean {
+    return !!(unit.isDiscounted || (unit.originalPriceEgp && unit.originalPriceEgp > unit.priceEgp));
+  }
+
+  isFormDiscountValid(isEdit: boolean): boolean {
+    const form = isEdit ? this.editUnitForm() : this.unitForm();
+    return !!(form.isDiscounted && form.originalPriceEgp && form.originalPriceEgp > form.priceEgp);
+  }
+
+  getDiscountPercentage(unit: UnitPackageAdminItem): number {
+    if (unit.discountPercentage && unit.discountPercentage > 0) {
+      return unit.discountPercentage;
+    }
+    if (unit.originalPriceEgp && unit.originalPriceEgp > unit.priceEgp) {
+      return Math.round(((unit.originalPriceEgp - unit.priceEgp) / unit.originalPriceEgp) * 100);
+    }
+    return 0;
+  }
+
+  onDiscountToggle(isEdit: boolean): void {
+    const formSignal = isEdit ? this.editUnitForm : this.unitForm;
+    const current = formSignal();
+    const nextIsDiscounted = !current.isDiscounted;
+
+    if (nextIsDiscounted) {
+      const orig = current.originalPriceEgp || Math.round(current.priceEgp * 1.25) || 500;
+      const pct = current.discountPercentage || 20;
+      const finalPrice = Math.round(orig * (1 - pct / 100));
+      formSignal.set({
+        ...current,
+        isDiscounted: true,
+        originalPriceEgp: orig,
+        discountPercentage: pct,
+        priceEgp: finalPrice
+      });
+    } else {
+      formSignal.set({
+        ...current,
+        isDiscounted: false,
+        originalPriceEgp: null,
+        discountPercentage: null
+      });
+    }
+  }
+
+  onOriginalPriceChange(isEdit: boolean, rawVal: any): void {
+    const orig = Number(rawVal) || 0;
+    const formSignal = isEdit ? this.editUnitForm : this.unitForm;
+    const current = formSignal();
+
+    let newFinalPrice = current.priceEgp;
+    if (orig > 0 && current.discountPercentage && current.discountPercentage > 0) {
+      newFinalPrice = Math.round(orig * (1 - current.discountPercentage / 100));
+    } else if (orig > current.priceEgp && current.priceEgp > 0) {
+      const pct = Math.round(((orig - current.priceEgp) / orig) * 100);
+      formSignal.set({ ...current, originalPriceEgp: orig, discountPercentage: pct });
+      return;
+    }
+    formSignal.set({ ...current, originalPriceEgp: orig, priceEgp: newFinalPrice });
+  }
+
+  onDiscountPercentageChange(isEdit: boolean, rawVal: any): void {
+    const pct = Math.min(99, Math.max(1, Number(rawVal) || 0));
+    const formSignal = isEdit ? this.editUnitForm : this.unitForm;
+    const current = formSignal();
+
+    if (current.originalPriceEgp && current.originalPriceEgp > 0) {
+      const newFinalPrice = Math.round(current.originalPriceEgp * (1 - pct / 100));
+      formSignal.set({ ...current, discountPercentage: pct, priceEgp: newFinalPrice });
+    } else {
+      formSignal.set({ ...current, discountPercentage: pct });
+    }
+  }
+
+  onFinalPriceChange(isEdit: boolean, rawVal: any): void {
+    const price = Math.max(0, Number(rawVal) || 0);
+    const formSignal = isEdit ? this.editUnitForm : this.unitForm;
+    const current = formSignal();
+
+    if (current.originalPriceEgp && current.originalPriceEgp > price) {
+      const pct = Math.round(((current.originalPriceEgp - price) / current.originalPriceEgp) * 100);
+      formSignal.set({ ...current, priceEgp: price, discountPercentage: pct });
+    } else {
+      formSignal.set({ ...current, priceEgp: price });
+    }
+  }
+
   openCreateUnitModal(): void {
     this.unitForm.set({
       titleAr: '',
       titleEn: '',
       priceEgp: 350,
+      originalPriceEgp: null,
+      discountPercentage: null,
+      isDiscounted: false,
       type: 'STUDY_UNIT'
     });
     this.isUnitModalOpen.set(true);
@@ -630,6 +735,12 @@ export class CurriculumStudioComponent implements OnInit {
       .replace(/^-+|-+$/g, '') || 'unit';
     const slug = `${cleanSlug}-${Date.now().toString(36)}`;
 
+    const isDiscountActive = form.isDiscounted && !!form.originalPriceEgp && form.originalPriceEgp > form.priceEgp;
+    const originalPrice = isDiscountActive ? Number(form.originalPriceEgp) : null;
+    const discountPct = isDiscountActive
+      ? (form.discountPercentage ? Number(form.discountPercentage) : Math.round(((originalPrice! - form.priceEgp) / originalPrice!) * 100))
+      : null;
+
     const payload = {
       title_ar: form.titleAr.trim(),
       title_en: titleEn,
@@ -639,6 +750,9 @@ export class CurriculumStudioComponent implements OnInit {
       academic_term: this.selectedTerm(),
       package_type: form.type,
       price_egp: form.priceEgp,
+      original_price_egp: originalPrice,
+      discount_percentage: discountPct,
+      is_discounted: isDiscountActive,
       is_published: true
     };
 
@@ -655,6 +769,9 @@ export class CurriculumStudioComponent implements OnInit {
           type: created?.package_type || form.type,
           isPublished: created?.is_published ?? true,
           priceEgp: created?.price_egp ?? form.priceEgp,
+          originalPriceEgp: created?.original_price_egp ?? originalPrice,
+          discountPercentage: created?.discount_percentage ?? discountPct,
+          isDiscounted: created?.is_discounted ?? isDiscountActive,
           lectures: [],
           assessments: []
         };
@@ -670,11 +787,21 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   openEditUnitModal(unit: UnitPackageAdminItem): void {
+    const origPrice = unit.originalPriceEgp || null;
+    const hasDiscount = !!(unit.isDiscounted || (origPrice && origPrice > unit.priceEgp));
+    let pct = unit.discountPercentage || null;
+    if (hasDiscount && !pct && origPrice && origPrice > unit.priceEgp) {
+      pct = Math.round(((origPrice - unit.priceEgp) / origPrice) * 100);
+    }
+
     this.editingUnitId.set(unit.id);
     this.editUnitForm.set({
       titleAr: unit.titleAr,
       titleEn: unit.titleEn || '',
       priceEgp: unit.priceEgp || 350,
+      originalPriceEgp: origPrice,
+      discountPercentage: pct,
+      isDiscounted: hasDiscount,
       type: unit.type || 'STUDY_UNIT'
     });
     this.isEditUnitModalOpen.set(true);
@@ -688,11 +815,20 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
+    const isDiscountActive = form.isDiscounted && !!form.originalPriceEgp && form.originalPriceEgp > form.priceEgp;
+    const originalPrice = isDiscountActive ? Number(form.originalPriceEgp) : null;
+    const discountPct = isDiscountActive
+      ? (form.discountPercentage ? Number(form.discountPercentage) : Math.round(((originalPrice! - form.priceEgp) / originalPrice!) * 100))
+      : null;
+
     const payload = {
       title_ar: form.titleAr.trim(),
       title_en: form.titleEn?.trim() || form.titleAr.trim(),
       package_type: form.type,
-      price_egp: form.priceEgp
+      price_egp: form.priceEgp,
+      original_price_egp: originalPrice,
+      discount_percentage: discountPct,
+      is_discounted: isDiscountActive
     };
 
     this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/units/${unitId}`, payload).subscribe({
@@ -705,6 +841,9 @@ export class CurriculumStudioComponent implements OnInit {
             titleAr: updated?.title_ar || form.titleAr.trim(),
             titleEn: updated?.title_en || form.titleEn?.trim() || targetUnit.titleEn,
             priceEgp: updated?.price_egp ?? form.priceEgp,
+            originalPriceEgp: updated?.original_price_egp !== undefined ? updated.original_price_egp : originalPrice,
+            discountPercentage: updated?.discount_percentage !== undefined ? updated.discount_percentage : discountPct,
+            isDiscounted: updated?.is_discounted !== undefined ? updated.is_discounted : isDiscountActive,
             type: updated?.package_type || form.type
           };
           this.unitUpdated.emit(updatedUnit);

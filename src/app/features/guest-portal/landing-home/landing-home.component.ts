@@ -469,6 +469,66 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // Temporarily hidden pricing & packages section (consult user before public release whether to re-enable)
   readonly showPricingPackagesSection = signal<boolean>(false);
 
+  hasPackageDiscount(pkg: any): boolean {
+    if (!pkg) return false;
+    const orig = pkg.originalPriceEgp ?? pkg.original_price_egp;
+    const price = pkg.priceEgp ?? pkg.price_egp ?? 0;
+    return !!(
+      pkg.isDiscounted ||
+      pkg.is_discounted ||
+      (orig && orig > price) ||
+      (pkg.discountPercentage && pkg.discountPercentage > 0)
+    );
+  }
+
+  getPackageDiscountPct(pkg: any): number {
+    if (!pkg) return 0;
+    if (pkg.discountPercentage && pkg.discountPercentage > 0) return pkg.discountPercentage;
+    const orig = pkg.originalPriceEgp ?? pkg.original_price_egp;
+    const price = pkg.priceEgp ?? pkg.price_egp ?? 0;
+    if (orig && orig > price) {
+      return Math.round(((orig - price) / orig) * 100);
+    }
+    return 0;
+  }
+
+  hasUnitDiscount(unit: any): boolean {
+    if (!unit) return false;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    return !!(
+      unit.is_discounted ||
+      unit.isDiscounted ||
+      (orig && orig > price) ||
+      (unit.discount_percentage && unit.discount_percentage > 0) ||
+      (unit.discountPercentage && unit.discountPercentage > 0)
+    );
+  }
+
+  getUnitDiscountPct(unit: any): number {
+    if (!unit) return 0;
+    if (unit.discount_percentage && unit.discount_percentage > 0) return unit.discount_percentage;
+    if (unit.discountPercentage && unit.discountPercentage > 0) return unit.discountPercentage;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    if (orig && orig > price) {
+      return Math.round(((orig - price) / orig) * 100);
+    }
+    return 0;
+  }
+
+  getUnitOriginalPrice(unit: any): number {
+    if (!unit) return 0;
+    const orig = unit.original_price_egp ?? unit.originalPriceEgp;
+    if (orig) return orig;
+    const price = unit.price_egp ?? unit.priceEgp ?? 0;
+    const pct = unit.discount_percentage ?? unit.discountPercentage;
+    if (price && pct && pct < 100) {
+      return Math.round(price / (1 - pct / 100));
+    }
+    return 0;
+  }
+
   // Default Fallback Wall of Fame & Top Scorers
   readonly defaultTopThree: IHonorBoardItem[] = [
     {

@@ -78,6 +78,8 @@ export interface IPricingPackage {
   descriptionEn: string;
   priceEgp: number;
   originalPriceEgp?: number;
+  discountPercentage?: number;
+  isDiscounted?: boolean;
   featuresAr: string[];
   featuresEn: string[];
   isPopular?: boolean;
