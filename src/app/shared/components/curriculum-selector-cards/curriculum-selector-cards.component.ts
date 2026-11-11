@@ -1107,10 +1107,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       case 'AMERICAN':
         return '/assets/branding/curriculum-sat-mascot.jpg';
       case 'EGYPTIAN':
+        return '/assets/branding/curriculum-egyptian-mascot.jpg';
       case 'GULF':
+        return '/assets/branding/curriculum-gulf-mascot.jpg';
       case 'INTERNATIONAL':
       default:
-        return '/assets/branding/curriculum-other-mascot.jpg';
+        return '/assets/branding/curriculum-international-mascot.jpg';
     }
   }
 
@@ -1120,10 +1122,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   getCurrentGradeUnitsBgImage(): string {
-    const code = this.selectedCurriculumCode();
-    return code === 'AMERICAN'
-      ? '/assets/branding/curriculum-sat-mascot.jpg'
-      : '/assets/branding/curriculum-other-mascot.jpg';
+    return this.getCurriculumBgImage(this.selectedCurriculumCode());
   }
 
   private emitSelection(): void {
