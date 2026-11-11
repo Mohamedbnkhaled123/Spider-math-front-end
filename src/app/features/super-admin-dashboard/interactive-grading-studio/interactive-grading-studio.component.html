@@ -260,13 +260,31 @@
           </div>
         </div>
       } @empty {
-        <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
-          <app-icon name="award" [size]="36" className="text-text-muted mx-auto" />
-          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد تسليمات مسجلة بعد' : 'No recorded submissions yet' }}</h4>
-          <p class="text-xs text-text-secondary max-w-md mx-auto">
-            {{ langService.isArabic() ? 'ستظهر هنا فوراً كل تسليمات وإجابات الطلاب للكويزات والامتحانات والواجبات فور قيام الطالب بتسليم الامتحان.' : 'Student quiz and exam submissions will appear here in real-time once submitted.' }}
-          </p>
-        </div>
+        @if (isLoadingSubmissions() || isLoading()) {
+          <div class="space-y-3">
+            @for (row of [1, 2, 3, 4, 5]; track row) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex items-center justify-between gap-4 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="skeleton-gold h-10 w-10 rounded-full shrink-0"></div>
+                  <div class="space-y-1.5">
+                    <div class="skeleton-shimmer h-4 w-36 rounded-md"></div>
+                    <div class="skeleton-shimmer h-3 w-24 rounded-md opacity-60"></div>
+                  </div>
+                </div>
+                <div class="skeleton-gold h-6 w-20 rounded-full"></div>
+                <div class="skeleton-shimmer h-8 w-24 rounded-xl"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
+            <app-icon name="award" [size]="36" className="text-text-muted mx-auto" />
+            <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد تسليمات مسجلة بعد' : 'No recorded submissions yet' }}</h4>
+            <p class="text-xs text-text-secondary max-w-md mx-auto">
+              {{ langService.isArabic() ? 'ستظهر هنا فوراً كل تسليمات وإجابات الطلاب للكويزات والامتحانات والواجبات فور قيام الطالب بتسليم الامتحان.' : 'Student quiz and exam submissions will appear here in real-time once submitted.' }}
+            </p>
+          </div>
+        }
       }
     </div>
 
@@ -363,13 +381,24 @@
           </div>
         </div>
       } @empty {
-        <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
-          <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
-          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'رائع! لا توجد واجبات مقالية معلقة بانتظار التصحيح حالياً' : 'Great! No pending essay homework awaiting grading.' }}</h4>
-          <p class="text-xs text-text-secondary max-w-md mx-auto">
-            {{ langService.isArabic() ? 'كافة إجابات وحلول الطلاب المقالية تم فحصها واعتماد درجاتها وإرسال إشعاراتها لأولياء الأمور بنجاح.' : 'All student essay submissions have been reviewed, graded, and notified to parents.' }}
-          </p>
-        </div>
+        @if (isLoading()) {
+          <div class="space-y-3">
+            @for (row of [1, 2, 3]; track row) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-card flex items-center justify-between gap-4 animate-pulse">
+                <div class="skeleton-shimmer h-5 w-48 rounded-md"></div>
+                <div class="skeleton-gold h-8 w-28 rounded-xl"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
+            <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
+            <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'رائع! لا توجد واجبات مقالية معلقة بانتظار التصحيح حالياً' : 'Great! No pending essay homework awaiting grading.' }}</h4>
+            <p class="text-xs text-text-secondary max-w-md mx-auto">
+              {{ langService.isArabic() ? 'كافة إجابات وحلول الطلاب المقالية تم فحصها واعتماد درجاتها وإرسال إشعاراتها لأولياء الأمور بنجاح.' : 'All student essay submissions have been reviewed, graded, and notified to parents.' }}
+            </p>
+          </div>
+        }
       }
     </div>
   }

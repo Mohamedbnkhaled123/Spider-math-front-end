@@ -62,9 +62,49 @@
   <!-- Main Workspace Layout: Player/PDF on Left, Playlist on Right              -->
   <!-- ========================================================================= -->
   @if (isLoading()) {
-    <div class="flex flex-col items-center justify-center p-16 text-center">
-      <app-icon name="loader" [size]="40" className="text-brand-accent animate-spin mb-4" />
-      <p class="text-sm font-bold text-text-secondary">{{ langService.isArabic() ? 'جارِ تحميل محتويات ومحاضرات الوحدة...' : 'Loading unit lectures and study materials...' }}</p>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-pulse">
+      <!-- Left Column: Video Theater Skeleton -->
+      <div class="lg:col-span-8 flex flex-col gap-6">
+        <div class="p-1 rounded-2xl border border-surface-border bg-surface-card flex items-center justify-between">
+          <div class="flex items-center gap-2 p-1">
+            <div class="skeleton-gold h-9 w-28 rounded-xl"></div>
+            <div class="skeleton-shimmer h-9 w-28 rounded-xl"></div>
+          </div>
+          <div class="skeleton-shimmer h-6 w-32 rounded-lg mr-2"></div>
+        </div>
+        <div class="aspect-video w-full rounded-3xl bg-surface-card border border-surface-border shadow-glass relative overflow-hidden flex items-center justify-center">
+          <div class="w-16 h-16 rounded-full bg-brand-violet/30 border border-brand-gold/30 flex items-center justify-center">
+            <div class="skeleton-gold w-8 h-8 rounded-full"></div>
+          </div>
+        </div>
+        <div class="p-6 rounded-3xl bg-surface-card border border-surface-border space-y-3">
+          <div class="skeleton-shimmer h-6 w-3/4 rounded-xl"></div>
+          <div class="skeleton-shimmer h-4 w-1/2 rounded-lg opacity-70"></div>
+        </div>
+      </div>
+      <!-- Right Column: Playlist Sidebar Skeleton -->
+      <div class="lg:col-span-4 flex flex-col gap-4">
+        <div class="p-5 rounded-3xl bg-surface-card border border-surface-border shadow-glass space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+            <div class="skeleton-shimmer h-5 w-36 rounded-lg"></div>
+            <div class="skeleton-gold h-5 w-16 rounded-full"></div>
+          </div>
+          <div class="space-y-3">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border/60 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="skeleton-gold w-8 h-8 rounded-xl shrink-0"></div>
+                  <div class="space-y-1.5 flex-1">
+                    <div class="skeleton-shimmer h-4 w-3/4 rounded-md"></div>
+                    <div class="skeleton-shimmer h-3 w-1/2 rounded-md opacity-60"></div>
+                  </div>
+                </div>
+                <div class="skeleton-shimmer h-6 w-12 rounded-lg shrink-0"></div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
     </div>
   } @else if (activeLecture(); as lec) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

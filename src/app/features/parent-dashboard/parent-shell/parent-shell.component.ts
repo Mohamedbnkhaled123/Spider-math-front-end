@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { ChildAcademicMonitorComponent } from '../child-academic-monitor/child-academic-monitor.component';
 import { LinkedChildSummary, LinkChildRequestPayload } from './parent-shell.models';
 
@@ -24,6 +25,7 @@ import { LinkedChildSummary, LinkChildRequestPayload } from './parent-shell.mode
 export class ParentShellComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  private readonly swrCache = inject(SwrCacheService);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
@@ -47,28 +49,46 @@ export class ParentShellComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+    const parentId = this.authService.currentUser()?._id || 'parent_me';
+    const cacheKey = `parent_children_${parentId}`;
+    const cached = this.swrCache.get<LinkedChildSummary[]>(cacheKey);
+    if (cached && cached.length > 0) {
+      this.linkedChildren.set(cached);
+      this.selectedChildId.set(cached[0].studentId);
+      this.isLoadingChildren.set(false);
+    } else {
+      this.isLoadingChildren.set(true);
+    }
     this.fetchLinkedChildren();
   }
 
   fetchLinkedChildren(): void {
-    this.isLoadingChildren.set(true);
+    const parentId = this.authService.currentUser()?._id || 'parent_me';
+    const cacheKey = `parent_children_${parentId}`;
 
     this.http.get<any>('/api/v1/parent/children-list').subscribe({
       next: (res) => {
         const children = res?.data?.children || res?.children || (Array.isArray(res?.data) ? res.data : []);
         if (Array.isArray(children) && children.length > 0) {
           this.linkedChildren.set(children);
-          this.selectedChildId.set(children[0].studentId);
+          this.swrCache.set(cacheKey, children);
+          if (!this.selectedChildId() || !children.some(c => c.studentId === this.selectedChildId())) {
+            this.selectedChildId.set(children[0].studentId);
+          }
           this.isLoadingChildren.set(false);
         } else {
-          this.linkedChildren.set([]);
-          this.selectedChildId.set('');
+          if (!this.swrCache.has(cacheKey)) {
+            this.linkedChildren.set([]);
+            this.selectedChildId.set('');
+          }
           this.isLoadingChildren.set(false);
         }
       },
       error: () => {
-        this.linkedChildren.set([]);
-        this.selectedChildId.set('');
+        if (!this.swrCache.has(cacheKey)) {
+          this.linkedChildren.set([]);
+          this.selectedChildId.set('');
+        }
         this.isLoadingChildren.set(false);
       }
     });

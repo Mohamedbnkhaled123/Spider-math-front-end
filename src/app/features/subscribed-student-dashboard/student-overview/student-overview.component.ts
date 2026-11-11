@@ -24,6 +24,7 @@ import {
 } from '../../../core/utils/unit-math-art.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import {
   validatePhoneNumber,
   arePhoneNumbersIdentical,
@@ -68,6 +69,7 @@ export class StudentOverviewComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly discoveryService = inject(PublicDiscoveryService, { optional: true });
+  private readonly swrCache = inject(SwrCacheService);
 
   // Term Switcher Signal (Synchronized with teacher's active term from PublicDiscoveryService / student profile)
   readonly selectedTerm = signal<AcademicTermCode>(
@@ -331,6 +333,48 @@ export class StudentOverviewComponent implements OnInit {
     }
 
     this.loadActiveGrades();
+
+    const uid = this.authService.currentUser()?._id || 'me';
+    const curr = this.currentUserCurriculum();
+    const grade = this.currentUserGrade();
+    const term = this.selectedTerm();
+
+    // Instant SWR cache restoration (0ms render without zero flash)
+    const cachedActiveGrades = this.swrCache.get<string[]>('active_grades_list');
+    if (cachedActiveGrades && cachedActiveGrades.length > 0) {
+      this.activeGrades.set(cachedActiveGrades);
+      this.isLoadingActiveGrades.set(false);
+    }
+    const unitsKey = `student_units_${uid}_${curr}_${grade}_${term}`;
+    const cachedUnits = this.swrCache.get<EnrolledUnitSummary[]>(unitsKey);
+    if (cachedUnits && cachedUnits.length > 0) {
+      this.units.set(cachedUnits);
+      this.isLoadingUnits.set(false);
+    }
+    const cachedGrades = this.swrCache.get<any[]>(`student_submissions_${uid}`);
+    if (cachedGrades && cachedGrades.length > 0) {
+      this.completedGrades.set(cachedGrades);
+    }
+    const asmsKey = `student_asms_${uid}_${curr}_${grade}_${term}`;
+    const cachedAsms = this.swrCache.get<any[]>(asmsKey);
+    if (cachedAsms && cachedAsms.length > 0) {
+      this.rawAssessmentsList.set(cachedAsms);
+    }
+    if ((cachedGrades && cachedGrades.length > 0) || (cachedAsms && cachedAsms.length > 0)) {
+      this.processDueQuizzes();
+    }
+    const lbKey = `student_lb_${curr}_${grade}`;
+    const cachedLb = this.swrCache.get<LeaderboardRankEntry[]>(lbKey);
+    if (cachedLb && cachedLb.length > 0) {
+      this.leaderboard.set(cachedLb);
+      this.isLoadingLeaderboard.set(false);
+    }
+    const cachedNotifs = this.swrCache.get<any[]>(`student_notifs_${uid}`);
+    if (cachedNotifs && cachedNotifs.length > 0) {
+      this.notifications.set(cachedNotifs);
+    }
+
+    // Silent background revalidation
     this.fetchRealStudentData();
     this.fetchRealAssessments();
     this.fetchLeaderboard();
@@ -339,24 +383,31 @@ export class StudentOverviewComponent implements OnInit {
   }
 
   fetchCompletedGrades(): void {
+    const uid = this.authService.currentUser()?._id || 'me';
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/assessments/my-submissions').subscribe({
       next: (res) => {
         const list = res?.data || [];
         this.completedGrades.set(list);
+        this.swrCache.set(`student_submissions_${uid}`, list);
         this.processDueQuizzes();
       },
       error: () => {
-        this.completedGrades.set([]);
+        if (!this.swrCache.has(`student_submissions_${uid}`)) {
+          this.completedGrades.set([]);
+        }
       }
     });
   }
 
   loadActiveGrades(): void {
-    this.isLoadingActiveGrades.set(true);
+    if (this.activeGrades().length === 0) {
+      this.isLoadingActiveGrades.set(true);
+    }
     this.http.get<{ success: boolean; data: { activeGrades: string[] } }>('/api/v1/public/active-grades').subscribe({
       next: (res) => {
         if (res?.data?.activeGrades && Array.isArray(res.data.activeGrades)) {
           this.activeGrades.set(res.data.activeGrades);
+          this.swrCache.set('active_grades_list', res.data.activeGrades);
         }
         this.isLoadingActiveGrades.set(false);
       },
@@ -367,11 +418,15 @@ export class StudentOverviewComponent implements OnInit {
   }
 
   fetchRealStudentData(): void {
-    this.isLoadingUnits.set(true);
+    const uid = this.authService.currentUser()?._id || 'me';
     const curr = this.currentUserCurriculum();
     const grade = this.currentUserGrade();
     const term = this.selectedTerm();
+    const unitsKey = `student_units_${uid}_${curr}_${grade}_${term}`;
 
+    if (this.units().length === 0) {
+      this.isLoadingUnits.set(true);
+    }
     const termQuery = this.hasAcademicTerms() ? `&term=${term}` : '';
     this.http.get<{ success: boolean; data: any[] }>(
       `/api/v1/units?curriculum=${curr}&gradeLevel=${grade}${termQuery}`
@@ -380,8 +435,10 @@ export class StudentOverviewComponent implements OnInit {
         this.isLoadingUnits.set(false);
         const apiUnits = res?.data || [];
         if (apiUnits.length === 0) {
-          this.units.set([]);
-          this.lectures.set([]);
+          if (!this.swrCache.has(unitsKey)) {
+            this.units.set([]);
+            this.lectures.set([]);
+          }
           return;
         }
 
@@ -404,6 +461,7 @@ export class StudentOverviewComponent implements OnInit {
           isActive: true
         }));
         this.units.set(mappedUnits);
+        this.swrCache.set(unitsKey, mappedUnits);
 
         // Hydrate lectures across all units
         const allLectures: StudentLectureItem[] = [];
@@ -460,6 +518,7 @@ export class StudentOverviewComponent implements OnInit {
                 );
 
                 this.lectures.set([...allLectures]);
+                this.swrCache.set(unitsKey, this.units());
               }
             }
           });
@@ -467,42 +526,51 @@ export class StudentOverviewComponent implements OnInit {
       },
       error: () => {
         this.isLoadingUnits.set(false);
-        this.units.set([]);
-        this.lectures.set([]);
+        if (!this.swrCache.has(unitsKey)) {
+          this.units.set([]);
+          this.lectures.set([]);
+        }
       }
     });
   }
 
   fetchRealNotifications(): void {
+    const uid = this.authService.currentUser()?._id || 'me';
     this.http.get<{ success: boolean; data: any }>('/api/v1/notifications?limit=10').subscribe({
       next: (res) => {
         const notifs = res?.data?.notifications || res?.data || [];
         if (Array.isArray(notifs) && notifs.length > 0) {
-          this.notifications.set(
-            notifs.map((n: any) => ({
-              id: n._id,
-              titleAr: n.title_ar,
-              titleEn: n.title_en || n.title_ar,
-              messageAr: n.message_ar,
-              messageEn: n.message_en || n.message_ar,
-              type: n.notification_type || 'SYSTEM_BROADCAST',
-              timestamp: new Date(n.createdAt).toLocaleTimeString('ar-EG'),
-              isRead: !!n.is_read,
-              actionUrl: n.action_url || '/student'
-            }))
-          );
+          const mapped = notifs.map((n: any) => ({
+            id: n._id,
+            titleAr: n.title_ar,
+            titleEn: n.title_en || n.title_ar,
+            messageAr: n.message_ar,
+            messageEn: n.message_en || n.message_ar,
+            type: n.notification_type || 'SYSTEM_BROADCAST',
+            timestamp: new Date(n.createdAt).toLocaleTimeString('ar-EG'),
+            isRead: !!n.is_read,
+            actionUrl: n.action_url || '/student'
+          }));
+          this.notifications.set(mapped);
+          this.swrCache.set(`student_notifs_${uid}`, mapped);
         } else {
           this.notifications.set([]);
         }
       },
-      error: () => this.notifications.set([])
+      error: () => {
+        if (!this.swrCache.has(`student_notifs_${uid}`)) {
+          this.notifications.set([]);
+        }
+      }
     });
   }
 
   fetchRealAssessments(): void {
+    const uid = this.authService.currentUser()?._id || 'me';
     const curr = this.currentUserCurriculum();
     const grade = this.currentUserGrade();
     const term = this.selectedTerm();
+    const asmsKey = `student_asms_${uid}_${curr}_${grade}_${term}`;
 
     // Strictly grade-isolated via backend session auth & filters
     const termQuery = this.hasAcademicTerms() ? `&term=${term}` : '';
@@ -515,11 +583,14 @@ export class StudentOverviewComponent implements OnInit {
           : (res?.data?.assessments || []);
 
         this.rawAssessmentsList.set(rawList);
+        this.swrCache.set(asmsKey, rawList);
         this.processDueQuizzes();
       },
       error: () => {
-        this.rawAssessmentsList.set([]);
-        this.dueQuizzes.set([]);
+        if (!this.swrCache.has(asmsKey)) {
+          this.rawAssessmentsList.set([]);
+          this.dueQuizzes.set([]);
+        }
       }
     });
   }
@@ -670,15 +741,18 @@ export class StudentOverviewComponent implements OnInit {
           }
 
           this.leaderboard.set(mapped);
+          this.swrCache.set(`student_lb_${curriculum}_${gradeLevel}`, mapped);
         } else if (user) {
-          this.leaderboard.set([{
+          const fallback = [{
             rank: 1,
             studentId: user._id,
             studentName: user.full_name + ' (أنت)',
             haCode: currentCode,
             totalXp: user.total_xp ?? 0,
             isCurrentUser: true
-          }]);
+          }];
+          this.leaderboard.set(fallback);
+          this.swrCache.set(`student_lb_${curriculum}_${gradeLevel}`, fallback);
         }
       },
       error: () => {

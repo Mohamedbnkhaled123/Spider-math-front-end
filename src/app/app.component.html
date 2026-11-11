@@ -23,7 +23,12 @@
 
   <!-- Main View Container (min-h-screen keeps footer below the fold while route chunk mounts, eliminating CLS) -->
   <main class="flex-1 flex flex-col relative z-10 min-h-screen">
-    <router-outlet></router-outlet>
+    @if (isRouteNavigating()) {
+      <app-route-skeleton-loader [targetUrl]="navigatingUrl()" class="w-full"></app-route-skeleton-loader>
+    }
+    <div [class.hidden]="isRouteNavigating()" class="flex-1 flex flex-col">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 
   <!-- Unified Global Brand Footer (Deferred on Viewport) -->

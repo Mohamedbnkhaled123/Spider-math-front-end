@@ -14,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import {
   GradingMistake,
   PendingEssayGrading,
@@ -49,9 +50,11 @@ let submissionsMemoryCache: SubmissionsMemoryCacheEntry | null = null;
 export class InteractiveGradingStudioComponent implements OnInit {
   private readonly http = inject(HttpClient);
   readonly langService = inject(LangService);
+  private readonly swrCache = inject(SwrCacheService);
 
   // Inputs & Outputs
   readonly pendingSubmissions = input.required<PendingEssayGrading[]>();
+  readonly isLoading = input<boolean>(false);
   readonly gradingSubmitted = output<PendingEssayGrading>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
@@ -150,6 +153,13 @@ export class InteractiveGradingStudioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const cachedSubmissions = this.swrCache.get<AllQuizSubmissionItem[]>('admin_all_submissions');
+    const cachedStats = this.swrCache.get<QuizSubmissionStats>('admin_submission_stats');
+    if (cachedSubmissions && cachedSubmissions.length > 0) {
+      this.allSubmissions.set(cachedSubmissions);
+      if (cachedStats) this.submissionStats.set(cachedStats);
+      this.isLoadingSubmissions.set(false);
+    }
     this.fetchAllSubmissions();
   }
 
@@ -255,6 +265,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
         });
 
         this.allSubmissions.set(mapped);
+        this.swrCache.set('admin_all_submissions', mapped);
+        this.swrCache.set('admin_submission_stats', this.submissionStats());
         submissionsMemoryCache = {
           submissions: mapped,
           stats: this.submissionStats(),

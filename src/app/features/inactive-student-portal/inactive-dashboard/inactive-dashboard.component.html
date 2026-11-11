@@ -90,10 +90,16 @@
   <!-- ========================================================================= -->
   <!-- 2. Placement Exam Diagnostic Report Card                                  -->
   <!-- ========================================================================= -->
-  @if (isLoadingPlacement()) {
-    <div class="rounded-3xl border border-surface-border bg-surface-card p-8 shadow-card flex items-center justify-center gap-3 text-text-secondary text-xs sm:text-sm">
-      <app-icon name="refresh" [size]="20" className="animate-spin text-brand-primary" />
-      <span>{{ langService.isArabic() ? 'جاري جلب تقرير تحديد المستوى الأكاديمي...' : 'Loading Placement Assessment Report...' }}</span>
+  @if (isLoadingPlacement() && !placementReport()) {
+    <div class="rounded-3xl border border-surface-border bg-surface-card p-8 shadow-card flex items-center justify-between gap-6 animate-pulse">
+      <div class="flex items-center gap-4 flex-1">
+        <div class="skeleton-gold w-14 h-14 rounded-2xl shrink-0"></div>
+        <div class="space-y-2 flex-1">
+          <div class="skeleton-shimmer h-5 w-48 rounded-lg"></div>
+          <div class="skeleton-shimmer h-3 w-64 rounded-md opacity-60"></div>
+        </div>
+      </div>
+      <div class="skeleton-gold h-10 w-32 rounded-xl shrink-0"></div>
     </div>
   } @else if (placementReport(); as rep) {
     <div class="spider-rim-glass-card rounded-3xl p-6 sm:p-8 shadow-card relative overflow-hidden animate-fade-in">
@@ -267,10 +273,24 @@
       </div>
     </div>
 
-    @if (isLoadingUnits()) {
-      <div class="p-12 text-center text-xs text-text-muted">
-        <app-icon name="refresh" [size]="24" className="animate-spin mx-auto mb-2 text-brand-primary" />
-        <p>{{ langService.isArabic() ? 'جاري تحميل باقات الوحدات الدراسية...' : 'Loading unit packages...' }}</p>
+    @if (isLoadingUnits() && unitPackages().length === 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="spider-rim-glass-card rounded-3xl p-6 sm:p-7 shadow-card space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="skeleton-gold h-12 w-12 rounded-2xl"></div>
+              <div class="skeleton-shimmer h-6 w-20 rounded-full"></div>
+            </div>
+            <div class="space-y-2">
+              <div class="skeleton-shimmer h-6 w-3/4 rounded-lg"></div>
+              <div class="skeleton-shimmer h-4 w-full rounded-md opacity-60"></div>
+            </div>
+            <div class="pt-4 border-t border-surface-border flex items-center justify-between">
+              <div class="skeleton-shimmer h-5 w-24 rounded-md"></div>
+              <div class="skeleton-gold h-10 w-28 rounded-xl"></div>
+            </div>
+          </div>
+        }
       </div>
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

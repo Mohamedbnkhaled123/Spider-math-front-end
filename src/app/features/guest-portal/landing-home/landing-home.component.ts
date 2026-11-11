@@ -42,6 +42,7 @@ import {
   isUnitContentEmpty
 } from '../../../core/utils/unit-math-art.util';
 import { TestimonialsService, TestimonialItem } from '../../../core/services/testimonials.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 @Component({
   selector: 'app-landing-home',
   standalone: true,
@@ -68,6 +69,7 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
   private readonly testimonialsService = inject(TestimonialsService);
+  private readonly swrCache = inject(SwrCacheService);
   private testimonialsObserver?: IntersectionObserver;
   private hasRequestedTestimonials = false;
 
@@ -780,21 +782,32 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadStudentUnits(): void {
-    this.isLoadingStudentUnits.set(true);
+    const cacheKey = `pub_units_${this.selectedCurriculum()}|${this.selectedGradeLevel()}|${this.selectedTerm()}|`;
+    const cached = this.swrCache.get<any[]>(cacheKey);
+    if (cached && cached.length > 0) {
+      this.studentUnits.set(cached);
+      this.isLoadingStudentUnits.set(false);
+    } else {
+      this.isLoadingStudentUnits.set(true);
+    }
+
     this.discoveryService.getUnitsCatalog(
       this.selectedCurriculum(),
       this.selectedGradeLevel(),
       this.selectedTerm()
     ).subscribe({
       next: units => {
-        this.studentUnits.set(units || []);
+        const list = units || [];
+        this.studentUnits.set(list);
+        this.swrCache.set(cacheKey, list);
         this.isLoadingStudentUnits.set(false);
       },
       error: () => {
-        this.studentUnits.set([]);
+        if (!this.swrCache.has(cacheKey)) {
+          this.studentUnits.set([]);
+        }
         this.isLoadingStudentUnits.set(false);
       }
-
     });
   }
 

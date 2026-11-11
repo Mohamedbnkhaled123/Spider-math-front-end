@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.route-skeleton-container {
+  min-height: 70vh;
+}
+
+@keyframes skeletonPulseShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(52, 39, 69, 0.45) 0%,
+    rgba(80, 58, 107, 0.75) 50%,
+    rgba(52, 39, 69, 0.45) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.skeleton-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 106, 0.12) 0%,
+    rgba(212, 175, 106, 0.32) 50%,
+    rgba(212, 175, 106, 0.12) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

@@ -90,9 +90,13 @@
               <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'أجهزة بانتظار الاعتماد' : 'Pending Device Approvals' }}</span>
-                  <span class="text-2xl font-black text-amber-500 font-mono mt-1 block">
-                    {{ analyticsSnapshot().pendingDevicesCount }}
-                  </span>
+                  @if (isLoading() && analyticsSnapshot().pendingDevicesCount === 0) {
+                    <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
+                  } @else {
+                    <span class="text-2xl font-black text-amber-500 font-mono mt-1 block">
+                      {{ analyticsSnapshot().pendingDevicesCount }}
+                    </span>
+                  }
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                   <app-icon name="lock" [size]="20" />
@@ -103,9 +107,13 @@
               <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'امتحانات بانتظار التصحيح' : 'Assessments Awaiting Grading' }}</span>
-                  <span class="text-2xl font-black text-gold-accent font-mono mt-1 block">
-                    {{ analyticsSnapshot().pendingGradingCount }}
-                  </span>
+                  @if (isLoading() && analyticsSnapshot().pendingGradingCount === 0) {
+                    <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
+                  } @else {
+                    <span class="text-2xl font-black text-gold-accent font-mono mt-1 block">
+                      {{ analyticsSnapshot().pendingGradingCount }}
+                    </span>
+                  }
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
                   <app-icon name="file-text" [size]="20" />
@@ -116,9 +124,13 @@
               <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'إجمالي الطلاب المسجلين' : 'Total Registered Students' }}</span>
-                  <span class="text-2xl font-black text-emerald-500 font-mono mt-1 block">
-                    {{ analyticsSnapshot().registeredStudents }}
-                  </span>
+                  @if (isLoading() && analyticsSnapshot().registeredStudents === 0) {
+                    <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
+                  } @else {
+                    <span class="text-2xl font-black text-emerald-500 font-mono mt-1 block">
+                      {{ analyticsSnapshot().registeredStudents }}
+                    </span>
+                  }
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                   <app-icon name="user" [size]="20" />
@@ -129,9 +141,13 @@
               <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
                 <div>
                   <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'العملاء والزوار الجدد' : 'New Leads' }}</span>
-                  <span class="text-2xl font-black text-brand-secondary font-mono mt-1 block">
-                    {{ analyticsSnapshot().newLeadsCount }}
-                  </span>
+                  @if (isLoading() && analyticsSnapshot().newLeadsCount === 0) {
+                    <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
+                  } @else {
+                    <span class="text-2xl font-black text-brand-secondary font-mono mt-1 block">
+                      {{ analyticsSnapshot().newLeadsCount }}
+                    </span>
+                  }
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center">
                   <app-icon name="target" [size]="20" />
@@ -202,6 +218,7 @@
             [selectedCurriculum]="selectedCurriculum()"
             [selectedGrade]="selectedGrade()"
             [selectedTerm]="selectedTerm()"
+            [isLoading]="isLoading()"
             (curriculumChange)="onCurriculumChanged($event)"
             (gradeChange)="onGradeChanged($event)"
             (termChange)="onTermChanged($event)"
@@ -224,6 +241,7 @@
         @case ('grading') {
           <app-interactive-grading-studio
             [pendingSubmissions]="pendingGrading()"
+            [isLoading]="isLoading()"
             (gradingSubmitted)="onGradingSubmitted($event)"
             (toastTriggered)="showToast($event.text, $event.type)"
           />
@@ -235,6 +253,7 @@
             [studentsList]="studentsList()"
             [pendingDevices]="pendingDevices()"
             [availableUnits]="unitsList()"
+            [isLoading]="isLoading()"
             (studentUpdated)="onStudentUpdated($event)"
             (deviceApproved)="onDeviceApproved($event)"
             (deviceRejected)="onDeviceRejected($event)"
@@ -247,6 +266,7 @@
           <app-leads-and-landing-cms
             [leadsList]="leadsList()"
             [cmsConfig]="cmsConfig()"
+            [isLoading]="isLoading()"
             (leadStatusUpdated)="onLeadStatusUpdated($event)"
             (cmsConfigSaved)="onCmsConfigSaved($event)"
             (toastTriggered)="showToast($event.text, $event.type)"

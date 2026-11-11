@@ -203,9 +203,23 @@
     </div>
 
     @if (isLoading()) {
-      <div class="p-12 text-center rounded-3xl border border-surface-border bg-surface-card space-y-3">
-        <app-icon name="loader" [size]="28" className="animate-spin text-brand-primary mx-auto" />
-        <p class="text-xs text-text-muted">{{ langService.isArabic() ? 'جارٍ تحميل بنك الامتحانات المخصصة...' : 'Loading scoped assessments bank...' }}</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="p-5 rounded-3xl spider-rim-glass-card border border-surface-border space-y-4 animate-pulse">
+            <div class="flex items-center justify-between">
+              <div class="skeleton-shimmer h-5 w-16 rounded-full"></div>
+              <div class="skeleton-gold h-5 w-20 rounded-full"></div>
+            </div>
+            <div class="space-y-2">
+              <div class="skeleton-shimmer h-6 w-3/4 rounded-lg"></div>
+              <div class="skeleton-shimmer h-4 w-1/2 rounded-md opacity-60"></div>
+            </div>
+            <div class="pt-3 border-t border-surface-border flex items-center justify-between">
+              <div class="skeleton-shimmer h-8 w-24 rounded-xl"></div>
+              <div class="skeleton-gold h-8 w-24 rounded-xl"></div>
+            </div>
+          </div>
+        }
       </div>
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

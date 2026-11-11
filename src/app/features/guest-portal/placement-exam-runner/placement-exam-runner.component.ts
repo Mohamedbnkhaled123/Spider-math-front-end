@@ -31,6 +31,7 @@ import {
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 
 @Component({
   selector: 'app-placement-exam-runner',
@@ -55,6 +56,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
   readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly swrCache = inject(SwrCacheService);
 
   readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
 
@@ -200,12 +202,23 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   loadExam(): void {
-    this.isLoading.set(true);
+    const cacheKey = `pub_placement_${this.curriculum()}_${this.gradeLevel()}_${this.term()}`;
+    const cached = this.swrCache.get<IPlacementTestResponse>(cacheKey);
+
     this.selectedAnswers.set({});
     this.currentQuestionIdx.set(0);
     this.studentExamFinished.set(false);
     this.studentFinalResult.set(null);
     this.clearTimer();
+
+    if (cached && cached.hasTest !== false && cached.questions && cached.questions.length > 0) {
+      this.examData.set(cached);
+      this.isLoading.set(false);
+      this.timeRemainingSec.set(cached.time_limit_minutes * 60);
+      this.startTimer();
+    } else {
+      this.isLoading.set(true);
+    }
 
     this.discoveryService.getPlacementTest(
       this.curriculum(),
@@ -215,23 +228,26 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
       next: data => {
         this.examData.set(data);
         this.isLoading.set(false);
-        if (data.hasTest !== false && data.questions && data.questions.length > 0) {
+        this.swrCache.set(cacheKey, data);
+        if (data.hasTest !== false && data.questions && data.questions.length > 0 && !this.timerInterval) {
           this.timeRemainingSec.set(data.time_limit_minutes * 60);
           this.startTimer();
         }
       },
       error: () => {
-        this.examData.set({
-          hasTest: false,
-          assessment_id: '',
-          title: `امتحان تحديد المستوى`,
-          curriculum: this.curriculum(),
-          grade_level: this.gradeLevel(),
-          academic_term: this.term(),
-          total_questions: 0,
-          time_limit_minutes: 15,
-          questions: []
-        });
+        if (!this.swrCache.has(cacheKey)) {
+          this.examData.set({
+            hasTest: false,
+            assessment_id: '',
+            title: `امتحان تحديد المستوى`,
+            curriculum: this.curriculum(),
+            grade_level: this.gradeLevel(),
+            academic_term: this.term(),
+            total_questions: 0,
+            time_limit_minutes: 15,
+            questions: []
+          });
+        }
         this.isLoading.set(false);
       }
     });

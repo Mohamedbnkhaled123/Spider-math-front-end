@@ -43,6 +43,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly studentsList = input.required<StudentAdminSummary[]>();
   readonly pendingDevices = input.required<PendingDeviceRequest[]>();
   readonly availableUnits = input<any[]>([]);
+  readonly isLoading = input<boolean>(false);
 
   // Outputs
   readonly studentUpdated = output<StudentAdminSummary>();

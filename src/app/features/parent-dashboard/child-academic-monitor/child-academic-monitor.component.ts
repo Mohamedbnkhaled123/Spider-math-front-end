@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { ChildAcademicReport } from './child-academic-monitor.models';
 
 /**
@@ -24,6 +25,7 @@ export class ChildAcademicMonitorComponent {
 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  private readonly swrCache = inject(SwrCacheService);
   private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
 
@@ -43,13 +45,22 @@ export class ChildAcademicMonitorComponent {
   }
 
   fetchAcademicReport(studentId: string): void {
-    this.isLoading.set(true);
+    const cacheKey = `child_report_${studentId}`;
+    const cached = this.swrCache.get<ChildAcademicReport>(cacheKey);
+    if (cached) {
+      this.report.set(cached);
+      this.isLoading.set(false);
+    } else {
+      this.isLoading.set(true);
+    }
 
     this.http.get<{ success?: boolean; data?: any } | any>(`/api/v1/parent/child/${studentId}/full-report`).subscribe({
       next: (res) => {
         const data = res?.data || res;
         if (!data) {
-          this.report.set(null);
+          if (!this.swrCache.has(cacheKey)) {
+            this.report.set(null);
+          }
           this.isLoading.set(false);
           return;
         }
@@ -115,10 +126,13 @@ export class ChildAcademicMonitorComponent {
         };
 
         this.report.set(mappedReport);
+        this.swrCache.set(cacheKey, mappedReport);
         this.isLoading.set(false);
       },
       error: () => {
-        this.report.set(null);
+        if (!this.swrCache.has(cacheKey)) {
+          this.report.set(null);
+        }
         this.isLoading.set(false);
       }
     });

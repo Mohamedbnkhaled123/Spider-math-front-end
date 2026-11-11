@@ -19,6 +19,7 @@ import { ConfirmDialogService } from '../../../core/services/confirm-dialog.serv
 import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
 import { IPlaybackProgress } from '../../../shared/components/protected-youtube-player/protected-youtube-player.models';
 import { getUnitMathTheme } from '../../../core/utils/unit-math-art.util';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -52,6 +53,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
   readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly swrCache = inject(SwrCacheService);
 
   // Active view tab: video lecture or PDF handout
   readonly activeTab = signal<'video' | 'pdf'>('video');
@@ -98,7 +100,22 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   }
 
   loadUnitCurriculum(unitId: string): void {
-    this.isLoading.set(true);
+    const cacheKey = `unit_contents_${unitId}`;
+    const cached = this.swrCache.get<UnitWorkspaceData>(cacheKey);
+    if (cached) {
+      this.workspaceData.set(cached);
+      this.isLoading.set(false);
+      if (cached.lectures?.length > 0) {
+        const first = cached.lectures[0];
+        this.selectedLectureId.set(first._id);
+        if (first.encryptedVideoId) {
+          this.playbackToken.set(first.encryptedVideoId);
+        }
+      }
+    } else {
+      this.isLoading.set(true);
+    }
+
     this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${unitId}/curriculum-contents`).subscribe({
       next: (res) => {
         this.isLoading.set(false);
@@ -139,7 +156,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           studentAttemptStatus: a.studentAttemptStatus
         }));
 
-        this.workspaceData.set({
+        const freshWorkspace: UnitWorkspaceData = {
           unitId: unit?._id || unitId,
           titleAr: unit?.title_ar || '',
           titleEn: unit?.title_en || '',
@@ -150,9 +167,11 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           accessScope,
           lectures: mappedLectures,
           assessments: mappedAssessments
-        });
+        };
+        this.workspaceData.set(freshWorkspace);
+        this.swrCache.set(cacheKey, freshWorkspace);
 
-        if (mappedLectures.length > 0) {
+        if (mappedLectures.length > 0 && !this.selectedLectureId()) {
           const first = mappedLectures[0];
           this.selectedLectureId.set(first._id);
           if (first.isAccessible !== false) {

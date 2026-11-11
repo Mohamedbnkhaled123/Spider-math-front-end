@@ -9,9 +9,13 @@
           {{ langService.isArabic() ? 'طابور الموافقة التراكمية على الأجهزة' : 'Device Approval Queue' }}
         </h3>
       </div>
-      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">
-        {{ pendingDevices().length }} {{ langService.isArabic() ? 'بانتظار الاعتماد' : 'Pending Approval' }}
-      </span>
+      @if (isLoading() && pendingDevices().length === 0) {
+        <span class="inline-block skeleton-gold h-4 w-24 rounded-full"></span>
+      } @else {
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">
+          {{ pendingDevices().length }} {{ langService.isArabic() ? 'بانتظار الاعتماد' : 'Pending Approval' }}
+        </span>
+      }
     </div>
 
     <div class="space-y-2.5">
@@ -49,9 +53,16 @@
           </div>
         </div>
       } @empty {
-        <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
-          {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.' : 'No pending device requests — all devices approved and secured.' }}
-        </div>
+        @if (isLoading()) {
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border space-y-2 animate-pulse">
+            <div class="skeleton-shimmer h-4 w-48 rounded-md"></div>
+            <div class="skeleton-gold h-3 w-32 rounded-md"></div>
+          </div>
+        } @else {
+          <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
+            {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.' : 'No pending device requests — all devices approved and secured.' }}
+          </div>
+        }
       }
     </div>
   </div>
@@ -115,9 +126,13 @@
       >
         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
         <span>{{ langService.isArabic() ? 'طلاب باشتراك نشط' : 'Active Students' }}</span>
-        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'ACTIVE_STUDENTS'">
-          {{ userCounts().activeStudents }}
-        </span>
+        @if (isLoading() && studentsList().length === 0) {
+          <span class="skeleton-shimmer h-4 w-6 rounded-full inline-block"></span>
+        } @else {
+          <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'ACTIVE_STUDENTS'">
+            {{ userCounts().activeStudents }}
+          </span>
+        }
       </button>
 
       <button
@@ -133,9 +148,13 @@
       >
         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
         <span>{{ langService.isArabic() ? 'طلاب غير مشتركين' : 'Inactive Students' }}</span>
-        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'INACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'INACTIVE_STUDENTS'">
-          {{ userCounts().inactiveStudents }}
-        </span>
+        @if (isLoading() && studentsList().length === 0) {
+          <span class="skeleton-shimmer h-4 w-6 rounded-full inline-block"></span>
+        } @else {
+          <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'INACTIVE_STUDENTS'" [class.bg-surface-bg]="activeCategory() !== 'INACTIVE_STUDENTS'">
+            {{ userCounts().inactiveStudents }}
+          </span>
+        }
       </button>
 
       <button
@@ -151,9 +170,13 @@
       >
         <span class="w-2 h-2 rounded-full bg-teal-400"></span>
         <span>{{ langService.isArabic() ? 'أولياء الأمور' : 'Parents' }}</span>
-        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'PARENTS'" [class.bg-surface-bg]="activeCategory() !== 'PARENTS'">
-          {{ userCounts().parents }}
-        </span>
+        @if (isLoading() && studentsList().length === 0) {
+          <span class="skeleton-shimmer h-4 w-6 rounded-full inline-block"></span>
+        } @else {
+          <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'PARENTS'" [class.bg-surface-bg]="activeCategory() !== 'PARENTS'">
+            {{ userCounts().parents }}
+          </span>
+        }
       </button>
     </div>
 
@@ -317,11 +340,25 @@
               </td>
             </tr>
           } @empty {
-            <tr>
-              <td colspan="7" class="p-8 text-center text-xs text-text-muted">
-                {{ langService.isArabic() ? 'لا توجد نتائج مطابقة لبحثك.' : 'No results found matching your search.' }}
-              </td>
-            </tr>
+            @if (isLoading()) {
+              @for (row of [1, 2, 3, 4, 5]; track row) {
+                <tr class="animate-pulse">
+                  <td class="p-4"><div class="skeleton-shimmer h-4 w-32 rounded-lg"></div></td>
+                  <td class="p-4"><div class="skeleton-shimmer h-4 w-20 rounded-lg"></div></td>
+                  <td class="p-4"><div class="skeleton-shimmer h-4 w-28 rounded-lg"></div></td>
+                  <td class="p-4"><div class="skeleton-gold h-4 w-16 rounded-full"></div></td>
+                  <td class="p-4"><div class="skeleton-shimmer h-4 w-12 rounded-lg"></div></td>
+                  <td class="p-4"><div class="skeleton-shimmer h-4 w-16 rounded-lg"></div></td>
+                  <td class="p-4"><div class="skeleton-gold h-8 w-24 rounded-xl"></div></td>
+                </tr>
+              }
+            } @else {
+              <tr>
+                <td colspan="7" class="p-8 text-center text-xs text-text-muted">
+                  {{ langService.isArabic() ? 'لا توجد نتائج مطابقة لبحثك.' : 'No results found matching your search.' }}
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
@@ -499,9 +536,22 @@
 
         </div>
       } @empty {
-        <div class="p-8 text-center text-xs text-text-muted rounded-2xl border border-surface-border bg-surface-card">
-          {{ langService.isArabic() ? 'لا توجد نتائج مطابقة لبحثك.' : 'No results found matching your search.' }}
-        </div>
+        @if (isLoading()) {
+          @for (card of [1, 2, 3]; track card) {
+            <div class="p-5 rounded-2xl border border-surface-border bg-surface-card space-y-3 animate-pulse">
+              <div class="flex items-center justify-between">
+                <div class="skeleton-shimmer h-5 w-32 rounded-lg"></div>
+                <div class="skeleton-gold h-5 w-16 rounded-full"></div>
+              </div>
+              <div class="skeleton-shimmer h-4 w-48 rounded-lg opacity-75"></div>
+              <div class="skeleton-shimmer h-8 w-full rounded-xl"></div>
+            </div>
+          }
+        } @else {
+          <div class="p-8 text-center text-xs text-text-muted rounded-2xl border border-surface-border bg-surface-card">
+            {{ langService.isArabic() ? 'لا توجد نتائج مطابقة لبحثك.' : 'No results found matching your search.' }}
+          </div>
+        }
       }
     </div>
 

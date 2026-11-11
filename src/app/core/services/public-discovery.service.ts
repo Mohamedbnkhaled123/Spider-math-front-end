@@ -23,17 +23,22 @@ import {
   AcademicTermCode
 } from '../constants/curriculum-tree.constant';
 import { optimizeCloudinaryUrl } from '../../shared/utils/box2d-cropper.util';
+import { SwrCacheService } from './swr-cache.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PublicDiscoveryService {
   private readonly http = inject(HttpClient);
+  private readonly swrCache = inject(SwrCacheService);
   private readonly apiBase = '/api/v1';
 
   // Dynamic Reactive Signals for Active Grades and Curricula Tracks
-  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly activeGrades = signal<string[]>(
+    this.swrCache.get<{ activeGrades: string[] }>('public_active_grades_tracks')?.activeGrades || ['SEC_3']
+  );
   readonly curriculaTracks = signal<ICurriculumTrackItemData[]>(
+    this.swrCache.get<{ curriculaTracks: ICurriculumTrackItemData[] }>('public_active_grades_tracks')?.curriculaTracks ||
     CANONICAL_CURRICULUM_TREE.map(c => ({
       code: c.code as CurriculumCode,
       nameAr: c.titleAr,
@@ -44,7 +49,9 @@ export class PublicDiscoveryService {
       }))
     }))
   );
-  readonly isTracksLoaded = signal<boolean>(false);
+  readonly isTracksLoaded = signal<boolean>(
+    this.swrCache.has('public_active_grades_tracks')
+  );
 
   private curriculumTree$?: Observable<ICurriculumTreeItem[]>;
   private landingData$?: Observable<IPublicLandingData>;
@@ -94,6 +101,10 @@ export class PublicDiscoveryService {
    * flash and collapse when the production CMS returns `isAnnouncementActive: false`.
    */
   getDefaultLandingData(): IPublicLandingData {
+    const cached = this.swrCache.get<IPublicLandingData>('public_landing_data');
+    if (cached) {
+      return cached;
+    }
     return {
       ...this.getFallbackLandingData(),
       isAnnouncementActive: false
@@ -256,6 +267,8 @@ export class PublicDiscoveryService {
             this.curriculaTracks.set(data.curriculaTracks);
           }
           this.isTracksLoaded.set(true);
+          this.swrCache.set('public_landing_data', data);
+          this.swrCache.set('public_active_grades_tracks', { activeGrades: this.activeGrades(), curriculaTracks: this.curriculaTracks() });
           return data;
         }),
         catchError(() => {
@@ -285,6 +298,7 @@ export class PublicDiscoveryService {
             this.curriculaTracks.set(curriculaTracks);
           }
           this.isTracksLoaded.set(true);
+          this.swrCache.set('public_active_grades_tracks', { activeGrades, curriculaTracks });
           return { activeGrades, curriculaTracks };
         }),
         catchError(() => {
@@ -342,6 +356,7 @@ export class PublicDiscoveryService {
     gradeLevel: string,
     term: AcademicTermCode
   ): Observable<IPlacementTestResponse> {
+    const cacheKey = `pub_placement_${curriculum}_${gradeLevel}_${term}`;
     const params = new HttpParams()
       .set('curriculum', curriculum)
       .set('gradeLevel', gradeLevel)
@@ -354,7 +369,7 @@ export class PublicDiscoveryService {
       map(res => {
         const d = res?.data;
         if (!d || d.hasTest === false || !d.questions || d.questions.length === 0) {
-          return {
+          const emptyRes = {
             hasTest: false,
             assessment_id: '',
             title: d?.titleAr || d?.title || `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
@@ -365,8 +380,10 @@ export class PublicDiscoveryService {
             time_limit_minutes: 15,
             questions: []
           };
+          this.swrCache.set(cacheKey, emptyRes);
+          return emptyRes;
         }
-        return {
+        const parsedResult: IPlacementTestResponse = {
           hasTest: true,
           assessment_id: d.assessment_id || d.assessmentId || `placement_${curriculum}_${gradeLevel}`,
           title: d.title || d.titleAr || `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
@@ -392,18 +409,26 @@ export class PublicDiscoveryService {
             })
           }))
         };
+        this.swrCache.set(cacheKey, parsedResult);
+        return parsedResult;
       }),
-      catchError(() => of({
-        hasTest: false,
-        assessment_id: '',
-        title: `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
-        curriculum,
-        grade_level: gradeLevel,
-        academic_term: term,
-        total_questions: 0,
-        time_limit_minutes: 15,
-        questions: []
-      }))
+      catchError(() => {
+        const cached = this.swrCache.get<IPlacementTestResponse>(cacheKey);
+        if (cached) {
+          return of(cached);
+        }
+        return of({
+          hasTest: false,
+          assessment_id: '',
+          title: `امتحان تحديد المستوى — ${curriculum} (${gradeLevel})`,
+          curriculum,
+          grade_level: gradeLevel,
+          academic_term: term,
+          total_questions: 0,
+          time_limit_minutes: 15,
+          questions: []
+        });
+      })
     );
   }
 
@@ -430,9 +455,15 @@ export class PublicDiscoveryService {
       `${this.apiBase}/units`,
       { params }
     ).pipe(
-      map(res => res?.data || []),
+      map(res => {
+        const data = res?.data || [];
+        this.swrCache.set(`pub_units_${cacheKey}`, data);
+        return data;
+      }),
       catchError(() => {
         this.unitsCatalogCache.delete(cacheKey);
+        const persisted = this.swrCache.get<any[]>(`pub_units_${cacheKey}`);
+        if (persisted) return of(persisted);
         return of([]);
       }),
       shareReplay({ bufferSize: 1, refCount: false })

@@ -91,11 +91,61 @@
     .aspect-square{aspect-ratio:1/1}
     .aspect-video{aspect-ratio:16/9}
     .overflow-hidden{overflow:hidden}
+    @keyframes spiderInitialShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .spider-skel-shimmer{background:linear-gradient(90deg,rgba(52,39,69,0.45) 0%,rgba(80,58,107,0.75) 50%,rgba(52,39,69,0.45) 100%);background-size:200% 100%;animation:spiderInitialShimmer 1.8s cubic-bezier(0.4,0,0.2,1) infinite;}
+    .spider-skel-gold{background:linear-gradient(90deg,rgba(212,175,106,0.12) 0%,rgba(212,175,106,0.32) 50%,rgba(212,175,106,0.12) 100%);background-size:200% 100%;animation:spiderInitialShimmer 1.8s cubic-bezier(0.4,0,0.2,1) infinite;}
     @media(min-width:640px){.sm\:block{display:block}.sm\:hidden{display:none}.sm\:h-16{height:4rem}.sm\:w-10{width:2.5rem}.sm\:h-10{height:2.5rem}.sm\:max-w-\[440px\]{max-width:440px}}
     @media(min-width:1024px){.lg\:block{display:block}.lg\:hidden{display:none}.lg\:max-w-\[500px\]{max-width:500px}}
   </style>
 </head>
 <body class="bg-chalkboard-math-layer text-text-primary antialiased selection:bg-brand-primary selection:text-white min-h-screen">
-  <app-root></app-root>
+  <app-root>
+    <div class="spider-initial-route-skeleton" style="min-height: 100vh; display: flex; flex-direction: column; background: var(--surface-bg-primary, #2A1D37); color: #F8FAFC;">
+      <!-- Skeleton Top Header -->
+      <div style="height: 64px; border-bottom: 1px solid rgba(212,175,106,0.18); background: rgba(33,25,49,0.92); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="spider-skel-gold" style="width: 36px; height: 36px; border-radius: 10px;"></div>
+          <div class="spider-skel-shimmer" style="width: 130px; height: 18px; border-radius: 6px;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="spider-skel-shimmer" style="width: 70px; height: 14px; border-radius: 6px;"></div>
+          <div class="spider-skel-shimmer" style="width: 70px; height: 14px; border-radius: 6px;"></div>
+          <div class="spider-skel-gold" style="width: 90px; height: 32px; border-radius: 12px;"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton Main Canvas -->
+      <div style="flex: 1; max-width: 80rem; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Hero Banner Skeleton -->
+        <div style="padding: 2.5rem 1.5rem; border-radius: 1.5rem; background: rgba(42,29,55,0.78); border: 1px solid rgba(212,175,106,0.24); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+          <div class="spider-skel-gold" style="width: 140px; height: 22px; border-radius: 9999px;"></div>
+          <div class="spider-skel-shimmer" style="width: min(500px, 85%); height: 36px; border-radius: 10px;"></div>
+          <div class="spider-skel-shimmer" style="width: min(380px, 70%); height: 18px; border-radius: 8px; opacity: 0.75;"></div>
+        </div>
+
+        <!-- Content Grid Skeleton -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <div style="padding: 1.5rem; border-radius: 1.25rem; background: rgba(42,29,55,0.78); border: 1px solid rgba(212,175,106,0.2); display: flex; flex-direction: column; gap: 0.75rem;">
+            <div class="spider-skel-gold" style="width: 44px; height: 44px; border-radius: 12px;"></div>
+            <div class="spider-skel-shimmer" style="width: 75%; height: 20px; border-radius: 6px;"></div>
+            <div class="spider-skel-shimmer" style="width: 90%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+            <div class="spider-skel-shimmer" style="width: 60%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+          </div>
+          <div style="padding: 1.5rem; border-radius: 1.25rem; background: rgba(42,29,55,0.78); border: 1px solid rgba(212,175,106,0.2); display: flex; flex-direction: column; gap: 0.75rem;">
+            <div class="spider-skel-gold" style="width: 44px; height: 44px; border-radius: 12px;"></div>
+            <div class="spider-skel-shimmer" style="width: 75%; height: 20px; border-radius: 6px;"></div>
+            <div class="spider-skel-shimmer" style="width: 90%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+            <div class="spider-skel-shimmer" style="width: 60%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+          </div>
+          <div style="padding: 1.5rem; border-radius: 1.25rem; background: rgba(42,29,55,0.78); border: 1px solid rgba(212,175,106,0.2); display: flex; flex-direction: column; gap: 0.75rem;">
+            <div class="spider-skel-gold" style="width: 44px; height: 44px; border-radius: 12px;"></div>
+            <div class="spider-skel-shimmer" style="width: 75%; height: 20px; border-radius: 6px;"></div>
+            <div class="spider-skel-shimmer" style="width: 90%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+            <div class="spider-skel-shimmer" style="width: 60%; height: 14px; border-radius: 4px; opacity: 0.6;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-root>
 </body>
 </html>

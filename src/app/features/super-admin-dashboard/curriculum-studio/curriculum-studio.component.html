@@ -484,21 +484,41 @@
 
       </div>
     } @empty {
-      <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
-        <app-icon name="book-open" [size]="32" className="text-text-muted mx-auto" />
-        <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً' : 'No packages or units registered for this grade yet.' }}</h4>
-        <p class="text-xs text-text-secondary max-w-md mx-auto">
-          {{ langService.isArabic() ? 'يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.' : 'Create a new package instantly by clicking "Add New Unit" to attach lectures and exams.' }}
-        </p>
-        <button
-          type="button"
-          (click)="openCreateUnitModal()"
-          class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 cursor-pointer inline-flex items-center gap-1.5"
-        >
-          <app-icon name="plus" [size]="14" />
-          <span>{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</span>
-        </button>
-      </div>
+      @if (isLoading()) {
+        <div class="space-y-4">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="p-6 rounded-3xl spider-rim-glass-card border border-surface-border space-y-4 animate-pulse">
+              <div class="flex items-center justify-between">
+                <div class="skeleton-shimmer h-6 w-48 rounded-xl"></div>
+                <div class="skeleton-gold h-6 w-20 rounded-full"></div>
+              </div>
+              <div class="skeleton-shimmer h-4 w-3/4 rounded-lg opacity-75"></div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="skeleton-shimmer h-12 rounded-xl"></div>
+                <div class="skeleton-shimmer h-12 rounded-xl"></div>
+                <div class="skeleton-shimmer h-12 rounded-xl"></div>
+                <div class="skeleton-gold h-12 rounded-xl"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
+          <app-icon name="book-open" [size]="32" className="text-text-muted mx-auto" />
+          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً' : 'No packages or units registered for this grade yet.' }}</h4>
+          <p class="text-xs text-text-secondary max-w-md mx-auto">
+            {{ langService.isArabic() ? 'يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.' : 'Create a new package instantly by clicking "Add New Unit" to attach lectures and exams.' }}
+          </p>
+          <button
+            type="button"
+            (click)="openCreateUnitModal()"
+            class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-spider shadow-sm hover:opacity-95 cursor-pointer inline-flex items-center gap-1.5"
+          >
+            <app-icon name="plus" [size]="14" />
+            <span>{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</span>
+          </button>
+        </div>
+      }
     }
   </div>
 

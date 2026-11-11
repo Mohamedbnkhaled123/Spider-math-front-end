@@ -30,6 +30,7 @@ import {
 } from '../curriculum-studio/curriculum-studio.models';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -92,6 +93,7 @@ export class AssessmentStudioComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   readonly draftService = inject(AssessmentDraftService);
+  private readonly swrCache = inject(SwrCacheService);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
@@ -844,14 +846,24 @@ export class AssessmentStudioComponent implements OnInit {
       return;
     }
     const cacheKey = `${curr}_${gr}_${tm}`;
+    const persistentKey = `admin_asm_${cacheKey}`;
 
+    // Stale-While-Revalidate: Instant 0ms render from memory or localStorage
     if (!forceRefresh && ASSESSMENTS_MEMORY_CACHE.has(cacheKey)) {
       const cached = ASSESSMENTS_MEMORY_CACHE.get(cacheKey)!;
       this.assessmentsList.set(cached.items);
       this.isLoading.set(false);
-      // If cached less than 60 seconds ago, skip network request for 0ms instant display
       if (Date.now() - cached.timestamp < 60_000) {
         return;
+      }
+    } else if (!forceRefresh) {
+      const persisted = this.swrCache.get<AssessmentItem[]>(persistentKey);
+      if (persisted && persisted.length > 0) {
+        this.assessmentsList.set(persisted);
+        this.isLoading.set(false);
+        ASSESSMENTS_MEMORY_CACHE.set(cacheKey, { items: persisted, timestamp: Date.now() });
+      } else {
+        this.isLoading.set(true);
       }
     } else {
       this.isLoading.set(true);
@@ -916,6 +928,7 @@ export class AssessmentStudioComponent implements OnInit {
         });
         this.assessmentsList.set(items);
         ASSESSMENTS_MEMORY_CACHE.set(cacheKey, { items, timestamp: Date.now() });
+        this.swrCache.set(persistentKey, items);
         this.checkForPendingDrafts();
       },
       error: () => {

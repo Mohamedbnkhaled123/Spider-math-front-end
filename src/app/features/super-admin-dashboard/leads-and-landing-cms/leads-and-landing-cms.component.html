@@ -76,11 +76,25 @@
                 </td>
               </tr>
             } @empty {
-              <tr>
-                <td colspan="7" class="p-8 text-center text-xs text-text-muted">
-                  {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
-                </td>
-              </tr>
+              @if (isLoading()) {
+                @for (row of [1, 2, 3, 4]; track row) {
+                  <tr class="animate-pulse">
+                    <td class="p-4"><div class="skeleton-shimmer h-4 w-32 rounded-lg"></div></td>
+                    <td class="p-4"><div class="skeleton-shimmer h-4 w-28 rounded-lg"></div></td>
+                    <td class="p-4"><div class="skeleton-gold h-4 w-20 rounded-md"></div></td>
+                    <td class="p-4"><div class="skeleton-shimmer h-4 w-16 rounded-lg"></div></td>
+                    <td class="p-4"><div class="skeleton-gold h-4 w-16 rounded-full"></div></td>
+                    <td class="p-4"><div class="skeleton-shimmer h-4 w-24 rounded-lg"></div></td>
+                    <td class="p-4"><div class="skeleton-gold h-8 w-24 rounded-xl"></div></td>
+                  </tr>
+                }
+              } @else {
+                <tr>
+                  <td colspan="7" class="p-8 text-center text-xs text-text-muted">
+                    {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
@@ -149,9 +163,21 @@
             </div>
           </div>
         } @empty {
-          <div class="p-8 text-center text-xs text-text-muted rounded-2xl border border-surface-border bg-surface-card">
-            {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
-          </div>
+          @if (isLoading()) {
+            @for (card of [1, 2, 3]; track card) {
+              <div class="p-4 rounded-2xl border border-surface-border bg-surface-card space-y-3 animate-pulse">
+                <div class="flex items-center justify-between">
+                  <div class="skeleton-shimmer h-5 w-32 rounded-lg"></div>
+                  <div class="skeleton-gold h-5 w-16 rounded-full"></div>
+                </div>
+                <div class="skeleton-shimmer h-4 w-48 rounded-lg opacity-75"></div>
+              </div>
+            }
+          } @else {
+            <div class="p-8 text-center text-xs text-text-muted rounded-2xl border border-surface-border bg-surface-card">
+              {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
+            </div>
+          }
         }
       </div>
     </div>

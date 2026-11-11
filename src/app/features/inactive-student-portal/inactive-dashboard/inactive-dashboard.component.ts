@@ -26,6 +26,7 @@ import {
   getUnitMathTheme,
   isUnitContentEmpty
 } from '../../../core/utils/unit-math-art.util';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 
 @Component({
   selector: 'app-inactive-dashboard',
@@ -43,6 +44,7 @@ export class InactiveDashboardComponent implements OnInit {
   private readonly discoveryService = inject(PublicDiscoveryService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly swrCache = inject(SwrCacheService);
 
   // Dynamic Contact Channels from CMS
   readonly landingData = toSignal(this.discoveryService.getLandingData(), { initialValue: null });
@@ -170,20 +172,29 @@ export class InactiveDashboardComponent implements OnInit {
   }
 
   loadMyPlacementAttempt(): void {
-    this.isLoadingPlacement.set(true);
+    const cachedAttempt = this.swrCache.get<IPlacementReportSummary>('inactive_my_placement');
+    if (cachedAttempt) {
+      this.placementReport.set(cachedAttempt);
+      this.isLoadingPlacement.set(false);
+    } else {
+      this.isLoadingPlacement.set(true);
+    }
+
     this.http.get<{ success: boolean; data: any }>('/api/v1/public/placement-test/my-attempt').subscribe({
       next: (res) => {
         this.isLoadingPlacement.set(false);
         const attempt = res?.data;
         if (!attempt) {
-          this.placementReport.set(null);
+          if (!this.swrCache.has('inactive_my_placement')) {
+            this.placementReport.set(null);
+          }
           return;
         }
 
         const scorePct = attempt.scorePercentage ?? attempt.score_percentage ?? 0;
         const correct = attempt.correctCount ?? attempt.correct_count ?? Math.round(scorePct);
 
-        this.placementReport.set({
+        const summary: IPlacementReportSummary = {
           score: correct,
           percentage: scorePct,
           academicLevelBadgeAr: `${scorePct}%`,
@@ -192,11 +203,15 @@ export class InactiveDashboardComponent implements OnInit {
           weaknesses: [],
           teacherRecommendationAr: '',
           teacherRecommendationEn: ''
-        });
+        };
+        this.placementReport.set(summary);
+        this.swrCache.set('inactive_my_placement', summary);
       },
       error: () => {
         this.isLoadingPlacement.set(false);
-        this.placementReport.set(null);
+        if (!this.swrCache.has('inactive_my_placement')) {
+          this.placementReport.set(null);
+        }
       }
     });
   }
@@ -212,17 +227,30 @@ export class InactiveDashboardComponent implements OnInit {
   }
 
   loadUnitPackages(): void {
-    this.isLoadingUnits.set(true);
+    const unitsKey = `inactive_units_${this.curriculum()}_${this.gradeLevel()}_${this.term()}`;
+    const cachedUnits = this.swrCache.get<IUnitPackageItem[]>(unitsKey);
+    if (cachedUnits && cachedUnits.length > 0) {
+      this.unitPackages.set(cachedUnits);
+      this.isLoadingUnits.set(false);
+    } else {
+      this.isLoadingUnits.set(true);
+    }
+
     this.unitsService.getUnitsCatalog({
       curriculum: this.curriculum(),
       gradeLevel: this.gradeLevel(),
       ...(this.hasAcademicTerms() ? { term: this.term() } : {})
     }).subscribe({
       next: units => {
-        this.unitPackages.set(units);
+        const list = units || [];
+        this.unitPackages.set(list);
+        this.swrCache.set(unitsKey, list);
         this.isLoadingUnits.set(false);
       },
       error: () => {
+        if (!this.swrCache.has(unitsKey)) {
+          this.unitPackages.set([]);
+        }
         this.isLoadingUnits.set(false);
       }
     });

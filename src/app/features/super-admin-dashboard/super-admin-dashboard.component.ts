@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
+import { SwrCacheService } from '../../core/services/swr-cache.service';
 import { CurriculumCode, AcademicTermCode, CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../core/constants/curriculum-tree.constant';
 
 // Subcomponents Partitioned as per Phase 14
@@ -61,6 +62,7 @@ import {
 export class SuperAdminDashboardComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  private readonly swrCache = inject(SwrCacheService);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
@@ -155,6 +157,39 @@ export class SuperAdminDashboardComponent implements OnInit {
     } catch {}
 
     this.fetchActiveGrades(savedGrade);
+
+    // Hydrate persistent SWR cache immediately in 0ms (Cache-First)
+    const cachedActiveGrades = this.swrCache.get<string[]>('admin_active_grades');
+    if (cachedActiveGrades && cachedActiveGrades.length > 0) {
+      this.activeGrades.set(cachedActiveGrades);
+    }
+    const cachedStudents = this.swrCache.get<StudentAdminSummary[]>('admin_students_list');
+    if (cachedStudents && cachedStudents.length > 0) {
+      this.studentsList.set(cachedStudents);
+    }
+    const cachedDevices = this.swrCache.get<PendingDeviceRequest[]>('admin_pending_devices');
+    if (cachedDevices) {
+      this.pendingDevices.set(cachedDevices);
+    }
+    const cachedGrading = this.swrCache.get<PendingEssayGrading[]>('admin_pending_grading');
+    if (cachedGrading) {
+      this.pendingGrading.set(cachedGrading);
+    }
+    const cachedLeads = this.swrCache.get<LeadAdminItem[]>('admin_leads_list');
+    if (cachedLeads && cachedLeads.length > 0) {
+      this.leadsList.set(cachedLeads);
+    }
+    const cachedCms = this.swrCache.get<CmsConfigAdminItem>('admin_cms_config');
+    if (cachedCms) {
+      this.cmsConfig.set(cachedCms);
+    }
+    const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+    const cachedUnits = this.swrCache.get<UnitPackageAdminItem[]>(unitsKey);
+    if (cachedUnits && cachedUnits.length > 0) {
+      this.unitsList.set(cachedUnits);
+    }
+
+    // Silent background revalidation
     this.fetchRealAtlasData();
     this.fetchCurriculumUnits();
     this.fetchLeads();
@@ -167,6 +202,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         const active = res?.data?.activeGrades;
         if (Array.isArray(active) && active.length > 0) {
           this.activeGrades.set(active);
+          this.swrCache.set('admin_active_grades', active);
           if (!savedGrade) {
             const curr = this.selectedCurriculum();
             const track = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
@@ -183,7 +219,9 @@ export class SuperAdminDashboardComponent implements OnInit {
   // API Data Fetching Methods
   // =========================================================================
   fetchRealAtlasData(): void {
-    this.isLoading.set(true);
+    if (this.studentsList().length === 0) {
+      this.isLoading.set(true);
+    }
 
     // 1. Fetch Students (Strictly Student & Parent accounts, never Admin / Teacher)
     this.http.get<{ success: boolean; data: any[] }>('/api/v1/admin/users/students').subscribe({
@@ -230,6 +268,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             };
           });
           this.studentsList.set(mapped);
+          this.swrCache.set('admin_students_list', mapped);
         }
         this.isLoading.set(false);
       },
@@ -251,6 +290,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             status: d.pending_device_req?.status || 'PENDING'
           }));
           this.pendingDevices.set(mappedDevices);
+          this.swrCache.set('admin_pending_devices', mappedDevices);
         }
       }
     });
@@ -282,6 +322,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             submittedAt: new Date(s.createdAt).toLocaleTimeString('ar-EG')
           }));
           this.pendingGrading.set(mappedSubmissions);
+          this.swrCache.set('admin_pending_grading', mappedSubmissions);
         } else {
           this.pendingGrading.set([]);
         }
@@ -296,6 +337,11 @@ export class SuperAdminDashboardComponent implements OnInit {
     }
     const termQuery = curriculumHasTerms(this.selectedCurriculum()) ? `&term=${this.selectedTerm()}` : '';
     const params = `curriculum=${this.selectedCurriculum()}&gradeLevel=${this.selectedGrade()}${termQuery}`;
+    const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+    const cached = this.swrCache.get<UnitPackageAdminItem[]>(unitsKey);
+    if (cached && cached.length > 0) {
+      this.unitsList.set(cached);
+    }
     this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?${params}`).subscribe({
       next: (res) => {
         if (res?.data && Array.isArray(res.data)) {
@@ -313,6 +359,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             assessments: []
           }));
           this.unitsList.set(mapped);
+          this.swrCache.set(unitsKey, mapped);
 
           // Hydrate curriculum contents
           mapped.forEach((unit) => {
@@ -362,6 +409,7 @@ export class SuperAdminDashboardComponent implements OnInit {
                         : item
                     )
                   );
+                  this.swrCache.set(unitsKey, this.unitsList());
                 }
               }
             });
@@ -394,6 +442,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             createdAt: new Date(l.createdAt || Date.now()).toLocaleDateString('ar-EG')
           }));
           this.leadsList.set(mapped);
+          this.swrCache.set('admin_leads_list', mapped);
         } else {
           this.leadsList.set([]);
         }
@@ -509,6 +558,7 @@ export class SuperAdminDashboardComponent implements OnInit {
               ? raw.honorBoardList
               : (Array.isArray(raw.honor_board_list) ? raw.honor_board_list : (current.honorBoardList || []))
           });
+          this.swrCache.set('admin_cms_config', this.cmsConfig());
         }
       }
     });

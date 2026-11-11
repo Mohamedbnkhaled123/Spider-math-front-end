@@ -13,6 +13,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback-viewer.models';
 
 /**
@@ -40,6 +41,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
+  private readonly swrCache = inject(SwrCacheService);
 
   readonly isLoading = signal<boolean>(true);
   readonly loadError = signal<string | null>(null);
@@ -142,6 +144,11 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      const cached = this.swrCache.get<SubmissionFeedbackData>(`sub_feedback_${id}`);
+      if (cached) {
+        this.feedback.set(cached);
+        this.isLoading.set(false);
+      }
       this.fetchFeedback(id);
     } else {
       this.isLoading.set(false);
@@ -149,7 +156,10 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   }
 
   fetchFeedback(id: string): void {
-    this.isLoading.set(true);
+    const cacheKey = `sub_feedback_${id}`;
+    if (!this.swrCache.has(cacheKey)) {
+      this.isLoading.set(true);
+    }
     this.http.get<{ success?: boolean; data?: any }>(`/api/v1/assessments/submissions/${id}/feedback`).subscribe({
       next: (res) => {
         const data = res?.data || res;
@@ -203,6 +213,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
               sizeKb: img.sizeKb
             }))
           });
+          this.swrCache.set(cacheKey, this.feedback());
         }
         this.isLoading.set(false);
       },

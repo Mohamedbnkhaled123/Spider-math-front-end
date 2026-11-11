@@ -942,4 +942,53 @@ body:has(app-assessment-preview-modal) {
   transition: opacity 0.3s ease;
 }
 
+// ==============================================================================
+// Luxury Dark-Violet & Metallic Gold Skeleton Shimmer System
+// Eliminates blank canvas and zeroes flash on hard refresh and route transitions
+// ==============================================================================
+@keyframes skeletonPulseShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(52, 39, 69, 0.45) 0%,
+    rgba(80, 58, 107, 0.75) 50%,
+    rgba(52, 39, 69, 0.45) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  border-radius: 0.75rem;
+}
+
+.skeleton-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 106, 0.12) 0%,
+    rgba(212, 175, 106, 0.32) 50%,
+    rgba(212, 175, 106, 0.12) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  border-radius: 0.75rem;
+}
+
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    rgba(42, 29, 55, 0.6) 0%,
+    rgba(62, 43, 83, 0.85) 50%,
+    rgba(42, 29, 55, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulseShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+
 

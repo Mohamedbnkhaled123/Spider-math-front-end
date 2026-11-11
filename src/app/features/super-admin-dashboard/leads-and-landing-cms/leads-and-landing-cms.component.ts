@@ -45,6 +45,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   // Inputs
   readonly leadsList = input.required<LeadAdminItem[]>();
   readonly cmsConfig = input.required<CmsConfigAdminItem>();
+  readonly isLoading = input<boolean>(false);
 
   // Outputs
   readonly cmsConfigSaved = output<CmsConfigAdminItem>();

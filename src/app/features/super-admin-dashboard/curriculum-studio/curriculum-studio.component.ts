@@ -60,6 +60,7 @@ export class CurriculumStudioComponent implements OnInit {
   readonly selectedCurriculum = input.required<CurriculumCode>();
   readonly selectedGrade = input.required<string>();
   readonly selectedTerm = input.required<AcademicTermCode>();
+  readonly isLoading = input<boolean>(false);
 
   // Outputs
   readonly curriculumChange = output<CurriculumCode>();
