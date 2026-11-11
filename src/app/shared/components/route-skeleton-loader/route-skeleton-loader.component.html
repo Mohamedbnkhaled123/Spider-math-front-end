@@ -219,7 +219,119 @@
   }
 
   <!-- ========================================================================= -->
-  <!-- 5. GENERIC LUXURY PAGE / PUBLIC LANDING SKELETON ARCHETYPE                 -->
+  <!-- 5. HOME PAGE LUXURY ACADEMIC SKELETON ARCHETYPE (HERO + 4 CURRICULA)      -->
+  <!-- ========================================================================= -->
+  @else if (resolvedMode() === 'home') {
+    <div class="max-w-7xl mx-auto space-y-16 py-4 sm:py-8">
+
+      <!-- 1. Hero Section: Split 2-Column Academic Architecture (Exact Match) -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center pt-4 pb-10 lg:pt-8 lg:pb-16 border-b border-surface-border/40">
+        <!-- Left Column: 3-Line Large Academic Headline & CTAs (7 Cols) -->
+        <div class="lg:col-span-7 text-center lg:text-start space-y-6">
+          <!-- 3-Line Luxury Academic Headline -->
+          <div class="space-y-3">
+            <div class="skeleton-shimmer h-12 sm:h-16 lg:h-20 w-3/4 mx-auto lg:mx-0 rounded-2xl"></div>
+            <div class="skeleton-gold h-12 sm:h-16 lg:h-20 w-5/6 mx-auto lg:mx-0 rounded-2xl"></div>
+            <div class="skeleton-shimmer h-12 sm:h-16 lg:h-20 w-2/3 mx-auto lg:mx-0 rounded-2xl"></div>
+          </div>
+
+          <!-- Dynamic Subheadline Lines -->
+          <div class="space-y-2 max-w-2xl mx-auto lg:mx-0 pt-2">
+            <div class="skeleton-shimmer h-5 sm:h-6 w-full rounded-xl opacity-75"></div>
+            <div class="skeleton-shimmer h-4 sm:h-5 w-4/5 mx-auto lg:mx-0 rounded-lg opacity-60"></div>
+          </div>
+
+          <!-- Primary & Secondary CTAs Group -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
+            <div class="skeleton-gold h-12 sm:h-14 w-44 rounded-xl shadow-lg"></div>
+            <div class="skeleton-shimmer h-12 sm:h-14 w-44 rounded-xl border border-surface-border"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: 3D Mascot Character with Open Math Book Silhouette (5 Cols) -->
+        <div class="lg:col-span-5 flex justify-center items-center w-full">
+          <div class="relative w-full max-w-[340px] sm:max-w-[420px] aspect-square rounded-3xl p-8 flex flex-col items-center justify-center bg-surface-card/60 border border-brand-gold/25 shadow-glass overflow-hidden">
+            <div class="absolute inset-0 bg-radial from-brand-gold/10 via-transparent to-transparent pointer-events-none"></div>
+            <!-- Mascot Head & Glasses Silhouette -->
+            <div class="skeleton-gold w-40 h-40 sm:w-52 sm:h-52 rounded-full mb-4 opacity-70"></div>
+            <!-- Open Math Book Silhouette -->
+            <div class="skeleton-shimmer w-52 sm:w-64 h-14 rounded-2xl opacity-60"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Curricula Section: 4 Accredited Track Cards Grid (Exact Match) -->
+      <section class="space-y-10">
+        <!-- Section Header -->
+        <div class="text-center max-w-3xl mx-auto space-y-3">
+          <div class="skeleton-gold h-6 w-52 mx-auto rounded-full"></div>
+          <div class="skeleton-shimmer h-8 sm:h-10 w-96 max-w-full mx-auto rounded-xl"></div>
+          <div class="skeleton-shimmer h-4 w-80 max-w-full mx-auto rounded-lg opacity-60"></div>
+        </div>
+
+        <!-- Spider Guide Mascot Anchor Indicator -->
+        <div class="flex justify-center -mb-4">
+          <div class="skeleton-gold w-20 h-20 sm:w-28 sm:h-28 rounded-2xl opacity-35"></div>
+        </div>
+
+        <!-- 4 Curricula Desktop Cards (4 Columns on Desktop, 2 on Tablet, 1 on Mobile) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          @for (c of [1, 2, 3, 4]; track c) {
+            <div class="rounded-3xl p-7 bg-surface-card border border-surface-border shadow-glass min-h-[310px] flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-start justify-between gap-3 mb-4">
+                  <div class="skeleton-shimmer h-6 w-32 rounded-lg"></div>
+                  <div class="skeleton-gold h-8 w-8 rounded-xl shrink-0"></div>
+                </div>
+                <div class="space-y-2.5">
+                  <div class="skeleton-gold h-5 w-24 rounded-full"></div>
+                  <div class="skeleton-shimmer h-3.5 w-full rounded-md opacity-60"></div>
+                  <div class="skeleton-shimmer h-3.5 w-4/5 rounded-md opacity-60"></div>
+                </div>
+              </div>
+              <div class="pt-4 border-t border-surface-border/50">
+                <div class="skeleton-shimmer h-9 w-full rounded-xl"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- 3. Interactive Concept-First & Credentials Video Showcase -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center pt-8 border-t border-surface-border/40">
+        <!-- Left: Teacher Credentials Capsule -->
+        <div class="lg:col-span-6 space-y-5 text-center lg:text-start">
+          <div class="skeleton-shimmer h-8 sm:h-10 w-3/4 mx-auto lg:mx-0 rounded-xl"></div>
+          <div class="skeleton-shimmer h-4 w-full max-w-lg mx-auto lg:mx-0 rounded-md opacity-75"></div>
+          <div class="rounded-2xl p-6 bg-surface-card border border-surface-border space-y-4 shadow-glass text-start">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1.5">
+                <div class="skeleton-shimmer h-5 w-40 rounded-lg"></div>
+                <div class="skeleton-gold h-3.5 w-28 rounded-md"></div>
+              </div>
+              <div class="skeleton-gold h-10 w-10 rounded-xl shrink-0"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2">
+              <div class="skeleton-shimmer h-3 w-28 rounded-md opacity-60"></div>
+              <div class="skeleton-shimmer h-3 w-28 rounded-md opacity-60"></div>
+            </div>
+            <div class="skeleton-gold h-10 w-36 rounded-xl"></div>
+          </div>
+        </div>
+
+        <!-- Right: 16:9 Video Showcase Player -->
+        <div class="lg:col-span-6">
+          <div class="aspect-video w-full rounded-3xl bg-surface-card border border-surface-border shadow-glass skeleton-shimmer flex items-center justify-center">
+            <div class="skeleton-gold h-14 w-14 rounded-full opacity-60"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 6. GENERIC LUXURY PAGE SKELETON ARCHETYPE                                 -->
   <!-- ========================================================================= -->
   @else {
     <div class="max-w-7xl mx-auto space-y-8">

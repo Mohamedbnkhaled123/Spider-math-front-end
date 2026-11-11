@@ -15,7 +15,7 @@ export class RouteSkeletonLoaderComponent {
   private readonly platformId = inject(PLATFORM_ID);
 
   /** Explicit layout mode override if provided by caller */
-  readonly layoutMode = input<'auto' | 'admin' | 'student' | 'parent' | 'exam' | 'generic'>('auto');
+  readonly layoutMode = input<'auto' | 'home' | 'admin' | 'student' | 'parent' | 'exam' | 'generic'>('auto');
 
   /** Target URL being navigated to (provided by AppComponent during router events) */
   readonly targetUrl = input<string>('');
@@ -23,7 +23,7 @@ export class RouteSkeletonLoaderComponent {
   /**
    * Dynamically resolves the visual skeleton archetype matching the route
    */
-  readonly resolvedMode = computed<'admin' | 'student' | 'parent' | 'exam' | 'generic'>(() => {
+  readonly resolvedMode = computed<'home' | 'admin' | 'student' | 'parent' | 'exam' | 'generic'>(() => {
     const explicit = this.layoutMode();
     if (explicit !== 'auto') return explicit;
 
@@ -37,6 +37,7 @@ export class RouteSkeletonLoaderComponent {
     if (url.includes('/student') || url.includes('/inactive-student')) return 'student';
     if (url.includes('/parent')) return 'parent';
     if (url.includes('/placement-test') || url.includes('/assessments/') || url.includes('/attempt') || url.includes('/exam') || url.includes('/quiz')) return 'exam';
+    if (!url || url === '/' || url.startsWith('/?') || url.startsWith('/#')) return 'home';
     return 'generic';
   });
 }
