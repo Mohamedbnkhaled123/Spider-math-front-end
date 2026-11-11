@@ -63,6 +63,13 @@
         </button>
 
         <a
+          routerLink="/topics"
+          class="hover:text-brand-gold transition-colors flex items-center gap-1.5"
+        >
+          <span>{{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Index' }}</span>
+        </a>
+
+        <a
           routerLink="/placement-test"
           class="hover:text-brand-gold transition-colors flex items-center gap-1.5"
         >
@@ -356,6 +363,14 @@
           >
             {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
           </button>
+
+          <a
+            routerLink="/topics"
+            (click)="closeMobileMenu()"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
+          >
+            {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Index' }}
+          </a>
 
           <a
             routerLink="/placement-test"

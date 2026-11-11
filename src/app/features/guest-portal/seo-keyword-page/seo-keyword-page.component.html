@@ -1,0 +1,480 @@
+<div class="seo-keyword-page-root min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+  @if (keywordData(); as item) {
+    <!-- 1. Breadcrumbs Navigation -->
+    <nav class="flex items-center gap-2 text-xs sm:text-sm text-text-muted mb-6 sm:mb-8 flex-wrap" aria-label="Breadcrumb">
+      <a routerLink="/" class="hover:text-brand-gold transition-colors flex items-center gap-1.5">
+        <app-icon name="home" [size]="14" />
+        <span>{{ langService.isArabic() ? 'الرئيسية' : 'Home' }}</span>
+      </a>
+      <span class="text-text-muted/40">/</span>
+      <a routerLink="/topics" class="hover:text-brand-gold transition-colors">
+        {{ langService.isArabic() ? 'فهرس الموضوعات والمناهج' : 'Topics Directory' }}
+      </a>
+      <span class="text-text-muted/40">/</span>
+      <span class="text-brand-gold font-semibold truncate max-w-[220px] sm:max-w-md">
+        {{ langService.isArabic() ? item.keywordAr : item.keywordEn }}
+      </span>
+    </nav>
+
+    <!-- 2. Hero Section -->
+    <header class="spider-rim-glass-card p-6 sm:p-10 lg:p-12 mb-10 relative overflow-hidden">
+      <!-- Ambient Glow Highlights -->
+      <div class="absolute -top-24 -right-24 w-72 h-72 bg-brand-violet/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-brand-gold/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10">
+        <!-- Category & Language Bar -->
+        <div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-violet/15 border border-brand-violet/30 text-xs sm:text-sm font-semibold text-brand-gold">
+            <app-icon name="sparkles" [size]="14" />
+            <span>{{ langService.isArabic() ? item.categoryNameAr : item.categoryNameEn }}</span>
+            <span class="text-text-muted/60">•</span>
+            <span>{{ langService.isArabic() ? item.badgeAr : item.badgeEn }}</span>
+          </div>
+
+          <!-- Quick Share / Copy URL -->
+          <button
+            type="button"
+            (click)="copyPageUrl()"
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-card hover:bg-surface-secondary text-xs text-text-secondary border border-surface-border transition-colors cursor-pointer"
+            [title]="langService.isArabic() ? 'نسخ رابط الصفحة' : 'Copy page link'"
+          >
+            <app-icon name="copy" [size]="14" />
+            <span>{{ copiedToast() ? (langService.isArabic() ? 'تم النسخ!' : 'Copied!') : (langService.isArabic() ? 'مشاركة الرابط' : 'Share') }}</span>
+          </button>
+        </div>
+
+        <!-- H1 Main Headline -->
+        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-text-primary tracking-tight leading-tight mb-3">
+          {{ langService.isArabic() ? item.headlineAr : item.headlineEn }}
+        </h1>
+
+        <!-- Bilingual Keyword & Translation Bar -->
+        <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-surface-secondary/90 border border-brand-gold/30 text-xs sm:text-sm font-semibold mb-6 flex-wrap">
+          <span class="text-text-muted">{{ langService.isArabic() ? 'الكلمة المفتاحية:' : 'Primary Topic:' }}</span>
+          <span class="text-text-primary font-bold">{{ langService.isArabic() ? item.keywordAr : item.keywordEn }}</span>
+          <span class="text-brand-gold font-bold mx-1">⇄</span>
+          <span class="text-text-muted">{{ langService.isArabic() ? 'الترجمة المعتمدة:' : 'Translation:' }}</span>
+          <span class="text-brand-gold font-mono" [dir]="langService.isArabic() ? 'ltr' : 'rtl'">
+            {{ langService.isArabic() ? item.keywordEn : item.keywordAr }}
+          </span>
+        </div>
+
+        <!-- Subheadline -->
+        <p class="text-base sm:text-xl text-text-secondary font-medium leading-relaxed max-w-4xl mb-8">
+          {{ langService.isArabic() ? item.subheadlineAr : item.subheadlineEn }}
+        </p>
+
+        <!-- CTA Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+          <a
+            routerLink="/placement-test"
+            class="btn-gold-metallic py-3.5 px-7 text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-brand-glow"
+          >
+            <app-icon name="target" [size]="18" />
+            <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى مجاناً' : 'Free Placement Assessment' }}</span>
+          </a>
+
+          <a
+            [href]="getWhatsAppConsultationUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-ghost-academic py-3.5 px-6 text-sm sm:text-base font-semibold flex items-center justify-center gap-2.5"
+          >
+            <app-icon name="whatsapp" [size]="18" className="text-emerald-500" />
+            <span>{{ langService.isArabic() ? 'استشارة واتساب مع ميس هبة' : 'WhatsApp Consultation' }}</span>
+          </a>
+
+          <a
+            routerLink="/login"
+            class="inline-flex items-center justify-center py-3.5 px-5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-brand-gold transition-colors"
+          >
+            <span>{{ langService.isArabic() ? 'تسجيل الدخول للمنصة ←' : 'Sign in to Platform →' }}</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- 3. Two-Column Layout: Main Overview & Sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      <!-- Left (2 cols): Overview & Syllabus & Features -->
+      <div class="lg:col-span-2 space-y-8">
+
+        <!-- In-Depth Overview Card -->
+        <section class="spider-rim-glass-card p-6 sm:p-8">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 rounded-xl bg-brand-gold/15 flex items-center justify-center text-brand-gold">
+              <app-icon name="book-open" [size]="20" />
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
+              {{ langService.isArabic() ? 'نظرة عامة والمنهج الأكاديمي' : 'Academic Overview & Framework' }}
+            </h2>
+          </div>
+
+          <p class="text-sm sm:text-base text-text-secondary leading-relaxed mb-6 font-reading">
+            {{ langService.isArabic() ? item.overviewAr : item.overviewEn }}
+          </p>
+
+          <!-- Target Audience Box -->
+          <div class="p-4 rounded-xl bg-surface-secondary/70 border border-surface-border mb-6">
+            <div class="text-xs font-bold text-brand-gold uppercase tracking-wider mb-1">
+              {{ langService.isArabic() ? 'الفئة المستهدفة' : 'Target Audience' }}
+            </div>
+            <p class="text-xs sm:text-sm text-text-primary font-medium">
+              {{ langService.isArabic() ? item.targetAudienceAr : item.targetAudienceEn }}
+            </p>
+          </div>
+
+          <!-- Tags Cloud -->
+          <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-surface-border/50">
+            <span class="text-xs text-text-muted mr-1 font-semibold">
+              {{ langService.isArabic() ? 'الكلمات الدلالية:' : 'Tags:' }}
+            </span>
+            @for (tag of (langService.isArabic() ? item.tagsAr : item.tagsEn); track tag) {
+              <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-surface-primary text-[11px] font-medium text-text-secondary border border-surface-border">
+                #{{ tag }}
+              </span>
+            }
+          </div>
+        </section>
+
+        <!-- Specialized American Diploma Bilingual Terminology & Translation Table -->
+        @if (item.category === 'american_diploma') {
+          <section class="spider-rim-glass-card p-6 sm:p-8 bg-gradient-to-br from-brand-violet/25 via-surface-card to-brand-gold/15 border-brand-gold/30">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-9 h-9 rounded-xl bg-brand-gold/20 flex items-center justify-center text-brand-gold">
+                <app-icon name="sparkles" [size]="20" />
+              </div>
+              <div>
+                <h3 class="text-lg sm:text-xl font-bold text-text-primary">
+                  {{ langService.isArabic() ? 'دليل مصطلحات الدبلومة الأمريكية وترجمتها' : 'American Diploma Bilingual Terminology' }}
+                </h3>
+                <p class="text-xs text-text-muted">
+                  {{ langService.isArabic() ? 'أهم الكلمات المفتاحية باللغتين العربية والإنجليزية لطلاب SAT و EST و ACT' : 'Key test modules and strategic terms with dual English/Arabic translations' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">شرح SAT Math</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">Digital SAT Math Lessons</div>
+                </div>
+                <span class="text-xs text-emerald-400 font-semibold font-mono">Module 1 & 2</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">ازاي اجيب 800 في SAT Math</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">How to Score 800 in SAT Math</div>
+                </div>
+                <span class="text-xs text-brand-gold font-bold font-mono">800/800</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">شرح EST Math</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">EST Math Lessons (EST 1 & 2)</div>
+                </div>
+                <span class="text-xs text-emerald-400 font-semibold font-mono">Egyptian Univ.</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">شرح ACT Math</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">ACT Math Lessons (Speed Drills)</div>
+                </div>
+                <span class="text-xs text-brand-gold font-bold font-mono">60Q / 60Min</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">الفرق بين SAT و ACT و EST</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">SAT vs ACT vs EST Comparison</div>
+                </div>
+                <span class="text-xs text-text-muted font-mono">Standardized</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface-primary/70 border border-surface-border flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-text-primary">اسعار كورس ماث دبلومة امريكية</div>
+                  <div class="text-[11px] text-brand-gold font-mono" dir="ltr">American Diploma Course Pricing</div>
+                </div>
+                <span class="text-xs text-emerald-400 font-bold font-mono">Flexible Plans</span>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Features Grid -->
+        <section class="space-y-4">
+          <h2 class="text-xl sm:text-2xl font-bold text-text-primary flex items-center gap-2.5">
+            <app-icon name="award" [size]="22" className="text-brand-gold" />
+            <span>{{ langService.isArabic() ? 'مميزات هذا الكورس على سبايدر ماث' : 'Course Highlights & Methodology' }}</span>
+          </h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @for (feat of item.features; track feat.titleEn) {
+              <div class="spider-rim-glass-card p-5 flex flex-col justify-between">
+                <div>
+                  <div class="w-10 h-10 rounded-xl bg-brand-violet/20 flex items-center justify-center text-brand-gold mb-3">
+                    <app-icon [name]="$any(feat.icon)" [size]="20" />
+                  </div>
+                  <h3 class="text-base font-bold text-text-primary mb-1.5">
+                    {{ langService.isArabic() ? feat.titleAr : feat.titleEn }}
+                  </h3>
+                  <p class="text-xs sm:text-sm text-text-secondary leading-normal">
+                    {{ langService.isArabic() ? feat.descAr : feat.descEn }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- Syllabus Breakdown -->
+        <section class="spider-rim-glass-card p-6 sm:p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl bg-brand-violet/20 flex items-center justify-center text-brand-gold">
+              <app-icon name="file-text" [size]="20" />
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
+              {{ langService.isArabic() ? 'محتوى الوحدات والدروس' : 'Curriculum Units & Syllabus' }}
+            </h2>
+          </div>
+
+          <div class="space-y-4">
+            @for (s of item.syllabus; track s.titleEn; let idx = $index) {
+              <div class="p-4 rounded-xl bg-surface-secondary/60 border border-surface-border hover:border-brand-gold/40 transition-colors">
+                <div class="flex items-start gap-3">
+                  <div class="w-7 h-7 rounded-full bg-brand-gold/15 text-brand-gold text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 font-numeric">
+                    0{{ idx + 1 }}
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-sm sm:text-base font-bold text-text-primary mb-1">
+                      {{ langService.isArabic() ? s.titleAr : s.titleEn }}
+                    </h3>
+                    <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+                      {{ langService.isArabic() ? s.detailsAr : s.detailsEn }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- FAQs Accordion -->
+        @if (item.faqs && item.faqs.length > 0) {
+          <section class="spider-rim-glass-card p-6 sm:p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-9 h-9 rounded-xl bg-brand-gold/15 flex items-center justify-center text-brand-gold">
+                <app-icon name="message-circle" [size]="20" />
+              </div>
+              <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
+                {{ langService.isArabic() ? 'الأسئلة الشائعة حول هذا الموضوع' : 'Frequently Asked Questions' }}
+              </h2>
+            </div>
+
+            <div class="space-y-3">
+              @for (faq of item.faqs; track faq.questionEn; let idx = $index) {
+                <div class="rounded-xl border border-surface-border overflow-hidden bg-surface-secondary/40 transition-colors">
+                  <button
+                    type="button"
+                    (click)="toggleFaq(idx)"
+                    class="w-full p-4 text-start flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-text-primary hover:text-brand-gold transition-colors cursor-pointer"
+                  >
+                    <span>{{ langService.isArabic() ? faq.questionAr : faq.questionEn }}</span>
+                    <app-icon
+                      [name]="activeFaqIndex() === idx ? 'chevron-up' : 'chevron-down'"
+                      [size]="18"
+                      className="shrink-0 text-brand-gold"
+                    />
+                  </button>
+
+                  @if (activeFaqIndex() === idx) {
+                    <div class="px-4 pb-4 pt-1 text-xs sm:text-sm text-text-secondary leading-relaxed border-t border-surface-border/40 font-reading">
+                      {{ langService.isArabic() ? faq.answerAr : faq.answerEn }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+      </div>
+
+      <!-- Right (1 col): Teacher Profile & Action Widgets -->
+      <aside class="space-y-6">
+
+        <!-- Teacher Bio Card -->
+        <div class="spider-rim-glass-card p-6 relative overflow-hidden">
+          <div class="text-center pb-5 border-b border-surface-border">
+            <div class="w-20 h-20 mx-auto rounded-full p-1 bg-gradient-to-tr from-brand-gold to-brand-violet shadow-brand-glow mb-3">
+              <img
+                src="/assets/branding/spider-mascot-nav-v3.webp?v=5"
+                alt="Eng. Heba Abdel-Wahab"
+                class="w-full h-full object-contain rounded-full bg-surface-primary p-2"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <h3 class="text-lg font-bold text-text-primary">
+              {{ langService.isArabic() ? 'المهندسة / هبة عبدالوهاب' : 'Eng. Heba Abdel-Wahab' }}
+            </h3>
+            <div class="text-xs text-brand-gold font-semibold mt-0.5">
+              {{ langService.isArabic() ? 'ميس هبة عياد — خبيرة تدريس الرياضيات' : 'Miss Heba Ayad — Senior Math Lecturer' }}
+            </div>
+            <p class="text-xs text-text-muted mt-2 leading-relaxed">
+              {{ langService.isArabic()
+                ? 'خبرة هندسية وأكاديمية تمتد لأكثر من 10 سنوات في تبسيط الماث لطلاب الثانوية والدبلومة الأمريكية وإعداد أوائل الجمهورية.'
+                : 'Over a decade of academic experience demystifying mathematics for Thanaweya Amma and American Diploma candidates.' }}
+            </p>
+          </div>
+
+          <div class="pt-5 space-y-3">
+            <div class="flex items-center gap-3 text-xs text-text-secondary">
+              <app-icon name="check-circle" [size]="16" className="text-emerald-500 shrink-0" />
+              <span>{{ langService.isArabic() ? 'سكورات 800 في SAT & EST Math' : 'Consistent 800 scores in SAT & EST' }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-text-secondary">
+              <app-icon name="check-circle" [size]="16" className="text-emerald-500 shrink-0" />
+              <span>{{ langService.isArabic() ? 'أوائل الثانوية العامة ودرجات نهائية' : 'Top rankers in Thanaweya Amma' }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-text-secondary">
+              <app-icon name="check-circle" [size]="16" className="text-emerald-500 shrink-0" />
+              <span>{{ langService.isArabic() ? 'أحدث استراتيجيات حاسبة ديسموس' : 'Advanced Desmos calculator training' }}</span>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <a
+              [href]="getWhatsAppConsultationUrl()"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-full btn-gold-metallic py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2"
+            >
+              <app-icon name="whatsapp" [size]="16" />
+              <span>{{ langService.isArabic() ? 'حجز استشارة أو باقة' : 'Inquire via WhatsApp' }}</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Placement Exam Runner Banner -->
+        <div class="spider-rim-glass-card p-6 bg-gradient-to-br from-brand-violet/20 via-surface-card to-brand-gold/10 border-brand-gold/30">
+          <div class="w-10 h-10 rounded-xl bg-brand-gold/20 flex items-center justify-center text-brand-gold mb-3">
+            <app-icon name="target" [size]="22" />
+          </div>
+          <h4 class="text-base font-bold text-text-primary mb-1">
+            {{ langService.isArabic() ? 'مش متأكد من مستواك؟' : 'Unsure About Your Level?' }}
+          </h4>
+          <p class="text-xs text-text-secondary leading-relaxed mb-4">
+            {{ langService.isArabic()
+              ? 'ابدأ الآن امتحان تحديد المستوى الذكي (10 إلى 15 دقيقة) وتعرّف على نقاط ضعفك وقوتك مجاناً.'
+              : 'Take our free smart diagnostic assessment (10-15 mins) to evaluate your current math mastery.' }}
+          </p>
+          <a
+            routerLink="/placement-test"
+            class="w-full btn-ghost-academic py-2.5 text-xs font-bold flex items-center justify-center gap-2 border-brand-gold/40 hover:border-brand-gold text-brand-gold"
+          >
+            <span>{{ langService.isArabic() ? 'ابدأ التقييم الآن ←' : 'Start Assessment Now →' }}</span>
+          </a>
+        </div>
+
+        <!-- Related Keywords Internal Links (Crucial for Google Crawling) -->
+        @if (relatedKeywords().length > 0) {
+          <div class="spider-rim-glass-card p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <app-icon name="sparkles" [size]="16" className="text-brand-gold" />
+              <h4 class="text-sm font-bold text-text-primary uppercase tracking-wider">
+                {{ langService.isArabic() ? 'موضوعات ذات صلة' : 'Related Topics' }}
+              </h4>
+            </div>
+
+            <div class="space-y-2.5">
+              @for (rel of relatedKeywords(); track rel.slug) {
+                <a
+                  [routerLink]="['/topic', rel.slug]"
+                  class="block p-3 rounded-xl bg-surface-secondary/50 hover:bg-surface-secondary border border-surface-border hover:border-brand-gold/40 transition-colors group"
+                >
+                  <div class="text-xs font-bold text-text-primary group-hover:text-brand-gold transition-colors line-clamp-1">
+                    {{ langService.isArabic() ? rel.keywordAr : rel.keywordEn }}
+                  </div>
+                  <div class="text-[11px] text-text-muted mt-0.5 line-clamp-1">
+                    {{ langService.isArabic() ? rel.categoryNameAr : rel.categoryNameEn }}
+                  </div>
+                </a>
+              }
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-surface-border text-center">
+              <a
+                routerLink="/topics"
+                class="text-xs font-semibold text-brand-gold hover:underline inline-flex items-center gap-1"
+              >
+                <span>{{ langService.isArabic() ? 'عرض جميع الموضوعات الـ 75 ←' : 'View all 75 topics →' }}</span>
+              </a>
+            </div>
+          </div>
+        }
+
+      </aside>
+    </div>
+
+    <!-- 4. Bottom High-Converting Banner -->
+    <section class="spider-rim-glass-card p-8 sm:p-12 text-center bg-gradient-to-r from-brand-violet/25 via-surface-card to-brand-gold/20 border-brand-gold/30 relative overflow-hidden">
+      <div class="max-w-3xl mx-auto relative z-10">
+        <h2 class="text-2xl sm:text-3xl font-black text-text-primary mb-3">
+          {{ langService.isArabic() ? 'جاهز للتفوق الرياضي وتحقيق الدرجة النهائية؟' : 'Ready to Conquer Mathematics with 100% Scores?' }}
+        </h2>
+        <p class="text-sm sm:text-base text-text-secondary mb-6 leading-relaxed">
+          {{ langService.isArabic()
+            ? 'انضم اليوم لآلاف الطلاب المتفوقين على منصة سبايدر ماث مع المهندسة هبة عبدالوهاب (ميس هبة عياد).'
+            : 'Join thousands of high-achieving students on Spider Math Platform with Eng. Heba Abdel-Wahab.' }}
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            routerLink="/placement-test"
+            class="btn-gold-metallic py-3.5 px-8 text-sm sm:text-base font-bold flex items-center justify-center gap-2 shadow-brand-glow w-full sm:w-auto"
+          >
+            <app-icon name="target" [size]="18" />
+            <span>{{ langService.isArabic() ? 'ابدأ تحديد مستواك فوراً' : 'Start Placement Test' }}</span>
+          </a>
+
+          <a
+            routerLink="/login"
+            class="btn-ghost-academic py-3.5 px-8 text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            <app-icon name="user" [size]="18" />
+            <span>{{ langService.isArabic() ? 'تسجيل حساب جديد' : 'Register Account' }}</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  } @else {
+    <!-- 404 / Keyword Not Found View -->
+    <div class="spider-rim-glass-card p-12 text-center max-w-xl mx-auto my-16">
+      <div class="w-16 h-16 rounded-full bg-brand-violet/20 text-brand-gold flex items-center justify-center mx-auto mb-4">
+        <app-icon name="alert-circle" [size]="32" />
+      </div>
+      <h1 class="text-2xl font-bold text-text-primary mb-2">
+        {{ langService.isArabic() ? 'عذراً، لم يتم العثور على هذا الموضوع' : 'Topic Not Found' }}
+      </h1>
+      <p class="text-sm text-text-secondary mb-6">
+        {{ langService.isArabic()
+          ? 'الموضوع المطلوب غير مسجل أو ربما تم تغيير رابطه. يمكنك استعراض جميع الموضوعات المتاحة من الفهرس العام.'
+          : 'The requested topic was not found. Please browse our comprehensive topics index.' }}
+      </p>
+      <a routerLink="/topics" class="btn-gold-metallic py-3 px-6 text-sm font-bold inline-flex items-center gap-2">
+        <app-icon name="book-open" [size]="16" />
+        <span>{{ langService.isArabic() ? 'تصفح فهرس الموضوعات والمناهج' : 'Browse Topics Directory' }}</span>
+      </a>
+    </div>
+  }
+
+</div>

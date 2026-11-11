@@ -5,9 +5,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4200",
-    "build": "ng build && node scripts/prepare-browser-index.mjs",
-    "build:prod": "ng build --configuration production && node scripts/prepare-browser-index.mjs",
-    "vercel-build": "ng build --configuration production && node scripts/prepare-browser-index.mjs",
+    "build": "node scripts/generate-seo-data.mjs && ng build && node scripts/prepare-browser-index.mjs",
+    "build:prod": "node scripts/generate-seo-data.mjs && ng build --configuration production && node scripts/prepare-browser-index.mjs",
+    "vercel-build": "node scripts/generate-seo-data.mjs && ng build --configuration production && node scripts/prepare-browser-index.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "compress:images": "python scripts/compress-images.py",

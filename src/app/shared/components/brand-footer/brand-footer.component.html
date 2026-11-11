@@ -24,6 +24,10 @@
           {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
         </button>
 
+        <a routerLink="/topics" class="hover:text-brand-gold transition-colors">
+          {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Directory' }}
+        </a>
+
         <a routerLink="/placement-test" class="hover:text-brand-gold transition-colors">
           {{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}
         </a>

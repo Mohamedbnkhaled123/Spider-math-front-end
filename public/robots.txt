@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /student/
+Disallow: /parent/
+Disallow: /api/
+Disallow: /pending-device-approval
+Disallow: /inactive-student-portal
+Disallow: /complete-profile
 
 Sitemap: https://spider-math.com/sitemap.xml

@@ -1,0 +1,18 @@
+.seo-topics-index-root {
+  font-family: var(--font-arabic-body);
+  position: relative;
+  z-index: 10;
+}
+
+:host-context([dir='ltr']) {
+  font-family: var(--font-english);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

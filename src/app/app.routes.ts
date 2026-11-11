@@ -48,6 +48,26 @@ export const routes: Routes = [
     title: 'Placement Assessment | امتحان تحديد المستوى التفاعلي'
   },
   {
+    path: 'topics',
+    loadComponent: () =>
+      import(
+        './features/guest-portal/seo-topics-index/seo-topics-index.component'
+      ).then(m => m.SeoTopicsIndexComponent),
+    title: 'فهرس مواضيع ومناهج سبايدر ماث | Spider Math Topics & Curricula'
+  },
+  {
+    path: 'topics/:slug',
+    redirectTo: 'topic/:slug',
+    pathMatch: 'full'
+  },
+  {
+    path: 'topic/:slug',
+    loadComponent: () =>
+      import(
+        './features/guest-portal/seo-keyword-page/seo-keyword-page.component'
+      ).then(m => m.SeoKeywordPageComponent)
+  },
+  {
     path: 'complete-profile',
     loadComponent: () =>
       import(

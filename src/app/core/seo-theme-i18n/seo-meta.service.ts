@@ -150,6 +150,16 @@ export class SeoMetaService {
     script.text = JSON.stringify(schema);
   }
 
+  /**
+   * Removes dynamic Schema.org JSON-LD script from <head>.
+   */
+  removeSchemaJsonLd(scriptId: string): void {
+    const script = this.document.getElementById(scriptId);
+    if (script) {
+      script.remove();
+    }
+  }
+
   private injectEducationalOrganizationSchema(): void {
     const schema = {
       '@context': 'https://schema.org',
