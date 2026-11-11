@@ -667,7 +667,19 @@
         <!-- STEP 2: UNITS & PACKAGES VIEW FOR SELECTED GRADE -->
 @if (modalStep() === 'UNITS') {
 
-            <div>
+            <div class="units-grade-container relative overflow-hidden rounded-3xl p-5 sm:p-7 border border-surface-border/70 bg-surface-card/40 backdrop-blur-xl shadow-xl">
+              
+              <!-- Background Image Watermark for Selected Grade Units (SAT for SAT, Other Curriculums for others) -->
+              <div class="units-grade-bg-watermark absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
+                <img
+                  [src]="getCurrentGradeUnitsBgImage()"
+                  alt=""
+                  class="units-grade-bg-img"
+                />
+                <div class="units-grade-bg-overlay"></div>
+              </div>
+
+              <div class="relative z-10">
 
               <!-- Grade Overview Bar -->
 
@@ -1035,10 +1047,10 @@
 
                   </div>
                 </div>
-
               </div>
 
             </div>
+          </div>
 
           }
 

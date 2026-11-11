@@ -1846,13 +1846,46 @@
                   </div>
                 }
 
-                <!-- YouTube Solution Video URL -->
-                <div>
-                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'رابط فيديو شرح الحل على يوتيوب (اختياري):' : 'YouTube Solution Video Link (Optional):' }}</label>
+                <!-- YouTube Solution (Video or Post) URL -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="block font-bold text-text-secondary text-xs">
+                      {{ langService.isArabic() ? 'إرفاق حل المسألة (يوتيوب):' : 'Question Solution (YouTube):' }}
+                    </label>
+                    <div class="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        (click)="newQuestionSolutionType.set('VIDEO')"
+                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
+                        [class.bg-brand-primary]="newQuestionSolutionType() === 'VIDEO'"
+                        [class.text-white]="newQuestionSolutionType() === 'VIDEO'"
+                        [class.border-brand-primary]="newQuestionSolutionType() === 'VIDEO'"
+                        [class.border-surface-border]="newQuestionSolutionType() !== 'VIDEO'"
+                        [class.text-text-muted]="newQuestionSolutionType() !== 'VIDEO'"
+                      >
+                        <app-icon name="video" [size]="11" />
+                        <span>{{ langService.isArabic() ? 'فيديو يوتيوب' : 'Video' }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        (click)="newQuestionSolutionType.set('POST')"
+                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
+                        [class.bg-brand-primary]="newQuestionSolutionType() === 'POST'"
+                        [class.text-white]="newQuestionSolutionType() === 'POST'"
+                        [class.border-brand-primary]="newQuestionSolutionType() === 'POST'"
+                        [class.border-surface-border]="newQuestionSolutionType() !== 'POST'"
+                        [class.text-text-muted]="newQuestionSolutionType() !== 'POST'"
+                      >
+                        <app-icon name="file-text" [size]="11" />
+                        <span>{{ langService.isArabic() ? 'منشور يوتيوب' : 'Post' }}</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <input
                     type="url"
                     [(ngModel)]="newQuestionYoutubeUrl"
-                    [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... أو https://youtu.be/...' : 'https://www.youtube.com/watch?v=... or https://youtu.be/...'"
+                    [placeholder]="newQuestionSolutionType() === 'POST' ? (langService.isArabic() ? 'رابط منشور الحل على يوتيوب: https://www.youtube.com/post/...' : 'YouTube post link: https://www.youtube.com/post/...') : (langService.isArabic() ? 'رابط فيديو الحل على يوتيوب: https://www.youtube.com/watch?v=...' : 'YouTube video link: https://www.youtube.com/watch?v=...')"
                     class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none dir-ltr text-left font-mono"
                   />
                 </div>

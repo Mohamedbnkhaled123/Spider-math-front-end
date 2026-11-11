@@ -661,10 +661,40 @@
                     class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs text-text-primary"
                   />
 
+                  <div class="flex items-center gap-2 pt-1">
+                    <span class="text-[11px] font-bold text-text-muted">{{ langService.isArabic() ? 'نوع الحل المرفق:' : 'Solution Type:' }}</span>
+                    <button
+                      type="button"
+                      (click)="mistake.solutionType = 'VIDEO'"
+                      class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
+                      [class.bg-brand-primary]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
+                      [class.text-white]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
+                      [class.border-brand-primary]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
+                      [class.border-surface-border]="(mistake.solutionType || 'VIDEO') !== 'VIDEO'"
+                      [class.text-text-muted]="(mistake.solutionType || 'VIDEO') !== 'VIDEO'"
+                    >
+                      <app-icon name="video" [size]="10" />
+                      <span>{{ langService.isArabic() ? 'فيديو يوتيوب' : 'YouTube Video' }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="mistake.solutionType = 'POST'"
+                      class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
+                      [class.bg-brand-primary]="mistake.solutionType === 'POST'"
+                      [class.text-white]="mistake.solutionType === 'POST'"
+                      [class.border-brand-primary]="mistake.solutionType === 'POST'"
+                      [class.border-surface-border]="mistake.solutionType !== 'POST'"
+                      [class.text-text-muted]="mistake.solutionType !== 'POST'"
+                    >
+                      <app-icon name="file-text" [size]="10" />
+                      <span>{{ langService.isArabic() ? 'منشور يوتيوب' : 'YouTube Post' }}</span>
+                    </button>
+                  </div>
+
                   <input
                     type="url"
                     [(ngModel)]="mistake.youtubeSolutionUrl"
-                    [placeholder]="langService.isArabic() ? 'رابط فيديو الحل النموذجي على يوتيوب...' : 'YouTube solution video link...'"
+                    [placeholder]="mistake.solutionType === 'POST' ? (langService.isArabic() ? 'رابط منشور الحل على يوتيوب (https://www.youtube.com/post/...)' : 'YouTube community post link...') : (langService.isArabic() ? 'رابط فيديو الحل النموذجي على يوتيوب (https://www.youtube.com/watch?v=...)' : 'YouTube solution video link...')"
                     class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs font-mono text-text-primary"
                   />
                 </div>

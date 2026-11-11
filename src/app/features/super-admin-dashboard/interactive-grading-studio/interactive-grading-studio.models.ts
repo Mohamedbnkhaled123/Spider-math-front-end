@@ -8,6 +8,7 @@ export interface GradingMistake {
   questionPromptText: string;
   errorNote: string;
   youtubeSolutionUrl: string;
+  solutionType?: 'VIDEO' | 'POST';
 }
 
 export interface QuestionAnswerDetail {

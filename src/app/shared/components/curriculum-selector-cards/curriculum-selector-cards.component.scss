@@ -69,7 +69,7 @@
       height: 100%;
       object-fit: cover;
       object-position: center 25%;
-      opacity: 0.16;
+      opacity: 0.28;
       filter: saturate(1.15) contrast(1.05);
       transform: scale(1.0);
       transform-origin: center center;
@@ -80,8 +80,8 @@
     .curriculum-card-watermark-overlay {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 35%, transparent 20%, rgba(33, 25, 49, 0.50) 80%),
-                  linear-gradient(180deg, rgba(33, 25, 49, 0.25) 0%, rgba(33, 25, 49, 0.65) 100%);
+      background: radial-gradient(circle at 50% 35%, transparent 25%, rgba(33, 25, 49, 0.35) 80%),
+                  linear-gradient(180deg, rgba(33, 25, 49, 0.15) 0%, rgba(33, 25, 49, 0.50) 100%);
       pointer-events: none;
       transition: opacity 0.45s ease;
     }
@@ -108,11 +108,11 @@
 
     .curriculum-card-watermark {
       .curriculum-card-watermark-img {
-        opacity: 0.26;
+        opacity: 0.40;
         transform: scale(1.05);
       }
       .curriculum-card-watermark-overlay {
-        opacity: 0.85;
+        opacity: 0.75;
       }
     }
   }
@@ -201,6 +201,40 @@
   }
 }
 
+// Background Watermark for Selected Grade Units Container
+.units-grade-container {
+  position: relative;
+  isolation: isolate;
+
+  .units-grade-bg-watermark {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+
+    .units-grade-bg-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      opacity: 0.22;
+      filter: saturate(1.15) contrast(1.05);
+      transition: opacity 0.45s ease;
+    }
+
+    .units-grade-bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, transparent 20%, rgba(33, 25, 49, 0.65) 85%),
+                  linear-gradient(180deg, rgba(33, 25, 49, 0.40) 0%, rgba(33, 25, 49, 0.75) 100%);
+    }
+  }
+}
+
 // ==============================================================================
 // Light Mode (Day Mode) Luxury Pearl Glass Overrides
 // ==============================================================================
@@ -233,17 +267,16 @@
     }
 
     .curriculum-card-watermark {
-      -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 35%, #000 25%, transparent 90%);
-      mask-image: radial-gradient(ellipse 90% 85% at 50% 35%, #000 25%, transparent 90%);
+      -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 35%, #000 35%, transparent 92%);
+      mask-image: radial-gradient(ellipse 90% 85% at 50% 35%, #000 35%, transparent 92%);
 
       .curriculum-card-watermark-img {
-        opacity: 0.12;
-        mix-blend-mode: multiply;
-        filter: saturate(1.15) contrast(1.08) brightness(1.02);
+        opacity: 0.58;
+        filter: saturate(1.20) contrast(1.10) brightness(1.02);
       }
       .curriculum-card-watermark-overlay {
-        background: radial-gradient(circle at 50% 35%, transparent 30%, rgba(255, 255, 255, 0.60) 80%),
-                    linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(248, 244, 235, 0.80) 100%);
+        background: radial-gradient(circle at 50% 35%, transparent 40%, rgba(255, 255, 255, 0.35) 85%),
+                    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(248, 244, 235, 0.45) 100%);
         transition: opacity 0.45s ease;
       }
     }
@@ -268,11 +301,11 @@
 
       .curriculum-card-watermark {
         .curriculum-card-watermark-img {
-          opacity: 0.20;
+          opacity: 0.72;
           transform: scale(1.05);
         }
         .curriculum-card-watermark-overlay {
-          opacity: 0.75;
+          opacity: 0.60;
         }
       }
     }
@@ -336,6 +369,19 @@
     border: 1px solid rgba(196, 154, 69, 0.40);
     color: #9E7325;
     box-shadow: 0 0 10px rgba(196, 154, 69, 0.10);
+  }
+
+  .units-grade-container {
+    .units-grade-bg-watermark {
+      .units-grade-bg-img {
+        opacity: 0.52;
+        filter: saturate(1.20) contrast(1.10) brightness(1.02);
+      }
+      .units-grade-bg-overlay {
+        background: radial-gradient(circle at 50% 30%, transparent 35%, rgba(255, 255, 255, 0.50) 85%),
+                    linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(250, 246, 238, 0.65) 100%);
+      }
+    }
   }
 }
 

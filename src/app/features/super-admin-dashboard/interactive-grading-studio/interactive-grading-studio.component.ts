@@ -378,7 +378,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
       questionOrder: item.questionNumber || 1,
       questionPromptText: item.questionText || '',
       errorNote: '',
-      youtubeSolutionUrl: ''
+      youtubeSolutionUrl: '',
+      solutionType: 'VIDEO'
     };
 
     item.mistakes = [...item.mistakes, newMistake];

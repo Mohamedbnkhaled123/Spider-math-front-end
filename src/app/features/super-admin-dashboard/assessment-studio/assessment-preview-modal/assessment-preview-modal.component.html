@@ -507,18 +507,30 @@
                     </div>
                   }
 
-                  <!-- Optional Unprotected YouTube Solution Link -->
+                  <!-- Optional In-Platform YouTube Solution (Video or Post) -->
                   @if (q.youtubeSolutionUrl) {
                     <div class="pt-1">
-                      <a
-                        [href]="q.youtubeSolutionUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 hover:bg-rose-500/20 text-xs font-bold transition-colors"
+                      <button
+                        type="button"
+                        (click)="openInPlatformSolution(q.youtubeSolutionUrl, q.textAr)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                        [class.bg-rose-500/10]="!isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.border]="true"
+                        [class.border-rose-500/20]="!isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.text-rose-600]="!isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.hover:bg-rose-500/20]="!isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.bg-brand-primary/10]="isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.border-brand-primary/20]="isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.text-brand-primary]="isYoutubePost(q.youtubeSolutionUrl)"
+                        [class.hover:bg-brand-primary/20]="isYoutubePost(q.youtubeSolutionUrl)"
                       >
-                        <app-icon name="play" [size]="13" />
-                        <span>{{ langService.isArabic() ? 'مشاهدة فيديو حل المسألة (YouTube)' : 'Watch Video Solution (YouTube)' }}</span>
-                      </a>
+                        <app-icon [name]="isYoutubePost(q.youtubeSolutionUrl) ? 'file-text' : 'play'" [size]="13" />
+                        <span>
+                          {{ isYoutubePost(q.youtubeSolutionUrl)
+                            ? (langService.isArabic() ? 'عرض منشور حل المسألة (داخل المنصة)' : 'View Post Solution on Platform')
+                            : (langService.isArabic() ? 'مشاهدة فيديو حل المسألة (داخل المنصة)' : 'Watch Video Solution on Platform') }}
+                        </span>
+                      </button>
                     </div>
                   }
 
@@ -571,6 +583,95 @@
             class="max-w-full max-h-[75vh] object-contain rounded-xl"
           />
         </div>
+      </div>
+    </div>
+  }
+
+  <!-- In-Platform Embedded YouTube Solution Modal (Video or Community Post) -->
+  @if (activeInPlatformSolution(); as sol) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
+      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 rounded-xl text-white" [class.bg-red-600]="sol.type === 'VIDEO'" [class.bg-brand-primary]="sol.type === 'POST'">
+              <app-icon [name]="sol.type === 'VIDEO' ? 'video' : 'file-text'" [size]="18" />
+            </span>
+            <div>
+              <h3 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
+                {{ sol.title }}
+              </h3>
+              <p class="text-[11px] text-text-muted">
+                {{ sol.type === 'VIDEO'
+                  ? (langService.isArabic() ? 'معاينة فيديو الحل النموذجي مباشرة داخل المنصة' : 'Previewing video solution directly inside platform')
+                  : (langService.isArabic() ? 'معاينة منشور الحل التوضيحي مباشرة داخل المنصة' : 'Previewing post solution directly inside platform') }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeInPlatformSolution()"
+            class="p-2 rounded-xl border border-surface-border hover:bg-surface-card text-text-muted hover:text-text-primary cursor-pointer transition-colors"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Modal Body Content -->
+        @if (sol.type === 'VIDEO' && sol.embedUrl) {
+          <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-surface-border shadow-inner">
+            <iframe
+              [src]="sol.embedUrl"
+              class="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+        } @else {
+          <div class="space-y-4">
+            <div class="relative w-full rounded-2xl overflow-hidden bg-surface-card/60 border border-surface-border shadow-inner flex flex-col p-4 sm:p-6 text-center space-y-4">
+              <div class="space-y-2">
+                <div class="w-14 h-14 rounded-2xl bg-brand-primary/15 border border-brand-primary/30 text-brand-primary mx-auto flex items-center justify-center">
+                  <app-icon name="file-text" [size]="28" />
+                </div>
+                <h4 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
+                  {{ langService.isArabic() ? 'منشور الحل التوضيحي المعتمد' : 'Verified Community Post Solution' }}
+                </h4>
+                <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
+                  {{ langService.isArabic() ? 'أرفقت المعلمة هذا المنشور على يوتيوب كشرح إضافي توضيحي لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
+                </p>
+              </div>
+
+              @if (sol.embedUrl) {
+                <div class="w-full h-72 sm:h-96 rounded-xl overflow-hidden border border-surface-border bg-white shadow-inner">
+                  <iframe
+                    [src]="sol.embedUrl"
+                    class="w-full h-full border-0"
+                  ></iframe>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-between pt-2">
+          <span class="text-[10px] text-text-muted flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>{{ langService.isArabic() ? 'مشاهدة آمنة ومحمية داخل المنصة' : 'Protected in-platform viewing' }}</span>
+          </span>
+
+          <button
+            type="button"
+            (click)="closeInPlatformSolution()"
+            class="px-5 py-2 rounded-xl text-xs font-bold border border-surface-border hover:bg-surface-card text-text-secondary cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
+          </button>
+        </div>
+
       </div>
     </div>
   }

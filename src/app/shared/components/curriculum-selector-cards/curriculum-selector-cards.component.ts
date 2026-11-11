@@ -1104,32 +1104,26 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getCurriculumBgImage(code: CurriculumCode): string {
     switch (code) {
-      case 'EGYPTIAN':
-        return '/assets/branding/curriculum-card-egyptian.webp';
-      case 'GULF':
-        return '/assets/branding/curriculum-card-gulf.webp';
       case 'AMERICAN':
-        return '/assets/branding/curriculum-card-sat.webp';
+        return '/assets/branding/curriculum-sat-mascot.jpg';
+      case 'EGYPTIAN':
+      case 'GULF':
       case 'INTERNATIONAL':
-        return '/assets/branding/curriculum-card-british.webp';
       default:
-        return '';
+        return '/assets/branding/curriculum-other-mascot.jpg';
     }
   }
 
   getCurriculumBgSrcset(code: CurriculumCode): string {
-    switch (code) {
-      case 'EGYPTIAN':
-        return '/assets/branding/curriculum-card-egyptian-sm.webp 320w, /assets/branding/curriculum-card-egyptian.webp 512w';
-      case 'GULF':
-        return '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w';
-      case 'AMERICAN':
-        return '/assets/branding/curriculum-card-sat-sm.webp 320w, /assets/branding/curriculum-card-sat.webp 512w';
-      case 'INTERNATIONAL':
-        return '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w';
-      default:
-        return '';
-    }
+    const img = this.getCurriculumBgImage(code);
+    return `${img} 512w, ${img} 1024w`;
+  }
+
+  getCurrentGradeUnitsBgImage(): string {
+    const code = this.selectedCurriculumCode();
+    return code === 'AMERICAN'
+      ? '/assets/branding/curriculum-sat-mascot.jpg'
+      : '/assets/branding/curriculum-other-mascot.jpg';
   }
 
   private emitSelection(): void {

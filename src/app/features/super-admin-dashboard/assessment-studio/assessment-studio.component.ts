@@ -282,6 +282,7 @@ export class AssessmentStudioComponent implements OnInit {
   readonly newQuestionPoints = signal<number>(5);
   readonly newQuestionModuleIndex = signal<1 | 2>(1);
   readonly newQuestionYoutubeUrl = signal<string>('');
+  readonly newQuestionSolutionType = signal<'VIDEO' | 'POST'>('VIDEO');
   readonly editingQuestionId = signal<string | null>(null);
 
   // Multi-Module Questions Filtering in Studio

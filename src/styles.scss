@@ -277,27 +277,45 @@ code,
 // ==============================================================================
 // Signature Keyframe Animations for Students Aged 10-16
 // ==============================================================================
-// 1. Floating Math Symbols
+// 1. Floating Math Symbols (Continuous slow rising drift from bottom of page to top)
 @keyframes floatMathSymbol {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
+  0% {
+    transform: translateY(115vh) rotate(0deg);
+    opacity: 0;
   }
 
-  50% {
-    transform: translateY(-12px) rotate(6deg);
+  8% {
+    opacity: 0.35;
   }
 
+  88% {
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: translateY(-20vh) rotate(15deg);
+    opacity: 0;
+  }
 }
 
 @keyframes floatMathSymbolSlow {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
+  0% {
+    transform: translateY(120vh) rotate(0deg);
+    opacity: 0;
   }
 
-  50% {
-    transform: translateY(-16px) rotate(-6deg);
+  6% {
+    opacity: 0.40;
   }
 
+  85% {
+    opacity: 0.40;
+  }
+
+  100% {
+    transform: translateY(-25vh) rotate(-18deg);
+    opacity: 0;
+  }
 }
 
 // 2. Cartesian Web Node Pulse Glow (GPU Composited)
@@ -483,11 +501,11 @@ code,
 
 // Animation Utility Classes
 .animate-float-math {
-  animation: floatMathSymbol 6s ease-in-out infinite;
+  animation: floatMathSymbol 22s linear infinite;
 }
 
 .animate-float-math-slow {
-  animation: floatMathSymbolSlow 8.5s ease-in-out infinite;
+  animation: floatMathSymbolSlow 28s linear infinite;
 }
 
 .animate-spark-twinkle {

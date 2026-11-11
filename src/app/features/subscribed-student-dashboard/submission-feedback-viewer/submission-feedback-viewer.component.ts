@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -37,6 +38,7 @@ import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback
 export class SubmissionFeedbackViewerComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
 
   readonly isLoading = signal<boolean>(true);
@@ -212,9 +214,55 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     });
   }
 
-  openSolutionVideo(url: string | null | undefined): void {
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+  readonly activeInPlatformSolution = signal<{
+    rawUrl: string;
+    embedUrl?: SafeResourceUrl | null;
+    type: 'VIDEO' | 'POST';
+    title: string;
+  } | null>(null);
+
+  openInPlatformSolution(url: string | null | undefined, title?: string): void {
+    if (!url) return;
+    const trimmed = url.trim();
+    const videoId = this.extractYoutubeId(trimmed);
+
+    if (videoId) {
+      const embed = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`
+      );
+      this.activeInPlatformSolution.set({
+        rawUrl: trimmed,
+        embedUrl: embed,
+        type: 'VIDEO',
+        title: title || (this.langService.isArabic() ? 'فيديو الحل النموذجي' : 'Video Solution')
+      });
+    } else {
+      const safePostUrl = this.sanitizer.bypassSecurityTrustResourceUrl(trimmed);
+      this.activeInPlatformSolution.set({
+        rawUrl: trimmed,
+        embedUrl: safePostUrl,
+        type: 'POST',
+        title: title || (this.langService.isArabic() ? 'منشور الحل النموذجي' : 'Post Solution')
+      });
     }
+  }
+
+  closeInPlatformSolution(): void {
+    this.activeInPlatformSolution.set(null);
+  }
+
+  private extractYoutubeId(url: string): string | null {
+    if (!url) return null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    return match ? match[1] : null;
+  }
+
+  isYoutubePost(url?: string | null): boolean {
+    if (!url) return false;
+    return !this.extractYoutubeId(url) && (url.includes('/post/') || url.includes('/community'));
+  }
+
+  openSolutionVideo(url: string | null | undefined): void {
+    this.openInPlatformSolution(url);
   }
 }

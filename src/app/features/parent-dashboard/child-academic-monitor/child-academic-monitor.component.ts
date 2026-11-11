@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, signal, effect, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ChildAcademicReport } from './child-academic-monitor.models';
@@ -23,6 +24,7 @@ export class ChildAcademicMonitorComponent {
 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
 
   readonly isLoading = signal<boolean>(false);
@@ -132,9 +134,52 @@ export class ChildAcademicMonitorComponent {
     }
   }
 
+  readonly activeInPlatformSolution = signal<{
+    rawUrl: string;
+    embedUrl?: SafeResourceUrl | null;
+    type: 'VIDEO' | 'POST';
+    title: string;
+  } | null>(null);
+
   openYoutubeSolution(url?: string | null): void {
     if (!url) return;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    const trimmed = url.trim();
+    const videoId = this.extractYoutubeId(trimmed);
+
+    if (videoId) {
+      const embed = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`
+      );
+      this.activeInPlatformSolution.set({
+        rawUrl: trimmed,
+        embedUrl: embed,
+        type: 'VIDEO',
+        title: this.langService.isArabic() ? 'فيديو الحل وشرح الخطأ' : 'Video Solution & Error Analysis'
+      });
+    } else {
+      const safePostUrl = this.sanitizer.bypassSecurityTrustResourceUrl(trimmed);
+      this.activeInPlatformSolution.set({
+        rawUrl: trimmed,
+        embedUrl: safePostUrl,
+        type: 'POST',
+        title: this.langService.isArabic() ? 'منشور الحل النموذجي' : 'Community Post Solution'
+      });
+    }
+  }
+
+  closeInPlatformSolution(): void {
+    this.activeInPlatformSolution.set(null);
+  }
+
+  private extractYoutubeId(url: string): string | null {
+    if (!url) return null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    return match ? match[1] : null;
+  }
+
+  isYoutubePost(url?: string | null): boolean {
+    if (!url) return false;
+    return !this.extractYoutubeId(url) && (url.includes('/post/') || url.includes('/community'));
   }
 
   formatDuration(seconds?: number): string {
