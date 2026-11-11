@@ -592,6 +592,47 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     this.editingHonoreeIndex.set(null);
   }
 
+  onHonoreeAvatarFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.toastTriggered.emit({ text: 'يرجى اختيار ملف صورة صالح (PNG, JPEG, WebP)', type: 'warning' });
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      this.toastTriggered.emit({ text: 'حجم الصورة كبير جداً (الحد الأقصى 8 ميجابايت)', type: 'warning' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 320;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          this.honoreeForm.update(f => ({ ...f, avatarUrl: compressed }));
+          this.toastTriggered.emit({ text: 'تم تجهيز وحفظ صورة الطالب بنجاح!', type: 'success' });
+        }
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  removeHonoreeAvatar(): void {
+    this.honoreeForm.update(f => ({ ...f, avatarUrl: '' }));
+  }
+
   saveHonoreeModal(): void {
     const item = { ...this.honoreeForm() };
     if (!item.nameAr || !item.nameAr.trim()) {

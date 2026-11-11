@@ -256,7 +256,18 @@ export class PublicDiscoveryService {
             },
             landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || [],
             activeGrades: raw.activeGrades || raw.active_grades || ['SEC_3'],
-            curriculaTracks: raw.curriculaTracks || raw.curricula_tracks || []
+            curriculaTracks: raw.curriculaTracks || raw.curricula_tracks || [],
+            hallOfFameBadgeAr: raw.hallOfFameBadgeAr || raw.hall_of_fame_badge_ar || fallback.hallOfFameBadgeAr,
+            hallOfFameBadgeEn: raw.hallOfFameBadgeEn || raw.hall_of_fame_badge_en || fallback.hallOfFameBadgeEn,
+            hallOfFameTitleAr: raw.hallOfFameTitleAr || raw.hall_of_fame_title_ar || fallback.hallOfFameTitleAr,
+            hallOfFameTitleEn: raw.hallOfFameTitleEn || raw.hall_of_fame_title_en || fallback.hallOfFameTitleEn,
+            hallOfFameSubtitleAr: raw.hallOfFameSubtitleAr || raw.hall_of_fame_subtitle_ar || fallback.hallOfFameSubtitleAr,
+            hallOfFameSubtitleEn: raw.hallOfFameSubtitleEn || raw.hall_of_fame_subtitle_en || fallback.hallOfFameSubtitleEn,
+            honorBoardList: (raw.honorBoardList && raw.honorBoardList.length > 0)
+              ? raw.honorBoardList
+              : (raw.honor_board_list && raw.honor_board_list.length > 0)
+                ? raw.honor_board_list
+                : fallback.honorBoardList
           };
         }),
         map(data => {
@@ -672,7 +683,14 @@ export class PublicDiscoveryService {
       contactChannels: {
         subscription_whatsapp: '',
         support_whatsapp: ''
-      }
+      },
+      hallOfFameBadgeAr: 'لوحة الشرف • أبطال الرياضيات',
+      hallOfFameBadgeEn: 'Hall of Fame • Top Math Masters',
+      hallOfFameTitleAr: 'لوحة الشرف والتفوق الأكاديمي',
+      hallOfFameTitleEn: 'Academic Hall of Fame & Honor Roll',
+      hallOfFameSubtitleAr: 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.',
+      hallOfFameSubtitleEn: 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.',
+      honorBoardList: []
     };
   }
 }

@@ -940,7 +940,7 @@
 
       <!-- 3-Card Olympic Podium Grid (Ranks 2, 1, 3) -->
       @if (topThree().length > 0) {
-        <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end pt-6 pb-8">
+        <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end pt-10 pb-8">
           
           <!-- Rank 2: Silver (Left) -->
           @if (topThree().length > 1) {
@@ -958,7 +958,7 @@
                 </div>
 
                 <!-- Student Avatar -->
-                <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-purple-500/40 via-slate-300/40 to-blue-400/40 shadow-lg">
+                <div class="relative w-20 h-20 sm:w-24 sm:h-24 aspect-square shrink-0 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-purple-500/40 via-slate-300/40 to-blue-400/40 shadow-lg flex items-center justify-center">
                   <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-white/30">
                     @if (topThree()[1].avatarUrl) {
                       <img [src]="topThree()[1].avatarUrl" [alt]="topThree()[1].nameAr" class="w-full h-full object-cover">
@@ -1000,13 +1000,24 @@
 
           <!-- Rank 1: Gold Champion (Center & Elevated) -->
           @if (topThree().length > 0) {
-            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-8 relative overflow-hidden text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between">
-              <!-- Radiant Golden Glow Behind Card -->
-              <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-8 relative text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between overflow-visible">
+              <!-- Clipped Radiant Golden Glow Behind Card -->
+              <div class="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none -z-10">
+                <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl"></div>
+              </div>
 
               <!-- Golden 3D Crown Floating On Top -->
-              <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
-                <span class="text-2xl filter drop-shadow"><span class="inline-flex items-center text-brand-gold filter drop-shadow"><svg viewBox="0 0 24 24" class="w-6 h-6 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" fill="currentColor" fill-opacity="0.25"/></svg></span></span>
+              <div class="absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center pointer-events-none">
+                <div class="px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-600 via-brand-gold to-yellow-400 p-[1.5px] shadow-gold-glow">
+                  <div class="px-3 py-1 rounded-full bg-[#1F142B] dark:bg-[#1A1124] flex items-center gap-1.5 border border-brand-gold/60 shadow-inner">
+                    <span class="text-brand-gold inline-flex items-center filter drop-shadow">
+                      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-brand-gold/40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                      </svg>
+                    </span>
+                    <span class="text-[11px] font-black tracking-wide text-brand-gold uppercase">Champion</span>
+                  </div>
+                </div>
               </div>
 
               <div class="pt-2">
@@ -1018,13 +1029,13 @@
                   </span>
                 </div>
 
-                <!-- Student Avatar with Golden Ring & Glow -->
-                <div class="relative w-22 h-22 sm:w-24 sm:h-24 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 shadow-gold-glow">
-                  <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-brand-gold/60">
+                <!-- Student Avatar with Golden Ring & Glow (Fixed aspect-square) -->
+                <div class="relative w-24 h-24 sm:w-28 sm:h-28 aspect-square shrink-0 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 shadow-gold-glow flex items-center justify-center">
+                  <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border-2 border-brand-gold/60">
                     @if (topThree()[0].avatarUrl) {
                       <img [src]="topThree()[0].avatarUrl" [alt]="topThree()[0].nameAr" class="w-full h-full object-cover">
                     } @else {
-                      <app-icon name="user" [size]="42" className="text-brand-gold" />
+                      <app-icon name="user" [size]="44" className="text-brand-gold" />
                     }
                   </div>
                 </div>
@@ -1075,7 +1086,7 @@
                 </div>
 
                 <!-- Student Avatar -->
-                <div class="relative w-20 h-20 sm:w-22 sm:h-22 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-800 via-amber-600 to-amber-400 shadow-md">
+                <div class="relative w-20 h-20 sm:w-24 sm:h-24 aspect-square shrink-0 mx-auto my-3 rounded-full p-1 bg-gradient-to-tr from-amber-800 via-amber-600 to-amber-400 shadow-md flex items-center justify-center">
                   <div class="w-full h-full rounded-full bg-surface-bg flex items-center justify-center overflow-hidden border border-amber-700/30">
                     @if (topThree()[2].avatarUrl) {
                       <img [src]="topThree()[2].avatarUrl" [alt]="topThree()[2].nameAr" class="w-full h-full object-cover">
@@ -1124,30 +1135,41 @@
           <h3 class="font-academic-serif text-center text-sm font-extrabold text-text-secondary uppercase tracking-wider mb-6">
             {{ langService.isArabic() ? 'قائمة الشرف الأكاديمي' : 'Distinguished Honor Roll' }}
           </h3>
-          <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="w-full min-w-0 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             @for (honoree of honorsList(); track (honoree.id || honoree.rank)) {
-              <div class="spider-rim-glass-card w-full min-w-0 max-w-full p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-numeric font-black flex items-center justify-center text-sm shrink-0">
-                    #{{ honoree.rank }}
+              <div class="spider-rim-glass-card w-full min-w-0 max-w-full p-4 rounded-2xl border border-surface-border bg-surface-card hover:border-brand-gold/40 transition-all duration-200 hover:-translate-y-1 shadow-sm flex items-center justify-between gap-3.5">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="relative shrink-0">
+                    @if (honoree.avatarUrl) {
+                      <div class="w-12 h-12 rounded-xl border border-brand-gold/40 overflow-hidden bg-surface-bg flex items-center justify-center shadow-sm">
+                        <img [src]="honoree.avatarUrl" [alt]="honoree.nameAr" class="w-full h-full object-cover">
+                      </div>
+                      <span class="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-brand-gold text-[9px] font-black text-black font-numeric shadow leading-none">
+                        #{{ honoree.rank }}
+                      </span>
+                    } @else {
+                      <div class="w-11 h-11 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-numeric font-black flex items-center justify-center text-sm shadow-sm">
+                        #{{ honoree.rank }}
+                      </div>
+                    }
                   </div>
-                  <div class="min-w-0">
-                    <p class="text-xs font-bold text-text-primary truncate">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-black text-text-primary tracking-tight truncate drop-shadow-sm">
                       {{ langService.isArabic() ? honoree.nameAr : (honoree.nameEn || honoree.nameAr) }}
                     </p>
-                    <p class="text-[10px] text-text-muted truncate">
+                    <p class="text-xs text-text-secondary dark:text-[#D1C7E2] font-semibold truncate mt-0.5">
                       {{ langService.isArabic() ? honoree.systemAr : (honoree.systemEn || honoree.systemAr) }}
                     </p>
-                    <p class="text-[10px] text-brand-gold font-semibold truncate">
+                    <p class="text-[11px] text-amber-500 dark:text-brand-gold font-bold truncate mt-0.5">
                       {{ langService.isArabic() ? honoree.achievementAr : (honoree.achievementEn || honoree.achievementAr) }}
                     </p>
                   </div>
                 </div>
-                <div class="text-end shrink-0">
-                  <span class="text-xs font-numeric font-extrabold text-brand-gold block">
+                <div class="text-end shrink-0 pl-2 rtl:pr-2">
+                  <span class="text-sm font-numeric font-black text-brand-gold block leading-tight">
                     {{ (honoree.xp || 0) | number }}
                   </span>
-                  <span class="text-[9px] text-text-muted uppercase font-bold">XP</span>
+                  <span class="text-[9px] text-text-muted uppercase font-bold tracking-wider">XP</span>
                 </div>
               </div>
             }
