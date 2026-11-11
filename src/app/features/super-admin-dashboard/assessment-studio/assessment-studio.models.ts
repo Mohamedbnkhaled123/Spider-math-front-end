@@ -19,7 +19,9 @@ export interface AssessmentQuestionItem {
   questionImageUrl?: string | null;
   options: string[];
   correctOptionIndex: number;
+  acceptedAnswers?: string[];
   points: number;
+  moduleIndex?: 1 | 2;
   explanationAr?: string;
   youtubeSolutionUrl?: string | null;
 }
@@ -34,6 +36,9 @@ export interface AssessmentItem {
   calculatorType: CalculatorMode;
   referenceSheetUrl?: string | null;
   durationMinutes: number;
+  isMultiModule?: boolean;
+  module1TimeMinutes?: number;
+  module2TimeMinutes?: number;
   passPercentage: number;
   maxAttempts: number;
   availableFrom?: string | null;

@@ -75,6 +75,9 @@
   height: 520px;
   min-height: 420px;
   position: relative;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
 }
 
 .desmos-host {
@@ -82,6 +85,9 @@
   height: 100%;
   position: absolute;
   inset: 0;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
 }
 
 .presets-toolbar {

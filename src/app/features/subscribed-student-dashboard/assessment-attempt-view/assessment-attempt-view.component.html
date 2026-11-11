@@ -152,8 +152,14 @@
     } @else if (currentQuestion(); as q) {
       <!-- Questions Palette (Responsive wrap, zero horizontal scroll) -->
       <div class="flex flex-wrap items-center gap-2 mb-8 pb-2">
+        @if (bundle().isMultiModule) {
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-brand-primary/10 border border-brand-primary/25 text-brand-primary font-black text-xs ml-2 shadow-xs">
+            <app-icon name="grid" [size]="14" />
+            <span>{{ currentModule() === 1 ? (langService.isArabic() ? 'الموديول الأول' : 'Module 1') : (langService.isArabic() ? 'الموديول الثاني' : 'Module 2') }}</span>
+          </div>
+        }
         <span class="text-xs font-bold text-text-muted ml-2">{{ langService.isArabic() ? 'الأسئلة:' : 'Questions:' }}</span>
-        @for (item of bundle().questions; track item._id; let idx = $index) {
+        @for (item of activeModuleQuestions(); track item._id; let idx = $index) {
           <button
             type="button"
             (click)="activeQuestionIdx.set(idx)"
@@ -181,8 +187,16 @@
         
         <!-- Question Meta Info -->
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
-          <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary">
-            {{ langService.isArabic() ? ('السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount()) : ('Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary flex items-center gap-1.5">
+            @if (bundle().isMultiModule) {
+              <span>
+                {{ langService.isArabic()
+                  ? ((currentModule() === 1 ? 'الموديول الأول: ' : 'الموديول الثاني: ') + 'السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount())
+                  : ((currentModule() === 1 ? 'Module 1: ' : 'Module 2: ') + 'Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}
+              </span>
+            } @else {
+              <span>{{ langService.isArabic() ? ('السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount()) : ('Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}</span>
+            }
           </span>
 
           <span class="text-xs font-bold text-text-muted font-numeric">
@@ -294,6 +308,38 @@
           </div>
         }
 
+        <!-- Question Type: Short Answer / Text Input (INPUT_TEXT) -->
+        <!-- Student uses standard OS text keyboard; NO math virtual keyboard -->
+        @if (q.type === 'INPUT_TEXT') {
+          <div class="mt-6 p-6 sm:p-8 rounded-2xl border border-surface-border bg-surface-card shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <label class="block font-bold text-xs sm:text-sm text-text-primary">
+                {{ langService.isArabic() ? 'اكتب إجابتك هنا:' : 'Type your answer here:' }}
+              </label>
+              @if (getTextAnswer(q._id).trim()) {
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <app-icon name="check" [size]="12" />
+                  <span>{{ langService.isArabic() ? 'تم حفظ الإجابة' : 'Answer Saved' }}</span>
+                </span>
+              }
+            </div>
+
+            <input
+              type="text"
+              [value]="getTextAnswer(q._id)"
+              (input)="recordTextAnswer(q._id, $event)"
+              [placeholder]="langService.isArabic() ? 'أدخل الإجابة هنا (أرقام أو نصوص)...' : 'Enter your answer here...'"
+              class="w-full px-4 py-3.5 rounded-xl border-2 border-surface-border bg-surface-bg text-text-primary text-base font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all shadow-sm"
+              autocomplete="off"
+              spellcheck="false"
+            />
+
+            <p class="text-[11px] text-text-muted leading-relaxed">
+              {{ langService.isArabic() ? 'ملاحظة: اكتب إجابتك النهائية بدقة. لا تقلق بشأن المسافات الزائدة أو حالة الأحرف حيث يتم احتسابها تلقائياً.' : 'Note: Write your final answer carefully. Extra spaces and letter casing are handled automatically.' }}
+            </p>
+          </div>
+        }
+
         <!-- Question Type 2: Essay / Homework Handwritten Upload -->
         @if (q.type === 'ESSAY') {
           <div class="mt-6 p-6 rounded-2xl border border-surface-border bg-surface-bg/50">
@@ -371,6 +417,26 @@
               <span>{{ langService.isArabic() ? 'التالي' : 'Next' }}</span>
               <app-icon name="chevron-left" [size]="14" />
             </button>
+          } @else if (bundle().isMultiModule && currentModule() === 1) {
+            <div class="flex flex-col items-end gap-1.5 w-full sm:w-auto">
+              @if (unansweredCount() > 0) {
+                <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <app-icon name="alert-circle" [size]="13" />
+                  <span>{{ langService.isArabic() ? ('يتبقى لديك ' + unansweredCount() + ' أسئلة في الموديول الأول!') : (unansweredCount() + ' unanswered questions in Module 1!') }}</span>
+                </span>
+              }
+
+              <button
+                type="button"
+                (click)="transitionToModule2()"
+                [disabled]="isSubmitting() || unansweredCount() > 0"
+                class="w-full sm:w-auto px-7 py-3 rounded-xl font-black text-sm text-white bg-brand-primary hover:bg-brand-primary-hover shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'يجب إجابة كافة أسئلة الموديول الأول للمتابعة' : 'Must answer all Module 1 questions') : (langService.isArabic() ? 'إنهاء الموديول الأول والانتقال للموديول الثاني' : 'Complete Module 1 & Proceed to Module 2')"
+              >
+                <span>{{ langService.isArabic() ? 'إنهاء الموديول الأول والانتقال للموديول الثاني' : 'Complete Module 1 & Proceed to Module 2' }}</span>
+                <app-icon name="arrow-left" [size]="16" />
+              </button>
+            </div>
           } @else {
             <div class="flex flex-col items-end gap-1.5 w-full sm:w-auto">
               @if (unansweredCount() > 0) {

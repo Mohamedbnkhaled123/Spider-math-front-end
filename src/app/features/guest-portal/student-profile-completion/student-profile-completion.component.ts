@@ -67,11 +67,11 @@ export class StudentProfileCompletionComponent implements OnInit {
   );
 
   readonly availableGrades = computed(() => {
-    const curr = this.curriculumTree.find(c => c.code === this.curriculum());
-    return curr?.grades ?? this.curriculumTree[0].grades;
+    return this.discoveryService.getAvailableGradesForCurriculum(this.curriculum(), true);
   });
 
   ngOnInit(): void {
+    this.discoveryService.loadActiveGradesAndTracks().subscribe();
     const user = this.authService.currentUser();
     if (user?.full_name && !this.fullName()) {
       this.fullName.set(user.full_name);

@@ -16,7 +16,8 @@ export interface AssessmentQuestionItem {
   }>;
   points: number;
   requiresDesmos: boolean;
-  type: 'MCQ' | 'ESSAY';
+  type: 'MCQ' | 'ESSAY' | 'INPUT_TEXT';
+  moduleIndex?: 1 | 2;
 }
 
 export interface AssessmentAttemptBundle {
@@ -26,5 +27,8 @@ export interface AssessmentAttemptBundle {
   titleEn: string;
   referenceSheetUrl?: string | null;
   durationMinutes: number;
+  isMultiModule?: boolean;
+  module1TimeMinutes?: number;
+  module2TimeMinutes?: number;
   questions: AssessmentQuestionItem[];
 }

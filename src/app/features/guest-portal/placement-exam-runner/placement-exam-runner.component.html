@@ -52,7 +52,7 @@
             >
               @for (g of availableGradesForCurriculum(); track g.code) {
                 <option [value]="g.code" class="bg-surface-card text-text-primary">
-                  {{ langService.isArabic() ? g.shortLabelAr : g.shortLabelEn }}
+                  {{ langService.isArabic() ? (g.shortLabelAr || g.titleAr) : (g.shortLabelEn || g.titleEn || g.titleAr) }}
                 </option>
               }
             </select>

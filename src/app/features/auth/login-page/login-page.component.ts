@@ -20,6 +20,7 @@ import {
   getAvailableCountryGroups,
   CountryGroup
 } from '../../../core/utils/phone-validator.util';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { LoginTab } from './login-page.models';
 
 declare const google: any;
@@ -39,6 +40,7 @@ export class LoginPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
+  private readonly discoveryService = inject(PublicDiscoveryService);
   readonly langService = inject(LangService);
 
   // Active navigation tab
@@ -89,11 +91,11 @@ export class LoginPageComponent implements OnInit {
   );
 
   readonly regAvailableGrades = computed(() => {
-    const curr = this.curriculumTree.find(c => c.code === this.regCurriculum());
-    return curr?.grades ?? this.curriculumTree[0].grades;
+    return this.discoveryService.getAvailableGradesForCurriculum(this.regCurriculum(), true);
   });
 
   ngOnInit(): void {
+    this.discoveryService.loadActiveGradesAndTracks().subscribe();
     if (isPlatformBrowser(this.platformId)) {
       this.ensureGoogleScriptLoaded().catch(() => {});
     }

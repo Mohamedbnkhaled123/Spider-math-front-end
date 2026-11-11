@@ -97,9 +97,20 @@
           }
         </div>
 
-        <!-- Genuine Desmos Graphing API Container -->
-        <div class="calculator-embed-container relative w-full bg-white flex-1 overflow-hidden">
-          <div #desmosContainer class="desmos-host w-full h-full"></div>
+        <!-- Genuine Desmos Graphing API Container (5-Layer English Lock & Translation Immunity) -->
+        <div
+          class="calculator-embed-container notranslate relative w-full bg-white flex-1 overflow-hidden"
+          translate="no"
+          lang="en"
+          dir="ltr"
+        >
+          <div
+            #desmosContainer
+            class="desmos-host notranslate w-full h-full"
+            translate="no"
+            lang="en"
+            dir="ltr"
+          ></div>
           
           @if (isEngineLoading()) {
             <div class="absolute inset-0 flex items-center justify-center bg-surface-card/90 backdrop-blur-sm z-20">

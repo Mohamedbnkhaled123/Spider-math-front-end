@@ -22,7 +22,8 @@ import {
   IPublicLandingData,
   IScheduleItem,
   IPricingPackage,
-  IPlacementTestResponse
+  IPlacementTestResponse,
+  IGradeItemData
 } from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
@@ -150,10 +151,8 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly isCheckingPlacement = signal<boolean>(false);
   readonly isPlacementModalOpen = signal<boolean>(false);
   readonly canonicalCurricula = CANONICAL_CURRICULUM_TREE;
-  readonly placementAvailableGrades = computed<readonly IGradeLevelMeta[]>(() => {
-    const curr = this.placementCurriculum();
-    const node = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
-    return node ? node.grades : [];
+  readonly placementAvailableGrades = computed<readonly IGradeItemData[]>(() => {
+    return this.discoveryService.getAvailableGradesForCurriculum(this.placementCurriculum(), true);
   });
   // Hero Video State (Lite YouTube Facade: Unprotected Public Video controlled by Super Admin via CMS)
   readonly isHeroVideoPlaying = signal<boolean>(false);

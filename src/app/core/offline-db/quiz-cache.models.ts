@@ -22,6 +22,7 @@ export interface CachedQuestion {
   question_image_url?: string;
   options: CachedQuestionOption[];
   points: number;
+  module_index?: 1 | 2;
   requires_desmos?: boolean;
 }
 
@@ -32,9 +33,18 @@ export interface ActiveQuizRecord {
   unitId?: string;
   referenceSheetUrl?: string | null;
   durationMinutes: number;
+  // Multi-Module Additive Fields
+  isMultiModule?: boolean;
+  module1DurationMinutes?: number;
+  module2DurationMinutes?: number;
+  currentModule?: 1 | 2;
+  module1Locked?: boolean;
+  module1ElapsedSeconds?: number;
+  module2StartedAt?: string;
   questions: CachedQuestion[];
   elapsedSeconds: number;
   selectedAnswers: Record<string, number>;
+  textAnswers?: Record<string, string>;
   uploadedImages: Array<{
     questionId?: string;
     imageUrl: string;
@@ -55,6 +65,10 @@ export interface SyncQueueRecord {
   mcqAnswers: Array<{
     question_id: string;
     selected_option_index: number;
+  }>;
+  textAnswers?: Array<{
+    question_id: string;
+    text_answer: string;
   }>;
   uploadedSolutionImgs: Array<{
     question_id?: string;

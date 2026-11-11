@@ -14,7 +14,7 @@ export class CalculatorModalFactory {
     type: 'DESMOS',
     titleAr: 'آلة ديسموس البيانية المعتمدة (Desmos)',
     titleEn: 'Official Desmos Graphing Calculator',
-    embedUrl: 'https://www.desmos.com/calculator?embed',
+    embedUrl: 'https://www.desmos.com/calculator?embed&lang=en',
     isSupported: true,
     features: ['graphing', 'table', 'keypad', 'functions', 'derivatives', 'integrals']
   };

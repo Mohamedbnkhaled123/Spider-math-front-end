@@ -80,7 +80,8 @@ export class OfflineSyncQueueService implements OnDestroy {
     }>,
     clientStartedAt: string,
     elapsedTimeSec: number,
-    customIdempotencyKey?: string
+    customIdempotencyKey?: string,
+    textAnswers?: Array<{ question_id: string; text_answer: string }>
   ): Promise<string> {
     const idempotencyKey = customIdempotencyKey || this.generateUUIDv4();
     const isOffline = !this.isOnline();
@@ -89,6 +90,7 @@ export class OfflineSyncQueueService implements OnDestroy {
       idempotencyKey,
       assessmentId,
       mcqAnswers,
+      textAnswers: textAnswers || [],
       uploadedSolutionImgs,
       clientStartedAt,
       clientSubmittedAt: new Date().toISOString(),
@@ -169,6 +171,7 @@ export class OfflineSyncQueueService implements OnDestroy {
     const payload = {
       idempotency_key: item.idempotencyKey,
       mcq_answers: item.mcqAnswers,
+      text_answers: item.textAnswers || [],
       uploaded_solution_imgs: item.uploadedSolutionImgs,
       client_started_at: item.clientStartedAt,
       client_submitted_at: item.clientSubmittedAt,

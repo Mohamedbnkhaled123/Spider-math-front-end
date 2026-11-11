@@ -16,6 +16,7 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
   AcademicTermCode,
   AssessmentAdminItem,
@@ -52,6 +53,7 @@ import {
 export class CurriculumStudioComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
+  private readonly discoveryService = inject(PublicDiscoveryService);
 
   // Inputs
   readonly units = input.required<UnitPackageAdminItem[]>();
@@ -451,10 +453,11 @@ export class CurriculumStudioComponent implements OnInit {
     }
 
     this.closeGradeModal();
-    this.toastTriggered.emit({
-      text: gm.mode === 'add' ? 'تمت إضافة الصف الدراسي إلى القسم بنجاح!' : 'تم تعديل بيانات الصف الدراسي بنجاح!',
-      type: 'success'
-    });
+    this.executeSaveActiveGrades(
+      gm.mode === 'add'
+        ? 'تمت إضافة الصف الدراسي إلى القسم وحفظ التعديل بنجاح!'
+        : 'تم تعديل بيانات الصف الدراسي وحفظ التعديل بنجاح!'
+    );
   }
 
   deleteGrade(trackCode: CurriculumCode, gradeCode: string): void {
@@ -474,7 +477,7 @@ export class CurriculumStudioComponent implements OnInit {
           )
         );
         this.activeGrades.update((cur) => cur.filter((c) => c !== gradeCode));
-        this.toastTriggered.emit({ text: `تم حذف "${gradeTitle}" بنجاح من القسم!`, type: 'warning' });
+        this.executeSaveActiveGrades(`تم حذف "${gradeTitle}" واعتماد التعديلات بنجاح!`);
       },
       true,
       'نعم، احذف الصف',
@@ -518,6 +521,8 @@ export class CurriculumStudioComponent implements OnInit {
       next: () => {
         this.isSavingActiveGrades.set(false);
         this.isGradesModalOpen.set(false);
+        this.discoveryService.activeGrades.set(this.activeGrades());
+        this.discoveryService.curriculaTracks.set(this.allCurriculaTracks() as any);
         this.toastTriggered.emit({
           text: successMessage,
           type: 'success'

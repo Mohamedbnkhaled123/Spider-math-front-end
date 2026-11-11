@@ -65,11 +65,8 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
 
   readonly gradeTitleDisplay = computed(() => {
     const code = this.gradeLevel();
-    for (const c of this.curriculumTree) {
-      const g = c.grades.find((item) => item.code === code);
-      if (g) return this.langService.isArabic() ? g.titleAr : g.titleEn;
-    }
-    return (code || '').replace(/_/g, ' ');
+    const title = this.discoveryService.getGradeTitle(this.curriculum(), code, this.langService.isArabic());
+    return title || (code || '').replace(/_/g, ' ');
   });
 
   // Authenticated Student State
@@ -87,9 +84,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
 
   // Available grades for the currently selected curriculum (for guest selector)
   readonly availableGradesForCurriculum = computed(() => {
-    const c = this.curriculum();
-    const found = this.curriculumTree.find(item => item.code === c);
-    return found?.grades ?? [];
+    return this.discoveryService.getAvailableGradesForCurriculum(this.curriculum(), true);
   });
 
   // Exam state
@@ -154,6 +149,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.discoveryService.loadActiveGradesAndTracks().subscribe();
     const student = this.authService.currentUser();
     if (this.authService.isAuthenticated() && student) {
       if (student.curriculum) {

@@ -67,6 +67,10 @@ export class AssessmentAttemptViewComponent implements OnInit {
   readonly isSubmissionCompleted = signal<boolean>(false);
   readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
 
+  // Multi-Module State
+  readonly currentModule = signal<1 | 2>(1);
+  readonly isModule1Locked = signal<boolean>(false);
+
   constructor() {
     // Auto-submit when time expires (urgencyState === 'EXPIRED') even if questions remain unanswered
     effect(() => {
@@ -74,9 +78,17 @@ export class AssessmentAttemptViewComponent implements OnInit {
       const isCompleted = this.isSubmissionCompleted();
       const submitting = this.isSubmitting();
       const hasQuestions = this.bundle().questions.length > 0;
+      const isMulti = this.bundle().isMultiModule;
+      const currMod = this.currentModule();
 
       if (urgency === 'EXPIRED' && !isCompleted && !submitting && hasQuestions) {
-        this.submitAssessment(true);
+        if (isMulti && currMod === 1) {
+          // In multi-module exams, Module 1 expiration auto-advances to Module 2 immediately
+          this.confirmDialogService.close();
+          this.transitionToModule2(true);
+        } else {
+          this.submitAssessment(true);
+        }
       }
     });
   }
@@ -91,20 +103,36 @@ export class AssessmentAttemptViewComponent implements OnInit {
     questions: []
   });
 
+  // Partition questions per module
+  readonly module1Questions = computed(() =>
+    this.bundle().questions.filter(q => (q.moduleIndex ?? 1) === 1)
+  );
+
+  readonly module2Questions = computed(() =>
+    this.bundle().questions.filter(q => q.moduleIndex === 2)
+  );
+
+  readonly activeModuleQuestions = computed(() => {
+    if (!this.bundle().isMultiModule) {
+      return this.bundle().questions;
+    }
+    return this.currentModule() === 1 ? this.module1Questions() : this.module2Questions();
+  });
+
   readonly currentQuestion = computed<AssessmentQuestionItem | null>(() => {
-    const list = this.bundle().questions;
+    const list = this.activeModuleQuestions();
     const idx = this.activeQuestionIdx();
     return list[idx] || (list.length > 0 ? list[0] : null);
   });
 
-  readonly totalQuestionsCount = computed(() => this.bundle().questions.length);
+  readonly totalQuestionsCount = computed(() => this.activeModuleQuestions().length);
 
   // Homework Photos Signal
   readonly uploadedHomeworkPhotos = signal<string[]>([]);
 
-  // Unanswered Questions Tracking (Enforce 100% completion before submission)
+  // Unanswered Questions Tracking (Enforce 100% completion before submission / module advancement)
   readonly unansweredQuestions = computed(() => {
-    const list = this.bundle().questions;
+    const list = this.activeModuleQuestions();
     const active = this.quizCache.activeQuiz();
     if (!active || list.length === 0) return [];
 
@@ -126,6 +154,10 @@ export class AssessmentAttemptViewComponent implements OnInit {
     if (assessmentId) {
       this.quizCache.startAndCache(assessmentId).subscribe({
         next: (record) => {
+          const isMultiModule = !!(record.isMultiModule ?? (record as any).is_multi_module);
+          const module1TimeMinutes = record.module1DurationMinutes ?? (record as any).module_1_time_minutes ?? 35;
+          const module2TimeMinutes = record.module2DurationMinutes ?? (record as any).module_2_time_minutes ?? 35;
+
           const mappedQuestions: AssessmentQuestionItem[] = (record.questions || []).map((q, idx) => ({
             _id: q._id,
             order: q.question_order ?? idx + 1,
@@ -139,7 +171,12 @@ export class AssessmentAttemptViewComponent implements OnInit {
             })),
             points: q.points || 1,
             requiresDesmos: !!q.requires_desmos,
-            type: (q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' || !q.options || q.options.length === 0) ? 'ESSAY' : 'MCQ'
+            type: q.question_type === 'INPUT_TEXT'
+              ? 'INPUT_TEXT'
+              : (q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' || !q.options || q.options.length === 0)
+              ? 'ESSAY'
+              : 'MCQ',
+            moduleIndex: ((q as any).module_index === 2 || (q as any).moduleIndex === 2) ? 2 : 1
           }));
 
           this.bundle.set({
@@ -149,8 +186,21 @@ export class AssessmentAttemptViewComponent implements OnInit {
             titleEn: '',
             referenceSheetUrl: record.referenceSheetUrl || null,
             durationMinutes: record.durationMinutes || 30,
+            isMultiModule,
+            module1TimeMinutes,
+            module2TimeMinutes,
             questions: mappedQuestions
           });
+
+          if (isMultiModule) {
+            if (record.currentModule === 2 || record.module1Locked) {
+              this.currentModule.set(2);
+              this.isModule1Locked.set(true);
+            } else {
+              this.currentModule.set(1);
+              this.isModule1Locked.set(false);
+            }
+          }
         },
         error: (err) => {
           console.error('Failed to load assessment questions', err);
@@ -221,12 +271,23 @@ export class AssessmentAttemptViewComponent implements OnInit {
     this.quizCache.activeQuiz.set({ ...currentQuiz });
   }
 
+  getTextAnswer(questionId: string): string {
+    return this.quizCache.activeQuiz()?.textAnswers?.[questionId] || '';
+  }
+
+  recordTextAnswer(questionId: string, event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.submissionWarning.set('');
+    this.quizCache.recordTextAnswer(questionId, val);
+  }
+
   isQuestionAnswered(questionId: string): boolean {
     const active = this.quizCache.activeQuiz();
     if (!active) return false;
     const hasOption = active.selectedAnswers?.[questionId] !== undefined;
     const hasImage = (active.uploadedImages || []).some(img => img.questionId === questionId);
-    return hasOption || hasImage;
+    const hasText = Boolean(active.textAnswers?.[questionId]?.trim());
+    return hasOption || hasImage || hasText;
   }
 
   getQuestionImages(questionId: string) {
@@ -277,6 +338,53 @@ export class AssessmentAttemptViewComponent implements OnInit {
 
   toggleTimerVisibility(): void {
     this.isTimerVisible.update(v => !v);
+  }
+
+  /**
+   * Transitions from Module 1 to Module 2.
+   * Prompts confirmation dialog warning that Module 1 will be permanently locked.
+   * Once confirmed, resets question index, locks Module 1, and starts Module 2 clock.
+   */
+  async transitionToModule2(isAutoTransition: boolean = false): Promise<void> {
+    if (this.currentModule() !== 1 || this.isModule1Locked()) return;
+
+    if (!isAutoTransition) {
+      const unanswered = this.unansweredQuestions();
+      if (unanswered.length > 0) {
+        const numbersList = unanswered.map((u) => u.order).join('، ');
+        this.submissionWarning.set(
+          this.langService.isArabic()
+            ? `تنبيه: لا يمكن إنهاء الموديول الأول لوجود أسئلة غير مجاب عنها! يرجى إجابة الأسئلة التالية أولاً: (سؤال رقم: ${numbersList})`
+            : `Warning: Cannot finish Module 1 with unanswered questions! Please answer: (${numbersList})`
+        );
+        this.activeQuestionIdx.set(unanswered[0].index);
+        return;
+      }
+
+      const confirmed = await this.confirmDialogService.confirm({
+        title: this.langService.isArabic() ? 'تأكيد إنهاء وتسليم الموديول الأول' : 'Confirm Finishing Module 1',
+        message: this.langService.isArabic()
+          ? 'تنبيه هام: بمجرد تأكيد إنهاء وتسليم الموديول الأول، لن تتمكن من العودة إليه أو تعديل إجاباته نهائياً، وسيتم الانتقال تلقائياً إلى الموديول الثاني. هل تود المتابعة؟'
+          : 'Important Notice: Once you confirm completion of Module 1, you cannot return to review or edit your answers, and you will proceed to Module 2. Do you want to proceed?',
+        confirmLabel: this.langService.isArabic() ? 'نعم، الانتقال للموديول الثاني' : 'Yes, Proceed to Module 2',
+        cancelLabel: this.langService.isArabic() ? 'مراجعة أسئلة الموديول الأول' : 'Review Module 1 Questions',
+        icon: 'alert-triangle',
+        isDestructive: false
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    } else {
+      this.confirmDialogService.close();
+    }
+
+    this.submissionWarning.set('');
+    this.isModule1Locked.set(true);
+    this.currentModule.set(2);
+    this.activeQuestionIdx.set(0);
+
+    await this.quizCache.transitionToModule2(this.bundle().assessmentId);
   }
 
   /**
@@ -333,6 +441,13 @@ export class AssessmentAttemptViewComponent implements OnInit {
         })
       );
 
+      const textAnswers = Object.entries(record?.textAnswers ?? {}).map(
+        ([question_id, text_answer]) => ({
+          question_id,
+          text_answer: String(text_answer)
+        })
+      );
+
       const homeworkImgs = (record?.uploadedImages ?? []).map(img => ({
         question_id: img.questionId,
         image_url: img.imageUrl,
@@ -340,13 +455,16 @@ export class AssessmentAttemptViewComponent implements OnInit {
         rotation_deg: img.rotation
       }));
 
+      const totalElapsedSec = (record?.module1ElapsedSeconds || 0) + (record?.elapsedSeconds || 0);
+
       const payload = {
         idempotency_key: idempotencyKey,
         mcq_answers: mcqAnswers,
+        text_answers: textAnswers,
         uploaded_solution_imgs: homeworkImgs,
         client_started_at: record?.clientStartedAt ?? new Date().toISOString(),
         client_submitted_at: new Date().toISOString(),
-        elapsed_time_sec: record?.elapsedSeconds ?? 120,
+        elapsed_time_sec: totalElapsedSec || 120,
         is_auto_submit: isAutoSubmit,
         is_offline_cached: false,
         offline_disconnect_count: 0
@@ -378,8 +496,9 @@ export class AssessmentAttemptViewComponent implements OnInit {
         mcqAnswers,
         homeworkImgs,
         record?.clientStartedAt ?? new Date().toISOString(),
-        record?.elapsedSeconds ?? 120,
-        idempotencyKey
+        totalElapsedSec || 120,
+        idempotencyKey,
+        textAnswers
       );
       // Clear active quiz cache from both Dexie and localStorage after queuing offline attempt
       await this.quizCache.clearQuiz(this.bundle().assessmentId);

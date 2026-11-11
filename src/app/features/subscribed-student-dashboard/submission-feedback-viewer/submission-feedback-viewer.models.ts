@@ -17,7 +17,7 @@ export interface CustomMistakeItem {
 export interface QuestionReviewItem {
   questionId: string;
   questionOrder: number;
-  questionType: 'MCQ' | 'ESSAY_PHOTO';
+  questionType: 'MCQ' | 'ESSAY_PHOTO' | 'INPUT_TEXT';
   questionText: string;
   questionImageUrl?: string | null;
   options: string[];

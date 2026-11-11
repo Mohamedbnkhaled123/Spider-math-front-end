@@ -214,6 +214,9 @@ export class AssessmentStudioComponent implements OnInit {
     gradeLevel: string;
     term: AcademicTermCode;
     durationMinutes: number;
+    isMultiModule: boolean;
+    module1TimeMinutes: number;
+    module2TimeMinutes: number;
     passPercentage: number;
     maxAttempts: number;
     isScheduled: boolean;
@@ -230,6 +233,9 @@ export class AssessmentStudioComponent implements OnInit {
     gradeLevel: '',
     term: 'TERM_1',
     durationMinutes: 45,
+    isMultiModule: false,
+    module1TimeMinutes: 35,
+    module2TimeMinutes: 35,
     passPercentage: 60,
     maxAttempts: 1,
     isScheduled: false,
@@ -271,10 +277,57 @@ export class AssessmentStudioComponent implements OnInit {
   readonly newQuestionTextAr = signal<string>('');
   readonly newQuestionImageUrl = signal<string | null>(null);
   readonly newQuestionOptions = signal<string[]>(['', '', '', '']);
+  readonly newQuestionAcceptedAnswers = signal<string[]>(['']);
   readonly newQuestionCorrectIndex = signal<number>(0);
   readonly newQuestionPoints = signal<number>(5);
+  readonly newQuestionModuleIndex = signal<1 | 2>(1);
   readonly newQuestionYoutubeUrl = signal<string>('');
   readonly editingQuestionId = signal<string | null>(null);
+
+  // Multi-Module Questions Filtering in Studio
+  readonly moduleFilterTab = signal<'ALL' | 1 | 2>('ALL');
+
+  readonly module1QuestionsCount = computed(() => {
+    const asm = this.activeAssessment();
+    if (!asm || !asm.questions) return 0;
+    return asm.questions.filter((q) => q.moduleIndex !== 2).length;
+  });
+
+  readonly module2QuestionsCount = computed(() => {
+    const asm = this.activeAssessment();
+    if (!asm || !asm.questions) return 0;
+    return asm.questions.filter((q) => q.moduleIndex === 2).length;
+  });
+
+  readonly editorFilteredQuestions = computed(() => {
+    const asm = this.activeAssessment();
+    if (!asm || !asm.questions) return [];
+    const tab = this.moduleFilterTab();
+    if (tab === 'ALL') return asm.questions;
+    if (tab === 1) return asm.questions.filter((q) => q.moduleIndex !== 2);
+    return asm.questions.filter((q) => q.moduleIndex === 2);
+  });
+
+  addAcceptedAnswerOption(): void {
+    this.newQuestionAcceptedAnswers.update((arr) => [...arr, '']);
+  }
+
+  removeAcceptedAnswerOption(idx: number): void {
+    this.newQuestionAcceptedAnswers.update((arr) => {
+      const copy = [...arr];
+      copy.splice(idx, 1);
+      return copy.length > 0 ? copy : [''];
+    });
+  }
+
+  updateAcceptedAnswer(idx: number, event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.newQuestionAcceptedAnswers.update((arr) => {
+      const copy = [...arr];
+      copy[idx] = val;
+      return copy;
+    });
+  }
 
   // Math Virtual Keyboard Integration
   readonly isMathKeyboardOpen = signal<boolean>(false);
@@ -447,6 +500,9 @@ export class AssessmentStudioComponent implements OnInit {
       calculatorType: asm.calculatorType,
       referenceSheetUrl: asm.referenceSheetUrl || null,
       durationMinutes: asm.durationMinutes,
+      isMultiModule: !!asm.isMultiModule,
+      module1TimeMinutes: asm.module1TimeMinutes ?? 35,
+      module2TimeMinutes: asm.module2TimeMinutes ?? 35,
       passPercentage: asm.passPercentage,
       maxAttempts: asm.maxAttempts,
       isScheduled: !!asm.isScheduled,
@@ -462,8 +518,10 @@ export class AssessmentStudioComponent implements OnInit {
         textAr: this.newQuestionTextAr(),
         imageUrl: this.newQuestionImageUrl(),
         options: this.newQuestionOptions(),
+        acceptedAnswers: this.newQuestionAcceptedAnswers(),
         correctIndex: this.newQuestionCorrectIndex(),
         points: this.newQuestionPoints(),
+        moduleIndex: this.newQuestionModuleIndex(),
         youtubeUrl: this.newQuestionYoutubeUrl()
       },
       createdAt: Date.now(),
@@ -503,7 +561,8 @@ export class AssessmentStudioComponent implements OnInit {
     const hasText = Boolean(this.newQuestionTextAr().trim());
     const hasImg = Boolean(this.newQuestionImageUrl());
     const hasOpts = this.newQuestionOptions().some((o) => Boolean((o || '').trim()));
-    return hasText || hasImg || hasOpts;
+    const hasAccepted = this.newQuestionAcceptedAnswers().some((a) => Boolean((a || '').trim()));
+    return hasText || hasImg || hasOpts || hasAccepted;
   }
 
   syncAssessmentInMemoryList(updatedAsm: AssessmentItem): void {
@@ -533,6 +592,9 @@ export class AssessmentStudioComponent implements OnInit {
       calculatorType: draft.calculatorType || baseItem.calculatorType,
       referenceSheetUrl: draft.referenceSheetUrl !== undefined ? (draft.referenceSheetUrl || null) : baseItem.referenceSheetUrl,
       durationMinutes: draft.durationMinutes || baseItem.durationMinutes || 45,
+      isMultiModule: draft.isMultiModule ?? baseItem.isMultiModule ?? false,
+      module1TimeMinutes: draft.module1TimeMinutes ?? baseItem.module1TimeMinutes ?? 35,
+      module2TimeMinutes: draft.module2TimeMinutes ?? baseItem.module2TimeMinutes ?? 35,
       passPercentage: draft.passPercentage ?? baseItem.passPercentage ?? 60,
       maxAttempts: draft.maxAttempts || baseItem.maxAttempts || 1,
       isScheduled: draft.isScheduled ?? baseItem.isScheduled,
@@ -550,15 +612,22 @@ export class AssessmentStudioComponent implements OnInit {
       snapshot &&
       (Boolean(snapshot.textAr?.trim()) ||
         Boolean(snapshot.imageUrl) ||
-        (snapshot.options || []).some((o) => Boolean((o || '').trim())))
+        (snapshot.options || []).some((o) => Boolean((o || '').trim())) ||
+        (snapshot.acceptedAnswers || []).some((a) => Boolean((a || '').trim())))
     ) {
       this.editingQuestionId.set(snapshot.editingQuestionId);
       this.newQuestionType.set(snapshot.type || 'MCQ');
       this.newQuestionTextAr.set(snapshot.textAr || '');
       this.newQuestionImageUrl.set(snapshot.imageUrl || null);
       this.newQuestionOptions.set(snapshot.options || ['', '', '', '']);
+      this.newQuestionAcceptedAnswers.set(
+        snapshot.acceptedAnswers && snapshot.acceptedAnswers.length > 0
+          ? [...snapshot.acceptedAnswers]
+          : ['']
+      );
       this.newQuestionCorrectIndex.set(snapshot.correctIndex ?? 0);
       this.newQuestionPoints.set(snapshot.points ?? 5);
+      this.newQuestionModuleIndex.set(snapshot.moduleIndex ?? 1);
       this.newQuestionYoutubeUrl.set(snapshot.youtubeUrl || '');
     } else {
       this.resetQuestionForm();
@@ -576,11 +645,16 @@ export class AssessmentStudioComponent implements OnInit {
     if (!rawTitle) return;
     if (!asm.questions || asm.questions.length === 0) return;
 
-    // Validate all MCQ questions before auto-persisting to backend
+    // Validate all MCQ and INPUT_TEXT questions before auto-persisting to backend
     for (const q of asm.questions) {
       if (q.type === 'MCQ') {
         const opts = (q.options || []).map((o) => (o || '').trim());
         if (opts.length < 2 || opts.some((o) => !o) || new Set(opts).size < opts.length) {
+          return;
+        }
+      } else if (q.type === 'INPUT_TEXT') {
+        const accepted = (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean);
+        if (accepted.length === 0) {
           return;
         }
       }
@@ -595,8 +669,11 @@ export class AssessmentStudioComponent implements OnInit {
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
       reference_sheet_url: asm.referenceSheetUrl || null,
-      duration_minutes: asm.durationMinutes,
-      time_limit_minutes: asm.durationMinutes,
+      duration_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
+      time_limit_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
+      is_multi_module: !!asm.isMultiModule,
+      module_1_time_minutes: asm.isMultiModule ? (Number(asm.module1TimeMinutes) || 35) : null,
+      module_2_time_minutes: asm.isMultiModule ? (Number(asm.module2TimeMinutes) || 35) : null,
       pass_percentage: asm.passPercentage,
       max_attempts: asm.maxAttempts || 1,
       available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
@@ -607,15 +684,19 @@ export class AssessmentStudioComponent implements OnInit {
         : !!asm.requiresTeacherReview,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
+        const isInputText = q.type === 'INPUT_TEXT';
+        const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
         return {
           _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
           order: q.order || idx + 1,
-          question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
+          question_type: qType,
           question_text: q.textAr || 'مسألة رياضية',
           question_image_url: q.questionImageUrl || null,
-          options: isEssay ? [] : (q.options || []).map((o) => o.trim()),
-          correct_option_index: isEssay ? 0 : Number(q.correctOptionIndex ?? 0),
+          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => o.trim()),
+          correct_option_index: (isEssay || isInputText) ? 0 : Number(q.correctOptionIndex ?? 0),
+          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => a.trim()).filter(Boolean) : undefined,
           points: Number(q.points || 1),
+          module_index: q.moduleIndex === 2 ? 2 : 1,
           model_answer_text: q.explanationAr || '',
           youtube_solution_url: q.youtubeSolutionUrl || null
         };
@@ -652,6 +733,9 @@ export class AssessmentStudioComponent implements OnInit {
       calculatorType: draft.calculatorType,
       referenceSheetUrl: draft.referenceSheetUrl || null,
       durationMinutes: draft.durationMinutes || 45,
+      isMultiModule: !!draft.isMultiModule,
+      module1TimeMinutes: draft.module1TimeMinutes || 35,
+      module2TimeMinutes: draft.module2TimeMinutes || 35,
       passPercentage: draft.passPercentage || 60,
       maxAttempts: draft.maxAttempts || 1,
       isScheduled: !!draft.isScheduled,
@@ -792,6 +876,9 @@ export class AssessmentStudioComponent implements OnInit {
             calculatorType: (a.graph_calculator === 'DESMOS' || a.calculator_mode === 'DESMOS' || a.calculatorType === 'DESMOS') ? 'DESMOS' : 'NONE',
             referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
             durationMinutes: a.time_limit_minutes || a.duration_minutes || a.durationMinutes || 45,
+            isMultiModule: !!(a.is_multi_module ?? a.isMultiModule),
+            module1TimeMinutes: a.module_1_time_minutes ?? a.module1TimeMinutes ?? 35,
+            module2TimeMinutes: a.module_2_time_minutes ?? a.module2TimeMinutes ?? 35,
             passPercentage: a.pass_percentage ?? a.passPercentage ?? 60,
             maxAttempts: a.max_attempts ?? a.maxAttempts ?? 1,
             availableFrom: fromIso,
@@ -812,7 +899,9 @@ export class AssessmentStudioComponent implements OnInit {
               questionImageUrl: q.question_image_url || null,
               options: q.options || [],
               correctOptionIndex: q.correct_option_index ?? 0,
+              acceptedAnswers: q.accepted_answers || q.acceptedAnswers || [],
               points: q.points || 5,
+              moduleIndex: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
               explanationAr: q.model_answer_text || q.explanation_ar || '',
               youtubeSolutionUrl: q.youtube_solution_url || q.youtubeSolutionUrl || null
             }))
@@ -933,6 +1022,9 @@ export class AssessmentStudioComponent implements OnInit {
       gradeLevel: initialGrade,
       term: this.selectedTerm(),
       durationMinutes: 45,
+      isMultiModule: false,
+      module1TimeMinutes: 35,
+      module2TimeMinutes: 35,
       passPercentage: 60,
       maxAttempts: 1,
       isScheduled: false,
@@ -997,6 +1089,11 @@ export class AssessmentStudioComponent implements OnInit {
     }
 
     this.isSaving.set(true);
+    const isMultiMod = !!form.isMultiModule;
+    const durMins = isMultiMod
+      ? ((Number(form.module1TimeMinutes) || 35) + (Number(form.module2TimeMinutes) || 35))
+      : form.durationMinutes;
+
     const payload = {
       title_ar: rawTitle,
       title_en: (form.titleEn || rawTitle).trim(),
@@ -1007,8 +1104,11 @@ export class AssessmentStudioComponent implements OnInit {
       calculator_mode: form.calculatorType,
       graph_calculator: form.calculatorType,
       reference_sheet_url: form.referenceSheetUrl || null,
-      duration_minutes: form.durationMinutes,
-      time_limit_minutes: form.durationMinutes,
+      duration_minutes: durMins,
+      time_limit_minutes: durMins,
+      is_multi_module: isMultiMod,
+      module_1_time_minutes: isMultiMod ? (Number(form.module1TimeMinutes) || 35) : null,
+      module_2_time_minutes: isMultiMod ? (Number(form.module2TimeMinutes) || 35) : null,
       pass_percentage: form.passPercentage,
       max_attempts: form.maxAttempts || 1,
       available_from: form.isScheduled && form.availableFrom ? new Date(form.availableFrom).toISOString() : null,
@@ -1224,6 +1324,9 @@ export class AssessmentStudioComponent implements OnInit {
     let copy: AssessmentItem = JSON.parse(JSON.stringify(item));
     // Ensure scheduling flag is properly set if availableFrom or availableUntil exists
     copy.isScheduled = !!(copy.availableFrom || copy.availableUntil);
+    copy.isMultiModule = !!copy.isMultiModule;
+    copy.module1TimeMinutes = copy.module1TimeMinutes || 35;
+    copy.module2TimeMinutes = copy.module2TimeMinutes || 35;
 
     const syncDraft = this.draftService.getDraftSync(copy.id);
     if (syncDraft) {
@@ -1311,8 +1414,10 @@ export class AssessmentStudioComponent implements OnInit {
     this.newQuestionTextAr.set('');
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
+    this.newQuestionAcceptedAnswers.set(['']);
     this.newQuestionCorrectIndex.set(0);
     this.newQuestionPoints.set(5);
+    this.newQuestionModuleIndex.set(this.moduleFilterTab() === 2 ? 2 : 1);
     this.newQuestionYoutubeUrl.set('');
   }
 
@@ -1326,8 +1431,12 @@ export class AssessmentStudioComponent implements OnInit {
       ? [...q.options]
       : (q.options?.length ? [...q.options, '', '', ''].slice(0, 4) : ['', '', '', '']);
     this.newQuestionOptions.set(rawOpts);
+    this.newQuestionAcceptedAnswers.set(
+      q.acceptedAnswers && q.acceptedAnswers.length > 0 ? [...q.acceptedAnswers] : ['']
+    );
     this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
     this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
+    this.newQuestionModuleIndex.set(q.moduleIndex === 2 ? 2 : 1);
     this.newQuestionYoutubeUrl.set(q.youtubeSolutionUrl || '');
 
     if (typeof document !== 'undefined') {
@@ -1405,6 +1514,17 @@ export class AssessmentStudioComponent implements OnInit {
         });
         return;
       }
+    } else if (this.newQuestionType() === 'INPUT_TEXT') {
+      const validAccepted = this.newQuestionAcceptedAnswers().map((a) => (a || '').trim()).filter(Boolean);
+      if (validAccepted.length === 0) {
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? 'تنبيه: يجب إضافة إجابة صحيحة واحدة على الأقل للسؤال النصي (الإجابات المحتملة المقبولة)!'
+            : 'Warning: Please add at least one accepted answer for the text question!',
+          type: 'error'
+        });
+        return;
+      }
     }
 
     const questionIndex = asm.questions.findIndex((q) => q.id === editId);
@@ -1422,7 +1542,11 @@ export class AssessmentStudioComponent implements OnInit {
       questionImageUrl: this.newQuestionImageUrl(),
       options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
+      acceptedAnswers: this.newQuestionType() === 'INPUT_TEXT'
+        ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean)
+        : undefined,
       points,
+      moduleIndex: this.newQuestionModuleIndex() === 2 ? 2 : 1,
       youtubeSolutionUrl: (this.newQuestionYoutubeUrl() || '').trim() || null
     };
 
@@ -1498,6 +1622,17 @@ export class AssessmentStudioComponent implements OnInit {
         });
         return;
       }
+    } else if (this.newQuestionType() === 'INPUT_TEXT') {
+      const validAccepted = this.newQuestionAcceptedAnswers().map((a) => (a || '').trim()).filter(Boolean);
+      if (validAccepted.length === 0) {
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? 'تنبيه: يجب إضافة إجابة صحيحة واحدة على الأقل للسؤال النصي (الإجابات المحتملة المقبولة)!'
+            : 'Warning: Please add at least one accepted answer for the text question!',
+          type: 'error'
+        });
+        return;
+      }
     }
 
     const points = Math.max(1, Math.min(50, Number(this.newQuestionPoints()) || 5));
@@ -1509,7 +1644,11 @@ export class AssessmentStudioComponent implements OnInit {
       questionImageUrl: this.newQuestionImageUrl(),
       options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
+      acceptedAnswers: this.newQuestionType() === 'INPUT_TEXT'
+        ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean)
+        : undefined,
       points,
+      moduleIndex: this.newQuestionModuleIndex() === 2 ? 2 : 1,
       youtubeSolutionUrl: (this.newQuestionYoutubeUrl() || '').trim() || null
     };
 
@@ -1640,6 +1779,12 @@ export class AssessmentStudioComponent implements OnInit {
           this.showEditorError(`السؤال رقم ${q.order}: يرجى تحديد الإجابة الصحيحة من بين الخيارات المتاحة.`, 'QUESTIONS');
           return;
         }
+      } else if (q.type === 'INPUT_TEXT') {
+        const answers = (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean);
+        if (answers.length === 0) {
+          this.showEditorError(`السؤال رقم ${q.order}: يجب إضافة إجابة صحيحة مقبولة واحدة على الأقل.`, 'QUESTIONS');
+          return;
+        }
       }
     }
 
@@ -1655,8 +1800,11 @@ export class AssessmentStudioComponent implements OnInit {
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
       reference_sheet_url: asm.referenceSheetUrl || null,
-      duration_minutes: asm.durationMinutes,
-      time_limit_minutes: asm.durationMinutes,
+      duration_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
+      time_limit_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
+      is_multi_module: !!asm.isMultiModule,
+      module_1_time_minutes: asm.isMultiModule ? (Number(asm.module1TimeMinutes) || 35) : null,
+      module_2_time_minutes: asm.isMultiModule ? (Number(asm.module2TimeMinutes) || 35) : null,
       pass_percentage: asm.passPercentage,
       max_attempts: asm.maxAttempts || 1,
       available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
@@ -1665,15 +1813,19 @@ export class AssessmentStudioComponent implements OnInit {
       requires_teacher_review: asm.questions.some(q => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO') ? true : !!asm.requiresTeacherReview,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
+        const isInputText = q.type === 'INPUT_TEXT';
+        const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
         return {
           _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
           order: q.order || idx + 1,
-          question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
+          question_type: qType,
           question_text: q.textAr || 'مسألة رياضية',
           question_image_url: q.questionImageUrl || null,
-          options: isEssay ? [] : (q.options || []).map((o) => o.trim()),
-          correct_option_index: isEssay ? 0 : Number(q.correctOptionIndex ?? 0),
+          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => o.trim()),
+          correct_option_index: (isEssay || isInputText) ? 0 : Number(q.correctOptionIndex ?? 0),
+          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => a.trim()).filter(Boolean) : undefined,
           points: Number(q.points || 1),
+          module_index: q.moduleIndex === 2 ? 2 : 1,
           model_answer_text: q.explanationAr || '',
           youtube_solution_url: q.youtubeSolutionUrl || null
         };

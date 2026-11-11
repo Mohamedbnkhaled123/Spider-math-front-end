@@ -22,8 +22,10 @@ export interface QuestionComposerSnapshot {
   textAr: string;
   imageUrl: string | null;
   options: string[];
+  acceptedAnswers?: string[];
   correctIndex: number;
   points: number;
+  moduleIndex?: 1 | 2;
   youtubeUrl: string;
 }
 
@@ -39,6 +41,9 @@ export interface AssessmentDraft {
   calculatorType: CalculatorMode;
   referenceSheetUrl?: string | null;
   durationMinutes: number;
+  isMultiModule?: boolean;
+  module1TimeMinutes?: number;
+  module2TimeMinutes?: number;
   passPercentage: number;
   maxAttempts: number;
   isScheduled: boolean;

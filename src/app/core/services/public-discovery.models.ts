@@ -9,11 +9,28 @@ export interface ITermTreeItem {
 
 export interface IGradeLevelTreeItem {
   gradeLevel: string;
+  titleAr?: string;
+  titleEn?: string;
   terms: ITermTreeItem[];
   hasPublishedUnits: boolean;
   totalPublishedUnitsCount: number;
   hasPlacementTest?: boolean;
   isAvailable: boolean; // Dynamic availability: true if content exists, false = 'Coming Soon'
+  isActive?: boolean;
+}
+
+export interface IGradeItemData {
+  code: string;
+  titleAr: string;
+  titleEn?: string;
+  shortLabelAr?: string;
+  shortLabelEn?: string;
+}
+
+export interface ICurriculumTrackItemData {
+  code: CurriculumCode;
+  nameAr: string;
+  grades: IGradeItemData[];
 }
 
 export interface ICurriculumTreeItem {
@@ -150,6 +167,8 @@ export interface IPublicLandingData {
   whatsappSupportNumber: string;
   contactChannels?: IContactChannels;
   landingUnitIds?: string[];
+  activeGrades?: string[];
+  curriculaTracks?: ICurriculumTrackItemData[];
 }
 
 export interface IPlacementQuestionOption {

@@ -124,7 +124,7 @@ export class GraphCalculatorModalComponent implements OnDestroy {
         script = document.createElement('script');
         script.id = scriptId;
         script.src =
-          'https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6';
+          'https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6&lang=en';
         script.async = true;
         document.head.appendChild(script);
       }

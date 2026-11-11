@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 
@@ -13,7 +13,9 @@ import {
   IUnlockPlacementResult,
   ICompleteProfilePayload,
   ICompleteProfileResult,
-  IGradeQuizzesResponse
+  IGradeQuizzesResponse,
+  ICurriculumTrackItemData,
+  IGradeItemData
 } from './public-discovery.models';
 import {
   CANONICAL_CURRICULUM_TREE,
@@ -28,8 +30,25 @@ import { optimizeCloudinaryUrl } from '../../shared/utils/box2d-cropper.util';
 export class PublicDiscoveryService {
   private readonly http = inject(HttpClient);
   private readonly apiBase = '/api/v1';
+
+  // Dynamic Reactive Signals for Active Grades and Curricula Tracks
+  readonly activeGrades = signal<string[]>(['SEC_3']);
+  readonly curriculaTracks = signal<ICurriculumTrackItemData[]>(
+    CANONICAL_CURRICULUM_TREE.map(c => ({
+      code: c.code as CurriculumCode,
+      nameAr: c.titleAr,
+      grades: c.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn
+      }))
+    }))
+  );
+  readonly isTracksLoaded = signal<boolean>(false);
+
   private curriculumTree$?: Observable<ICurriculumTreeItem[]>;
   private landingData$?: Observable<IPublicLandingData>;
+  private activeGrades$?: Observable<{ activeGrades: string[]; curriculaTracks: ICurriculumTrackItemData[] }>;
   private readonly unitsCatalogCache = new Map<string, Observable<any[]>>();
   private readonly gradeQuizzesCache = new Map<string, Observable<IGradeQuizzesResponse>>();
 
@@ -224,8 +243,20 @@ export class PublicDiscoveryService {
               facebook_url: raw.facebookUrl || raw.facebook_url || '',
               youtube_channel_url: raw.youtubeUrl || raw.youtube_channel_url || ''
             },
-            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || []
+            landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || [],
+            activeGrades: raw.activeGrades || raw.active_grades || ['SEC_3'],
+            curriculaTracks: raw.curriculaTracks || raw.curricula_tracks || []
           };
+        }),
+        map(data => {
+          if (data.activeGrades && Array.isArray(data.activeGrades)) {
+            this.activeGrades.set(data.activeGrades);
+          }
+          if (data.curriculaTracks && Array.isArray(data.curriculaTracks) && data.curriculaTracks.length > 0) {
+            this.curriculaTracks.set(data.curriculaTracks);
+          }
+          this.isTracksLoaded.set(true);
+          return data;
         }),
         catchError(() => {
           this.landingData$ = undefined;
@@ -235,6 +266,72 @@ export class PublicDiscoveryService {
       );
     }
     return this.landingData$;
+  }
+
+  /**
+   * Fetches active grades and dynamic curricula tracks configured by Eng. Heba.
+   * Updates reactive signals and returns observable.
+   */
+  loadActiveGradesAndTracks(): Observable<{ activeGrades: string[]; curriculaTracks: ICurriculumTrackItemData[] }> {
+    if (!this.activeGrades$) {
+      this.activeGrades$ = this.http.get<{ success: boolean; data: { activeGrades: string[]; curriculaTracks: ICurriculumTrackItemData[] } }>(
+        `${this.apiBase}/public/active-grades`
+      ).pipe(
+        map(res => {
+          const activeGrades = res?.data?.activeGrades || ['SEC_3'];
+          const curriculaTracks = res?.data?.curriculaTracks || [];
+          this.activeGrades.set(activeGrades);
+          if (curriculaTracks.length > 0) {
+            this.curriculaTracks.set(curriculaTracks);
+          }
+          this.isTracksLoaded.set(true);
+          return { activeGrades, curriculaTracks };
+        }),
+        catchError(() => {
+          this.activeGrades$ = undefined;
+          this.isTracksLoaded.set(true);
+          return of({ activeGrades: this.activeGrades(), curriculaTracks: this.curriculaTracks() });
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this.activeGrades$;
+  }
+
+  isGradeActive(code: string): boolean {
+    return this.activeGrades().includes(code);
+  }
+
+  getAvailableGradesForCurriculum(curr: CurriculumCode, activeOnly = true): IGradeItemData[] {
+    const tracks = this.curriculaTracks();
+    const track = tracks.find(t => t.code === curr);
+    const canonicalNode = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
+    const rawGrades = (track?.grades && track.grades.length > 0)
+      ? track.grades
+      : (canonicalNode?.grades || []);
+
+    const grades: IGradeItemData[] = rawGrades.map(g => {
+      const canonical = canonicalNode?.grades.find(c => c.code === g.code);
+      return {
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn,
+        shortLabelAr: g.shortLabelAr || canonical?.shortLabelAr || g.titleAr,
+        shortLabelEn: g.shortLabelEn || canonical?.shortLabelEn || g.titleEn || g.titleAr
+      };
+    });
+
+    if (activeOnly) {
+      return grades.filter(g => this.isGradeActive(g.code));
+    }
+    return grades;
+  }
+
+  getGradeTitle(curr: CurriculumCode, gradeCode: string, isAr: boolean): string {
+    const grades = this.getAvailableGradesForCurriculum(curr, false);
+    const grade = grades.find(g => g.code === gradeCode);
+    if (!grade) return gradeCode;
+    return isAr ? grade.titleAr : (grade.titleEn || grade.titleAr);
   }
 
   /**

@@ -116,14 +116,14 @@
                     </div>
                   }
 
-                  @if (q.questionType === 'MCQ') {
+                  @if (q.questionType === 'MCQ' || q.questionType === 'INPUT_TEXT') {
                     <div class="p-3 rounded-xl bg-surface-card border border-surface-border text-xs">
-                      <span class="text-[11px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'إجابتك المختارة:' : 'Your Selected Answer:' }}</span>
+                      <span class="text-[11px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'إجابتك المسجلة:' : 'Your Answer:' }}</span>
                       <span class="font-bold text-brand-primary dark:text-brand-accent">
                         @if (q.studentAnswerText) {
                           <app-math-formula [text]="q.studentAnswerText" />
                         } @else {
-                          {{ langService.isArabic() ? 'لم يتم اختيار إجابة' : 'No answer selected' }}
+                          {{ langService.isArabic() ? 'لم يتم تسجيل إجابة' : 'No answer provided' }}
                         }
                       </span>
                     </div>
@@ -332,12 +332,12 @@
                         {{ langService.isArabic() ? ('السؤال رقم ' + q.questionOrder) : ('Question #' + q.questionOrder) }}
                       </span>
                       <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-bg border border-surface-border text-text-secondary">
-                        {{ q.questionType === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice') : (langService.isArabic() ? 'مسألة مقالية مصورة' : 'Essay Problem') }}
+                        {{ q.questionType === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice') : q.questionType === 'INPUT_TEXT' ? (langService.isArabic() ? 'إدخال نص / إجابة قصيرة' : 'Short Answer') : (langService.isArabic() ? 'مسألة مقالية مصورة' : 'Essay Problem') }}
                       </span>
                     </div>
 
                     <!-- Points & Result Badge -->
-                    @if (q.questionType === 'MCQ') {
+                    @if (q.questionType === 'MCQ' || q.questionType === 'INPUT_TEXT') {
                       @if (q.isCorrect) {
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-numeric">
                           <app-icon name="check" [size]="14" />
@@ -433,6 +433,41 @@
                           <span>{{ langService.isArabic() ? 'لم تقم باختيار أي إجابة لهذا السؤال أثناء أداء الامتحان.' : 'No answer was selected for this question during exam.' }}</span>
                         </div>
                       }
+                    </div>
+                  }
+
+                  <!-- Short Answer / INPUT_TEXT Review Breakdown -->
+                  @if (q.questionType === 'INPUT_TEXT') {
+                    <div class="space-y-3 pt-2">
+                      <div
+                        class="p-4 rounded-2xl border-[2px] transition-all"
+                        [ngClass]="q.isCorrect ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-rose-500/5 border-rose-500/30'"
+                      >
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <span class="text-[11px] font-bold text-text-muted block mb-1">
+                              {{ langService.isArabic() ? 'إجابتك المسجلة:' : 'Your Recorded Answer:' }}
+                            </span>
+                            <span
+                              class="text-sm font-bold block"
+                              [ngClass]="q.isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+                            >
+                              {{ q.studentAnswerText || (langService.isArabic() ? 'لم تتم الإجابة' : 'No answer') }}
+                            </span>
+                          </div>
+
+                          @if (q.correctAnswerText) {
+                            <div>
+                              <span class="text-[11px] font-bold text-text-muted block mb-1">
+                                {{ langService.isArabic() ? 'الإجابات النموذجية المقبولة:' : 'Accepted Model Answers:' }}
+                              </span>
+                              <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400 block font-mono">
+                                {{ q.correctAnswerText }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      </div>
                     </div>
                   }
 

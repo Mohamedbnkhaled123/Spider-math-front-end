@@ -42,8 +42,14 @@ export class QuizCacheService implements OnDestroy {
   // Computed Remaining Time & Urgency (Animation 4.6)
   readonly remainingSeconds = computed(() => {
     const quiz = this.activeQuiz();
-    if (!quiz || !quiz.durationMinutes) return 0;
-    const totalSeconds = quiz.durationMinutes * 60;
+    if (!quiz) return 0;
+    let totalSeconds = (quiz.durationMinutes || 30) * 60;
+    if (quiz.isMultiModule) {
+      const activeMins = quiz.currentModule === 2
+        ? (quiz.module2DurationMinutes || 35)
+        : (quiz.module1DurationMinutes || 35);
+      totalSeconds = activeMins * 60;
+    }
     return Math.max(0, totalSeconds - this.elapsedSeconds());
   });
 
@@ -106,15 +112,28 @@ export class QuizCacheService implements OnDestroy {
               text_en: typeof opt === 'string' ? opt : (opt.text_en || opt.text || '')
             })),
             points: q.points ?? 1,
+            module_index: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
             requires_desmos: !!(q.requires_desmos || q.requiresDesmos)
           }));
 
           // Check Dexie and synchronous localStorage fallback before updating record
           const cached = await this.getExistingState(assessmentId);
 
+          // Multi-module metadata resolution
+          const isMultiModule = Boolean(asm.is_multi_module ?? asm.isMultiModule ?? data.isMultiModule ?? cached?.isMultiModule);
+          const module1DurationMinutes = asm.module_1_time_minutes ?? asm.module1TimeMinutes ?? data.module1TimeMinutes ?? cached?.module1DurationMinutes ?? undefined;
+          const module2DurationMinutes = asm.module_2_time_minutes ?? asm.module2TimeMinutes ?? data.module2TimeMinutes ?? cached?.module2DurationMinutes ?? undefined;
+          const currentModule: 1 | 2 = (cached?.currentModule === 2) ? 2 : 1;
+          const module1Locked = Boolean(cached?.module1Locked);
+          const module1ElapsedSeconds = cached?.module1ElapsedSeconds ?? 0;
+          const module2StartedAt = cached?.module2StartedAt;
+
           // Merge answers and images: never overwrite with empty structures
           const preservedAnswers: Record<string, number> = {
             ...(cached?.selectedAnswers ?? {})
+          };
+          const preservedTextAnswers: Record<string, string> = {
+            ...(cached?.textAnswers ?? {})
           };
           const preservedImages = (cached?.uploadedImages && cached.uploadedImages.length > 0)
             ? cached.uploadedImages
@@ -123,7 +142,21 @@ export class QuizCacheService implements OnDestroy {
           // Authoritative start timestamp: data.serverStartedAt || cached.serverStartedAt || cached.clientStartedAt || clientStartedAt
           const serverStartedAt = data.serverStartedAt || data.server_started_at || cached?.serverStartedAt;
           const clientStartedAt = cached?.clientStartedAt || data.clientStartedAt || data.client_started_at || initialClientStartedAt;
-          const authoritativeStart = serverStartedAt || clientStartedAt;
+          let authoritativeStart = serverStartedAt || clientStartedAt;
+
+          const durationMinutes = asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || data.duration_minutes || cached?.durationMinutes || 30;
+          let activeDurationMinutes = durationMinutes;
+
+          if (isMultiModule) {
+            if (currentModule === 2) {
+              activeDurationMinutes = module2DurationMinutes || 35;
+              if (module2StartedAt) {
+                authoritativeStart = module2StartedAt;
+              }
+            } else {
+              activeDurationMinutes = module1DurationMinutes || 35;
+            }
+          }
 
           const startMs = new Date(authoritativeStart).getTime();
           const realElapsedSec = !isNaN(startMs)
@@ -132,9 +165,7 @@ export class QuizCacheService implements OnDestroy {
 
           // Guard against OS clock rollback (monotonicity):
           const monotonicElapsedSec = Math.max(realElapsedSec, cached?.elapsedSeconds ?? 0);
-
-          const durationMinutes = asm.time_limit_minutes || asm.duration_minutes || data.durationMinutes || data.duration_minutes || cached?.durationMinutes || 30;
-          const totalDurationSec = durationMinutes * 60;
+          const totalDurationSec = activeDurationMinutes * 60;
 
           const isExpired = monotonicElapsedSec >= totalDurationSec;
           const finalElapsedSec = isExpired ? totalDurationSec : monotonicElapsedSec;
@@ -146,9 +177,17 @@ export class QuizCacheService implements OnDestroy {
             unitId: asm.unit_package_id || asm.unit_id || data.unit_id || cached?.unitId,
             referenceSheetUrl: optimizeCloudinaryUrl(asm.reference_sheet_url || asm.referenceSheetUrl || data.reference_sheet_url || cached?.referenceSheetUrl || null, 1280),
             durationMinutes,
+            isMultiModule,
+            module1DurationMinutes,
+            module2DurationMinutes,
+            currentModule,
+            module1Locked,
+            module1ElapsedSeconds,
+            module2StartedAt,
             questions: sanitizedQuestions.length > 0 ? sanitizedQuestions : (cached?.questions || []),
             elapsedSeconds: finalElapsedSec,
             selectedAnswers: preservedAnswers,
+            textAnswers: preservedTextAnswers,
             uploadedImages: preservedImages,
             clientStartedAt,
             serverStartedAt,
@@ -165,7 +204,7 @@ export class QuizCacheService implements OnDestroy {
           if (isExpired) {
             this.stopMonotonicClock();
           } else {
-            this.startMonotonicClock(finalElapsedSec, durationMinutes);
+            this.startMonotonicClock(finalElapsedSec, activeDurationMinutes);
           }
 
           return record;
@@ -195,7 +234,20 @@ export class QuizCacheService implements OnDestroy {
     try {
       const record = await this.getExistingState(assessmentId);
       if (record) {
-        const authoritativeStart = record.serverStartedAt || record.clientStartedAt;
+        let authoritativeStart = record.serverStartedAt || record.clientStartedAt;
+        let activeDurationMinutes = record.durationMinutes || 30;
+
+        if (record.isMultiModule) {
+          if (record.currentModule === 2) {
+            activeDurationMinutes = record.module2DurationMinutes || 35;
+            if (record.module2StartedAt) {
+              authoritativeStart = record.module2StartedAt;
+            }
+          } else {
+            activeDurationMinutes = record.module1DurationMinutes || 35;
+          }
+        }
+
         let finalElapsedSec = record.elapsedSeconds || 0;
         if (authoritativeStart) {
           const startMs = new Date(authoritativeStart).getTime();
@@ -205,7 +257,7 @@ export class QuizCacheService implements OnDestroy {
           }
         }
 
-        const totalDurationSec = (record.durationMinutes || 30) * 60;
+        const totalDurationSec = activeDurationMinutes * 60;
         const isExpired = finalElapsedSec >= totalDurationSec;
         finalElapsedSec = isExpired ? totalDurationSec : finalElapsedSec;
 
@@ -216,7 +268,7 @@ export class QuizCacheService implements OnDestroy {
         if (isExpired) {
           this.stopMonotonicClock();
         } else {
-          this.startMonotonicClock(finalElapsedSec, record.durationMinutes || 30);
+          this.startMonotonicClock(finalElapsedSec, activeDurationMinutes);
         }
 
         await this.saveQuizToDb(record);
@@ -226,6 +278,38 @@ export class QuizCacheService implements OnDestroy {
       console.error('Failed to load cached quiz from Dexie/localStorage:', err);
       return undefined;
     }
+  }
+
+  /**
+   * Transitions a multi-module exam to Module 2.
+   * Locks Module 1, records Module 1 elapsed time, and resets the monotonic clock for Module 2.
+   */
+  async transitionToModule2(assessmentId: string): Promise<ActiveQuizRecord | undefined> {
+    let record: ActiveQuizRecord | null | undefined = this.activeQuiz();
+    if (!record || record.assessmentId !== assessmentId) {
+      record = await this.getExistingState(assessmentId);
+    }
+    if (!record) return undefined;
+
+    const module1Elapsed = record.elapsedSeconds || 0;
+    const nowIso = new Date().toISOString();
+
+    record.currentModule = 2;
+    record.module1Locked = true;
+    record.module1ElapsedSeconds = module1Elapsed;
+    record.module2StartedAt = nowIso;
+    record.elapsedSeconds = 0;
+    record.lastSavedAt = Date.now();
+
+    const module2Minutes = record.module2DurationMinutes || 35;
+
+    this.stopMonotonicClock();
+    this.activeQuiz.set({ ...record });
+    this.elapsedSeconds.set(0);
+    this.startMonotonicClock(0, module2Minutes);
+
+    await this.saveQuizToDb(record);
+    return record;
   }
 
   /**
@@ -253,6 +337,35 @@ export class QuizCacheService implements OnDestroy {
         });
       } catch (err) {
         console.warn('Failed to persist MCQ answer to Dexie:', err);
+      }
+    }
+  }
+
+  /**
+   * Records student's plain text answer locally in memory, Dexie.js, and localStorage (< 2ms).
+   */
+  async recordTextAnswer(questionId: string, text: string): Promise<void> {
+    const current = this.activeQuiz();
+    if (!current) return;
+
+    const updatedTextAnswers = {
+      ...(current.textAnswers || {}),
+      [questionId]: text
+    };
+
+    current.textAnswers = updatedTextAnswers;
+    current.lastSavedAt = Date.now();
+    this.activeQuiz.set({ ...current });
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.saveLocalSession(current);
+      try {
+        await spiderMathDb.activeQuizzes.update(current.assessmentId, {
+          textAnswers: updatedTextAnswers,
+          lastSavedAt: current.lastSavedAt
+        });
+      } catch (err) {
+        console.warn('Failed to persist text answer to Dexie:', err);
       }
     }
   }
@@ -416,6 +529,16 @@ export class QuizCacheService implements OnDestroy {
             ...(dexieRecord.selectedAnswers || {})
           };
 
+      const textAnswers = isLocalFresher
+        ? {
+            ...(dexieRecord.textAnswers || {}),
+            ...(localRecord.textAnswers || {})
+          }
+        : {
+            ...(localRecord.textAnswers || {}),
+            ...(dexieRecord.textAnswers || {})
+          };
+
       const uploadedImages = isLocalFresher
         ? (localRecord.uploadedImages ?? dexieRecord.uploadedImages ?? [])
         : (dexieRecord.uploadedImages ?? localRecord.uploadedImages ?? []);
@@ -423,6 +546,7 @@ export class QuizCacheService implements OnDestroy {
       return {
         ...baseRecord,
         selectedAnswers,
+        textAnswers,
         uploadedImages
       } as ActiveQuizRecord;
     }

@@ -558,16 +558,18 @@
               </div>
             }
 
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
-              <input
-                type="number"
-                [(ngModel)]="createForm().durationMinutes"
-                min="5"
-                max="300"
-                class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
-              />
-            </div>
+            @if (!createForm().isMultiModule) {
+              <div>
+                <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="createForm().durationMinutes"
+                  min="5"
+                  max="300"
+                  class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                />
+              </div>
+            }
 
             <div>
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نسبة النجاح %:' : 'Pass Percentage %:' }}</label>
@@ -579,6 +581,75 @@
                 class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
               />
             </div>
+          </div>
+
+          <!-- Two-Module Toggle in Create Modal -->
+          <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-text-primary block">
+                  {{ langService.isArabic() ? 'امتحان بنظام موديولين (Two-Module Exam):' : 'Two-Module Exam System:' }}
+                </span>
+                <span class="text-[11px] text-text-muted">
+                  {{ createForm().isMultiModule
+                    ? (langService.isArabic() ? 'نظام موديولين منفصلين (SAT / ACT Style)' : 'Two separate modules with lockout')
+                    : (langService.isArabic() ? 'امتحان عادي متصل بوحدة واحدة' : 'Single continuous module') }}
+                </span>
+              </div>
+              <button
+                type="button"
+                (click)="createForm().isMultiModule = !createForm().isMultiModule"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                [class.bg-brand-primary]="createForm().isMultiModule"
+                [class.bg-surface-border]="!createForm().isMultiModule"
+              >
+                <span
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                  [class.translate-x-5]="createForm().isMultiModule"
+                  [class.translate-x-0]="!createForm().isMultiModule"
+                ></span>
+              </button>
+            </div>
+
+            @if (createForm().isMultiModule) {
+              <div class="pt-2 border-t border-surface-border/60 space-y-3 animate-fade-in">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block font-bold text-text-secondary mb-1">
+                      {{ langService.isArabic() ? 'وقت الموديول الأول (بالدقائق):' : 'Module 1 Duration (Minutes):' }}
+                    </label>
+                    <input
+                      type="number"
+                      [(ngModel)]="createForm().module1TimeMinutes"
+                      min="1"
+                      max="180"
+                      class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-text-secondary mb-1">
+                      {{ langService.isArabic() ? 'وقت الموديول الثاني (بالدقائق):' : 'Module 2 Duration (Minutes):' }}
+                    </label>
+                    <input
+                      type="number"
+                      [(ngModel)]="createForm().module2TimeMinutes"
+                      min="1"
+                      max="180"
+                      class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 p-2.5 rounded-xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-xs font-bold">
+                  <app-icon name="clock" [size]="15" />
+                  <span>
+                    {{ langService.isArabic()
+                      ? ('إجمالي وقت الامتحان: ' + ((createForm().module1TimeMinutes || 0) + (createForm().module2TimeMinutes || 0)) + ' دقيقة (' + (createForm().module1TimeMinutes || 0) + ' د للموديول 1 + ' + (createForm().module2TimeMinutes || 0) + ' د للموديول 2)')
+                      : ('Total Duration: ' + ((createForm().module1TimeMinutes || 0) + (createForm().module2TimeMinutes || 0)) + ' minutes') }}
+                  </span>
+                </div>
+              </div>
+            }
           </div>
 
           <div>
@@ -1049,16 +1120,18 @@
                   </div>
                 }
 
-                <div>
-                  <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
-                  <input
-                    type="number"
-                    [(ngModel)]="asm.durationMinutes"
-                    min="5"
-                    max="300"
-                    class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
-                  />
-                </div>
+                @if (!asm.isMultiModule) {
+                  <div>
+                    <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'المدة (بالدقائق):' : 'Duration (Minutes):' }}</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="asm.durationMinutes"
+                      min="5"
+                      max="300"
+                      class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                    />
+                  </div>
+                }
 
                 <div>
                   <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نسبة النجاح %:' : 'Pass Percentage %:' }}</label>
@@ -1070,6 +1143,75 @@
                     class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
                   />
                 </div>
+              </div>
+
+              <!-- Two-Module Toggle in Settings Tab -->
+              <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-xs font-bold text-text-primary block">
+                      {{ langService.isArabic() ? 'امتحان بنظام موديولين (Two-Module Exam):' : 'Two-Module Exam System:' }}
+                    </span>
+                    <span class="text-[11px] text-text-muted">
+                      {{ asm.isMultiModule
+                        ? (langService.isArabic() ? 'نظام موديولين منفصلين (موديول 1 وموديول 2 بوقت وتسليم مستقل)' : 'Two separate modules with independent timers and lockout')
+                        : (langService.isArabic() ? 'امتحان بنظام وحدة واحدة بوقت كلي متصل' : 'Single continuous module assessment') }}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="asm.isMultiModule = !asm.isMultiModule"
+                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                    [class.bg-brand-primary]="asm.isMultiModule"
+                    [class.bg-surface-border]="!asm.isMultiModule"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      [class.translate-x-5]="asm.isMultiModule"
+                      [class.translate-x-0]="!asm.isMultiModule"
+                    ></span>
+                  </button>
+                </div>
+
+                @if (asm.isMultiModule) {
+                  <div class="pt-2 border-t border-surface-border/60 space-y-3 animate-fade-in">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block font-bold text-text-secondary mb-1">
+                          {{ langService.isArabic() ? 'وقت الموديول الأول (بالدقائق):' : 'Module 1 Duration (Minutes):' }}
+                        </label>
+                        <input
+                          type="number"
+                          [(ngModel)]="asm.module1TimeMinutes"
+                          min="1"
+                          max="180"
+                          class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label class="block font-bold text-text-secondary mb-1">
+                          {{ langService.isArabic() ? 'وقت الموديول الثاني (بالدقائق):' : 'Module 2 Duration (Minutes):' }}
+                        </label>
+                        <input
+                          type="number"
+                          [(ngModel)]="asm.module2TimeMinutes"
+                          min="1"
+                          max="180"
+                          class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-xs font-bold">
+                      <app-icon name="clock" [size]="15" />
+                      <span>
+                        {{ langService.isArabic()
+                          ? ('إجمالي وقت الامتحان: ' + ((asm.module1TimeMinutes || 0) + (asm.module2TimeMinutes || 0)) + ' دقيقة (' + (asm.module1TimeMinutes || 0) + ' د للموديول 1 + ' + (asm.module2TimeMinutes || 0) + ' د للموديول 2)')
+                          : ('Total Duration: ' + ((asm.module1TimeMinutes || 0) + (asm.module2TimeMinutes || 0)) + ' minutes (' + (asm.module1TimeMinutes || 0) + 'm Mod 1 + ' + (asm.module2TimeMinutes || 0) + 'm Mod 2)') }}
+                      </span>
+                    </div>
+                  </div>
+                }
               </div>
 
               <div>
@@ -1462,6 +1604,17 @@
 
                     <button
                       type="button"
+                      (click)="newQuestionType.set('INPUT_TEXT')"
+                      class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer text-xs"
+                      [class.bg-brand-primary]="newQuestionType() === 'INPUT_TEXT'"
+                      [class.text-white]="newQuestionType() === 'INPUT_TEXT'"
+                      [class.bg-surface-card]="newQuestionType() !== 'INPUT_TEXT'"
+                    >
+                      {{ langService.isArabic() ? 'إدخال نص / إجابة قصيرة' : 'Short Answer / Text Input' }}
+                    </button>
+
+                    <button
+                      type="button"
                       (click)="newQuestionType.set('ESSAY')"
                       class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer text-xs"
                       [class.bg-brand-primary]="newQuestionType() === 'ESSAY'"
@@ -1472,6 +1625,45 @@
                     </button>
                   </div>
                 </div>
+
+                <!-- Module Selection in Composer -->
+                @if (asm.isMultiModule) {
+                  <div class="p-3 rounded-xl border border-surface-border bg-surface-card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <label class="font-bold text-text-secondary text-xs flex items-center gap-1.5">
+                      <app-icon name="grid" [size]="14" className="text-brand-primary" />
+                      <span>{{ langService.isArabic() ? 'الموديول المستهدف لهذا السؤال:' : 'Target Module for this Question:' }}</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="newQuestionModuleIndex.set(1)"
+                        class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                        [class.border-brand-primary]="newQuestionModuleIndex() === 1"
+                        [class.bg-brand-primary/10]="newQuestionModuleIndex() === 1"
+                        [class.text-brand-primary]="newQuestionModuleIndex() === 1"
+                        [class.border-surface-border]="newQuestionModuleIndex() !== 1"
+                        [class.text-text-muted]="newQuestionModuleIndex() !== 1"
+                      >
+                        <app-icon name="grid" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'الموديول 1' : 'Module 1' }}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="newQuestionModuleIndex.set(2)"
+                        class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                        [class.border-brand-primary]="newQuestionModuleIndex() === 2"
+                        [class.bg-brand-primary/10]="newQuestionModuleIndex() === 2"
+                        [class.text-brand-primary]="newQuestionModuleIndex() === 2"
+                        [class.border-surface-border]="newQuestionModuleIndex() !== 2"
+                        [class.text-text-muted]="newQuestionModuleIndex() !== 2"
+                      >
+                        <app-icon name="grid" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'الموديول 2' : 'Module 2' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                }
 
                 <!-- Question Text Area (Clean Single Display - No Preview Duplication) -->
                 <div>
@@ -1583,6 +1775,64 @@
                       }
                     </div>
                   </div>
+                } @else if (newQuestionType() === 'INPUT_TEXT') {
+                  <!-- Short Answer / Text Input Builder -->
+                  <div class="space-y-3 pt-2 border-t border-surface-border">
+                    <div class="flex items-center justify-between">
+                      <label class="block font-bold text-text-secondary">
+                        {{ langService.isArabic() ? 'الإجابات المحتملة المقبولة (تعتبر إجابة الطالب صحيحة إذا طابقت أي إجابة منها):' : 'Accepted Answer Variations (Student answer is correct if it matches any of these):' }}
+                      </label>
+                      <button
+                        type="button"
+                        (click)="addAcceptedAnswerOption()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all cursor-pointer"
+                      >
+                        <app-icon name="plus" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'إضافة إجابة مقبولة أخرى' : 'Add Another Accepted Answer' }}</span>
+                      </button>
+                    </div>
+
+                    <div class="space-y-2">
+                      @for (ans of newQuestionAcceptedAnswers(); track $index) {
+                        <div class="flex items-center gap-2 p-2 rounded-xl border border-surface-border bg-surface-card transition-all">
+                          <span class="w-6 h-6 rounded-lg bg-surface-bg flex items-center justify-center text-[11px] font-bold text-text-muted shrink-0">
+                            {{ $index + 1 }}
+                          </span>
+                          <input
+                            #ansInput
+                            type="text"
+                            [value]="stripLatexDelimiters(ans)"
+                            (input)="updateAcceptedAnswer($index, $event)"
+                            (focus)="openMathKeyboard(ansInput)"
+                            [placeholder]="langService.isArabic() ? ('أدخل إجابة صحيحة محتملة (' + ($index + 1) + ')...') : ('Enter accepted answer (' + ($index + 1) + ')...')"
+                            class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0 font-bold"
+                          />
+                          <button
+                            type="button"
+                            (click)="openMathKeyboard(ansInput)"
+                            class="p-1.5 rounded-lg text-text-muted hover:text-brand-primary hover:bg-surface-bg transition-all cursor-pointer shrink-0"
+                            [title]="langService.isArabic() ? 'فتح الكيبورد الرياضي لإدخال معادلة' : 'Open math keyboard for equation input'"
+                          >
+                            <app-icon name="calculator" [size]="14" />
+                          </button>
+                          @if (newQuestionAcceptedAnswers().length > 1) {
+                            <button
+                              type="button"
+                              (click)="removeAcceptedAnswerOption($index)"
+                              class="p-1.5 rounded-lg text-text-muted hover:text-feedback-danger hover:bg-feedback-danger/10 transition-all cursor-pointer shrink-0"
+                              [title]="langService.isArabic() ? 'حذف هذه الإجابة' : 'Delete this answer'"
+                            >
+                              <app-icon name="trash" [size]="14" />
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'ملاحظة: سيتم مقارنة إجابة الطالب تلقائياً بعد إزالة المسافات الزائدة وتوحيد الأحرف الكبيرة trim() & toUpperCase(). يمكنك الضغط على أيقونة الكيبورد لكتابة الرموز الرياضية.' : 'Note: Student answers will be auto-graded with whitespace collapsing and case insensitivity. Use the keyboard icon to insert mathematical symbols.' }}
+                    </p>
+                  </div>
                 } @else {
                   <!-- Essay Mode Notice: Choices not required -->
                   <div class="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-start gap-2.5">
@@ -1655,11 +1905,54 @@
 
               <!-- Existing Questions List -->
               <div class="space-y-3">
-                <h4 class="font-black text-text-primary">
-                  {{ langService.isArabic() ? ('الأسئلة الحالية بالامتحان (' + asm.questions.length + ' أسئلة):') : ('Current Assessment Questions (' + asm.questions.length + ' questions):') }}
-                </h4>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h4 class="font-black text-text-primary">
+                    {{ langService.isArabic() ? ('الأسئلة الحالية بالامتحان (' + asm.questions.length + ' أسئلة):') : ('Current Assessment Questions (' + asm.questions.length + ' questions):') }}
+                  </h4>
 
-                @for (q of asm.questions; track q.id) {
+                  <!-- Module Filter Tabs (All / Module 1 / Module 2) -->
+                  @if (asm.isMultiModule) {
+                    <div class="p-1 rounded-2xl bg-surface-bg border border-surface-border flex items-center gap-1 text-xs">
+                      <button
+                        type="button"
+                        (click)="moduleFilterTab.set('ALL')"
+                        class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                        [class.bg-brand-primary]="moduleFilterTab() === 'ALL'"
+                        [class.text-white]="moduleFilterTab() === 'ALL'"
+                        [class.text-text-secondary]="moduleFilterTab() !== 'ALL'"
+                      >
+                        <span>{{ langService.isArabic() ? 'كل الأسئلة' : 'All' }}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono" [class.bg-white/20]="moduleFilterTab() === 'ALL'" [class.bg-surface-card]="moduleFilterTab() !== 'ALL'">{{ asm.questions.length }}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="moduleFilterTab.set(1)"
+                        class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                        [class.bg-brand-primary]="moduleFilterTab() === 1"
+                        [class.text-white]="moduleFilterTab() === 1"
+                        [class.text-text-secondary]="moduleFilterTab() !== 1"
+                      >
+                        <span>{{ langService.isArabic() ? 'الموديول 1' : 'Mod 1' }}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono" [class.bg-white/20]="moduleFilterTab() === 1" [class.bg-surface-card]="moduleFilterTab() !== 1">{{ module1QuestionsCount() }}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="moduleFilterTab.set(2)"
+                        class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                        [class.bg-brand-primary]="moduleFilterTab() === 2"
+                        [class.text-white]="moduleFilterTab() === 2"
+                        [class.text-text-secondary]="moduleFilterTab() !== 2"
+                      >
+                        <span>{{ langService.isArabic() ? 'الموديول 2' : 'Mod 2' }}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono" [class.bg-white/20]="moduleFilterTab() === 2" [class.bg-surface-card]="moduleFilterTab() !== 2">{{ module2QuestionsCount() }}</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                @for (q of editorFilteredQuestions(); track q.id) {
                   <div
                     class="p-4 rounded-2xl border bg-surface-card space-y-3 transition-all"
                     [class.border-surface-border]="editingQuestionId() !== q.id"
@@ -1672,6 +1965,19 @@
                         <span class="w-6 h-6 rounded-lg bg-surface-bg border border-surface-border flex items-center justify-center font-mono font-bold text-xs text-text-primary">
                           {{ q.order }}
                         </span>
+                        @if (asm.isMultiModule) {
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                            [class.bg-blue-500/10]="q.moduleIndex !== 2"
+                            [class.border-blue-500/20]="q.moduleIndex !== 2"
+                            [class.text-blue-500]="q.moduleIndex !== 2"
+                            [class.bg-purple-500/10]="q.moduleIndex === 2"
+                            [class.border-purple-500/20]="q.moduleIndex === 2"
+                            [class.text-purple-500]="q.moduleIndex === 2"
+                          >
+                            {{ q.moduleIndex === 2 ? (langService.isArabic() ? 'الموديول 2' : 'Module 2') : (langService.isArabic() ? 'الموديول 1' : 'Module 1') }}
+                          </span>
+                        }
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted">
                           {{ q.type === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice') : (langService.isArabic() ? 'مسألة مقالية أو بيانية' : 'Essay / Graphing') }}
                         </span>

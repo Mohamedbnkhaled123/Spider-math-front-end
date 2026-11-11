@@ -161,20 +161,41 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   private isCurriculumTreeRequested = false;
   private cardAnchorsDesktop: { x: number; y: number }[] = [];
 
-  // Computed: Merges CANONICAL_CURRICULUM_TREE with dynamic availability flags from MongoDB
+  // Computed: Merges dynamic curricula tracks with dynamic availability flags from MongoDB
   readonly curriculumCards = computed<ICurriculumUiCard[]>(() => {
     const rawTree = this.dynamicTree();
+    const tracks = this.discoveryService.curriculaTracks();
     return CANONICAL_CURRICULUM_TREE.map(node => {
       const serverCurriculum = rawTree.find(c => c.curriculum === node.code);
-      const availableGrades: IGradeLevelAvailability[] = node.grades.map(grade => {
-        const serverGrade = serverCurriculum?.gradeLevels.find(g => g.gradeLevel === grade.code);
+      const configuredTrack = tracks.find(t => t.code === node.code);
+      const gradesToMap = (configuredTrack?.grades && configuredTrack.grades.length > 0)
+        ? configuredTrack.grades
+        : node.grades;
+
+      const availableGrades: IGradeLevelAvailability[] = gradesToMap.map(configuredGrade => {
+        const canonicalMeta = node.grades.find(g => g.code === configuredGrade.code);
+        const serverGrade = serverCurriculum?.gradeLevels.find(g => g.gradeLevel === configuredGrade.code);
         const hasPublished = serverGrade ? serverGrade.hasPublishedUnits : false;
         const count = serverGrade ? serverGrade.totalPublishedUnitsCount : 0;
         const hasPlacement = serverGrade ? (serverGrade.hasPlacementTest ?? serverGrade.terms?.some(t => t.hasPlacementTest) ?? false) : false;
+        const isActive = this.discoveryService.isGradeActive(configuredGrade.code);
         const isAvail = serverGrade ? (serverGrade.isAvailable || hasPlacement) : false;
+
         return {
-          ...grade,
-          isAvailable: isAvail,
+          code: configuredGrade.code,
+          titleAr: configuredGrade.titleAr || canonicalMeta?.titleAr || configuredGrade.code,
+          titleEn: configuredGrade.titleEn || canonicalMeta?.titleEn || configuredGrade.code,
+          shortLabelAr: canonicalMeta?.shortLabelAr || configuredGrade.titleAr || configuredGrade.code,
+          shortLabelEn: canonicalMeta?.shortLabelEn || configuredGrade.titleEn || configuredGrade.code,
+          stageAr: canonicalMeta?.stageAr || 'المرحلة الدراسية',
+          stageEn: canonicalMeta?.stageEn || 'Academic Stage',
+          subjectAr: canonicalMeta?.subjectAr,
+          subjectEn: canonicalMeta?.subjectEn,
+          branchAr: canonicalMeta?.branchAr,
+          branchEn: canonicalMeta?.branchEn,
+          tracks: canonicalMeta?.tracks,
+          isAvailable: isAvail && isActive,
+          isActive,
           hasPublishedUnits: hasPublished,
           publishedUnitsCount: count,
           hasPlacementTest: hasPlacement
@@ -183,6 +204,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
       return {
         ...node,
+        titleAr: configuredTrack?.nameAr || node.titleAr,
         availableGrades,
         isAvailable: serverCurriculum ? serverCurriculum.hasPublishedUnits : false,
         publishedUnitsCount: serverCurriculum ? serverCurriculum.totalPublishedUnitsCount : 0
@@ -210,35 +232,21 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     );
   });
 
-  // Filtered grades for the Frosted Glass Modal according to activeStageFilter (Matching Mockup Image 2)
+  // Filtered grades for the Frosted Glass Modal according to activeStageFilter
+  // Dynamically bound: eliminated hardcoded grade arrays; deactivated and deleted grades immediately excluded
   readonly filteredGradesForModal = computed<IGradeLevelAvailability[]>(() => {
     const curr = this.selectedCurriculum();
     if (!curr) return [];
+
+    // Only show active grades (if deactivated or deleted, it does NOT appear on the home page or modal cards)
+    const activeGradesOnly = curr.availableGrades.filter(g => g.isActive ?? this.discoveryService.isGradeActive(g.code));
     const filter = this.activeStageFilter();
 
     if (filter === 'ALL') {
-      // Mockup Image 2: Exact 8-Card Grid (4 columns x 2 rows)
-      if (curr.code === 'EGYPTIAN') {
-        const allowed = ['PRI_4', 'PRI_5', 'PRI_6', 'PREP_1', 'PREP_2', 'PREP_3', 'SEC_1', 'SEC_2'];
-        return curr.availableGrades.filter(g => allowed.includes(g.code));
-      }
-      if (curr.code === 'AMERICAN') {
-        // Standardized American Diploma exams: SAT, EST 1, EST 2, ACT 1, ACT 2
-        return curr.availableGrades;
-      }
-      if (curr.code === 'GULF') {
-        const allowed = ['GRADE_5', 'GRADE_6', 'GRADE_7', 'GRADE_8', 'GRADE_9', 'GRADE_10', 'GRADE_11', 'GRADE_12'];
-        return curr.availableGrades.filter(g => allowed.includes(g.code));
-      }
-      if (curr.code === 'INTERNATIONAL') {
-        const allowed = ['US_GRADE_9', 'US_GRADE_10', 'US_GRADE_11', 'US_GRADE_12', 'IGCSE_YEAR_9', 'IGCSE_OL', 'IGCSE_AS', 'IGCSE_AL'];
-        const matched = curr.availableGrades.filter(g => allowed.includes(g.code));
-        return matched.length > 0 ? matched : curr.availableGrades.slice(0, 8);
-      }
-      return curr.availableGrades.slice(0, 8);
+      return activeGradesOnly;
     }
 
-    return curr.availableGrades.filter(g => {
+    return activeGradesOnly.filter(g => {
       const stageEn = (g.stageEn || '').toLowerCase();
       const code = g.code;
       if (filter === 'PRIMARY') {
@@ -332,6 +340,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.selectedCurriculumCode.set(this.initialCurriculum());
     this.selectedGradeCode.set(this.initialGrade());
     this.selectedTermCode.set(this.initialTerm());
+
+    this.discoveryService.loadActiveGradesAndTracks().subscribe();
+    this.ensureCurriculumTreeLoaded();
 
     this.discoveryService.getLandingData().subscribe({
       next: data => {
@@ -767,8 +778,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.selectedCurriculumCode.set(code);
     const curr = this.curriculumCards().find(c => c.code === code);
     if (curr && curr.availableGrades.length > 0) {
-      const p4 = curr.availableGrades.find(g => g.code === 'PRI_4' || g.code === 'GRADE_4');
-      this.selectedGradeCode.set(p4 ? p4.code : curr.availableGrades[0].code);
+      const activeGrades = curr.availableGrades.filter(g => g.isActive ?? this.discoveryService.isGradeActive(g.code));
+      this.selectedGradeCode.set(activeGrades.length > 0 ? activeGrades[0].code : curr.availableGrades[0].code);
     }
     this.modalStep.set('GRADES');
     this.activeStageFilter.set('ALL');
@@ -948,6 +959,13 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getGradeLabel(gradeCode?: string): string {
     if (!gradeCode) return '';
+    const tracks = this.discoveryService.curriculaTracks();
+    for (const track of tracks) {
+      const g = track.grades.find(item => item.code === gradeCode);
+      if (g) {
+        return this.langService.isArabic() ? g.titleAr : (g.titleEn || g.titleAr);
+      }
+    }
     for (const c of CANONICAL_CURRICULUM_TREE) {
       const g = c.grades.find(item => item.code === gradeCode);
       if (g) {
@@ -987,6 +1005,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getGradeDisplayTitle(grade: IGradeLevelAvailability): string {
     const isAr = this.langService.isArabic();
+    if (isAr && grade.titleAr) {
+      return grade.titleAr;
+    }
+    if (!isAr && grade.titleEn) {
+      return grade.titleEn;
+    }
     const code = grade.code;
     switch (code) {
       case 'PRI_1': return isAr ? 'الأول الابتدائي' : 'Primary 1';

@@ -6,7 +6,7 @@
 export type CurriculumCode = 'EGYPTIAN' | 'GULF' | 'INTERNATIONAL' | 'AMERICAN';
 export type AcademicTermCode = 'TERM_1' | 'TERM_2';
 export type CalculatorMode = 'NONE' | 'DESMOS';
-export type QuestionType = 'MCQ' | 'ESSAY' | 'ESSAY_PHOTO';
+export type QuestionType = 'MCQ' | 'ESSAY' | 'ESSAY_PHOTO' | 'INPUT_TEXT';
 
 export interface GradeOption {
   code: string;
@@ -28,6 +28,7 @@ export interface QuestionAdminItem {
   questionImageUrl?: string | null;
   options: string[];
   correctOptionIndex: number;
+  acceptedAnswers?: string[];
   points: number;
 }
 
