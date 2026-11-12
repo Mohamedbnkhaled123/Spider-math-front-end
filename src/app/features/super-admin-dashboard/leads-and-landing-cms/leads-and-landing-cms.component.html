@@ -190,7 +190,7 @@
     <div class="pb-5 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 text-[11px] font-black mb-1.5">
-          <app-icon name="sparkles" [size]="13" />
+          <app-icon name="grid" [size]="13" />
           <span>{{ langService.isArabic() ? 'التحكم الشامل في نصوص المنصة' : 'Platform Bilingual Content Management (CMS)' }}</span>
         </div>
         <h3 class="text-lg sm:text-xl font-black text-text-primary tracking-tight">
@@ -336,7 +336,7 @@
         <!-- 2. الواجهة الرئيسية (Hero Section - عربي) -->
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
-            <app-icon name="sparkles" [size]="16" />
+            <app-icon name="grid" [size]="16" />
             <h4>{{ langService.isArabic() ? 'الواجهة الرئيسية' : 'Hero Section (Arabic)' }}</h4>
           </div>
 
@@ -666,7 +666,7 @@
         <!-- 2. Hero Section (English) -->
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
-            <app-icon name="sparkles" [size]="16" />
+            <app-icon name="grid" [size]="16" />
             <h4>Hero Section (English)</h4>
           </div>
 
@@ -1253,7 +1253,6 @@
                         <span>•</span>
                         @if (unit.original_price_egp && unit.original_price_egp > unit.price_egp) {
                           <span class="unit-discount-luxury-badge text-[9px] py-0 px-1.5">
-                            <app-icon name="sparkles" [size]="9" />
                             <span>{{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}</span>
                           </span>
                           <span class="line-through text-text-muted">{{ unit.original_price_egp }}</span>

@@ -244,7 +244,6 @@
               <!-- Luxury Discount Badge -->
               @if (hasDiscount(unit)) {
                 <span class="unit-discount-luxury-badge">
-                  <app-icon name="sparkles" [size]="11" />
                   <span>{{ langService.isArabic() ? ('خصم ' + getDiscountPercentage(unit) + '%') : (getDiscountPercentage(unit) + '% OFF') }}</span>
                 </span>
               }
@@ -573,7 +572,7 @@
         <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <app-icon name="sparkles" [size]="15" className="text-brand-gold" />
+              <app-icon name="award" [size]="15" className="text-brand-gold" />
               <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'تطبيق خصم ترويجي على الوحدة' : 'Apply Promotional Discount' }}</span>
             </div>
             <!-- Toggle Switch -->
@@ -633,7 +632,6 @@
                   <div class="flex items-center gap-2">
                     <span class="line-through text-text-muted">{{ unitForm().originalPriceEgp }} EGP</span>
                     <span class="unit-discount-luxury-badge">
-                      <app-icon name="sparkles" [size]="11" />
                       <span>{{ langService.isArabic() ? ('خصم ' + (unitForm().discountPercentage || 0) + '%') : ((unitForm().discountPercentage || 0) + '% OFF') }}</span>
                     </span>
                   </div>
@@ -727,7 +725,7 @@
         <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-bg/50 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <app-icon name="sparkles" [size]="15" className="text-brand-gold" />
+              <app-icon name="award" [size]="15" className="text-brand-gold" />
               <span class="font-bold text-text-primary text-xs">{{ langService.isArabic() ? 'تطبيق خصم ترويجي على الوحدة' : 'Apply Promotional Discount' }}</span>
             </div>
             <!-- Toggle Switch -->
@@ -787,7 +785,6 @@
                   <div class="flex items-center gap-2">
                     <span class="line-through text-text-muted">{{ editUnitForm().originalPriceEgp }} EGP</span>
                     <span class="unit-discount-luxury-badge">
-                      <app-icon name="sparkles" [size]="11" />
                       <span>{{ langService.isArabic() ? ('خصم ' + (editUnitForm().discountPercentage || 0) + '%') : ((editUnitForm().discountPercentage || 0) + '% OFF') }}</span>
                     </span>
                   </div>
@@ -1968,7 +1965,7 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="font-bold text-text-primary flex items-center gap-1.5">
-                <app-icon name="sparkles" [size]="14" className="text-brand-primary" />
+                <app-icon name="award" [size]="14" className="text-brand-primary" />
                 <span>{{ langService.isArabic() ? 'نقاط التميز الممنوحة للطالب:' : 'XP Points Awarded to Student:' }}</span>
                 <span class="text-rose-500 font-bold">*</span>
               </label>

@@ -21,7 +21,7 @@
       <!-- Header -->
       <div class="mb-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-accent text-xs font-black mb-2">
-          <app-icon name="sparkles" [size]="14" />
+          <app-icon name="shield" [size]="14" />
           <span>{{ langService.isArabic() ? 'بوابة الصلاحيات وتسجيل الدخول — منصة سبايدر ماث' : 'Roles & Authentication Portal — Spider Math' }}</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-text-primary">
@@ -43,7 +43,7 @@
           [class.shadow-sm]="activeTab() === 'presets'"
           [class.text-text-secondary]="activeTab() !== 'presets'"
         >
-          <app-icon name="sparkles" [size]="14" />
+          <app-icon name="user" [size]="14" />
           <span>{{ langService.isArabic() ? 'محاكاة الأدوار الـ 5 فوراً' : 'Simulate 5 Roles Instantly' }}</span>
         </button>
 

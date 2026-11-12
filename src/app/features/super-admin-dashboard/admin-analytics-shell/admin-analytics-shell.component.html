@@ -259,19 +259,12 @@
 <!-- 2. DESKTOP STICKY SIDEBAR (>= 1024px)                                     -->
 <!-- ========================================================================= -->
 <aside
-  class="hidden lg:block w-full rounded-3xl spider-rim-glass-card shadow-glass sticky top-24 transition-all duration-300"
-  [class.toolbar-collapsed]="isToolbarCollapsed()"
-  [class.p-5]="!isToolbarCollapsed()"
-  [class.p-3.5]="isToolbarCollapsed()"
+  class="hidden lg:block w-full rounded-3xl spider-rim-glass-card shadow-glass sticky top-24 transition-all duration-300 p-5"
 >
   
   <!-- Studio Header Badge -->
   <div
-    class="border-b border-surface-border transition-all duration-200"
-    [class.pb-5]="!isToolbarCollapsed()"
-    [class.mb-5]="!isToolbarCollapsed()"
-    [class.pb-3]="isToolbarCollapsed()"
-    [class.mb-3]="isToolbarCollapsed()"
+    class="border-b border-surface-border transition-all duration-200 pb-5 mb-5"
   >
     <div class="flex items-center justify-between gap-2 mb-1.5">
       <div class="flex items-center gap-2 min-w-0">

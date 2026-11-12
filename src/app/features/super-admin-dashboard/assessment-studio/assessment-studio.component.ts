@@ -344,6 +344,17 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly isManualSlicerOpen = signal<boolean>(false);
   readonly activeQuestionForSlicing = signal<AssessmentQuestionItem | null>(null);
 
+  // Exam Options Dropdown (Question Types & Math Keyboard)
+  readonly isExamOptionsOpen = signal<boolean>(false);
+
+  toggleExamOptions(): void {
+    this.isExamOptionsOpen.update((v) => !v);
+  }
+
+  closeExamOptions(): void {
+    this.isExamOptionsOpen.set(false);
+  }
+
   // Quiz Items Navigation Drawer (Milestone 4 - R6)
   readonly isQuestionDrawerOpen = signal<boolean>(false);
 
@@ -868,6 +879,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.isQuestionDrawerOpen.set(false);
     this.isQuestionDrawerOpen.set(false);
+    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
@@ -1123,6 +1135,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(false);
     this.isQuestionDrawerOpen.set(false);
+    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
   }
@@ -1453,6 +1466,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       }
     }
     this.isQuestionDrawerOpen.set(false);
+    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);
@@ -1497,6 +1511,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
   resetQuestionForm(): void {
     this.isQuestionDrawerOpen.set(false);
+    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.editingQuestionId.set(null);
@@ -1816,6 +1831,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (!asm) return;
 
     this.isQuestionDrawerOpen.set(false);
+    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);

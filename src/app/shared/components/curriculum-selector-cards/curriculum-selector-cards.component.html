@@ -830,7 +830,6 @@
                                 <!-- Promotional Discount Luxury Badge -->
                                 @if (hasDiscount(unit)) {
                                   <span class="unit-discount-luxury-badge">
-                                    <app-icon name="sparkles" [size]="11" />
                                     <span>{{ langService.isArabic() ? ('خصم ' + getDiscountPercentage(unit) + '%') : (getDiscountPercentage(unit) + '% OFF') }}</span>
                                   </span>
                                 }

@@ -114,7 +114,7 @@
               [class.text-text-secondary]="studentAuthMode() !== 'signup'"
               [class.hover:text-text-primary]="studentAuthMode() !== 'signup'"
             >
-              <app-icon name="sparkles" [size]="14" />
+              <app-icon name="user-plus" [size]="14" />
               <span class="truncate">{{ langService.isArabic() ? 'حساب جديد' : 'Sign Up' }}</span>
               <span class="hidden sm:inline">{{ langService.isArabic() ? ' (طالب جديد)' : ' (New Student)' }}</span>
             </button>
@@ -142,7 +142,7 @@
                         (click)="switchToSignUpAndTriggerGoogle()"
                         class="w-full py-2.5 px-3 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white font-extrabold text-xs shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <app-icon name="sparkles" [size]="14" />
+                        <app-icon name="user-plus" [size]="14" />
                         <span>{{ langService.isArabic() ? 'إنشاء حساب جديد كطالب عبر Google الآن' : 'Create New Student Account with Google Now' }}</span>
                       </button>
                     </div>
@@ -246,7 +246,7 @@
               <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border">
                 <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center gap-1.5 text-xs font-extrabold text-text-primary">
-                    <app-icon name="sparkles" [size]="14" className="text-brand-primary dark:text-brand-accent" />
+                    <app-icon name="check-circle" [size]="14" className="text-brand-primary dark:text-brand-accent" />
                     <span>{{ langService.isArabic() ? 'التسجيل السريع بحساب Google (اختياري)' : 'Quick Registration with Google (Optional)' }}</span>
                   </div>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
@@ -490,7 +490,7 @@
                     <app-icon name="loader" [size]="18" className="animate-spin" />
                     <span>{{ langService.isArabic() ? 'جاري إنشاء الحساب وإصدار كود HA...' : 'Creating account & generating HA Code...' }}</span>
                   } @else {
-                    <app-icon name="sparkles" [size]="18" />
+                    <app-icon name="check" [size]="18" />
                     <span>{{ langService.isArabic() ? 'إنشاء حساب الطالب وإصدار كود HA' : 'Create Student Account & Issue HA Code' }}</span>
                   }
                 </button>
@@ -621,7 +621,7 @@
                 <app-icon name="loader" [size]="18" className="animate-spin" />
                 <span>{{ langService.isArabic() ? 'جاري فتح لوحة الإدارة...' : 'Opening Admin Studio...' }}</span>
               } @else {
-                <app-icon name="sparkles" [size]="18" />
+                <app-icon name="shield" [size]="18" />
                 <span>{{ langService.isArabic() ? 'فتح استوديو الإدارة المركزية (Super Admin)' : 'Open Central Admin Studio (Super Admin)' }}</span>
               }
             </button>

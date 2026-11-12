@@ -40,7 +40,7 @@
           routerLink="/student"
           class="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-spider text-white font-extrabold hover:opacity-95 shadow-sm active:scale-95 transition-all text-xs"
         >
-          <app-icon name="sparkles" [size]="14" />
+          <app-icon name="book-open" [size]="14" />
           <span>{{ studentBannerCta() }}</span>
           <app-icon name="arrow-right" [size]="13" className="rtl:rotate-180" />
         </a>
@@ -372,7 +372,6 @@
                         </span>
                         @if (hasUnitDiscount(unit)) {
                           <span class="unit-discount-luxury-badge">
-                            <app-icon name="sparkles" [size]="11" />
                             <span>{{ langService.isArabic() ? ('خصم ' + getUnitDiscountPct(unit) + '%') : (getUnitDiscountPct(unit) + '% OFF') }}</span>
                           </span>
                         }
@@ -820,7 +819,6 @@
                     </span>
                     @if (hasPackageDiscount(pkg)) {
                       <span class="unit-discount-luxury-badge">
-                        <app-icon name="sparkles" [size]="11" />
                         <span>{{ langService.isArabic() ? ('خصم ' + getPackageDiscountPct(pkg) + '%') : (getPackageDiscountPct(pkg) + '% OFF') }}</span>
                       </span>
                     }

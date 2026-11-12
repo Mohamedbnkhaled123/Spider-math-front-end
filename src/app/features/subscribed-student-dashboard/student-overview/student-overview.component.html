@@ -240,7 +240,7 @@
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-text-secondary">{{ langService.isArabic() ? 'لوحة الشرف' : 'Hall of Fame' }}</span>
         <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500">
-          <app-icon name="star" [size]="16" />
+          <app-icon name="award" [size]="16" />
         </span>
       </div>
       <div>
@@ -272,7 +272,7 @@
   @if (!isLoadingUnits() && !isLoadingActiveGrades() && !isCurrentGradeActive()) {
     <div class="coming-soon-card p-8 sm:p-14 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-surface-card to-brand-primary/5 shadow-glass text-center max-w-3xl mx-auto my-8">
       <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-brand-glow animate-pulse">
-        <app-icon name="sparkles" [size]="40" />
+        <app-icon name="clock" [size]="40" />
       </div>
       <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-extrabold text-xs mb-4 border border-amber-500/25">
         <app-icon name="clock" [size]="14" />
@@ -562,7 +562,7 @@
                   <span>{{ formatDuration(lec.videoDurationSec) }}</span>
                 </span>
                 <span class="flex items-center gap-1 text-brand-primary dark:text-brand-accent font-bold">
-                  <app-icon name="sparkles" [size]="13" />
+                  <app-icon name="award" [size]="13" />
                   <span>+{{ lec.xpReward }} XP</span>
                 </span>
               </div>
@@ -782,7 +782,7 @@
                     (click)="startQuiz(quiz)"
                     class="w-full py-2.5 px-3 rounded-xl btn-gold-metallic font-extrabold text-xs shadow-gold-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <app-icon name="sparkles" [size]="14" />
+                    <app-icon name="award" [size]="14" />
                     <span>{{ langService.isArabic() ? ('بدء حل الكويز الآن (+' + quiz.xpReward + ' XP)') : ('Start Quiz Now (+' + quiz.xpReward + ' XP)') }}</span>
                   </button>
                 } @else {

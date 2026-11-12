@@ -4,6 +4,7 @@ import {
   input,
   output,
   signal,
+  computed,
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -49,7 +50,9 @@ export class AdminAnalyticsShellComponent {
   readonly isMobileToolsOpen = signal<boolean>(false);
 
   // Milestone 2 (F2.1, F2.2): Collapsible Top Toolbar Architecture
-  readonly isToolbarCollapsed = signal<boolean>(false);
+  readonly isToolbarCollapsedInput = input<boolean | undefined>(undefined, { alias: 'isToolbarCollapsed' });
+  private readonly _localToolbarCollapsed = signal<boolean>(false);
+  readonly isToolbarCollapsed = computed(() => this.isToolbarCollapsedInput() ?? this._localToolbarCollapsed());
   readonly toolbarCollapsedChange = output<boolean>();
 
   selectTab(tab: AdminTab): void {
@@ -65,8 +68,9 @@ export class AdminAnalyticsShellComponent {
   }
 
   toggleToolbarCollapse(): void {
-    this.isToolbarCollapsed.update((v) => !v);
-    this.toolbarCollapsedChange.emit(this.isToolbarCollapsed());
+    const next = !this.isToolbarCollapsed();
+    this._localToolbarCollapsed.set(next);
+    this.toolbarCollapsedChange.emit(next);
   }
 
   triggerBackup(): void {

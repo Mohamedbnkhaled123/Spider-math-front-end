@@ -48,7 +48,7 @@
               (click)="activateAndOpenDashboard()"
               class="px-4 py-2 rounded-xl btn-gold-metallic text-xs font-black shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <app-icon name="sparkles" [size]="14" />
+              <app-icon name="book-open" [size]="14" />
               <span>{{ langService.isArabic() ? 'فتح استوديو المذاكرة واللوحة الكاملة' : 'Open Study Workspace & Full Dashboard' }}</span>
             </button>
           </div>
@@ -330,7 +330,6 @@
                 <!-- Luxury Promotional Discount Badge -->
                 @if (hasDiscount(unit)) {
                   <span class="unit-discount-luxury-badge">
-                    <app-icon name="sparkles" [size]="11" />
                     <span>{{ langService.isArabic() ? ('خصم ' + getDiscountPct(unit) + '%') : (getDiscountPct(unit) + '% OFF') }}</span>
                   </span>
                 }

@@ -94,7 +94,7 @@
       </nav>
     } @else {
       <!-- 2. Authenticated Navigation Links (Desktop) -->
-      <nav class="hidden md:flex items-center gap-2 text-xs font-semibold text-text-secondary" aria-label="Portal Navigation">
+      <nav class="hidden xl:flex items-center gap-2 text-xs font-semibold text-text-secondary" aria-label="Portal Navigation">
         <a
           [routerLink]="['/']"
           [queryParams]="{ view: 'public' }"
@@ -131,11 +131,11 @@
         </a>
       }
 
-      <!-- Language Switcher (EN / عربي) (Desktop md+) -->
+      <!-- Language Switcher (EN / عربي) (Desktop xl+) -->
       <button
         type="button"
         (click)="toggleLanguage()"
-        class="hidden md:flex px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+        class="hidden xl:flex px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
         [title]="langService.isArabic() ? 'التحويل إلى الإنجليزية' : 'Switch to Arabic'"
       >
@@ -143,11 +143,11 @@
         <span>{{ langService.isArabic() ? 'EN' : 'عربي' }}</span>
       </button>
 
-      <!-- Theme Switcher (Light / Dark) (Desktop md+) -->
+      <!-- Theme Switcher (Light / Dark) (Desktop xl+) -->
       <button
         type="button"
         (click)="toggleTheme()"
-        class="hidden md:flex p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 items-center justify-center w-8 h-8 cursor-pointer"
+        class="hidden xl:flex p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 items-center justify-center w-8 h-8 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
         [title]="themeService.isDark() ? (langService.isArabic() ? 'الوضع الفاتح' : 'Switch to Light Mode') : (langService.isArabic() ? 'الوضع الليلي' : 'Switch to Dark Mode')"
       >
@@ -264,7 +264,7 @@
           }
 
           <!-- Glowing XP Pill -->
-          <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm">
+          <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm whitespace-nowrap shrink-0">
             <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
           </span>
 
@@ -272,23 +272,12 @@
           @if (activePortal(); as portal) {
             <a
               [routerLink]="portal.route"
-              class="btn-gold-metallic px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-slate-950 rounded-lg shadow-sm hover:scale-[1.02] transition-transform flex items-center gap-1 shrink-0"
+              class="btn-gold-metallic px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-slate-950 rounded-lg shadow-sm hover:scale-[1.02] transition-transform flex items-center gap-1 shrink-0 whitespace-nowrap"
             >
-              <app-icon name="sparkles" [size]="12" />
               <span class="hidden sm:inline">{{ portal.label }}</span>
               <span class="sm:hidden">{{ langService.isArabic() ? 'اللوحة' : 'Admin' }}</span>
             </a>
           }
-
-          <!-- Logout Button -->
-          <button
-            type="button"
-            (click)="logout()"
-            class="p-1 sm:p-1.5 rounded-lg text-xs font-bold text-feedback-danger hover:bg-feedback-danger/10 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-            [title]="langService.isArabic() ? 'تسجيل الخروج' : 'Sign Out'"
-          >
-            <app-icon name="log-out" [size]="15" />
-          </button>
         </div>
       }
 
@@ -341,18 +330,26 @@
           </button>
         </div>
 
-        <!-- Mobile Notification Bell Toggle -->
-        <button
-          type="button"
-          (click)="toggleNotifications()"
-          class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-bg text-xs font-semibold text-text-primary flex items-center gap-1.5 cursor-pointer shadow-sm relative active:scale-95 transition-all"
-        >
-          <app-icon name="bell" [size]="14" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold' : 'text-text-secondary'" />
-          <span>{{ langService.isArabic() ? 'الإشعارات' : 'Alerts' }}</span>
-          @if (notificationsService.unreadCount() > 0) {
-            <span class="w-2 h-2 rounded-full bg-feedback-danger animate-pulse"></span>
+        <div class="flex items-center gap-2">
+          @if (authService.isAuthenticated()) {
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-bg border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm whitespace-nowrap shrink-0">
+              <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
+            </span>
           }
-        </button>
+
+          <!-- Mobile Notification Bell Toggle -->
+          <button
+            type="button"
+            (click)="toggleNotifications()"
+            class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-bg text-xs font-semibold text-text-primary flex items-center gap-1.5 cursor-pointer shadow-sm relative active:scale-95 transition-all"
+          >
+            <app-icon name="bell" [size]="14" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold' : 'text-text-secondary'" />
+            <span>{{ langService.isArabic() ? 'الإشعارات' : 'Alerts' }}</span>
+            @if (notificationsService.unreadCount() > 0) {
+              <span class="w-2 h-2 rounded-full bg-feedback-danger animate-pulse"></span>
+            }
+          </button>
+        </div>
       </div>
       @if (!authService.isAuthenticated()) {
         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
@@ -417,12 +414,22 @@
               {{ portal.label }}
             </a>
           }
+          <a
+            [routerLink]="['/']"
+            [queryParams]="{ view: 'public' }"
+            (click)="closeMobileMenu()"
+            class="p-2.5 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center justify-center gap-2 text-xs font-bold cursor-pointer"
+          >
+            <app-icon name="home" [size]="14" />
+            <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home' }}</span>
+          </a>
           <button
             type="button"
             (click)="logout()"
-            class="p-2.5 rounded-xl border border-feedback-danger/30 text-feedback-danger text-center"
+            class="p-2.5 rounded-xl border border-feedback-danger/30 text-feedback-danger text-center flex items-center justify-center gap-1.5 cursor-pointer hover:bg-feedback-danger/10 transition-colors"
           >
-            {{ 'NAV.LOGOUT' | transloco }}
+            <app-icon name="log-out" [size]="14" />
+            <span>{{ 'NAV.LOGOUT' | transloco }}</span>
           </button>
         </div>
       }

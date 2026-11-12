@@ -77,7 +77,7 @@
         <div class="flex items-center gap-3 sm:gap-4 shrink-0">
           <!-- Total XP Badge -->
           <div class="px-4 py-2.5 rounded-2xl bg-surface-bg/80 border border-gold-accent/40 shadow-gold-glow flex items-center gap-2.5">
-            <app-icon name="sparkles" [size]="18" className="text-amber-400" />
+            <app-icon name="award" [size]="18" className="text-amber-400" />
             <div>
               <div class="text-[10px] text-text-muted font-bold">
                 {{ langService.isArabic() ? 'نقاط الخبرة XP' : 'XP Points' }}
@@ -290,7 +290,7 @@
             @if (sub.teacherNote) {
               <div class="mt-4 p-4 rounded-xl bg-surface-bg/80 border border-gold-accent/40 shadow-xs">
                 <div class="flex items-center gap-2 mb-1.5 text-xs font-black text-brand-primary dark:text-brand-accent">
-                  <app-icon name="sparkles" [size]="14" />
+                  <app-icon name="message-circle" [size]="14" />
                   <span>{{ langService.isArabic() ? 'توجيهات وملاحظات المهندسة هبة عبد الوهاب:' : 'Guidance & Notes from Eng. Heba Abdel-Wahab:' }}</span>
                 </div>
                 <p class="text-xs sm:text-sm text-text-primary leading-relaxed font-medium">

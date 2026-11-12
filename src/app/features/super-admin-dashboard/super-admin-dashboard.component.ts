@@ -68,6 +68,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Active navigation tab (defaults directly to assessments per teacher workflow)
   readonly activeTab = signal<AdminTab>('assessments');
+  readonly isSidebarCollapsed = signal<boolean>(false);
   readonly isLoading = signal<boolean>(false);
   readonly toastMessage = signal<{ text: string; type: 'success' | 'warning' | 'error' } | null>(null);
 
