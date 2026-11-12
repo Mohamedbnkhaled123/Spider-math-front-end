@@ -93,3 +93,4 @@ export const STUDENT_PRESET_AVATARS: readonly StudentPresetAvatar[] = [
 ] as const;
 
 export const DEFAULT_STUDENT_AVATAR_URL = STUDENT_PRESET_AVATARS[0].url;
+

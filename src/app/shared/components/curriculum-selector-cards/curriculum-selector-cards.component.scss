@@ -25,6 +25,18 @@
               box-shadow 0.35s ease,
               border-color 0.35s ease;
 
+  // Option 1: Split Card Override (Clean Artwork Top, Content Bottom)
+  &.curriculum-split-card {
+    padding: 0 !important;
+    background: var(--surface-bg-card, rgba(33, 25, 49, 0.95)) !important;
+    overflow: hidden !important;
+    min-height: unset !important;
+
+    &::before {
+      display: none !important;
+    }
+  }
+
   // Exact 7-8px Inner Glass Frame Bevel as in Reference Mockup
   &::before {
     content: '';

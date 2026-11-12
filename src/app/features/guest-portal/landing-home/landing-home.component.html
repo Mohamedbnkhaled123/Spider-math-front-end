@@ -92,23 +92,7 @@
 
           <!-- Primary & Secondary CTAs (Exact Image 2) -->
           <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-4">
-            @if (isStudentLoggedIn()) {
-              <a
-                routerLink="/student"
-                class="btn-gold-metallic px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2.5 shadow-lg cursor-pointer"
-              >
-                <app-icon name="book-open" [size]="18" />
-                <span>{{ studentContinueLearningCta() }}</span>
-              </a>
-              <a
-                [routerLink]="['/placement-test']"
-                [queryParams]="{ curriculum: selectedCurriculum(), gradeLevel: selectedGradeLevel(), term: selectedTerm() }"
-                class="btn-ghost-academic px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2 cursor-pointer"
-              >
-                <app-icon name="target" [size]="18" className="text-brand-gold" />
-                <span>{{ studentPlacementTestCta() }}</span>
-              </a>
-            } @else {
+            @if (!isStudentLoggedIn()) {
               <button
                 type="button"
                 (click)="scrollToSection('curriculum-section')"
@@ -940,9 +924,9 @@
       @if (topThree().length > 0) {
         <div class="w-full min-w-0 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-end pt-10 pb-8">
           
-          <!-- Rank 2: Silver (Left) -->
+          <!-- Rank 2: Silver (Left on Desktop, 2nd on Mobile) -->
           @if (topThree().length > 1) {
-            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl order-2 md:order-1">
               <!-- Top Specular Silver Flare -->
               <div class="hidden sm:block absolute -top-16 -left-16 w-48 h-48 bg-slate-300/15 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -996,16 +980,16 @@
             </div>
           }
 
-          <!-- Rank 1: Gold Champion (Center & Elevated) -->
+          <!-- Rank 1: Gold Champion (Center & Elevated on Desktop, 1st on Mobile) -->
           @if (topThree().length > 0) {
-            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-8 relative text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between overflow-visible">
+            <div class="spider-rim-glass-card !overflow-visible w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-8 pt-8 sm:pt-9 relative text-center md:-translate-y-6 border-brand-gold/60 shadow-2xl flex flex-col justify-between order-1 md:order-2 mt-6 md:mt-0">
               <!-- Clipped Radiant Golden Glow Behind Card -->
               <div class="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none -z-10">
                 <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-brand-gold/25 rounded-full blur-3xl"></div>
               </div>
 
               <!-- Golden 3D Crown Floating On Top -->
-              <div class="absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center pointer-events-none">
+              <div class="absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center pointer-events-none">
                 <div class="px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-600 via-brand-gold to-yellow-400 p-[1.5px] shadow-gold-glow">
                   <div class="px-3 py-1 rounded-full bg-[#1F142B] dark:bg-[#1A1124] flex items-center gap-1.5 border border-brand-gold/60 shadow-inner">
                     <span class="text-brand-gold inline-flex items-center filter drop-shadow">
@@ -1068,9 +1052,9 @@
             </div>
           }
 
-          <!-- Rank 3: Bronze (Right) -->
+          <!-- Rank 3: Bronze (Right on Desktop, 3rd on Mobile) -->
           @if (topThree().length > 2) {
-            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl">
+            <div class="spider-rim-glass-card w-full min-w-0 max-w-full rounded-[2rem] p-6 sm:p-7 relative overflow-hidden text-center flex flex-col justify-between shadow-xl order-3 md:order-3">
               <!-- Top Specular Bronze Flare -->
               <div class="hidden sm:block absolute -top-16 -right-16 w-48 h-48 bg-amber-700/15 rounded-full blur-2xl pointer-events-none"></div>
 

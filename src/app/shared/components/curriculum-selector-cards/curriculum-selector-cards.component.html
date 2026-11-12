@@ -38,202 +38,50 @@
     <div dir="ltr" class="grid grid-cols-4 gap-5 relative z-20 mb-8">
 
       @for (curriculum of curriculumCards(); track curriculum.code) {
-
         <div
-
           (click)="openTrackModal(curriculum.code)"
           [attr.dir]="langService.isArabic() ? 'rtl' : 'ltr'"
-          class="curriculum-card rounded-3xl p-7 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative min-h-[310px]"
-
+          class="curriculum-card curriculum-split-card rounded-3xl cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative shadow-xl hover:shadow-2xl transition-all duration-300 border border-brand-gold/30 hover:border-brand-gold/70"
         >
-
-          <!-- Subtle Curriculum Identity Watermark Artwork -->
-          <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+          <!-- Top 3D Mascot Artwork Banner (Option 1 Split Card) -->
+          <div class="relative w-full h-44 sm:h-48 overflow-hidden bg-slate-900/60 shrink-0">
             <img
               [src]="getCurriculumBgImage(curriculum.code)"
               [srcset]="getCurriculumBgSrcset(curriculum.code)"
               sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
               width="512"
               height="512"
-              alt=""
-              role="presentation"
+              [alt]="langService.isArabic() ? curriculum.titleAr : curriculum.titleEn"
               loading="lazy"
               decoding="async"
-              class="curriculum-card-watermark-img"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div class="curriculum-card-watermark-overlay"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
           </div>
 
-          <!-- Top Row: Title & Vector Art Icon -->
-
-          <div>
-
-            <div class="flex items-start justify-between gap-3 mb-4">
-
-              <h3 class="text-xl font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors drop-shadow-sm">
-
-                {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
-
-              </h3>
-
-              <div class="shrink-0 text-brand-gold group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">
-
-                @switch (curriculum.code) {
-
-                  @case ('EGYPTIAN') {
-
-                    <!-- Pyramid SVG Icon -->
-
-                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-
-                      <polygon points="16,3 2,28 30,28" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-
-                      <line x1="9" y1="16" x2="23" y2="16" stroke="currentColor" />
-
-                      <line x1="16" y1="3" x2="16" y2="28" stroke="currentColor" stroke-dasharray="2 2" />
-
-                      <line x1="6" y1="22" x2="26" y2="22" stroke="currentColor" />
-
-                    </svg>
-
-                  }
-
-                  @case ('GULF') {
-
-                    <!-- Falcon SVG Icon -->
-
-                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-
-                      <path d="M16 4 L22 10 L28 12 L22 18 L24 28 L16 23 L8 28 L10 18 L4 12 L10 10 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-
-                      <circle cx="16" cy="12" r="2" fill="currentColor" />
-
-                      <line x1="16" y1="14" x2="16" y2="21" stroke="currentColor" />
-
-                    </svg>
-
-                  }
-
-                  @case ('INTERNATIONAL') {
-
-                    <!-- Compass / Astrolabe SVG Icon -->
-
-                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-
-                      <circle cx="16" cy="16" r="12" stroke="currentColor" fill="currentColor" fill-opacity="0.06" stroke-dasharray="2 3" />
-
-                      <circle cx="16" cy="16" r="6" stroke="currentColor" />
-
-                      <polygon points="16,2 18,12 28,14 18,18 16,28 14,18 4,14 14,12" stroke="currentColor" fill="currentColor" fill-opacity="0.12" />
-
-                    </svg>
-
-                  }
-
-                  @case ('AMERICAN') {
-
-                    <!-- Shield SVG Icon -->
-
-                    <svg viewBox="0 0 32 32" class="w-7 h-7 text-brand-gold stroke-current fill-none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-
-                      <path d="M16 3 L27 7 V16 C27 22.5 22 28 16 30 C10 28 5 22.5 5 16 V7 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-
-                      <path d="M10 14 L16 19 L22 14" stroke="currentColor" />
-
-                      <line x1="16" y1="7" x2="16" y2="18" stroke="currentColor" />
-
-                    </svg>
-
-                  }
-
-                }
-
+          <!-- Bottom Solid Surface Info Card -->
+          <div class="p-5 sm:p-6 flex flex-col justify-between flex-1 bg-surface-card/95 dark:bg-[#1A1226]/95 backdrop-blur-md">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-1.5">
+                <h3 class="text-lg sm:text-xl font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-snug">
+                  {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
+                </h3>
               </div>
-
+              <p class="text-xs font-semibold text-text-secondary dark:text-slate-300 mb-3 leading-relaxed">
+                {{ getCurriculumSummary(curriculum.code) }}
+              </p>
+              <p class="text-xs text-text-muted leading-relaxed mb-4">
+                {{ getCurriculumBranches(curriculum.code) }}
+              </p>
             </div>
 
-            <!-- Subtitle -->
-
-            <p class="text-xs font-extrabold text-text-primary dark:text-slate-100 mb-2 leading-relaxed drop-shadow-sm">
-
-              @switch (curriculum.code) {
-
-                @case ('EGYPTIAN') {
-
-                  {{ langService.isArabic() ? 'الثانوية العامة • صفوف 1-3 ثانوي' : 'Thanawiya Amma • Sec 1-3' }}
-
-                }
-
-                @case ('GULF') {
-
-                  {{ langService.isArabic() ? 'السعودية • الإمارات • الكويت • قطر' : 'KSA • UAE • Kuwait • Qatar' }}
-
-                }
-
-                @case ('INTERNATIONAL') {
-
-                  {{ langService.isArabic() ? 'كامبريدج • إدكسل • أكسفورد' : 'Cambridge • Edexcel • Oxford' }}
-
-                }
-
-                @case ('AMERICAN') {
-
-                  {{ langService.isArabic() ? 'Digital SAT • EST I & II • ACT' : 'Digital SAT • EST I & II • ACT' }}
-
-                }
-
-              }
-
-            </p>
-
-            <!-- Branches & Subjects -->
-
-            <p class="text-xs font-bold text-text-secondary dark:text-slate-200 leading-relaxed mb-6 drop-shadow-sm">
-
-              @switch (curriculum.code) {
-
-                @case ('EGYPTIAN') {
-
-                  {{ langService.isArabic() ? 'الجبر والهندسة • التفاضل والتكامل • الاستاتيكا والديناميكا' : 'Algebra & Geometry • Calculus • Statics & Dynamics' }}
-
-                }
-
-                @case ('GULF') {
-
-                  {{ langService.isArabic() ? 'القدرات • التحصيلي • الرياضيات المتقدمة' : 'Qudurat • Tahsili • Advanced Math' }}
-
-                }
-
-                @case ('INTERNATIONAL') {
-
-                  {{ langService.isArabic() ? 'الرياضيات البحتة والميكانيكا والإحصاء' : 'OL & AL Pure Math • Mechanics • Statistics' }}
-
-                }
-
-                @case ('AMERICAN') {
-
-                  {{ langService.isArabic() ? 'الجبر المتقدم وحل المسائل الهندسية' : 'Heart of Algebra • Problem Solving • Advanced Math' }}
-
-                }
-
-              }
-
-            </p>
-
+            <!-- Bottom Action: Explore Track -->
+            <div class="pt-3 border-t border-surface-border/50 dark:border-white/10 flex items-center justify-between">
+              <span class="text-xs sm:text-sm font-bold text-amber-600 dark:text-brand-gold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+              </span>
+            </div>
           </div>
-
-          <!-- Bottom Action: Explore Track (Image 3 exact clean luxury styling) -->
-
-          <div class="pt-4 flex items-center">
-
-            <span class="text-xs sm:text-sm font-black text-gold-accent group-hover:underline flex items-center gap-2 transition-all drop-shadow-sm">
-
-              <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
-
-            </span>
-
-          </div>
-
         </div>
       }
       </div>
@@ -260,54 +108,37 @@
           <div
             (click)="openTrackModal(curriculum.code)"
             [attr.dir]="langService.isArabic() ? 'rtl' : 'ltr'"
-            class="curriculum-card rounded-2xl p-3.5 sm:p-5 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative min-h-[190px] sm:min-h-[240px]"
+            class="curriculum-card curriculum-split-card rounded-2xl cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative shadow-lg border border-brand-gold/30 hover:border-brand-gold/70"
           >
-            <!-- Subtle Curriculum Identity Watermark Artwork -->
-            <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+            <!-- Top Mascot Image Banner (Option 1 Split Card) -->
+            <div class="relative w-full h-28 sm:h-36 overflow-hidden bg-slate-900/60 shrink-0">
               <img
                 [src]="getCurriculumBgImage(curriculum.code)"
                 [srcset]="getCurriculumBgSrcset(curriculum.code)"
                 sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
                 width="512"
                 height="512"
-                alt=""
-                role="presentation"
+                [alt]="langService.isArabic() ? curriculum.titleAr : curriculum.titleEn"
                 loading="lazy"
                 decoding="async"
-                class="curriculum-card-watermark-img"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div class="curriculum-card-watermark-overlay"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
             </div>
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
-                <h3 class="text-xs sm:text-base font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight drop-shadow-sm">
+
+            <!-- Bottom Solid Card Body -->
+            <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 bg-surface-card/95 dark:bg-[#1A1226]/95">
+              <div>
+                <h3 class="text-xs sm:text-base font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight mb-1">
                   {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
                 </h3>
-                <div class="shrink-0 text-brand-gold group-hover:scale-110 transition-transform">
-                  @switch (curriculum.code) {
-                    @case ('EGYPTIAN') {
-                      <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75">
-                        <polygon points="16,3 2,28 30,28" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-                        <line x1="9" y1="16" x2="23" y2="16" stroke="currentColor" />
-                      </svg>
-                    }
-                    @case ('GULF') {
-                      <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75">
-                        <path d="M16 4 L22 10 L28 12 L22 18 L24 28 L16 23 L8 28 L10 18 L4 12 L10 10 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-                      </svg>
-                    }
-                  }
-                </div>
+                <p class="text-[10px] sm:text-xs font-semibold text-text-secondary dark:text-slate-300 mb-2 leading-snug">
+                  {{ getCurriculumSummary(curriculum.code) }}
+                </p>
               </div>
-              <p class="text-[11px] sm:text-xs font-extrabold text-text-primary dark:text-slate-100 mb-1 leading-snug drop-shadow-sm">
-                {{ getCurriculumSummary(curriculum.code) }}
-              </p>
-              <p class="text-[10px] sm:text-xs font-bold text-text-secondary dark:text-slate-200 leading-relaxed mb-3 hidden sm:block drop-shadow-sm">
-                {{ getCurriculumBranches(curriculum.code) }}
-              </p>
-            </div>
-            <div class="pt-2 sm:pt-3 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-black text-gold-accent dark:text-brand-gold drop-shadow-sm">
-              <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+              <div class="pt-2 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-amber-600 dark:text-brand-gold">
+                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+              </div>
             </div>
           </div>
         }
@@ -335,59 +166,42 @@
       </div>
 
       <!-- Bottom Row: International (2) & American (3) with bottom breathing room - dir="ltr" fixed ordering -->
-      <div dir="ltr" class="grid grid-cols-2 gap-3.5 sm:gap-5 relative z-20 mt-5 sm:mt-6 mb-8">
+      <div dir="ltr" class="grid grid-cols-2 gap-3.5 sm:gap-5 relative z-20 mt-10 sm:mt-12 mb-8">
         @for (curriculum of bottomCurricula(); track curriculum.code) {
           <div
             (click)="openTrackModal(curriculum.code)"
             [attr.dir]="langService.isArabic() ? 'rtl' : 'ltr'"
-            class="curriculum-card rounded-2xl p-3.5 sm:p-5 cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative min-h-[190px] sm:min-h-[240px]"
+            class="curriculum-card curriculum-split-card rounded-2xl cursor-pointer flex flex-col justify-between overflow-hidden group select-none relative shadow-lg border border-brand-gold/30 hover:border-brand-gold/70"
           >
-            <!-- Subtle Curriculum Identity Watermark Artwork -->
-            <div class="curriculum-card-watermark absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+            <!-- Top Mascot Image Banner (Option 1 Split Card) -->
+            <div class="relative w-full h-28 sm:h-36 overflow-hidden bg-slate-900/60 shrink-0">
               <img
                 [src]="getCurriculumBgImage(curriculum.code)"
                 [srcset]="getCurriculumBgSrcset(curriculum.code)"
                 sizes="(max-width: 640px) 240px, (max-width: 1024px) 320px, 480px"
                 width="512"
                 height="512"
-                alt=""
-                role="presentation"
+                [alt]="langService.isArabic() ? curriculum.titleAr : curriculum.titleEn"
                 loading="lazy"
                 decoding="async"
-                class="curriculum-card-watermark-img"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div class="curriculum-card-watermark-overlay"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
             </div>
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-2 sm:mb-3">
-                <h3 class="text-xs sm:text-base font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight drop-shadow-sm">
+
+            <!-- Bottom Solid Card Body -->
+            <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 bg-surface-card/95 dark:bg-[#1A1226]/95">
+              <div>
+                <h3 class="text-xs sm:text-base font-black font-academic-serif text-text-primary dark:text-white group-hover:text-gold-accent transition-colors leading-tight mb-1">
                   {{ langService.isArabic() ? curriculum.titleAr : curriculum.titleEn }}
                 </h3>
-                <div class="shrink-0 text-brand-gold group-hover:scale-110 transition-transform">
-                  @switch (curriculum.code) {
-                    @case ('INTERNATIONAL') {
-                      <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75">
-                        <circle cx="16" cy="16" r="12" stroke="currentColor" fill="currentColor" fill-opacity="0.06" stroke-dasharray="2 3" />
-                        <polygon points="16,2 18,12 28,14 18,18 16,28 14,18 4,14 14,12" stroke="currentColor" fill="currentColor" fill-opacity="0.12" />
-                      </svg>
-                    }
-                    @case ('AMERICAN') {
-                      <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold stroke-current fill-none" stroke-width="1.75">
-                        <path d="M16 3 L27 7 V16 C27 22.5 22 28 16 30 C10 28 5 22.5 5 16 V7 Z" stroke="currentColor" fill="currentColor" fill-opacity="0.08" />
-                      </svg>
-                    }
-                  }
-                </div>
+                <p class="text-[10px] sm:text-xs font-semibold text-text-secondary dark:text-slate-300 mb-2 leading-snug">
+                  {{ getCurriculumSummary(curriculum.code) }}
+                </p>
               </div>
-              <p class="text-[11px] sm:text-xs font-extrabold text-text-primary dark:text-slate-100 mb-1 leading-snug drop-shadow-sm">
-                {{ getCurriculumSummary(curriculum.code) }}
-              </p>
-              <p class="text-[10px] sm:text-xs font-bold text-text-secondary dark:text-slate-200 leading-relaxed mb-3 hidden sm:block drop-shadow-sm">
-                {{ getCurriculumBranches(curriculum.code) }}
-              </p>
-            </div>
-            <div class="pt-2 sm:pt-3 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-black text-gold-accent dark:text-brand-gold drop-shadow-sm">
-              <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+              <div class="pt-2 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-amber-600 dark:text-brand-gold">
+                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+              </div>
             </div>
           </div>
         }

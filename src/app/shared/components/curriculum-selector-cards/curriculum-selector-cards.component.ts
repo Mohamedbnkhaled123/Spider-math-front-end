@@ -600,10 +600,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       const sw = curSpiderRect.width;
       const sh = curSpiderRect.height;
 
-      spiderOrigins[0] = { x: sx + sw * 0.20, y: sy + sh * 0.46 };
-      spiderOrigins[1] = { x: sx + sw * 0.80, y: sy + sh * 0.46 };
-      spiderOrigins[2] = { x: sx + sw * 0.22, y: sy + sh * 0.84 };
-      spiderOrigins[3] = { x: sx + sw * 0.78, y: sy + sh * 0.84 };
+      // Symmetrical origin anchors: Upper limbs anchor at ~32% height, lower limbs anchor at ~68% height
+      // This equalizes distance between spider and top/bottom cards, making bottom strands noticeably longer
+      spiderOrigins[0] = { x: sx + sw * 0.22, y: sy + sh * 0.32 };
+      spiderOrigins[1] = { x: sx + sw * 0.78, y: sy + sh * 0.32 };
+      spiderOrigins[2] = { x: sx + sw * 0.26, y: sy + sh * 0.68 };
+      spiderOrigins[3] = { x: sx + sw * 0.74, y: sy + sh * 0.68 };
     }
 
     const targetW = Math.round(W * dpr);
@@ -1275,16 +1277,17 @@ function renderCardConnectedWeb(
   const makeBranchRays = (origin: { x: number; y: number }, anchor: { x: number; y: number }, isOuter: boolean) => {
     const dx = anchor.x - origin.x;
     const dy = anchor.y - origin.y;
-    const spreadX = isMobile ? 12 : (isOuter ? 22 : 18);
+    const spreadX = isMobile ? 10 : (isOuter ? 22 : 18);
     let sag = isOuter ? 0.038 : 0.055;
-    if (isMobile && dy < 0) {
-      sag = -sag;
+    if (isMobile) {
+      // Gentle, natural taut silk tension on mobile — completely avoids warped/twisted loops
+      sag = dy < 0 ? -0.010 : 0.015;
     }
 
     return [
-      { s: { x: origin.x - 2.5, y: origin.y }, c: { x: anchor.x - spreadX, y: anchor.y }, sag: sag * 1.08 },
+      { s: { x: origin.x - (isMobile ? 1.5 : 2.5), y: origin.y }, c: { x: anchor.x - spreadX, y: anchor.y }, sag: isMobile ? sag : sag * 1.08 },
       { s: origin, c: anchor, sag: sag },
-      { s: { x: origin.x + 2.5, y: origin.y }, c: { x: anchor.x + spreadX, y: anchor.y }, sag: sag * 1.08 },
+      { s: { x: origin.x + (isMobile ? 1.5 : 2.5), y: origin.y }, c: { x: anchor.x + spreadX, y: anchor.y }, sag: isMobile ? sag : sag * 1.08 },
     ];
   };
 
@@ -1310,10 +1313,13 @@ function renderCardConnectedWeb(
   ) => {
     const envelope = Math.sin(t * Math.PI);
     const dist = Math.hypot(c.x - s.x, c.y - s.y);
-    const primaryWave = Math.sin(time * 1.15 + t * 2.8 + branchIdx * 0.9 + rayIdx * 0.15);
+    // On mobile, zero per-ray phase shift so the 3 companion rays stay strictly parallel and never twist
+    const rayPhase = isMobile ? 0 : (rayIdx * 0.15);
+    const primaryWave = Math.sin(time * 1.15 + t * 2.8 + branchIdx * 0.9 + rayPhase);
     const secondaryWave = 0.35 * Math.sin(time * 1.8 + t * 4.5 + branchIdx * 1.2);
-    const swayX = (primaryWave + secondaryWave) * 2.8 * envelope;
-    const swayY = Math.sin(time * 0.90 + t * 2.4 + branchIdx * 0.8 + rayIdx * 0.1) * 1.6 * envelope;
+    const swayAmp = isMobile ? 1.2 : 2.8;
+    const swayX = (primaryWave + secondaryWave) * swayAmp * envelope;
+    const swayY = Math.sin(time * 0.90 + t * 2.4 + branchIdx * 0.8 + rayPhase) * (isMobile ? 0.6 : 1.6) * envelope;
     const sagY = dist * sag * envelope;
     return {
       x: s.x + (c.x - s.x) * t + swayX,
