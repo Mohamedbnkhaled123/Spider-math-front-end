@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy, input, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
-import { ChildAcademicReport } from './child-academic-monitor.models';
+import { ChildAcademicReport, AssessmentCategoryType, ChildSubmissionSummary } from './child-academic-monitor.models';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -31,6 +31,108 @@ export class ChildAcademicMonitorComponent {
 
   readonly isLoading = signal<boolean>(false);
   readonly report = signal<ChildAcademicReport | null>(null);
+
+  // Submissions Categories & Unit Filtering
+  readonly selectedCategoryFilter = signal<AssessmentCategoryType>('ALL');
+  readonly selectedUnitFilter = signal<string>('ALL');
+  readonly isGroupedByUnit = signal<boolean>(false);
+
+  setCategoryFilter(category: AssessmentCategoryType): void {
+    this.selectedCategoryFilter.set(category);
+  }
+
+  setUnitFilter(unit: string): void {
+    this.selectedUnitFilter.set(unit);
+  }
+
+  toggleGroupByUnit(): void {
+    this.isGroupedByUnit.update(v => !v);
+  }
+
+  readonly availableUnits = computed<string[]>(() => {
+    const rep = this.report();
+    if (!rep) return [];
+    const unitsSet = new Set<string>();
+    for (const sub of rep.submissions) {
+      if (sub.unitTitleAr) {
+        unitsSet.add(sub.unitTitleAr);
+      }
+    }
+    for (const u of rep.units) {
+      if (u.unitTitleAr) {
+        unitsSet.add(u.unitTitleAr);
+      }
+    }
+    return Array.from(unitsSet);
+  });
+
+  readonly filteredSubmissions = computed<ChildSubmissionSummary[]>(() => {
+    const rep = this.report();
+    if (!rep) return [];
+    const cat = this.selectedCategoryFilter();
+    const unit = this.selectedUnitFilter();
+
+    return rep.submissions.filter(s => {
+      const matchCat = cat === 'ALL' || s.category === cat;
+      const matchUnit = unit === 'ALL' || s.unitTitleAr === unit;
+      return matchCat && matchUnit;
+    });
+  });
+
+  readonly groupedSubmissionsByUnit = computed<{ unitTitle: string; submissions: ChildSubmissionSummary[] }[]>(() => {
+    const subs = this.filteredSubmissions();
+    const groupMap = new Map<string, ChildSubmissionSummary[]>();
+
+    for (const s of subs) {
+      const unitKey = s.unitTitleAr || 'الوحدة الدراسية';
+      if (!groupMap.has(unitKey)) {
+        groupMap.set(unitKey, []);
+      }
+      groupMap.get(unitKey)!.push(s);
+    }
+
+    return Array.from(groupMap.entries()).map(([unitTitle, submissions]) => ({
+      unitTitle,
+      submissions
+    }));
+  });
+
+  readonly submissionsStats = computed(() => {
+    const rep = this.report();
+    if (!rep || rep.submissions.length === 0) {
+      return {
+        totalCount: 0,
+        quizzesCount: 0,
+        quizzesAvg: 0,
+        homeworkCount: 0,
+        homeworkAvg: 0,
+        examsCount: 0,
+        examsAvg: 0
+      };
+    }
+
+    const subs = rep.submissions;
+    const quizzes = subs.filter(s => s.category === 'QUIZ');
+    const homework = subs.filter(s => s.category === 'HOMEWORK');
+    const exams = subs.filter(s => s.category === 'EXAM');
+
+    const calcAvg = (items: ChildSubmissionSummary[]) => {
+      const completed = items.filter(i => !i.isPendingReview && !i.isInProgress);
+      if (completed.length === 0) return 0;
+      const sum = completed.reduce((acc, curr) => acc + curr.scorePercentage, 0);
+      return Math.round(sum / completed.length);
+    };
+
+    return {
+      totalCount: subs.length,
+      quizzesCount: quizzes.length,
+      quizzesAvg: calcAvg(quizzes),
+      homeworkCount: homework.length,
+      homeworkAvg: calcAvg(homework),
+      examsCount: exams.length,
+      examsAvg: calcAvg(exams)
+    };
+  });
 
   constructor() {
     effect(() => {
@@ -66,25 +168,61 @@ export class ChildAcademicMonitorComponent {
         }
 
         const rawSubmissions = data.submissions || data.gradedAssessments || [];
-        const mappedSubmissions = rawSubmissions.map((s: any) => ({
-          submissionId: s.submissionId || s._id,
-          assessmentTitleAr: s.titleAr || s.assessmentTitleAr || 'تقييم دراسي',
-          assessmentTitleEn: s.titleEn || s.assessmentTitleEn || 'Assessment',
-          unitTitleAr: s.unitTitleAr || 'الوحدة الدراسية',
-          scorePercentage: s.percentage ?? s.scorePercentage ?? 0,
-          finalTotalScore: s.finalTotalScore ?? s.final_total_score ?? 0,
-          maxScore: s.totalPoints ?? s.maxScore ?? 10,
-          gradedAt: s.gradedAt || s.submittedAt || '',
-          status: s.status || (s.result_visibility === 'HIDDEN_PENDING_TEACHER' ? 'PENDING_REVIEW' : 'PUBLISHED'),
-          isPendingReview: s.isPendingReview ?? (s.result_visibility === 'HIDDEN_PENDING_TEACHER'),
-          isInProgress: s.isInProgress ?? (s.sync_queue_status === 'IN_PROGRESS'),
-          teacherNote: s.teacherFeedbackNotes || s.teacherNote,
-          mistakeCases: (s.customMistakeCases || s.mistakeCases || []).map((m: any, idx: number) => ({
-            questionOrder: m.questionOrder ?? idx + 1,
-            errorNote: m.errorNote || m.error_note || '',
-            youtubeSolutionUrl: m.youtubeSolutionUrl || m.youtube_solution_url
-          }))
-        }));
+        const mappedSubmissions: ChildSubmissionSummary[] = rawSubmissions.map((s: any) => {
+          let category: 'QUIZ' | 'HOMEWORK' | 'EXAM' = 'QUIZ';
+          const typeStr = (s.assessmentType || s.type || '').toUpperCase();
+          const titleAr = (s.titleAr || s.assessmentTitleAr || '').toLowerCase();
+          const titleEn = (s.titleEn || s.assessmentTitleEn || '').toLowerCase();
+
+          if (
+            typeStr === 'HOMEWORK' ||
+            typeStr === 'ASSIGNMENT' ||
+            s.isHomework ||
+            titleAr.includes('واجب') ||
+            titleAr.includes('تطبيق') ||
+            titleEn.includes('homework') ||
+            titleEn.includes('assignment')
+          ) {
+            category = 'HOMEWORK';
+          } else if (
+            typeStr === 'EXAM' ||
+            typeStr === 'COMPREHENSIVE' ||
+            typeStr === 'FINAL' ||
+            titleAr.includes('شامل') ||
+            titleAr.includes('نهائي') ||
+            titleAr.includes('امتحان') ||
+            titleEn.includes('exam') ||
+            titleEn.includes('comprehensive') ||
+            titleEn.includes('final')
+          ) {
+            category = 'EXAM';
+          } else {
+            category = 'QUIZ';
+          }
+
+          return {
+            submissionId: s.submissionId || s._id,
+            assessmentTitleAr: s.titleAr || s.assessmentTitleAr || 'تقييم دراسي',
+            assessmentTitleEn: s.titleEn || s.assessmentTitleEn || 'Assessment',
+            unitTitleAr: s.unitTitleAr || 'الوحدة الدراسية',
+            unitTitleEn: s.unitTitleEn,
+            unitId: s.unitPackageId || s.unitId,
+            category,
+            scorePercentage: s.percentage ?? s.scorePercentage ?? 0,
+            finalTotalScore: s.finalTotalScore ?? s.final_total_score ?? 0,
+            maxScore: s.totalPoints ?? s.maxScore ?? 10,
+            gradedAt: s.gradedAt || s.submittedAt || '',
+            status: s.status || (s.result_visibility === 'HIDDEN_PENDING_TEACHER' ? 'PENDING_REVIEW' : 'PUBLISHED'),
+            isPendingReview: s.isPendingReview ?? (s.result_visibility === 'HIDDEN_PENDING_TEACHER'),
+            isInProgress: s.isInProgress ?? (s.sync_queue_status === 'IN_PROGRESS'),
+            teacherNote: s.teacherFeedbackNotes || s.teacherNote,
+            mistakeCases: (s.customMistakeCases || s.mistakeCases || []).map((m: any, idx: number) => ({
+              questionOrder: m.questionOrder ?? idx + 1,
+              errorNote: m.errorNote || m.error_note || '',
+              youtubeSolutionUrl: m.youtubeSolutionUrl || m.youtube_solution_url
+            }))
+          };
+        });
 
         const rawUnits = data.activeSubscriptions || data.units || [];
         const mappedUnits = rawUnits.map((u: any) => ({

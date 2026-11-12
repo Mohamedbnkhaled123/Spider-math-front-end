@@ -32,11 +32,16 @@ export interface ChildUnitWatchMetric {
   }>;
 }
 
+export type AssessmentCategoryType = 'ALL' | 'QUIZ' | 'HOMEWORK' | 'EXAM';
+
 export interface ChildSubmissionSummary {
   submissionId: string;
   assessmentTitleAr: string;
   assessmentTitleEn: string;
   unitTitleAr: string;
+  unitTitleEn?: string;
+  unitId?: string;
+  category: 'QUIZ' | 'HOMEWORK' | 'EXAM';
   scorePercentage: number;
   finalTotalScore: number;
   maxScore: number;
