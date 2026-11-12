@@ -28,16 +28,13 @@
   }
 
   <!-- ========================================================================= -->
-  <!-- Studio Main Layout: Sticky Sidebar Navigation (Right) + Content (Left)    -->
+  <!-- Studio Main Layout: Full Width Desktop Workspace with Sticky Top Nav      -->
   <!-- ========================================================================= -->
-  <div class="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full px-4 sm:px-6 lg:px-6 py-4 sm:py-6 flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 items-start">
+  <div class="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full px-4 sm:px-6 lg:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-4 lg:gap-6 items-start">
 
-    <!-- 1. Admin Analytics Shell (Sidebar, Notifications, Backup & Purge) -->
+    <!-- 1. Mobile/Tablet Command Bar (< 1024px) -->
     <app-admin-analytics-shell
-      class="w-full transition-all duration-300 lg:shrink-0 lg:self-stretch"
-      [class.lg:w-[15.5rem]]="!isSidebarCollapsed()"
-      [class.xl:w-72]="!isSidebarCollapsed()"
-      [class.lg:hidden]="isSidebarCollapsed()"
+      class="w-full lg:hidden"
       [activeTab]="activeTab()"
       (tabChange)="setTab($event)"
       [analytics]="analyticsSnapshot()"
@@ -50,99 +47,103 @@
       (toolbarCollapsedChange)="isSidebarCollapsed.set($event)"
     />
 
-    <!-- 2. Dynamic Content Area Switched by Tabs -->
+    <!-- 2. Dynamic Content Area Switched by Tabs (100% Full Width on Desktop) -->
     <main class="flex-1 w-full min-w-0 transition-all duration-300">
 
-      @if (isSidebarCollapsed()) {
-        <!-- Desktop Quick Expand Bar & Tab Navigation when Sidebar is Collapsed -->
-        <div class="hidden lg:flex items-center justify-between p-3 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in">
-          <div class="flex items-center gap-3">
-            <button
-              type="button"
-              (click)="isSidebarCollapsed.set(false)"
-              class="px-3.5 py-2 rounded-xl bg-brand-primary text-white hover:bg-brand-secondary text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-              [title]="langService.isArabic() ? 'إظهار القائمة الجانبية وغرفة العمليات' : 'Show Sidebar'"
-            >
-              <app-icon name="menu" [size]="16" />
-              <span>{{ langService.isArabic() ? 'إظهار القائمة' : 'Show Sidebar' }}</span>
-            </button>
-
-            <span class="text-xs font-bold text-text-secondary">
-              {{ langService.isArabic() ? 'تم طي القائمة الجانبية لتوسيع مساحة العمل بالكامل' : 'Sidebar collapsed to maximize workspace' }}
-            </span>
-          </div>
-
-          <!-- Quick Tab Navigation Pills -->
-          <div class="flex items-center gap-1.5 text-xs font-bold">
-            <button
-              type="button"
-              (click)="setTab('assessments')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'assessments'"
-              [class.text-slate-950]="activeTab() === 'assessments'"
-              [class.text-text-secondary]="activeTab() !== 'assessments'"
-              [class.hover:text-text-primary]="activeTab() !== 'assessments'"
-            >
-              {{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}
-            </button>
-            <button
-              type="button"
-              (click)="setTab('analytics')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'analytics'"
-              [class.text-slate-950]="activeTab() === 'analytics'"
-              [class.text-text-secondary]="activeTab() !== 'analytics'"
-              [class.hover:text-text-primary]="activeTab() !== 'analytics'"
-            >
-              {{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}
-            </button>
-            <button
-              type="button"
-              (click)="setTab('curriculum')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'curriculum'"
-              [class.text-slate-950]="activeTab() === 'curriculum'"
-              [class.text-text-secondary]="activeTab() !== 'curriculum'"
-              [class.hover:text-text-primary]="activeTab() !== 'curriculum'"
-            >
-              {{ langService.isArabic() ? 'المناهج' : 'Curricula' }}
-            </button>
-            <button
-              type="button"
-              (click)="setTab('grading')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'grading'"
-              [class.text-slate-950]="activeTab() === 'grading'"
-              [class.text-text-secondary]="activeTab() !== 'grading'"
-              [class.hover:text-text-primary]="activeTab() !== 'grading'"
-            >
-              {{ langService.isArabic() ? 'التصحيح' : 'Grading' }}
-            </button>
-            <button
-              type="button"
-              (click)="setTab('students')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'students'"
-              [class.text-slate-950]="activeTab() === 'students'"
-              [class.text-text-secondary]="activeTab() !== 'students'"
-              [class.hover:text-text-primary]="activeTab() !== 'students'"
-            >
-              {{ langService.isArabic() ? 'الطلاب' : 'Students' }}
-            </button>
-            <button
-              type="button"
-              (click)="setTab('leads_cms')"
-              class="px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
-              [class.text-slate-950]="activeTab() === 'leads_cms'"
-              [class.text-text-secondary]="activeTab() !== 'leads_cms'"
-              [class.hover:text-text-primary]="activeTab() !== 'leads_cms'"
-            >
-              {{ langService.isArabic() ? 'المحتوى' : 'CMS' }}
-            </button>
-          </div>
+      <!-- Desktop Permanent Top Workspace Navigation Bar (>= 1024px) -->
+      <div class="hidden lg:flex items-center justify-between p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+          <h1 class="text-sm font-bold text-text-primary font-academic-serif truncate">
+            @if (langService.isArabic()) {
+              غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span>
+            } @else {
+              Operations Studio of <span class="text-gold-accent">Eng. Heba Abdel-Wahab</span>
+            }
+          </h1>
         </div>
-      }
+
+        <!-- Quick Tab Navigation Pills -->
+        <div class="flex items-center gap-1.5 text-xs font-bold">
+          <button
+            type="button"
+            (click)="setTab('assessments')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            [class.btn-gold-metallic]="activeTab() === 'assessments'"
+            [class.text-slate-950]="activeTab() === 'assessments'"
+            [class.text-text-secondary]="activeTab() !== 'assessments'"
+            [class.hover:text-text-primary]="activeTab() !== 'assessments'"
+          >
+            <app-icon name="award" [size]="14" />
+            <span>{{ langService.isArabic() ? 'قسم الامتحانات' : 'Exams' }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setTab('analytics')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            [class.btn-gold-metallic]="activeTab() === 'analytics'"
+            [class.text-slate-950]="activeTab() === 'analytics'"
+            [class.text-text-secondary]="activeTab() !== 'analytics'"
+            [class.hover:text-text-primary]="activeTab() !== 'analytics'"
+          >
+            <app-icon name="activity" [size]="14" />
+            <span>{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setTab('curriculum')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            [class.btn-gold-metallic]="activeTab() === 'curriculum'"
+            [class.text-slate-950]="activeTab() === 'curriculum'"
+            [class.text-text-secondary]="activeTab() !== 'curriculum'"
+            [class.hover:text-text-primary]="activeTab() !== 'curriculum'"
+          >
+            <app-icon name="book-open" [size]="14" />
+            <span>{{ langService.isArabic() ? 'المناهج والوحدات' : 'Curricula' }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setTab('grading')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 relative"
+            [class.btn-gold-metallic]="activeTab() === 'grading'"
+            [class.text-slate-950]="activeTab() === 'grading'"
+            [class.text-text-secondary]="activeTab() !== 'grading'"
+            [class.hover:text-text-primary]="activeTab() !== 'grading'"
+          >
+            <app-icon name="file-text" [size]="14" />
+            <span>{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
+            @if (analyticsSnapshot().pendingGradingCount > 0) {
+              <span class="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-rose-500 text-white shrink-0">
+                {{ analyticsSnapshot().pendingGradingCount }}
+              </span>
+            }
+          </button>
+          <button
+            type="button"
+            (click)="setTab('students')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            [class.btn-gold-metallic]="activeTab() === 'students'"
+            [class.text-slate-950]="activeTab() === 'students'"
+            [class.text-text-secondary]="activeTab() !== 'students'"
+            [class.hover:text-text-primary]="activeTab() !== 'students'"
+          >
+            <app-icon name="user" [size]="14" />
+            <span>{{ langService.isArabic() ? 'الطلاب والأجهزة' : 'Students' }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setTab('leads_cms')"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
+            [class.text-slate-950]="activeTab() === 'leads_cms'"
+            [class.text-text-secondary]="activeTab() !== 'leads_cms'"
+            [class.hover:text-text-primary]="activeTab() !== 'leads_cms'"
+          >
+            <app-icon name="grid" [size]="14" />
+            <span>{{ langService.isArabic() ? 'إدارة المحتوى' : 'CMS' }}</span>
+          </button>
+        </div>
+      </div>
 
       @switch (activeTab()) {
 

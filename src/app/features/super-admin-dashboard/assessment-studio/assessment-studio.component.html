@@ -997,27 +997,29 @@
               </span>
 
               <!-- Auto-Save Status Badge (R2 & R4 Strict Compliance) -->
-              <div
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border transition-colors"
-                [class.bg-brand-primary/10]="draftService.isAutoSaving()"
-                [class.border-brand-primary/20]="draftService.isAutoSaving()"
-                [class.text-brand-primary]="draftService.isAutoSaving()"
-                [class.bg-emerald-500/10]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                [class.border-emerald-500/20]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                [class.text-emerald-600]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                [class.dark:text-emerald-400]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                data-testid="editor-autosave-badge"
-              >
-                @if (draftService.isAutoSaving()) {
-                  <app-icon name="loader" [size]="11" className="animate-spin text-brand-primary" />
-                  <span>{{ langService.isArabic() ? 'جارٍ الحفظ التلقائي...' : 'Auto-saving...' }}</span>
-                } @else if (draftService.lastSavedTimestamp()) {
-                  <app-icon name="check-circle" [size]="11" className="text-emerald-500" />
-                  <span>
-                    {{ langService.isArabic() ? 'محفوظ محلياً (مسودة آمنة)' : 'Saved locally (draft)' }}
-                  </span>
-                }
-              </div>
+              @if (draftService.isAutoSaving() || draftService.lastSavedTimestamp()) {
+                <div
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border transition-colors"
+                  [class.bg-brand-primary/10]="draftService.isAutoSaving()"
+                  [class.border-brand-primary/20]="draftService.isAutoSaving()"
+                  [class.text-brand-primary]="draftService.isAutoSaving()"
+                  [class.bg-emerald-500/10]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                  [class.border-emerald-500/20]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                  [class.text-emerald-600]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                  [class.dark:text-emerald-400]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                  data-testid="editor-autosave-badge"
+                >
+                  @if (draftService.isAutoSaving()) {
+                    <app-icon name="loader" [size]="11" className="animate-spin text-brand-primary" />
+                    <span>{{ langService.isArabic() ? 'جارٍ الحفظ التلقائي...' : 'Auto-saving...' }}</span>
+                  } @else if (draftService.lastSavedTimestamp()) {
+                    <app-icon name="check-circle" [size]="11" className="text-emerald-500" />
+                    <span>
+                      {{ langService.isArabic() ? 'محفوظ محلياً (مسودة آمنة)' : 'Saved locally (draft)' }}
+                    </span>
+                  }
+                </div>
+              }
             </div>
           </div>
 
@@ -1096,11 +1098,11 @@
           </div>
         }
 
-        <div class="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1 min-h-0 text-xs" (input)="triggerDraftAutoSave(false)">
+        <div class="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 space-y-6 overflow-y-auto flex-1 min-h-0 text-xs" (input)="triggerDraftAutoSave(false)">
           
           <!-- TAB 1: EXAM SETTINGS & SCHEDULING -->
           @if (editorActiveTab() === 'SETTINGS') {
-            <div class="space-y-4 animate-fade-in">
+            <div class="space-y-4 pt-4 sm:pt-6 animate-fade-in">
               <div>
                 <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'إضافة عنوان' : 'Add Title' }}</label>
                 <input
@@ -1538,10 +1540,10 @@
 
           <!-- TAB 2: QUESTIONS BANK -->
           @if (editorActiveTab() === 'QUESTIONS') {
-            <div class="space-y-6 animate-fade-in relative">
+            <div class="space-y-6 animate-fade-in relative pt-3 sm:pt-4">
 
               <!-- Sticky Exam Options Bar (Question Types & Math Keyboard) -->
-              <div class="sticky top-0 z-30 -mt-2 bg-surface-card p-2.5 sm:p-3 rounded-2xl border border-surface-border shadow-md flex items-center justify-between gap-2">
+              <div class="sticky top-0 z-30 bg-surface-card p-2.5 sm:p-3 rounded-2xl border border-surface-border shadow-md flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="text-xs font-bold text-text-primary truncate">
                     @if (editingQuestionId()) {
