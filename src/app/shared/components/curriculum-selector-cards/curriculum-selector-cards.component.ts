@@ -519,12 +519,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     const spiderW = spiderRect.width;
     const spiderH = spiderRect.height;
 
-    // Zero air-gap: Origins tightly anchor to the bottom paws and book contours of the new mascot
+    // Zero air-gap: Origins tightly anchor to the bottom paws and book contours of the mascot
     const spiderOrigins = [
-      { x: spiderX + spiderW * 0.22, y: spiderY + spiderH * 0.84 },
-      { x: spiderX + spiderW * 0.42, y: spiderY + spiderH * 0.86 },
-      { x: spiderX + spiderW * 0.58, y: spiderY + spiderH * 0.86 },
-      { x: spiderX + spiderW * 0.78, y: spiderY + spiderH * 0.84 },
+      { x: spiderX + spiderW * 0.16, y: spiderY + spiderH * 0.94 },
+      { x: spiderX + spiderW * 0.38, y: spiderY + spiderH * 0.96 },
+      { x: spiderX + spiderW * 0.62, y: spiderY + spiderH * 0.96 },
+      { x: spiderX + spiderW * 0.84, y: spiderY + spiderH * 0.94 },
     ];
 
     const cardAnchors: { x: number; y: number }[] = [];
@@ -600,12 +600,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       const sw = curSpiderRect.width;
       const sh = curSpiderRect.height;
 
-      // Symmetrical origin anchors: Upper limbs anchor at ~32% height, lower limbs anchor at ~68% height
-      // This equalizes distance between spider and top/bottom cards, making bottom strands noticeably longer
-      spiderOrigins[0] = { x: sx + sw * 0.22, y: sy + sh * 0.32 };
-      spiderOrigins[1] = { x: sx + sw * 0.78, y: sy + sh * 0.32 };
-      spiderOrigins[2] = { x: sx + sw * 0.26, y: sy + sh * 0.68 };
-      spiderOrigins[3] = { x: sx + sw * 0.74, y: sy + sh * 0.68 };
+      // Mobile 2x2 layout: Precise limb-anchoring
+      // Strand 0 (Top-Left): upper left limb
+      // Strand 1 (Top-Right): raised waving hand
+      // Strand 2 (Bottom-Left): bottom left paw / book base
+      // Strand 3 (Bottom-Right): bottom right paw / book base
+      spiderOrigins[0] = { x: sx + sw * 0.28, y: sy + sh * 0.35 };
+      spiderOrigins[1] = { x: sx + sw * 0.76, y: sy + sh * 0.22 };
+      spiderOrigins[2] = { x: sx + sw * 0.18, y: sy + sh * 0.94 };
+      spiderOrigins[3] = { x: sx + sw * 0.82, y: sy + sh * 0.94 };
     }
 
     const targetW = Math.round(W * dpr);
