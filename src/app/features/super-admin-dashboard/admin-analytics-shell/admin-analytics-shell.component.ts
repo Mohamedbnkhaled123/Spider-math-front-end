@@ -48,6 +48,10 @@ export class AdminAnalyticsShellComponent {
   // Mobile Quick Tools Drawer State
   readonly isMobileToolsOpen = signal<boolean>(false);
 
+  // Milestone 2 (F2.1, F2.2): Collapsible Top Toolbar Architecture
+  readonly isToolbarCollapsed = signal<boolean>(false);
+  readonly toolbarCollapsedChange = output<boolean>();
+
   selectTab(tab: AdminTab): void {
     this.tabChange.emit(tab);
   }
@@ -58,6 +62,11 @@ export class AdminAnalyticsShellComponent {
 
   toggleMobileTools(): void {
     this.isMobileToolsOpen.update((open) => !open);
+  }
+
+  toggleToolbarCollapse(): void {
+    this.isToolbarCollapsed.update((v) => !v);
+    this.toolbarCollapsedChange.emit(this.isToolbarCollapsed());
   }
 
   triggerBackup(): void {

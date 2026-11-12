@@ -14,10 +14,26 @@
 table {
   border-collapse: separate;
   border-spacing: 0;
+  width: 100%;
 
   th,
   td {
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+
+    &.whitespace-nowrap,
+    &.nowrap {
+      white-space: nowrap;
+    }
+  }
+}
+
+.overflow-x-auto {
+  table {
+    th,
+    td {
+      white-space: nowrap;
+    }
   }
 }
 

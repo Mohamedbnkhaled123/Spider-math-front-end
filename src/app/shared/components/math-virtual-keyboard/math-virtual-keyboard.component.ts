@@ -99,13 +99,19 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
   );
 
   constructor() {
-    // Sync target element readonly state, live input listener, and cleanup on target switch or close
+    // Sync target element inputmode state, live input listener, and cleanup on target switch or close
     effect((onCleanup) => {
       const open = this.isOpen();
       const el = this.targetInput();
 
       if (open && el) {
-        el.setAttribute('readonly', 'true');
+        // Defensive guard: auto-dismiss if target element is detached from the DOM
+        if (typeof el.isConnected === 'boolean' && !el.isConnected) {
+          this.isOpen.set(false);
+          return;
+        }
+        el.setAttribute('inputmode', 'none');
+        el.removeAttribute('readonly');
         this.isNativeMobileKeyboardActive.set(false);
         this.activeVisualTemplate.set(null);
         this.editingSymbolRange.set(null);
@@ -127,6 +133,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
         el.addEventListener('select', handleCursorSync);
 
         onCleanup(() => {
+          el.removeAttribute('inputmode');
           el.removeAttribute('readonly');
           el.removeEventListener('input', handleInput);
           el.removeEventListener('click', handleCursorSync);
@@ -134,6 +141,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
           el.removeEventListener('select', handleCursorSync);
         });
       } else if (el) {
+        el.removeAttribute('inputmode');
         el.removeAttribute('readonly');
       }
     });
@@ -163,13 +171,28 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
   }
 
   /**
+   * Defensive guard: returns targetInput if it exists and is still connected to the DOM tree.
+   * If the target element has been unmounted/detached (isConnected === false),
+   * automatically dismisses the virtual keyboard to prevent orphaned mutations.
+   */
+  private getConnectedTarget(): (HTMLInputElement | HTMLTextAreaElement) | null {
+    const el = this.targetInput();
+    if (!el) return null;
+    if (typeof el.isConnected === 'boolean' && !el.isConnected) {
+      this.close();
+      return null;
+    }
+    return el;
+  }
+
+  /**
    * Deletes the currently edited math symbol completely from the input behind the scenes.
    */
   deleteEditingSymbol(): void {
     const range = this.editingSymbolRange();
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (range && el) {
-      this.ensureReadonlySuppression(el);
+      this.ensureInputModeSuppression(el);
       const currentVal = el.value;
       const nextVal = currentVal.slice(0, range.start) + currentVal.slice(range.end);
       el.value = nextVal;
@@ -224,13 +247,13 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     this.activeVisualTemplate.set(null);
     this.editingSymbolRange.set(null);
 
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (!el) {
       this.previewFormula.update((prev) => prev + latex);
       return;
     }
 
-    this.ensureReadonlySuppression(el);
+    this.ensureInputModeSuppression(el);
 
     if (range) {
       // In-place replacement of existing math symbol
@@ -252,20 +275,25 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
 
   /**
    * Re-activates mobile keyboard suppression if native prose typing mode was active,
-   * keeping virtual keyboard controls in sync and soft keyboard dismissed.
+   * keeping virtual keyboard controls in sync and soft keyboard dismissed without readonly freeze.
    */
-  private ensureReadonlySuppression(el: HTMLInputElement | HTMLTextAreaElement): void {
+  private ensureInputModeSuppression(el: HTMLInputElement | HTMLTextAreaElement): void {
     if (this.isNativeMobileKeyboardActive()) {
-      el.setAttribute('readonly', 'true');
+      el.setAttribute('inputmode', 'none');
+      el.removeAttribute('readonly');
       this.isNativeMobileKeyboardActive.set(false);
     }
   }
 
   /**
-   * Prevents mouse/touch focus shift when tapping keys so target cursor is retained
-   * and mobile software keyboard does not pop up unexpectedly.
+   * Prevents mouse focus shift when clicking keys on desktop so target cursor is retained.
+   * On mobile touch devices, returns early without calling preventDefault() to avoid cancelling
+   * synthetic click events per W3C Touch Events Level 2 specification.
    */
   preventFocusLoss(event: Event): void {
+    if (typeof PointerEvent !== 'undefined' && event instanceof PointerEvent && event.pointerType === 'touch') {
+      return;
+    }
     event.preventDefault();
   }
 
@@ -274,13 +302,13 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
    * All mathematical formatting happens behind the scenes.
    */
   private insertSymbolDirect(latexCode: string, cursorOffset: number = 0): void {
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (!el) {
       this.previewFormula.update((prev) => prev + latexCode);
       return;
     }
 
-    this.ensureReadonlySuppression(el);
+    this.ensureInputModeSuppression(el);
 
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
@@ -353,7 +381,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
    * No raw dollar signs are exposed in UI buttons.
    */
   insertDelimiter(type: 'INLINE' | 'BLOCK'): void {
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     const delimiter = type === 'BLOCK' ? '$$  $$' : '$  $';
     const offset = type === 'BLOCK' ? 2 : 1;
 
@@ -362,7 +390,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
       return;
     }
 
-    this.ensureReadonlySuppression(el);
+    this.ensureInputModeSuppression(el);
 
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
@@ -390,13 +418,13 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
       return;
     }
 
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (!el) {
       this.previewFormula.update((prev) => prev.slice(0, -1));
       return;
     }
 
-    this.ensureReadonlySuppression(el);
+    this.ensureInputModeSuppression(el);
 
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
@@ -448,9 +476,9 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
       return;
     }
 
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (el) {
-      this.ensureReadonlySuppression(el);
+      this.ensureInputModeSuppression(el);
       el.value = '';
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -462,17 +490,19 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
 
   /**
    * User requested quick toggle:
-   * Enables teacher to switch between Math Virtual Keyboard (readonly suppression)
+   * Enables teacher to switch between Math Virtual Keyboard (inputmode suppression)
    * and native OS phone keyboard for typing Arabic prose seamlessly.
    */
   toggleNativeKeyboard(): void {
-    const el = this.targetInput();
+    const el = this.getConnectedTarget();
     if (!el) return;
 
     if (this.isNativeMobileKeyboardActive()) {
-      el.setAttribute('readonly', 'true');
+      el.setAttribute('inputmode', 'none');
+      el.removeAttribute('readonly');
       this.isNativeMobileKeyboardActive.set(false);
     } else {
+      el.removeAttribute('inputmode');
       el.removeAttribute('readonly');
       this.isNativeMobileKeyboardActive.set(true);
       el.focus();
@@ -491,29 +521,49 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     }
   };
 
+  @HostListener('document:pointerdown')
+  onDocumentPointerDown(): void {
+    if (!this.isOpen()) return;
+    const el = this.targetInput();
+    if (el && typeof el.isConnected === 'boolean' && !el.isConnected) {
+      this.close();
+    }
+  }
+
   /**
    * Automatically re-clamps the keyboard position if the browser viewport shrinks
-   * so it never gets stranded off-screen.
+   * or rotates so it never gets stranded off-screen.
    */
   @HostListener('window:resize')
+  @HostListener('window:orientationchange')
   onWindowResize(): void {
-    const pos = this.dragPosition();
     const containerEl = this.keyboardContainerRef()?.nativeElement;
-    if (!pos || !containerEl || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
 
-    const rect = containerEl.getBoundingClientRect();
-    const padding = 8;
     const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
     const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
 
+    // On narrow screens (mobile viewports < 640px), auto-dock to bottom for optimal ergonomics
+    if (viewportWidth < 640) {
+      if (this.dragPosition() !== null) {
+        this.dragPosition.set(null);
+      }
+      return;
+    }
+
+    const pos = this.dragPosition();
+    if (!pos || !containerEl) return;
+
+    const rect = containerEl.getBoundingClientRect();
+    const padding = 8;
     const maxX = Math.max(padding, viewportWidth - rect.width - padding);
     const maxY = Math.max(padding, viewportHeight - rect.height - padding);
 
-    if (pos.x > maxX || pos.y > maxY) {
-      this.dragPosition.set({
-        x: Math.min(Math.max(padding, pos.x), maxX),
-        y: Math.min(Math.max(padding, pos.y), maxY)
-      });
+    const clampedX = Math.min(Math.max(padding, pos.x), maxX);
+    const clampedY = Math.min(Math.max(padding, pos.y), maxY);
+
+    if (clampedX !== pos.x || clampedY !== pos.y) {
+      this.dragPosition.set({ x: clampedX, y: clampedY });
     }
   }
 
@@ -616,6 +666,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     this.activeVisualTemplate.set(null);
     const el = this.targetInput();
     if (el) {
+      el.removeAttribute('inputmode');
       el.removeAttribute('readonly');
     }
     this.isNativeMobileKeyboardActive.set(false);

@@ -164,7 +164,7 @@ describe('MathVirtualKeyboardComponent', () => {
     expect(inputEl.value).toBe('$$\\int  $$');
   });
 
-  it('should clear readonly from previous element when targetInput changes to a new element', () => {
+  it('should clear inputmode from previous element when targetInput changes to a new element', () => {
     const secondInput = document.createElement('input');
     document.body.appendChild(secondInput);
 
@@ -173,15 +173,18 @@ describe('MathVirtualKeyboardComponent', () => {
       fixture.componentRef.setInput('isOpen', true);
       fixture.detectChanges();
 
-      expect(inputEl.hasAttribute('readonly')).toBeTrue();
+      expect(inputEl.getAttribute('inputmode')).toBe('none');
+      expect(inputEl.hasAttribute('readonly')).toBeFalse();
 
       // Switch target to second input
       fixture.componentRef.setInput('targetInput', secondInput);
       fixture.detectChanges();
 
-      // First input MUST have readonly removed!
+      // First input MUST have inputmode removed!
+      expect(inputEl.hasAttribute('inputmode')).toBeFalse();
       expect(inputEl.hasAttribute('readonly')).toBeFalse();
-      expect(secondInput.hasAttribute('readonly')).toBeTrue();
+      expect(secondInput.getAttribute('inputmode')).toBe('none');
+      expect(secondInput.hasAttribute('readonly')).toBeFalse();
     } finally {
       if (secondInput.parentElement) {
         secondInput.parentElement.removeChild(secondInput);
@@ -205,18 +208,20 @@ describe('MathVirtualKeyboardComponent', () => {
     expect(component.previewFormula()).toBe('مسألة جديدة');
   });
 
-  it('should re-apply readonly suppression when clicking virtual keys while native keyboard was active', () => {
+  it('should re-apply inputmode suppression when clicking virtual keys while native keyboard was active', () => {
     fixture.componentRef.setInput('targetInput', inputEl);
     fixture.componentRef.setInput('isOpen', true);
     fixture.detectChanges();
 
     component.toggleNativeKeyboard();
+    expect(inputEl.hasAttribute('inputmode')).toBeFalse();
     expect(inputEl.hasAttribute('readonly')).toBeFalse();
     expect(component.isNativeMobileKeyboardActive()).toBeTrue();
 
     // User taps a virtual key
     component.handleSpace();
-    expect(inputEl.hasAttribute('readonly')).toBeTrue();
+    expect(inputEl.getAttribute('inputmode')).toBe('none');
+    expect(inputEl.hasAttribute('readonly')).toBeFalse();
     expect(component.isNativeMobileKeyboardActive()).toBeFalse();
   });
 
@@ -264,35 +269,40 @@ describe('MathVirtualKeyboardComponent', () => {
     expect(component.previewFormula()).toBe('');
   });
 
-  it('should toggle native phone keyboard unlocking readonly attribute', () => {
+  it('should toggle native phone keyboard unlocking inputmode attribute', () => {
     fixture.componentRef.setInput('targetInput', inputEl);
     fixture.componentRef.setInput('isOpen', true);
     fixture.detectChanges();
 
-    // On open, input gets readonly
-    expect(inputEl.hasAttribute('readonly')).toBeTrue();
+    // On open, input gets inputmode="none"
+    expect(inputEl.getAttribute('inputmode')).toBe('none');
+    expect(inputEl.hasAttribute('readonly')).toBeFalse();
     expect(component.isNativeMobileKeyboardActive()).toBeFalse();
 
     // Toggle to native keyboard
     component.toggleNativeKeyboard();
+    expect(inputEl.hasAttribute('inputmode')).toBeFalse();
     expect(inputEl.hasAttribute('readonly')).toBeFalse();
     expect(component.isNativeMobileKeyboardActive()).toBeTrue();
 
     // Toggle back to virtual keyboard
     component.toggleNativeKeyboard();
-    expect(inputEl.hasAttribute('readonly')).toBeTrue();
+    expect(inputEl.getAttribute('inputmode')).toBe('none');
+    expect(inputEl.hasAttribute('readonly')).toBeFalse();
     expect(component.isNativeMobileKeyboardActive()).toBeFalse();
   });
 
-  it('should clean up readonly on close', () => {
+  it('should clean up inputmode on close', () => {
     fixture.componentRef.setInput('targetInput', inputEl);
     fixture.componentRef.setInput('isOpen', true);
     fixture.detectChanges();
 
-    expect(inputEl.hasAttribute('readonly')).toBeTrue();
+    expect(inputEl.getAttribute('inputmode')).toBe('none');
+    expect(inputEl.hasAttribute('readonly')).toBeFalse();
 
     component.close();
     expect(component.isOpen()).toBeFalse();
+    expect(inputEl.hasAttribute('inputmode')).toBeFalse();
     expect(inputEl.hasAttribute('readonly')).toBeFalse();
   });
 

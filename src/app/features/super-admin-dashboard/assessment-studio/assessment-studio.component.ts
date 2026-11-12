@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   signal,
   computed,
+  effect,
   inject,
   OnInit,
+  OnDestroy,
   output,
   PLATFORM_ID,
   HostListener
@@ -86,7 +88,7 @@ const ASSESSMENTS_MEMORY_CACHE = new Map<string, AssessmentCacheEntry>();
   styleUrl: './assessment-studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssessmentStudioComponent implements OnInit {
+export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly toVisualMath = toVisualMath;
   readonly stripLatexDelimiters = stripLatexDelimiters;
   readonly langService = inject(LangService);
@@ -342,6 +344,62 @@ export class AssessmentStudioComponent implements OnInit {
   readonly isManualSlicerOpen = signal<boolean>(false);
   readonly activeQuestionForSlicing = signal<AssessmentQuestionItem | null>(null);
 
+  // Quiz Items Navigation Drawer (Milestone 4 - R6)
+  readonly isQuestionDrawerOpen = signal<boolean>(false);
+
+  toggleQuestionDrawer(): void {
+    this.isQuestionDrawerOpen.update((v) => !v);
+  }
+
+  closeQuestionDrawer(): void {
+    this.isQuestionDrawerOpen.set(false);
+  }
+
+  scrollToQuestion(index: number): void {
+    this.isQuestionDrawerOpen.set(false);
+    const questions = this.activeAssessment()?.questions || [];
+    if (index >= 0 && index < questions.length) {
+      const q = questions[index];
+      if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+        const qCard = document.getElementById(`question-card-${q.id || index}`);
+        if (qCard) {
+          qCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+  }
+
+  scrollToComposer(): void {
+    if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+      const composerEl = document.getElementById('questionComposerSection');
+      if (composerEl) {
+        composerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+
+  // Background Body Scroll Lock (Milestone 1 - F1.5 & Milestone 4 - R6)
+  readonly isAnyModalOpen = computed<boolean>(() => {
+    return (
+      this.isCreateModalOpen() ||
+      this.isEditorOpen() ||
+      this.confirmDialog().isOpen ||
+      this.isPreviewModalOpen() ||
+      this.isAiExtractionModalOpen() ||
+      this.isManualSlicerOpen() ||
+      this.isQuestionDrawerOpen()
+    );
+  });
+
+  constructor() {
+    effect(() => {
+      const modalOpen = this.isAnyModalOpen();
+      if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+        document.body.style.overflow = modalOpen ? 'hidden' : '';
+      }
+    });
+  }
+
   toggleMathKeyboard(fallbackTarget?: HTMLInputElement | HTMLTextAreaElement): void {
     if (this.isMathKeyboardOpen()) {
       this.isMathKeyboardOpen.set(false);
@@ -376,7 +434,6 @@ export class AssessmentStudioComponent implements OnInit {
       target.value = visualVal;
       target.setSelectionRange(pos, pos);
     }
-    target.dispatchEvent(new Event('input', { bubbles: true }));
     if (target.tagName.toLowerCase() === 'textarea') {
       this.newQuestionTextAr.set(visualVal);
     } else {
@@ -808,6 +865,16 @@ export class AssessmentStudioComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.isQuestionDrawerOpen.set(false);
+    this.isQuestionDrawerOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
+    if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
   loadTracksAndActiveGrades(): void {
     this.http.get<{ success: boolean; data: any }>('/api/v1/public/active-grades').subscribe({
       next: (res) => {
@@ -1055,6 +1122,9 @@ export class AssessmentStudioComponent implements OnInit {
   closeCreateModal(): void {
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(false);
+    this.isQuestionDrawerOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
   }
 
   showCreateError(msg: string): void {
@@ -1382,6 +1452,9 @@ export class AssessmentStudioComponent implements OnInit {
         this.triggerDraftAutoSave(true);
       }
     }
+    this.isQuestionDrawerOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);
     this.isEditorOpen.set(false);
     this.activeAssessment.set(null);
@@ -1423,6 +1496,9 @@ export class AssessmentStudioComponent implements OnInit {
   }
 
   resetQuestionForm(): void {
+    this.isQuestionDrawerOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
     this.editingQuestionId.set(null);
     this.newQuestionType.set('MCQ');
     this.newQuestionTextAr.set('');
@@ -1739,6 +1815,9 @@ export class AssessmentStudioComponent implements OnInit {
     const asm = this.activeAssessment();
     if (!asm) return;
 
+    this.isQuestionDrawerOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);
 
     const rawTitle = (asm.titleAr || asm.titleEn || '').trim();

@@ -1,7 +1,7 @@
 @if (isOpen() && assessment(); as asm) {
-  <div class="fixed inset-0 z-50 bg-[#120B1A]/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="fixed inset-0 z-[60] bg-black/35 backdrop-blur-md flex justify-center p-2 sm:p-4 overflow-y-auto">
     <div
-      class="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up text-text-primary text-xs"
+      class="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up text-text-primary text-xs"
       data-testid="assessment-preview-modal-container"
     >
       
@@ -557,7 +557,7 @@
 
   <!-- Formula Sheet Overlay Modal -->
   @if (isRefSheetOpen() && asm.referenceSheetUrl) {
-    <div class="fixed inset-0 z-50 bg-[#120B1A]/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="fixed inset-0 z-[65] bg-black/35 backdrop-blur-md flex items-center justify-center p-4">
       <div class="max-w-3xl w-full max-h-[90vh] bg-surface-card rounded-3xl border border-surface-border p-4 flex flex-col gap-3">
         <div class="flex items-center justify-between pb-2 border-b border-surface-border">
           <div class="flex items-center gap-2">
@@ -589,7 +589,7 @@
 
   <!-- In-Platform Embedded YouTube Solution Modal (Video or Community Post) -->
   @if (activeInPlatformSolution(); as sol) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
+    <div class="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
       <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->

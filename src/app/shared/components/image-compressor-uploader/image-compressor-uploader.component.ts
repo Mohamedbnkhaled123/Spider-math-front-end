@@ -41,7 +41,10 @@ import { optimizeCloudinaryUrl } from '../../utils/box2d-cropper.util';
   imports: [CommonModule, AppIconComponent],
   templateUrl: './image-compressor-uploader.component.html',
   styleUrls: ['./image-compressor-uploader.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.compact]': 'compact()'
+  }
 })
 export class ImageCompressorUploaderComponent implements OnDestroy {
   private readonly http = inject(HttpClient);
@@ -53,6 +56,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   readonly uploadTarget = input.required<UploadTarget>();
   readonly existingImageUrl = input<string | null>(null);
   readonly buttonLabel = input<string>();
+  readonly compact = input<boolean>(false);
 
   // Outputs
   readonly imageUploaded = output<string>(); // Emits question_image_url

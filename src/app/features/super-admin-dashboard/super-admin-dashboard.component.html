@@ -30,11 +30,11 @@
   <!-- ========================================================================= -->
   <!-- Studio Main Layout: Sticky Sidebar Navigation (Right) + Content (Left)    -->
   <!-- ========================================================================= -->
-  <div class="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
+  <div class="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full px-4 sm:px-6 lg:px-6 py-4 sm:py-6 flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 items-start">
 
     <!-- 1. Admin Analytics Shell (Sidebar, Notifications, Backup & Purge) -->
     <app-admin-analytics-shell
-      class="w-full lg:w-72 lg:shrink-0 lg:self-stretch"
+      class="w-full lg:w-[15.5rem] xl:w-72 lg:shrink-0 lg:self-stretch"
       [activeTab]="activeTab()"
       (tabChange)="setTab($event)"
       [analytics]="analyticsSnapshot()"

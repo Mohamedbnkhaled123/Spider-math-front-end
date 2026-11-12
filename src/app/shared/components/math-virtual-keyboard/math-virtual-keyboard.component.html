@@ -2,15 +2,15 @@
   <!-- Google-Style Floating & Draggable Virtual Math Keyboard -->
   <aside
     #keyboardContainer
+    data-testid="math-virtual-keyboard"
     class="google-math-keyboard fixed z-[150] w-[96vw] max-w-xl rounded-2xl border border-surface-border bg-surface-card/95 backdrop-blur-2xl shadow-2xl p-2 sm:p-2.5 space-y-1.5"
-    [class.bottom-3]="dragPosition() === null"
     [class.left-1/2]="dragPosition() === null"
     [class.-translate-x-1/2]="dragPosition() === null"
     [class.animate-slide-up]="dragPosition() === null"
     [class.is-dragging]="isDragging()"
     [style.left.px]="dragPosition() ? dragPosition()!.x : null"
     [style.top.px]="dragPosition() ? dragPosition()!.y : null"
-    [style.bottom]="dragPosition() ? 'auto' : null"
+    [style.bottom]="dragPosition() ? 'auto' : 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'"
     [style.transform]="dragPosition() ? 'none' : null"
     role="region"
     aria-label="Google-Style Visual Math Keyboard"
@@ -94,7 +94,6 @@
               <button
                 type="button"
                 (pointerdown)="preventFocusLoss($event)"
-                (touchstart)="preventFocusLoss($event)"
                 (click)="deleteEditingSymbol()"
                 class="px-2 py-0.5 rounded text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30"
               >
@@ -104,7 +103,6 @@
             <button
               type="button"
               (pointerdown)="preventFocusLoss($event)"
-              (touchstart)="preventFocusLoss($event)"
               (click)="cancelVisualTemplate()"
               class="text-text-muted hover:text-rose-500 p-0.5"
             >
@@ -119,7 +117,6 @@
             <button
               type="button"
               (pointerdown)="preventFocusLoss($event)"
-              (touchstart)="preventFocusLoss($event)"
               (click)="selectSlot(0)"
               class="w-full px-2 py-1 rounded-lg border text-center text-xs font-bold"
               [class.border-brand-primary]="tmpl.activeSlotIndex === 0"
@@ -134,7 +131,6 @@
             <button
               type="button"
               (pointerdown)="preventFocusLoss($event)"
-              (touchstart)="preventFocusLoss($event)"
               (click)="selectSlot(1)"
               class="w-full px-2 py-1 rounded-lg border text-center text-xs font-bold"
               [class.border-brand-primary]="tmpl.activeSlotIndex === 1"
@@ -152,7 +148,6 @@
               <button
                 type="button"
                 (pointerdown)="preventFocusLoss($event)"
-                (touchstart)="preventFocusLoss($event)"
                 (click)="selectSlot(idx)"
                 class="flex-1 min-w-[70px] px-2 py-1 rounded-lg border text-center"
                 [class.border-brand-primary]="tmpl.activeSlotIndex === idx"
@@ -171,7 +166,6 @@
           <button
             type="button"
             (pointerdown)="preventFocusLoss($event)"
-            (touchstart)="preventFocusLoss($event)"
             (click)="nextSlot()"
             class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-surface-bg border border-surface-border text-text-primary"
           >
@@ -180,7 +174,6 @@
           <button
             type="button"
             (pointerdown)="preventFocusLoss($event)"
-            (touchstart)="preventFocusLoss($event)"
             (click)="applyVisualTemplate()"
             class="px-3 py-0.5 rounded-lg text-[10px] font-bold bg-brand-primary hover:bg-brand-secondary text-white"
           >
@@ -196,7 +189,6 @@
         <button
           type="button"
           (pointerdown)="preventFocusLoss($event)"
-          (touchstart)="preventFocusLoss($event)"
           (click)="insertNumeric(num.value)"
           class="g-key h-7 sm:h-8 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-brand-primary/10 hover:border-brand-primary/50 text-text-primary text-[11px] sm:text-xs font-bold font-mono flex items-center justify-center transition-all select-none cursor-pointer active:scale-95 shadow-xs"
           [attr.aria-label]="num.ariaLabel || num.label"
@@ -213,7 +205,6 @@
           type="button"
           (click)="selectCategory(tab.id)"
           (pointerdown)="preventFocusLoss($event)"
-          (touchstart)="preventFocusLoss($event)"
           class="py-1 px-1 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-all cursor-pointer flex items-center justify-center gap-1 truncate"
           [class.bg-brand-primary]="activeCategory() === tab.id"
           [class.text-white]="activeCategory() === tab.id"
@@ -227,12 +218,11 @@
     </div>
 
     <!-- Math Symbol Tactile Keys Grid (Google Keyboard Proportions, Clean Math Glyphs) -->
-    <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1 p-0.5 max-h-36 overflow-y-auto">
+    <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1 p-0.5 max-h-36 overflow-y-auto touch-pan-y overscroll-contain">
       @for (key of visibleKeys(); track key.latex) {
         <button
           type="button"
           (pointerdown)="preventFocusLoss($event)"
-          (touchstart)="preventFocusLoss($event)"
           (click)="insertSymbol(key.latex, key.cursorOffset ?? 0, key.templateType)"
           class="g-key h-8 rounded-lg border border-surface-border/70 bg-surface-elevated hover:bg-brand-primary/15 hover:border-brand-primary/60 text-text-primary text-xs sm:text-sm font-bold flex items-center justify-center transition-all select-none cursor-pointer active:scale-95 shadow-xs"
           [attr.aria-label]="key.ariaLabel || key.latex"
@@ -250,7 +240,6 @@
           <button
             type="button"
             (pointerdown)="preventFocusLoss($event)"
-            (touchstart)="preventFocusLoss($event)"
             (click)="editExistingSymbol(sym)"
             class="px-2 py-0.5 rounded-lg border border-surface-border bg-surface-card hover:bg-brand-primary/10 hover:border-brand-primary/40 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0"
           >
@@ -268,7 +257,6 @@
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
         (click)="insertSymbol('½')"
         class="h-8 px-2 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary cursor-pointer active:scale-95"
         [title]="langService.isArabic() ? 'كسر' : 'Fraction'"
@@ -280,7 +268,6 @@
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
         (click)="insertSymbol('²')"
         class="h-8 px-2 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-brand-primary cursor-pointer active:scale-95"
         [title]="langService.isArabic() ? 'تربيع' : 'Power squared'"
@@ -292,7 +279,6 @@
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
         (click)="handleSpace()"
         class="flex-1 h-8 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-surface-elevated text-xs font-bold text-text-primary flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-xs"
       >
@@ -303,7 +289,6 @@
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
         (click)="handleBackspace()"
         class="w-12 sm:w-14 h-8 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-rose-500/10 hover:text-rose-500 text-xs font-bold text-text-primary flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
         [title]="langService.isArabic() ? 'حذف' : 'Backspace'"
@@ -315,7 +300,6 @@
       <button
         type="button"
         (pointerdown)="preventFocusLoss($event)"
-        (touchstart)="preventFocusLoss($event)"
         (click)="handleClear()"
         class="px-2 h-8 rounded-lg border border-surface-border/70 bg-surface-bg hover:bg-rose-500/10 text-rose-500 text-[10px] font-bold flex items-center justify-center cursor-pointer active:scale-95"
         [title]="langService.isArabic() ? 'مسح الكل' : 'Clear all'"

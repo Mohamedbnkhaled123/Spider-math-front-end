@@ -22,7 +22,7 @@
   <app-brand-header class="sticky top-0 z-50 block w-full"></app-brand-header>
 
   <!-- Main View Container (min-h-screen keeps footer below the fold while route chunk mounts, eliminating CLS) -->
-  <main class="flex-1 flex flex-col relative z-10 min-h-screen">
+  <main class="flex-1 flex flex-col relative min-h-screen">
     @if (isRouteNavigating()) {
       <app-route-skeleton-loader [targetUrl]="navigatingUrl()" class="w-full"></app-route-skeleton-loader>
     }

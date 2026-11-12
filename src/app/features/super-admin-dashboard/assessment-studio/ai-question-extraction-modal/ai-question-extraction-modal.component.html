@@ -1,6 +1,6 @@
 @if (isOpen()) {
   <div
-    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-[#120B1A]/80 backdrop-blur-md modal-backdrop"
+    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/35 backdrop-blur-md modal-backdrop"
     (click)="close()"
   >
     <div
@@ -765,7 +765,7 @@
   <!-- DELETE / REMOVE CONFIRMATION DIALOG MODAL -->
   @if (confirmationDialog(); as dialog) {
     <div
-      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-[#120B1A]/80 backdrop-blur-md animate-fade-in"
+      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-black/35 backdrop-blur-md animate-fade-in"
       (click)="closeConfirmation()"
     >
       <div
