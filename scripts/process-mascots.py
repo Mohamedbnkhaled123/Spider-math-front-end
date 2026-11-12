@@ -216,11 +216,11 @@ def main():
     raw_dir.mkdir(parents=True, exist_ok=True)
 
     # Source 1: New Curricula mascot (Spider mascot waving with book)
-    src_curricula = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794423314323_47077bbd.jpg")
-    # Source 2: New Hero Arabic mascot (Spider mascot resting arms on book)
-    src_hero_ar = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794423343527_bc91dc49.jpg")
-    # Source 3: English hero mascot
-    src_hero_en = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794333114089_f77c1f40.jpg")
+    src_curricula = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794455748393_ca438d8d.jpg")
+    # Source 2: New Hero Arabic mascot (Spider mascot looking right towards text)
+    src_hero_ar = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794455743392_0ecbf307.jpg")
+    # Source 3: New Hero English mascot (Spider mascot looking left towards text)
+    src_hero_en = Path(r"C:\Users\A&M\.gemini\antigravity\brain\7884e37f-b482-4770-8151-7e858c83638b\.user_uploaded\media_1794455736669_d14564e2.jpg")
 
     local_raw_curricula = raw_dir / "spider-mascot-curricula.jpg"
     local_raw_hero_ar = raw_dir / "spider-mascot-hero-ar.jpg"
@@ -251,11 +251,12 @@ def main():
     ])
 
     print("\n=======================================================")
-    print("2. Processing Arabic Hero Mascot (New resting arms spider)...")
+    print("2. Processing Arabic Hero Mascot (Looking right)...")
     print("=======================================================")
     hero_ar_raw = local_raw_hero_ar if local_raw_hero_ar.exists() else src_hero_ar
     hero_ar_rgba = remove_black_background(hero_ar_raw)
-    save_variants(hero_ar_rgba, [
+    hero_ar_square = make_square_centered(hero_ar_rgba, margin_ratio=0.04)
+    save_variants(hero_ar_square, [
         {'path': branding_dir / 'spider-mascot-hero-book-ar-v3.webp', 'size': (640, 640), 'format': 'WEBP', 'quality': 85},
         {'path': branding_dir / 'spider-mascot-hero-book-ar-sm-v3.webp', 'size': (480, 480), 'format': 'WEBP', 'quality': 82},
         {'path': branding_dir / 'spider-mascot-hero-book-ar.webp', 'size': (640, 640), 'format': 'WEBP', 'quality': 85},
@@ -265,11 +266,12 @@ def main():
 
     if local_raw_hero_en.exists() or src_hero_en.exists():
         print("\n=======================================================")
-        print("3. Processing English Hero Mascot...")
+        print("3. Processing English Hero Mascot (Looking left)...")
         print("=======================================================")
         hero_en_raw = local_raw_hero_en if local_raw_hero_en.exists() else src_hero_en
         hero_en_rgba = remove_black_background(hero_en_raw)
-        save_variants(hero_en_rgba, [
+        hero_en_square = make_square_centered(hero_en_rgba, margin_ratio=0.04)
+        save_variants(hero_en_square, [
             {'path': branding_dir / 'spider-mascot-hero-book-v3.webp', 'size': (640, 640), 'format': 'WEBP', 'quality': 85},
             {'path': branding_dir / 'spider-mascot-hero-book-sm-v3.webp', 'size': (480, 480), 'format': 'WEBP', 'quality': 82},
             {'path': branding_dir / 'spider-mascot-hero-book-v3.png', 'size': (640, 640), 'format': 'PNG'},
