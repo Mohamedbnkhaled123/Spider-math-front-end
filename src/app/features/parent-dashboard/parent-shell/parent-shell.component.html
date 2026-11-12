@@ -88,18 +88,30 @@
             [class.hover:border-gold-accent/40]="selectedChildId() !== child.studentId"
           >
             <div class="flex items-center gap-3.5 min-w-0">
-              <!-- Student Avatar Initial -->
-              <div
-                class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shrink-0 transition-colors"
-                [class.bg-brand-primary]="selectedChildId() === child.studentId"
-                [class.text-white]="selectedChildId() === child.studentId"
-                [class.bg-surface-bg]="selectedChildId() !== child.studentId"
-                [class.text-text-primary]="selectedChildId() !== child.studentId"
-                [class.border]="selectedChildId() !== child.studentId"
-                [class.border-surface-border]="selectedChildId() !== child.studentId"
-              >
-                {{ child.fullName.charAt(0) }}
-              </div>
+              <!-- Student Avatar Image or Initial -->
+              @if (child.avatarUrl || child.avatar_url) {
+                <img
+                  [src]="child.avatarUrl || child.avatar_url"
+                  [alt]="child.fullName"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-12 h-12 rounded-2xl object-cover shrink-0 border border-surface-border shadow-sm"
+                />
+              } @else {
+                <div
+                  class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shrink-0 transition-colors"
+                  [class.bg-brand-primary]="selectedChildId() === child.studentId"
+                  [class.text-white]="selectedChildId() === child.studentId"
+                  [class.bg-surface-bg]="selectedChildId() !== child.studentId"
+                  [class.text-text-primary]="selectedChildId() !== child.studentId"
+                  [class.border]="selectedChildId() !== child.studentId"
+                  [class.border-surface-border]="selectedChildId() !== child.studentId"
+                >
+                  {{ child.fullName.charAt(0) }}
+                </div>
+              }
 
               <!-- Details -->
               <div class="truncate">

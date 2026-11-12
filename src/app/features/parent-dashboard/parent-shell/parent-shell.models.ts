@@ -12,6 +12,8 @@ export interface LinkedChildSummary {
   curriculum: CurriculumCode;
   gradeLevel: string;
   avatarSeed?: string;
+  avatarUrl?: string;
+  avatar_url?: string;
   activeUnitsCount: number;
   totalXp: number;
 }

@@ -56,6 +56,8 @@ export interface ChildAcademicReport {
   studentId: string;
   studentName: string;
   haCode: string;
+  avatarUrl?: string;
+  avatar_url?: string;
   presence: ChildPresenceStatus;
   overallWatchPercentage: number;
   totalXp: number;

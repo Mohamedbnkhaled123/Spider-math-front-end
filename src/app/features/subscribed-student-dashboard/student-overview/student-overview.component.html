@@ -1168,20 +1168,22 @@
         <!-- Avatar Selection -->
         <div>
           <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-            {{ langService.isArabic() ? 'الصورة الشخصية (اختر أفتار سبايدر ماث أو ارفع صورتك من الموبايل):' : 'Profile Picture (Select avatar or upload photo from device):' }}
+            {{ langService.isArabic() ? 'الصورة الشخصية (اختر أفتار سبايدر ماث الافتراضي أو ارفع صورتك الخاصة):' : 'Profile Picture (Select Spider Math default avatar or upload your photo):' }}
           </label>
-          <div class="grid grid-cols-6 gap-2 mb-3">
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-2.5 mb-3 max-h-48 overflow-y-auto p-1 rounded-2xl border border-surface-border bg-surface-bg/40">
             @for (av of presetAvatars; track av.id) {
               <button
                 type="button"
                 (click)="selectAvatar(av.url)"
-                class="p-1.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col items-center"
+                class="p-1.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col items-center hover:border-brand-primary"
                 [class.border-brand-primary]="editAvatarUrl() === av.url"
+                [class.ring-2]="editAvatarUrl() === av.url"
+                [class.ring-brand-primary/40]="editAvatarUrl() === av.url"
                 [class.bg-brand-primary/10]="editAvatarUrl() === av.url"
                 [class.border-surface-border]="editAvatarUrl() !== av.url"
-                [title]="av.label"
+                [title]="langService.isArabic() ? av.labelAr : av.labelEn"
               >
-                <img [src]="av.url" [alt]="av.label" width="40" height="40" loading="lazy" decoding="async" class="w-10 h-10 rounded-xl object-cover" />
+                <img [src]="av.url" [alt]="langService.isArabic() ? av.labelAr : av.labelEn" width="48" height="48" loading="lazy" decoding="async" class="w-12 h-12 rounded-xl object-cover" />
                 @if (editAvatarUrl() === av.url) {
                   <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm">
                     <app-icon name="check" [size]="10" />

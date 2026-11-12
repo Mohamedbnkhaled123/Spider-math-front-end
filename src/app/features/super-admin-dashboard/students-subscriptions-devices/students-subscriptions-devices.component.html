@@ -198,37 +198,56 @@
           @for (student of paginatedStudents(); track student.id) {
             <tr class="hover:bg-surface-bg/50 transition-colors">
               <td class="p-4">
-                <div class="flex items-center gap-2">
-                  <span class="font-bold text-text-primary text-sm">{{ student.name }}</span>
-                  @if (student.role === 'PARENT') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30">{{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}</span>
+                <div class="flex items-center gap-3">
+                  @if (student.avatarUrl || student.avatar_url) {
+                    <img
+                      [src]="student.avatarUrl || student.avatar_url"
+                      [alt]="student.name"
+                      width="40"
+                      height="40"
+                      loading="lazy"
+                      decoding="async"
+                      class="w-10 h-10 rounded-xl object-cover border border-surface-border shrink-0 shadow-sm"
+                    />
                   } @else {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">{{ langService.isArabic() ? 'طالب' : 'Student' }}</span>
+                    <div class="w-10 h-10 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center font-bold text-xs text-text-primary shrink-0">
+                      {{ student.name.charAt(0) }}
+                    </div>
                   }
-                </div>
-                <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                  <span class="text-text-secondary">{{ student.email }}</span>
-                  @if (student.phone) {
-                    <span>• {{ student.phone }}</span>
-                  }
-                  @if (student.parentPhone) {
-                    <span class="text-brand-primary dark:text-brand-accent font-semibold">• {{ langService.isArabic() ? 'ولي الأمر: ' : 'Parent: ' }}{{ student.parentPhone }}</span>
-                  }
-                </div>
-                <div class="flex items-center gap-1.5 mt-1">
-                  @if (student.isProfileCompleted === false) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                      {{ langService.isArabic() ? 'بانتظار إكمال البيانات' : 'Incomplete Profile' }}
-                    </span>
-                  } @else {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 inline-flex items-center gap-1">
-                      <app-icon name="check" [size]="11" />
-                      <span>{{ langService.isArabic() ? 'مكتمل البيانات' : 'Profile Complete' }}</span>
-                    </span>
-                  }
-                  @if (student.isLeaderboardHidden) {
-                    <span class="text-[10px] text-rose-500 font-normal mr-1">{{ langService.isArabic() ? '(مخفي من لوحة الشرف)' : '(Hidden from Hall of Fame)' }}</span>
-                  }
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-text-primary text-sm truncate">{{ student.name }}</span>
+                      @if (student.role === 'PARENT') {
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-400 border border-teal-500/30 shrink-0">{{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}</span>
+                      } @else {
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30 shrink-0">{{ langService.isArabic() ? 'طالب' : 'Student' }}</span>
+                      }
+                    </div>
+                    <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                      <span class="text-text-secondary">{{ student.email }}</span>
+                      @if (student.phone) {
+                        <span>• {{ student.phone }}</span>
+                      }
+                      @if (student.parentPhone) {
+                        <span class="text-brand-primary dark:text-brand-accent font-semibold">• {{ langService.isArabic() ? 'ولي الأمر: ' : 'Parent: ' }}{{ student.parentPhone }}</span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-1">
+                      @if (student.isProfileCompleted === false) {
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                          {{ langService.isArabic() ? 'بانتظار إكمال البيانات' : 'Incomplete Profile' }}
+                        </span>
+                      } @else {
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 inline-flex items-center gap-1">
+                          <app-icon name="check" [size]="11" />
+                          <span>{{ langService.isArabic() ? 'مكتمل البيانات' : 'Profile Complete' }}</span>
+                        </span>
+                      }
+                      @if (student.isLeaderboardHidden) {
+                        <span class="text-[10px] text-rose-500 font-normal mr-1">{{ langService.isArabic() ? '(مخفي من لوحة الشرف)' : '(Hidden from Hall of Fame)' }}</span>
+                      }
+                    </div>
+                  </div>
                 </div>
               </td>
               

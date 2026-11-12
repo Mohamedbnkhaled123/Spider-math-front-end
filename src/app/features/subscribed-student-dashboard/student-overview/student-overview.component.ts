@@ -24,6 +24,7 @@ import {
 } from '../../../core/utils/unit-math-art.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
+import { STUDENT_PRESET_AVATARS, DEFAULT_STUDENT_AVATAR_URL } from '../../../core/constants/student-avatars.constant';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import {
   validatePhoneNumber,
@@ -140,15 +141,8 @@ export class StudentOverviewComponent implements OnInit {
   // Egypt Governorates
   readonly egyptGovernorates = EGYPT_GOVERNORATES;
 
-  // Preset Avatars for Student Selection
-  readonly presetAvatars = [
-    { id: 'av_1', label: 'رائد الرياضيات', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath1' },
-    { id: 'av_2', label: 'عبقري التفاضل', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath2' },
-    { id: 'av_3', label: 'مهندس الفراغية', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath3' },
-    { id: 'av_4', label: 'بطل الجبر', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath4' },
-    { id: 'av_5', label: 'محلل ديسموس', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath5' },
-    { id: 'av_6', label: 'نجم سبايدر ماث', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=SpiderMath6' }
-  ];
+  // Preset Avatars for Student Selection (High-Performance WebP Avatars)
+  readonly presetAvatars = STUDENT_PRESET_AVATARS;
 
   // =========================================================================
   // Profile Editor Signals & State

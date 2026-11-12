@@ -2132,6 +2132,29 @@
                       : 'Supports PNG, JPG, WebP. Automatically square cropped and optimized for fast loading.' }}
                   </p>
 
+                  <!-- Quick Preset Avatars Picker for Teacher CMS -->
+                  <div class="pt-1">
+                    <label class="block text-[10px] font-bold text-text-muted mb-1.5">
+                      {{ langService.isArabic() ? 'أو اختاري صورة من شخصيات سبايدر ماث الجاهزة:' : 'Or pick from Spider Math preset avatars:' }}
+                    </label>
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar">
+                      @for (av of studentPresetAvatars; track av.id) {
+                        <button
+                          type="button"
+                          (click)="honoreeForm().avatarUrl = av.url"
+                          class="p-0.5 rounded-xl border transition-all cursor-pointer shrink-0 hover:scale-105"
+                          [class.border-brand-primary]="honoreeForm().avatarUrl === av.url"
+                          [class.ring-2]="honoreeForm().avatarUrl === av.url"
+                          [class.ring-brand-primary/40]="honoreeForm().avatarUrl === av.url"
+                          [class.border-surface-border]="honoreeForm().avatarUrl !== av.url"
+                          [title]="langService.isArabic() ? av.labelAr : av.labelEn"
+                        >
+                          <img [src]="av.url" [alt]="langService.isArabic() ? av.labelAr : av.labelEn" width="36" height="36" loading="lazy" decoding="async" class="w-9 h-9 rounded-lg object-cover" />
+                        </button>
+                      }
+                    </div>
+                  </div>
+
                   <!-- Advanced external URL option -->
                   <div class="pt-1">
                     <input

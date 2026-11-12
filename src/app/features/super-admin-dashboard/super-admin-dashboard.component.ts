@@ -251,6 +251,7 @@ export class SuperAdminDashboardComponent implements OnInit {
             return {
               id: u._id,
               name: u.full_name || (role === 'PARENT' ? 'ولي أمر' : 'طالب مسجل'),
+              avatarUrl: u.avatar_url || u.avatarUrl,
               role,
               haCode: defaultCode,
               email: u.email,

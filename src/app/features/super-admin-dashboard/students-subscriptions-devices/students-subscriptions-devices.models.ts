@@ -17,6 +17,8 @@ export interface PendingDeviceRequest {
 export interface StudentAdminSummary {
   id: string;
   name: string;
+  avatarUrl?: string;
+  avatar_url?: string;
   role?: 'STUDENT' | 'PARENT' | 'SUPER_ADMIN';
   haCode: string;
   email: string;

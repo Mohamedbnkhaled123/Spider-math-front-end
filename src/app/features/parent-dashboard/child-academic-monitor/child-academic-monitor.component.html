@@ -42,16 +42,33 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <!-- Live Presence Status Indicator -->
         <div class="flex items-start sm:items-center gap-4">
-          <!-- Sonar Radar Indicator Element -->
-          <div class="radar-node-wrapper relative flex items-center justify-center w-12 h-12 rounded-2xl bg-surface-bg border border-surface-border shrink-0">
+          <!-- Student Avatar with Sonar Presence Indicator -->
+          <div class="relative shrink-0">
+            @if (rep.avatarUrl || rep.avatar_url) {
+              <img
+                [src]="rep.avatarUrl || rep.avatar_url"
+                [alt]="rep.studentName"
+                width="52"
+                height="52"
+                loading="lazy"
+                decoding="async"
+                class="w-13 h-13 rounded-2xl object-cover border-2 border-brand-primary/40 shadow-sm"
+              />
+            } @else {
+              <!-- Sonar Radar Indicator Element -->
+              <div class="radar-node-wrapper relative flex items-center justify-center w-12 h-12 rounded-2xl bg-surface-bg border border-surface-border">
+                <span class="text-sm font-black text-text-primary">{{ rep.studentName.charAt(0) }}</span>
+              </div>
+            }
+
             @if (rep.presence.isOnline) {
               <!-- Outer expanding wave (Animation 4.7) -->
-              <span class="absolute w-6 h-6 rounded-full bg-emerald-500/40 animate-sonar-pulse pointer-events-none"></span>
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500/40 animate-sonar-pulse pointer-events-none"></span>
               <!-- Inner solid emerald core -->
-              <span class="relative w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface-card shadow-sm shadow-emerald-500/50"></span>
             } @else {
               <!-- Offline muted state -->
-              <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-slate-400 border-2 border-surface-card"></span>
             }
           </div>
 

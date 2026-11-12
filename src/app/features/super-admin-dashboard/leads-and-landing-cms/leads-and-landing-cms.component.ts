@@ -19,6 +19,7 @@ import {
   LeadAdminItem,
   HonorBoardItem
 } from './leads-and-landing-cms.models';
+import { STUDENT_PRESET_AVATARS } from '../../../core/constants/student-avatars.constant';
 import { TestimonialsService, AdminTestimonialItem } from '../../../core/services/testimonials.service';
 
 /**
@@ -51,6 +52,9 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly cmsConfigSaved = output<CmsConfigAdminItem>();
   readonly leadStatusUpdated = output<{ leadId: string; status: 'NEW' | 'CONTACTED' | 'REGISTERED' }>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
+
+  // Preset Student Avatars Constant for Quick Picker
+  readonly studentPresetAvatars = STUDENT_PRESET_AVATARS;
 
   // Tabs: 'AR' (Arabic Content) | 'EN' (English Content) | 'GENERAL' (Media, Video, WhatsApp, Schedules) | 'UNITS' (Showcased Units) | 'TESTIMONIALS' | 'HONOR_BOARD'
   readonly activeCmsTab = signal<'AR' | 'EN' | 'GENERAL' | 'UNITS' | 'TESTIMONIALS' | 'HONOR_BOARD'>('AR');
