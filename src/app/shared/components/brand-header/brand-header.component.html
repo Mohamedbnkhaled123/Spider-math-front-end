@@ -278,6 +278,17 @@
               <span class="sm:hidden">{{ langService.isArabic() ? 'اللوحة' : 'Admin' }}</span>
             </a>
           }
+
+          <!-- Desktop Sign Out Button (Visible on xl+ where there is no collapsed menu drawer) -->
+          <button
+            type="button"
+            (click)="logout()"
+            class="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-feedback-danger/30 bg-surface-card/60 hover:bg-feedback-danger/10 hover:border-feedback-danger/50 text-xs font-bold text-feedback-danger transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+            [title]="'NAV.LOGOUT' | transloco"
+          >
+            <app-icon name="log-out" [size]="14" />
+            <span>{{ 'NAV.LOGOUT' | transloco }}</span>
+          </button>
         </div>
       }
 
