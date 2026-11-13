@@ -42,3 +42,10 @@
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
   }
 }
+
+:host-context(body) {
+  .global-floating-math-layer,
+  .floating-math-symbol {
+    display: none !important;
+  }
+}

@@ -44,3 +44,34 @@
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--surface-border);
 }
+
+@keyframes drawerSlideDown05 {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drawer-smooth-05 {
+  animation: drawerSlideDown05 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dropdownPop05 {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.notifications-dropdown {
+  transform-origin: top;
+  animation: dropdownPop05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

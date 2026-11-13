@@ -467,8 +467,9 @@
           </div>
         }
 
-        <!-- Shared Curriculum Selector Cards Component (Matching Image 3) -->
-        <app-curriculum-selector-cards
+        <!-- Shared Curriculum Selector Cards Component (Deferred on Viewport) -->
+        @defer (on viewport) {
+          <app-curriculum-selector-cards
             [initialCurriculum]="selectedCurriculum()"
             [initialGrade]="selectedGradeLevel()"
             [initialTerm]="activeAcademicTerm()"
@@ -476,6 +477,11 @@
             [landingUnitIds]="landingData()?.landingUnitIds"
             (selectionChange)="onCurriculumSelectionChanged($event)"
           />
+        } @placeholder {
+          <div class="w-full min-h-[380px] flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin"></div>
+          </div>
+        }
       }
 </div>
 

@@ -727,16 +727,37 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadStudentUnits();
     }
 
-    this.discoveryService.getLandingData().subscribe({
-      next: data => {
-        this.landingData.set(data);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-      }
+    if (!isPlatformBrowser(this.platformId)) {
+      this.discoveryService.getLandingData().subscribe({
+        next: data => {
+          this.landingData.set(data);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      // In browser: Initial Hero is rendered instantly from getDefaultLandingData().
+      // Defer API call until idle so it does not chain into critical path before LCP.
+      const fetchCmsData = () => {
+        this.discoveryService.getLandingData().subscribe({
+          next: data => {
+            this.landingData.set(data);
+            this.isLoading.set(false);
+          },
+          error: () => {
+            this.isLoading.set(false);
+          }
+        });
+      };
 
-    });
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(fetchCmsData, { timeout: 2500 });
+      } else {
+        setTimeout(fetchCmsData, 800);
+      }
+    }
 
     if (!isPlatformBrowser(this.platformId) || typeof IntersectionObserver === 'undefined') {
       this.loadTestimonials();

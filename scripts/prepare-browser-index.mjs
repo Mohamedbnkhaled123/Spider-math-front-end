@@ -19,32 +19,12 @@ function collectCriticalModulePreloads() {
   const preloads = new Set();
   if (mainFile) preloads.add(mainFile);
 
-  const extractStaticImports = (jsFile) => {
-    const filePath = path.join(browserDir, jsFile);
-    if (!fs.existsSync(filePath)) return [];
-    const content = fs.readFileSync(filePath, 'utf8');
-    const results = [];
-    const staticRe = /from\s*["']\.\/(chunk-[A-Za-z0-9_-]+\.js)["']/g;
-    let m;
-    while ((m = staticRe.exec(content)) !== null) {
-      results.push(m[1]);
-    }
-    return results;
-  };
-
+  // Preload entry route chunk for landing-home without chaining deep subchunks
   if (mainFile) {
-    for (const chunk of extractStaticImports(mainFile)) {
-      preloads.add(chunk);
-    }
-    // Also find the landing-home chunk (first dynamic import in main or route table)
     const mainContent = fs.readFileSync(path.join(browserDir, mainFile), 'utf8');
     const dynMatch = mainContent.match(/import\(\s*["']\.\/(chunk-[A-Za-z0-9_-]+\.js)["']\s*\)/);
     if (dynMatch && dynMatch[1]) {
-      const landingChunk = dynMatch[1];
-      preloads.add(landingChunk);
-      for (const subChunk of extractStaticImports(landingChunk)) {
-        preloads.add(subChunk);
-      }
+      preloads.add(dynMatch[1]);
     }
   }
 

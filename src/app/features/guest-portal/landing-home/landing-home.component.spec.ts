@@ -55,6 +55,11 @@ describe('LandingHomeComponent', () => {
   });
 
   describe('Lighthouse Optimizations', () => {
+    it('should initialize landingData synchronously from default data preventing critical path latency', () => {
+      expect(component.landingData()).toBeTruthy();
+      expect(component.landingData()?.heroHeadlineAr).toBeTruthy();
+    });
+
     it('should render Hero LCP image with decoding="sync" and fetchpriority="high"', () => {
       const heroImg: HTMLImageElement | null = fixture.nativeElement.querySelector('section img[fetchpriority="high"]');
       expect(heroImg).toBeTruthy();

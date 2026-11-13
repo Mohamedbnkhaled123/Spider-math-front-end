@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/schemas/v1.0/ard.json",
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Spider Math Educational Platform",
+    "identifier": "spider-math.com"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:spider-math.com:curricula:platform-manifest",
+      "displayName": "Spider Math Courses & Diagnostic Studio",
+      "type": "text/html",
+      "url": "https://spider-math.com/",
+      "description": "Interactive mathematics learning platform by Eng. Heba Abdel-Wahab covering Thanaweya Amma, SAT, EST, ACT, and British IGCSE curricula.",
+      "representativeQueries": [
+        "Learn Thanaweya Amma and Egyptian curriculum mathematics",
+        "Practice Digital SAT and ACT Math problem solving",
+        "Explore British IGCSE and A-Levels mathematics courses",
+        "Access Desmos interactive graphing calculator studio"
+      ]
+    },
+    {
+      "identifier": "urn:air:spider-math.com:llms:documentation",
+      "displayName": "Spider Math LLM Documentation",
+      "type": "text/plain",
+      "url": "https://spider-math.com/llms.txt",
+      "description": "Machine-readable platform guide, curriculum tracks, and educational resources for AI agents.",
+      "representativeQueries": [
+        "Read Spider Math LLM documentation and track overview",
+        "Overview of mathematics modules and learning materials"
+      ]
+    }
+  ]
+}
