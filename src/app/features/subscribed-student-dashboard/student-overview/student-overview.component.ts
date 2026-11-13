@@ -915,6 +915,10 @@ export class StudentOverviewComponent implements OnInit {
         const updated = res.data?.user;
         if (updated) {
           const resolvedAvatar = updated.avatarUrl || updated.avatar_url || this.editAvatarUrl();
+          const haCode = (this.authService.currentUser()?.student_ha_code || '').trim().toUpperCase();
+          if (resolvedAvatar && haCode && typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('spider_avatar_' + haCode, resolvedAvatar); } catch {}
+          }
           const patch: Partial<IUserDto> = {
             full_name: updated.fullName || updated.full_name || name,
             phone: updated.phone || phone,

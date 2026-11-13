@@ -408,7 +408,7 @@
   <!-- ========================================================================= -->
   @if (isAnswersModalOpen() && selectedSubmissionForReview(); as item) {
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-scale-up">
+      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90dvh] min-h-0 flex flex-col animate-scale-up">
         
         <!-- Modal Header -->
         <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
@@ -534,7 +534,7 @@
   <!-- ========================================================================= -->
   @if (isGradingModalOpen() && currentGradingItem(); as item) {
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-5xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-scale-up">
+      <div class="w-full max-w-5xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90dvh] min-h-0 flex flex-col animate-scale-up">
         
         <!-- Modal Header -->
         <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">

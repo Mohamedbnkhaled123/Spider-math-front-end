@@ -481,6 +481,15 @@ export class LoginPageComponent implements OnInit {
         this.isSubmitting.set(false);
         if (res?.data?.token && res?.data?.user) {
           const u = res.data.user;
+          const rawCode = (u.student_ha_code || u.studentCode || code || '').trim().toUpperCase();
+          let savedLocalAvatar: string | null = null;
+          if (typeof localStorage !== 'undefined') {
+            try { savedLocalAvatar = localStorage.getItem('spider_avatar_' + rawCode); } catch {}
+          }
+          const resolvedAvatar = u.avatar_url || u.avatarUrl || savedLocalAvatar || undefined;
+          if (resolvedAvatar && typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('spider_avatar_' + rawCode, resolvedAvatar); } catch {}
+          }
           const userPayload: IUserDto = {
             _id: u._id || u.id,
             student_ha_code: u.student_ha_code || u.studentCode,
@@ -489,8 +498,8 @@ export class LoginPageComponent implements OnInit {
             phone: u.phone,
             parent_phone: u.parent_phone || u.parentPhone,
             country: u.country || 'EG',
-            avatar_url: u.avatar_url || u.avatarUrl,
-            avatarUrl: u.avatar_url || u.avatarUrl,
+            avatar_url: resolvedAvatar,
+            avatarUrl: resolvedAvatar,
             role: u.role || 'STUDENT',
             curriculum: u.curriculum,
             grade_level: u.grade_level || u.gradeLevel,

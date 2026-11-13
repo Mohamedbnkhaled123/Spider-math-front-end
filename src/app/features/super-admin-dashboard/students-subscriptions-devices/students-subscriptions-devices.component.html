@@ -629,7 +629,7 @@
   <!-- ========================================================================= -->
   @if (isActivateModalOpen() && studentToActivate(); as student) {
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
+      <div class="w-full max-w-md max-h-[90dvh] min-h-0 overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary">
             {{ langService.isArabic() ? ('تفعيل وحدة دراسية للطالب: ' + student.name + ' (' + student.haCode + ')') : ('Activate Study Unit for: ' + student.name + ' (' + student.haCode + ')') }}
@@ -767,7 +767,7 @@
   <!-- ========================================================================= -->
   @if (isXpModalOpen() && studentForXp(); as student) {
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
+      <div class="w-full max-w-md max-h-[90dvh] min-h-0 overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary">
             {{ langService.isArabic() ? ('تعديل نقاط الطالب: ' + student.name + ' (' + student.haCode + ')') : ('Adjust XP for: ' + student.name + ' (' + student.haCode + ')') }}

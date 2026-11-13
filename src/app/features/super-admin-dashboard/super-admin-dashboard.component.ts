@@ -579,6 +579,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       try {
         localStorage.setItem('spider_admin_active_tab', tab);
+        window.scrollTo({ top: 0, behavior: 'instant' });
       } catch {}
     }
   }
