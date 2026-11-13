@@ -216,10 +216,17 @@ function generateStaticSeoPages(baseHtml) {
       `  <meta property="og:type" content="${config.ogType || 'article'}">`,
       `  <meta property="og:site_name" content="Spider Math Educational Platform">`,
       `  <meta property="og:image" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta property="og:image:secure_url" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta property="og:image:type" content="image/jpeg">`,
+      `  <meta property="og:image:width" content="1024">`,
+      `  <meta property="og:image:height" content="1024">`,
+      `  <meta property="og:image:alt" content="Spider Math Platform | منصة سبايدر ماث — المهندسة هبة عبدالوهاب">`,
+      `  <link rel="image_src" href="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
       `  <meta name="twitter:card" content="summary_large_image">`,
       `  <meta name="twitter:title" content="${escapeHtml(config.title)}">`,
       `  <meta name="twitter:description" content="${escapeHtml(config.description)}">`,
-      `  <meta name="twitter:image" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`
+      `  <meta name="twitter:image" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta name="twitter:image:alt" content="Spider Math Platform | منصة سبايدر ماث — المهندسة هبة عبدالوهاب">`
     ];
 
     html = html.replace(/<meta property="og:[^>]*>\s*/gi, '');
