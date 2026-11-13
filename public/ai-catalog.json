@@ -1,16 +1,15 @@
 {
-  "$schema": "https://agenticresourcediscovery.org/schemas/v1.0/ard.json",
   "specVersion": "1.0",
   "host": {
     "displayName": "Spider Math Educational Platform",
-    "identifier": "spider-math.com"
+    "identifier": "spider-math.vercel.app"
   },
   "entries": [
     {
-      "identifier": "urn:air:spider-math.com:curricula:platform-manifest",
+      "identifier": "urn:air:spider-math:curricula:platform-manifest",
       "displayName": "Spider Math Courses & Diagnostic Studio",
-      "type": "text/html",
-      "url": "https://spider-math.com/",
+      "type": "application/agent-card+json",
+      "url": "https://spider-math.vercel.app/",
       "description": "Interactive mathematics learning platform by Eng. Heba Abdel-Wahab covering Thanaweya Amma, SAT, EST, ACT, and British IGCSE curricula.",
       "representativeQueries": [
         "Learn Thanaweya Amma and Egyptian curriculum mathematics",
@@ -20,10 +19,10 @@
       ]
     },
     {
-      "identifier": "urn:air:spider-math.com:llms:documentation",
+      "identifier": "urn:air:spider-math:llms:documentation",
       "displayName": "Spider Math LLM Documentation",
-      "type": "text/plain",
-      "url": "https://spider-math.com/llms.txt",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://spider-math.vercel.app/llms.txt",
       "description": "Machine-readable platform guide, curriculum tracks, and educational resources for AI agents.",
       "representativeQueries": [
         "Read Spider Math LLM documentation and track overview",
