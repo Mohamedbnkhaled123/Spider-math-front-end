@@ -8,6 +8,8 @@ import { CurriculumSelectorCardsComponent } from './curriculum-selector-cards.co
 import { IGradeLevelAvailability } from './curriculum-selector-cards.models';
 import { IGradeQuizItem } from '../../../core/services/public-discovery.models';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
+import { of } from 'rxjs';
 
 describe('CurriculumSelectorCardsComponent', () => {
   let component: CurriculumSelectorCardsComponent;
@@ -191,6 +193,71 @@ describe('CurriculumSelectorCardsComponent', () => {
       const url = component.whatsappSubscriptionUrl();
       expect(url).toContain('https://wa.me/201012345678?text=');
       expect(url).toContain(encodeURIComponent('وحدة الجبر'));
+    });
+  });
+
+  describe('Lighthouse Optimizations: Card WebP Assets & Deferred APIs', () => {
+    it('should return optimized webp background images for each curriculum', () => {
+      expect(component.getCurriculumBgImage('AMERICAN')).toBe('/assets/branding/curriculum-card-sat.webp');
+      expect(component.getCurriculumBgImage('EGYPTIAN')).toBe('/assets/branding/curriculum-card-egyptian.webp');
+      expect(component.getCurriculumBgImage('GULF')).toBe('/assets/branding/curriculum-card-gulf.webp');
+      expect(component.getCurriculumBgImage('INTERNATIONAL')).toBe('/assets/branding/curriculum-card-british.webp');
+    });
+
+    it('should return responsive webp srcset with 320w and 512w descriptors for each curriculum', () => {
+      expect(component.getCurriculumBgSrcset('AMERICAN')).toBe(
+        '/assets/branding/curriculum-card-sat-sm.webp 320w, /assets/branding/curriculum-card-sat.webp 512w'
+      );
+      expect(component.getCurriculumBgSrcset('EGYPTIAN')).toBe(
+        '/assets/branding/curriculum-card-egyptian-sm.webp 320w, /assets/branding/curriculum-card-egyptian.webp 512w'
+      );
+      expect(component.getCurriculumBgSrcset('GULF')).toBe(
+        '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w'
+      );
+      expect(component.getCurriculumBgSrcset('INTERNATIONAL')).toBe(
+        '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w'
+      );
+    });
+
+    it('should trigger curriculum tree and active grades when opening track modal', () => {
+      const treeSpy = spyOn<any>(component, 'ensureCurriculumTreeLoaded').and.callThrough();
+      const gradesSpy = spyOn<any>(component, 'ensureActiveGradesLoaded').and.callThrough();
+
+      component.openTrackModal('EGYPTIAN');
+
+      expect(treeSpy).toHaveBeenCalled();
+      expect(gradesSpy).toHaveBeenCalled();
+    });
+
+    it('should NOT call curriculum tree or active grades during ngOnInit, only getLandingData', () => {
+      const discoveryService = TestBed.inject(PublicDiscoveryService);
+      const landingSpy = spyOn(discoveryService, 'getLandingData').and.returnValue(of({} as any));
+      const treeSpy = spyOn(discoveryService, 'getCurriculumTree').and.returnValue(of([]));
+      const gradesSpy = spyOn(discoveryService, 'loadActiveGradesAndTracks').and.returnValue(of({ activeGrades: [], curriculaTracks: [] }));
+
+      const freshFixture = TestBed.createComponent(CurriculumSelectorCardsComponent);
+      freshFixture.detectChanges(); // triggers ngOnInit
+
+      expect(landingSpy).toHaveBeenCalled();
+      expect(treeSpy).not.toHaveBeenCalled();
+      expect(gradesSpy).not.toHaveBeenCalled();
+
+      // Opening track modal triggers both deferred calls
+      freshFixture.componentInstance.openTrackModal('EGYPTIAN');
+      expect(treeSpy).toHaveBeenCalledTimes(1);
+      expect(gradesSpy).toHaveBeenCalledTimes(1);
+
+      // Subsequent opening does not trigger duplicate API calls (idempotent guard)
+      freshFixture.componentInstance.openTrackModal('GULF');
+      expect(treeSpy).toHaveBeenCalledTimes(1);
+      expect(gradesSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should fall back to british card for unknown or international curriculum codes', () => {
+      expect(component.getCurriculumBgImage('UNKNOWN' as any)).toBe('/assets/branding/curriculum-card-british.webp');
+      expect(component.getCurriculumBgSrcset('UNKNOWN' as any)).toBe(
+        '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w'
+      );
     });
   });
 });

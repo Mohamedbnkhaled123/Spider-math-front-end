@@ -53,4 +53,16 @@ describe('LandingHomeComponent', () => {
     expect(component.mouseX()).toBe(50);
     expect(component.mouseY()).toBe(50);
   });
+
+  describe('Lighthouse Optimizations', () => {
+    it('should render Hero LCP image with decoding="sync" and fetchpriority="high"', () => {
+      const heroImg: HTMLImageElement | null = fixture.nativeElement.querySelector('section img[fetchpriority="high"]');
+      expect(heroImg).toBeTruthy();
+      expect(heroImg?.getAttribute('decoding')).toBe('sync');
+      expect(heroImg?.getAttribute('fetchpriority')).toBe('high');
+      expect(heroImg?.getAttribute('width')).toBe('640');
+      expect(heroImg?.getAttribute('height')).toBe('640');
+      expect(heroImg?.getAttribute('src')).toContain('spider-mascot-hero-book');
+    });
+  });
 });

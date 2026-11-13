@@ -129,7 +129,7 @@
                 width="640"
                 height="640"
                 fetchpriority="high"
-                decoding="async"
+                decoding="sync"
                 class="w-full max-w-[360px] sm:max-w-[440px] lg:max-w-[500px] aspect-square h-auto object-contain drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] animate-mascot-float"
               />
             </div>
@@ -232,7 +232,7 @@
 
             <!-- Double-Rimmed Frosted Glass Card Container with Custom Video Player (Exact Match to Lecture Videos) -->
             <div class="relative rounded-3xl spider-rim-glass-card p-2 sm:p-3 shadow-2xl overflow-hidden border border-white/20 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-2xl">
-              @defer (on viewport; prefetch on idle) {
+              @defer (on viewport) {
                 <app-protected-youtube-player
                   [encryptedVideoId]="heroRawVideoUrl()"
                   [isPublicHeroPromo]="true"

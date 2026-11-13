@@ -159,6 +159,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   private intersectionObserver: IntersectionObserver | null = null;
   private isSectionVisible = false;
   private isCurriculumTreeRequested = false;
+  private isActiveGradesRequested = false;
   private desktopSilkCache: {
     W: number;
     H: number;
@@ -357,9 +358,6 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.selectedGradeCode.set(this.initialGrade());
     this.selectedTermCode.set(this.initialTerm());
 
-    this.discoveryService.loadActiveGradesAndTracks().subscribe();
-    this.ensureCurriculumTreeLoaded();
-
     this.discoveryService.getLandingData().subscribe({
       next: data => {
         this.landingData.set(data);
@@ -390,6 +388,16 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     });
   }
 
+  private ensureActiveGradesLoaded(): void {
+    if (this.isActiveGradesRequested) return;
+    this.isActiveGradesRequested = true;
+    this.discoveryService.loadActiveGradesAndTracks().subscribe({
+      error: () => {
+        this.isActiveGradesRequested = false;
+      }
+    });
+  }
+
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -403,7 +411,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
             const visible = entries.some(e => e.isIntersecting);
             this.isSectionVisible = visible;
             if (visible) {
-              this.ngZone.run(() => this.ensureCurriculumTreeLoaded());
+              this.ngZone.run(() => {
+                this.ensureCurriculumTreeLoaded();
+                this.ensureActiveGradesLoaded();
+              });
               this.scheduleSilkRender();
             } else {
               this.stopSilkLoop();
@@ -415,7 +426,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         if (mobileEl) this.intersectionObserver.observe(mobileEl);
       } else {
         this.isSectionVisible = true;
-        this.ngZone.run(() => this.ensureCurriculumTreeLoaded());
+        this.ngZone.run(() => {
+          this.ensureCurriculumTreeLoaded();
+          this.ensureActiveGradesLoaded();
+        });
         this.scheduleSilkRender();
       }
 
@@ -845,6 +859,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   openTrackModal(code: CurriculumCode): void {
     this.stopSilkLoop();
     this.ensureCurriculumTreeLoaded();
+    this.ensureActiveGradesLoaded();
     this.selectedCurriculumCode.set(code);
     const curr = this.curriculumCards().find(c => c.code === code);
     if (curr && curr.availableGrades.length > 0) {
@@ -1212,20 +1227,29 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   getCurriculumBgImage(code: CurriculumCode): string {
     switch (code) {
       case 'AMERICAN':
-        return '/assets/branding/curriculum-sat-mascot.jpg';
+        return '/assets/branding/curriculum-card-sat.webp';
       case 'EGYPTIAN':
-        return '/assets/branding/curriculum-egyptian-mascot.jpg';
+        return '/assets/branding/curriculum-card-egyptian.webp';
       case 'GULF':
-        return '/assets/branding/curriculum-gulf-mascot.jpg';
+        return '/assets/branding/curriculum-card-gulf.webp';
       case 'INTERNATIONAL':
       default:
-        return '/assets/branding/curriculum-international-mascot.jpg';
+        return '/assets/branding/curriculum-card-british.webp';
     }
   }
 
   getCurriculumBgSrcset(code: CurriculumCode): string {
-    const img = this.getCurriculumBgImage(code);
-    return `${img} 512w, ${img} 1024w`;
+    switch (code) {
+      case 'AMERICAN':
+        return '/assets/branding/curriculum-card-sat-sm.webp 320w, /assets/branding/curriculum-card-sat.webp 512w';
+      case 'EGYPTIAN':
+        return '/assets/branding/curriculum-card-egyptian-sm.webp 320w, /assets/branding/curriculum-card-egyptian.webp 512w';
+      case 'GULF':
+        return '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w';
+      case 'INTERNATIONAL':
+      default:
+        return '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w';
+    }
   }
 
   getCurrentGradeUnitsBgImage(): string {
