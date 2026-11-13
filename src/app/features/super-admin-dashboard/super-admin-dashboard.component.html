@@ -184,9 +184,16 @@
             <!-- Analytics Metric Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <!-- Pending Devices -->
-              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
+              <div
+                role="button"
+                tabindex="0"
+                (click)="setTab('students')"
+                (keydown.enter)="setTab('students')"
+                class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-lg active:scale-[0.99] transition-all duration-300 cursor-pointer group"
+                [title]="langService.isArabic() ? 'عرض الأجهزة بانتظار الاعتماد' : 'View Pending Device Approvals'"
+              >
                 <div>
-                  <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'أجهزة بانتظار الاعتماد' : 'Pending Device Approvals' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-amber-500 transition-colors block">{{ langService.isArabic() ? 'أجهزة بانتظار الاعتماد' : 'Pending Device Approvals' }}</span>
                   @if (isLoading() && analyticsSnapshot().pendingDevicesCount === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -195,15 +202,22 @@
                     </span>
                   }
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <app-icon name="lock" [size]="20" />
                 </div>
               </div>
 
               <!-- Pending Grading -->
-              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
+              <div
+                role="button"
+                tabindex="0"
+                (click)="setTab('grading')"
+                (keydown.enter)="setTab('grading')"
+                class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-lg active:scale-[0.99] transition-all duration-300 cursor-pointer group"
+                [title]="langService.isArabic() ? 'عرض الامتحانات بانتظار التصحيح' : 'View Assessments Awaiting Grading'"
+              >
                 <div>
-                  <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'امتحانات بانتظار التصحيح' : 'Assessments Awaiting Grading' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-brand-primary transition-colors block">{{ langService.isArabic() ? 'امتحانات بانتظار التصحيح' : 'Assessments Awaiting Grading' }}</span>
                   @if (isLoading() && analyticsSnapshot().pendingGradingCount === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -212,15 +226,22 @@
                     </span>
                   }
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                   <app-icon name="file-text" [size]="20" />
                 </div>
               </div>
 
               <!-- Registered Students -->
-              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
+              <div
+                role="button"
+                tabindex="0"
+                (click)="setTab('students')"
+                (keydown.enter)="setTab('students')"
+                class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-lg active:scale-[0.99] transition-all duration-300 cursor-pointer group"
+                [title]="langService.isArabic() ? 'عرض قائمة الطلاب المسجلين' : 'View Registered Students'"
+              >
                 <div>
-                  <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'إجمالي الطلاب المسجلين' : 'Total Registered Students' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-emerald-500 transition-colors block">{{ langService.isArabic() ? 'إجمالي الطلاب المسجلين' : 'Total Registered Students' }}</span>
                   @if (isLoading() && analyticsSnapshot().registeredStudents === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -229,15 +250,22 @@
                     </span>
                   }
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <app-icon name="user" [size]="20" />
                 </div>
               </div>
 
               <!-- Leads CRM -->
-              <div class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 transition-all duration-300">
+              <div
+                role="button"
+                tabindex="0"
+                (click)="setTab('leads_cms')"
+                (keydown.enter)="setTab('leads_cms')"
+                class="p-5 rounded-3xl spider-rim-glass-card shadow-glass flex items-center justify-between hover:-translate-y-1 hover:border-brand-secondary/50 hover:shadow-lg active:scale-[0.99] transition-all duration-300 cursor-pointer group"
+                [title]="langService.isArabic() ? 'عرض العملاء والزوار الجدد' : 'View Leads'"
+              >
                 <div>
-                  <span class="text-xs font-bold text-text-muted block">{{ langService.isArabic() ? 'العملاء والزوار الجدد' : 'New Leads' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-brand-secondary transition-colors block">{{ langService.isArabic() ? 'العملاء والزوار الجدد' : 'New Leads' }}</span>
                   @if (isLoading() && analyticsSnapshot().newLeadsCount === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -246,7 +274,7 @@
                     </span>
                   }
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
                   <app-icon name="target" [size]="20" />
                 </div>
               </div>
