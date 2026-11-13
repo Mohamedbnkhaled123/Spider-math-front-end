@@ -9,4 +9,3 @@ Disallow: /inactive-student-portal
 Disallow: /complete-profile
 
 Sitemap: https://spider-math.com/sitemap.xml
-Agentmap: /.well-known/ard.json
