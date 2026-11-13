@@ -42,6 +42,7 @@
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     width: 5px;

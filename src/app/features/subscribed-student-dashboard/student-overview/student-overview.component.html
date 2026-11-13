@@ -8,7 +8,7 @@
       <!-- Student Avatar Preview with Level Badge -->
       <div class="relative shrink-0">
         <img
-          [src]="authService.currentUser()?.avatar_url || presetAvatars[0].url"
+          [src]="authService.currentUser()?.avatar_url || authService.currentUser()?.avatarUrl || presetAvatars[0].url"
           alt="Avatar"
           width="80"
           height="80"
@@ -1117,25 +1117,28 @@
   <!-- ========================================================================= -->
   @if (isProfileModalOpen()) {
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in cursor-pointer"
+      class="fixed inset-0 z-layer-modal overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       (click)="closeProfileModal()"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="langService.isArabic() ? 'تعديل الملف الشخصي' : 'Edit Profile'"
     >
       <div
-        class="w-full max-w-xl rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto cursor-default"
+        class="w-full max-w-xl max-h-[92vh] sm:max-h-[85vh] flex flex-col rounded-3xl spider-rim-glass-card shadow-2xl cursor-default overflow-hidden my-auto border border-surface-border"
         (click)="$event.stopPropagation()"
       >
 
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between pb-4 border-b border-surface-border">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center">
+        <!-- Modal Pinned Header -->
+        <div class="shrink-0 flex items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-surface-border bg-surface-card/95 backdrop-blur-md">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary dark:text-brand-accent flex items-center justify-center shrink-0">
               <app-icon name="user" [size]="20" />
             </div>
-            <div>
-              <h3 class="text-base sm:text-lg font-black text-text-primary">
+            <div class="min-w-0">
+              <h3 class="text-base sm:text-lg font-black text-text-primary truncate">
                 {{ langService.isArabic() ? 'تعديل الملف الشخصي' : 'Edit Profile' }}
               </h3>
-              <p class="text-xs text-text-secondary mt-0.5">
+              <p class="text-xs text-text-secondary mt-0.5 truncate">
                 {{ langService.isArabic() ? 'تحديث الاسم وأرقام التواصل والصورة الشخصية' : 'Update name, contact numbers, and photo' }}
               </p>
             </div>
@@ -1144,220 +1147,226 @@
           <button
             type="button"
             (click)="closeProfileModal()"
-            class="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer"
+            class="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer shrink-0"
+            [attr.aria-label]="langService.isArabic() ? 'إغلاق' : 'Close'"
           >
             <app-icon name="x" [size]="18" />
           </button>
         </div>
 
-        <!-- Alert Banners -->
-        @if (profileErrorMessage()) {
-          <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-xs font-bold text-rose-500 flex items-center gap-2 animate-shake">
-            <app-icon name="alert-circle" [size]="16" />
-            <span>{{ profileErrorMessage() }}</span>
-          </div>
-        }
+        <!-- Modal Scrollable Body -->
+        <div class="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4 custom-scrollbar">
 
-        @if (profileSuccessMessage()) {
-          <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-500 flex items-center gap-2">
-            <app-icon name="check-circle" [size]="16" />
-            <span>{{ profileSuccessMessage() }}</span>
-          </div>
-        }
+          <!-- Alert Banners -->
+          @if (profileErrorMessage()) {
+            <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-xs font-bold text-rose-500 flex items-center gap-2 animate-shake">
+              <app-icon name="alert-circle" [size]="16" className="shrink-0" />
+              <span>{{ profileErrorMessage() }}</span>
+            </div>
+          }
 
-        <!-- Avatar Selection -->
-        <div>
-          <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-            {{ langService.isArabic() ? 'الصورة الشخصية (اختر أفتار أو ارفع صورتك):' : 'Profile Picture (Choose avatar or upload photo):' }}
-          </label>
-          <div class="grid grid-cols-4 sm:grid-cols-7 gap-2.5 mb-3 max-h-48 overflow-y-auto p-1 rounded-2xl border border-surface-border bg-surface-bg/40">
-            @for (av of presetAvatars; track av.id) {
-              <button
-                type="button"
-                (click)="selectAvatar(av.url)"
-                class="p-1.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col items-center hover:border-brand-primary"
-                [class.border-brand-primary]="editAvatarUrl() === av.url"
-                [class.ring-2]="editAvatarUrl() === av.url"
-                [class.ring-brand-primary/40]="editAvatarUrl() === av.url"
-                [class.bg-brand-primary/10]="editAvatarUrl() === av.url"
-                [class.border-surface-border]="editAvatarUrl() !== av.url"
-                [title]="langService.isArabic() ? av.labelAr : av.labelEn"
-              >
-                <img [src]="av.url" [alt]="langService.isArabic() ? av.labelAr : av.labelEn" width="48" height="48" loading="lazy" decoding="async" class="w-12 h-12 rounded-xl object-cover" />
-                @if (editAvatarUrl() === av.url) {
-                  <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm">
-                    <app-icon name="check" [size]="10" />
-                  </span>
-                }
-              </button>
-            }
-          </div>
+          @if (profileSuccessMessage()) {
+            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-500 flex items-center gap-2">
+              <app-icon name="check-circle" [size]="16" className="shrink-0" />
+              <span>{{ profileSuccessMessage() }}</span>
+            </div>
+          }
 
-          <!-- Upload Photo from Mobile / Device (No URL input allowed) -->
-          <div class="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-2xl border border-surface-border bg-surface-bg/70">
-            <input
-              #avatarFileInput
-              type="file"
-              accept="image/*"
-              (change)="onAvatarFileSelected($event)"
-              class="hidden"
-            />
-            <button
-              type="button"
-              (click)="avatarFileInput.click()"
-              class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-dashed border-brand-primary/50 hover:border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/15 text-brand-primary text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <app-icon name="camera" [size]="15" />
-              <span>{{ langService.isArabic() ? 'رفع صورة من جهازك' : 'Upload photo' }}</span>
-            </button>
-
-            @if (isCustomUploadedAvatar()) {
-              <div class="flex items-center gap-2 text-xs font-bold text-emerald-500">
-                <img [src]="editAvatarUrl()" alt="Custom Avatar" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded-lg object-cover border border-emerald-500/40" />
-                <span>{{ langService.isArabic() ? 'تم تجهيز الصورة' : 'Photo ready' }}</span>
+          <!-- Avatar Selection -->
+          <div>
+            <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
+              {{ langService.isArabic() ? 'الصورة الشخصية (اختر أفتار أو ارفع صورتك):' : 'Profile Picture (Choose avatar or upload photo):' }}
+            </label>
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-3 max-h-44 overflow-y-auto overscroll-contain p-1.5 rounded-2xl border border-surface-border bg-surface-bg/40 custom-scrollbar">
+              @for (av of presetAvatars; track av.id) {
                 <button
                   type="button"
-                  (click)="clearCustomAvatar()"
-                  class="text-rose-500 hover:underline text-[11px] cursor-pointer"
+                  (click)="selectAvatar(av.url)"
+                  class="p-1 rounded-xl sm:rounded-2xl border transition-all cursor-pointer relative group flex flex-col items-center hover:border-brand-primary shrink-0"
+                  [class.border-brand-primary]="editAvatarUrl() === av.url"
+                  [class.ring-2]="editAvatarUrl() === av.url"
+                  [class.ring-brand-primary/40]="editAvatarUrl() === av.url"
+                  [class.bg-brand-primary/10]="editAvatarUrl() === av.url"
+                  [class.border-surface-border]="editAvatarUrl() !== av.url"
+                  [title]="langService.isArabic() ? av.labelAr : av.labelEn"
                 >
-                  {{ langService.isArabic() ? '(إلغاء)' : '(Remove)' }}
+                  <img [src]="av.url" [alt]="langService.isArabic() ? av.labelAr : av.labelEn" width="48" height="48" loading="lazy" decoding="async" class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl object-cover" />
+                  @if (editAvatarUrl() === av.url) {
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm">
+                      <app-icon name="check" [size]="10" />
+                    </span>
+                  }
                 </button>
-              </div>
-            } @else {
-              <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يدعم JPG و PNG و WebP بحجم خفيف' : 'Supports JPG, PNG, and WebP' }}</span>
-            }
-          </div>
-        </div>
+              }
+            </div>
 
-        <!-- 1. Full Name -->
-        <div>
-          <label for="editFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-            {{ langService.isArabic() ? 'الاسم ثلاثياً' : 'Full Name' }}
-          </label>
-          <input
-            id="editFullName"
-            type="text"
-            [ngModel]="editFullName()"
-            (ngModelChange)="editFullName.set($event)"
-            class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
-          />
-        </div>
+            <!-- Upload Photo from Mobile / Device (No URL input allowed) -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-2xl border border-surface-border bg-surface-bg/70">
+              <input
+                #avatarFileInput
+                type="file"
+                accept="image/*"
+                (change)="onAvatarFileSelected($event)"
+                class="hidden"
+              />
+              <button
+                type="button"
+                (click)="avatarFileInput.click()"
+                class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-dashed border-brand-primary/50 hover:border-brand-primary bg-brand-primary/10 hover:bg-brand-primary/15 text-brand-primary text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <app-icon name="camera" [size]="15" />
+                <span>{{ langService.isArabic() ? 'رفع صورة من جهازك' : 'Upload photo' }}</span>
+              </button>
 
-        <!-- 2. Country -->
-        <div>
-          <label for="editCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-            {{ langService.isArabic() ? 'دولة الإقامة' : 'Country of Residence' }}
-          </label>
-          <div class="relative">
-            <select
-              id="editCountry"
-              [ngModel]="editCountry()"
-              (ngModelChange)="editCountry.set($event)"
-              class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
-            >
-              <optgroup [label]="langService.isArabic() ? 'جمهورية مصر العربية' : 'Egypt'">
-                <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
-              </optgroup>
-              <optgroup [label]="langService.isArabic() ? 'دول الخليج العربي' : 'Gulf Countries'">
-                <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
-                <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
-                <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
-                <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
-              </optgroup>
-              <optgroup [label]="langService.isArabic() ? 'دول أخرى' : 'Other Countries'">
-                <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
-              </optgroup>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
-              <app-icon name="chevron-down" [size]="16" />
+              @if (isCustomUploadedAvatar()) {
+                <div class="flex items-center gap-2 text-xs font-bold text-emerald-500">
+                  <img [src]="editAvatarUrl()" alt="Custom Avatar" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded-lg object-cover border border-emerald-500/40" />
+                  <span>{{ langService.isArabic() ? 'تم تجهيز الصورة' : 'Photo ready' }}</span>
+                  <button
+                    type="button"
+                    (click)="clearCustomAvatar()"
+                    class="text-rose-500 hover:underline text-[11px] cursor-pointer"
+                  >
+                    {{ langService.isArabic() ? '(إلغاء)' : '(Remove)' }}
+                  </button>
+                </div>
+              } @else {
+                <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يدعم JPG و PNG و WebP بحجم خفيف' : 'Supports JPG, PNG, and WebP' }}</span>
+              }
             </div>
           </div>
-        </div>
 
-        <!-- 3. Phone Numbers (Student & Parent) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- 1. Full Name -->
           <div>
-            <label for="editPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-              {{ langService.isArabic() ? 'رقم هاتف الطالب' : 'Student Phone' }}
+            <label for="editFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+              {{ langService.isArabic() ? 'الاسم ثلاثياً' : 'Full Name' }}
             </label>
             <input
-              id="editPhone"
-              type="tel"
-              [ngModel]="editPhone()"
-              (ngModelChange)="editPhone.set($event)"
-              [placeholder]="editPhonePlaceholder()"
-              dir="ltr"
-              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
+              id="editFullName"
+              type="text"
+              [ngModel]="editFullName()"
+              (ngModelChange)="editFullName.set($event)"
+              class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all"
             />
           </div>
 
+          <!-- 2. Country -->
           <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="editParentPhone" class="text-xs sm:text-sm font-extrabold text-text-primary">
-                {{ langService.isArabic() ? 'رقم ولي الأمر' : 'Parent Phone' }}
-              </label>
-              <span class="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
-                <app-icon name="lock" [size]="10" />
-                <span>{{ langService.isArabic() ? 'مقفول (بموافقة المعلمة)' : 'Locked (Requires Approval)' }}</span>
-              </span>
-            </div>
-            <div class="relative">
-              <input
-                id="editParentPhone"
-                type="tel"
-                [ngModel]="editParentPhone()"
-                readonly
-                (click)="onParentPhoneClick()"
-                [placeholder]="editPhonePlaceholder()"
-                dir="ltr"
-                class="w-full px-4 py-3 pe-10 rounded-2xl border border-surface-border bg-surface-bg/60 text-text-muted text-sm font-mono font-bold outline-none cursor-not-allowed select-all"
-                [title]="langService.isArabic() ? 'يتطلب موافقة المعلمة' : 'Requires teacher approval'"
-              />
-              <div class="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none text-amber-500">
-                <app-icon name="lock" [size]="14" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        @if (showParentPhoneLockNotice()) {
-          <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300 animate-fade-in">
-            <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
-            <div class="leading-relaxed">
-              <span class="font-extrabold block mb-0.5">{{ langService.isArabic() ? 'تعديل رقم ولي الأمر:' : 'Parent Phone:' }}</span>
-              <span>
-                {{ langService.isArabic() ? 'لحماية الحساب والتنبيهات، يتطلب التعديل التواصل مع المعلمة هبة عياد عبر واتساب.' : 'To protect security and alerts, modifying parent phone requires contacting Eng. Heba via WhatsApp.' }}
-              </span>
-            </div>
-          </div>
-        }
-
-        <!-- 4. Governorate (if Egypt) -->
-        @if (isEditEgypt()) {
-          <div>
-            <label for="editGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-              {{ langService.isArabic() ? 'المحافظة' : 'Governorate' }}
+            <label for="editCountry" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+              {{ langService.isArabic() ? 'دولة الإقامة' : 'Country of Residence' }}
             </label>
             <div class="relative">
               <select
-                id="editGovernorate"
-                [ngModel]="editGovernorate()"
-                (ngModelChange)="editGovernorate.set($event)"
+                id="editCountry"
+                [ngModel]="editCountry()"
+                (ngModelChange)="editCountry.set($event)"
                 class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
               >
-                @for (gov of egyptGovernorates; track gov.code) {
-                  <option [value]="gov.code">{{ langService.isArabic() ? gov.name_ar : gov.name_en }}</option>
-                }
+                <optgroup [label]="langService.isArabic() ? 'جمهورية مصر العربية' : 'Egypt'">
+                  <option value="EG">{{ langService.isArabic() ? 'جمهورية مصر العربية (+20)' : 'Egypt (+20)' }}</option>
+                </optgroup>
+                <optgroup [label]="langService.isArabic() ? 'دول الخليج العربي' : 'Gulf Countries'">
+                  <option value="SA">{{ langService.isArabic() ? 'المملكة العربية السعودية (+966)' : 'Saudi Arabia (+966)' }}</option>
+                  <option value="AE">{{ langService.isArabic() ? 'الإمارات العربية المتحدة (+971)' : 'United Arab Emirates (+971)' }}</option>
+                  <option value="KW">{{ langService.isArabic() ? 'دولة الكويت (+965)' : 'Kuwait (+965)' }}</option>
+                  <option value="QA">{{ langService.isArabic() ? 'دولة قطر (+974)' : 'Qatar (+974)' }}</option>
+                </optgroup>
+                <optgroup [label]="langService.isArabic() ? 'دول أخرى' : 'Other Countries'">
+                  <option value="OTHER">{{ langService.isArabic() ? 'دولة أخرى' : 'Other Country' }}</option>
+                </optgroup>
               </select>
               <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
                 <app-icon name="chevron-down" [size]="16" />
               </div>
             </div>
           </div>
-        }
 
-        <!-- Modal Actions -->
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-border">
+          <!-- 3. Phone Numbers (Student & Parent) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="editPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                {{ langService.isArabic() ? 'رقم هاتف الطالب' : 'Student Phone' }}
+              </label>
+              <input
+                id="editPhone"
+                type="tel"
+                [ngModel]="editPhone()"
+                (ngModelChange)="editPhone.set($event)"
+                [placeholder]="editPhonePlaceholder()"
+                dir="ltr"
+                class="w-full px-4 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-mono font-bold focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
+              />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="editParentPhone" class="text-xs sm:text-sm font-extrabold text-text-primary">
+                  {{ langService.isArabic() ? 'رقم ولي الأمر' : 'Parent Phone' }}
+                </label>
+                <span class="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                  <app-icon name="lock" [size]="10" />
+                  <span>{{ langService.isArabic() ? 'مقفول (بموافقة المعلمة)' : 'Locked (Requires Approval)' }}</span>
+                </span>
+              </div>
+              <div class="relative">
+                <input
+                  id="editParentPhone"
+                  type="tel"
+                  [ngModel]="editParentPhone()"
+                  readonly
+                  (click)="onParentPhoneClick()"
+                  [placeholder]="editPhonePlaceholder()"
+                  dir="ltr"
+                  class="w-full px-4 py-3 pe-10 rounded-2xl border border-surface-border bg-surface-bg/60 text-text-muted text-sm font-mono font-bold outline-none cursor-not-allowed select-all"
+                  [title]="langService.isArabic() ? 'يتطلب موافقة المعلمة' : 'Requires teacher approval'"
+                />
+                <div class="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none text-amber-500">
+                  <app-icon name="lock" [size]="14" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          @if (showParentPhoneLockNotice()) {
+            <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300 animate-fade-in">
+              <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
+              <div class="leading-relaxed">
+                <span class="font-extrabold block mb-0.5">{{ langService.isArabic() ? 'تعديل رقم ولي الأمر:' : 'Parent Phone:' }}</span>
+                <span>
+                  {{ langService.isArabic() ? 'لحماية الحساب والتنبيهات، يتطلب التعديل التواصل مع المعلمة هبة عياد عبر واتساب.' : 'To protect security and alerts, modifying parent phone requires contacting Eng. Heba via WhatsApp.' }}
+                </span>
+              </div>
+            </div>
+          }
+
+          <!-- 4. Governorate (if Egypt) -->
+          @if (isEditEgypt()) {
+            <div>
+              <label for="editGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
+                {{ langService.isArabic() ? 'المحافظة' : 'Governorate' }}
+              </label>
+              <div class="relative">
+                <select
+                  id="editGovernorate"
+                  [ngModel]="editGovernorate()"
+                  (ngModelChange)="editGovernorate.set($event)"
+                  class="w-full ps-4 pe-11 py-3 rounded-2xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold focus:border-brand-primary outline-none transition-all appearance-none cursor-pointer"
+                >
+                  @for (gov of egyptGovernorates; track gov.code) {
+                    <option [value]="gov.code">{{ langService.isArabic() ? gov.name_ar : gov.name_en }}</option>
+                  }
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-4 text-text-muted">
+                  <app-icon name="chevron-down" [size]="16" />
+                </div>
+              </div>
+            </div>
+          }
+
+        </div>
+
+        <!-- Modal Pinned Footer -->
+        <div class="shrink-0 flex items-center justify-end gap-3 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-surface-border bg-surface-card/95 backdrop-blur-md">
           <button
             type="button"
             (click)="closeProfileModal()"

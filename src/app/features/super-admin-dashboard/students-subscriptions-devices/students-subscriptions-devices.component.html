@@ -208,6 +208,7 @@
                       loading="lazy"
                       decoding="async"
                       class="w-10 h-10 rounded-xl object-cover border border-surface-border shrink-0 shadow-sm"
+                      (error)="student.avatarUrl = undefined; student.avatar_url = undefined"
                     />
                   } @else {
                     <div class="w-10 h-10 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center font-bold text-xs text-text-primary shrink-0">

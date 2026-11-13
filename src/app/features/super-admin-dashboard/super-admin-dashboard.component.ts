@@ -248,10 +248,12 @@ export class SuperAdminDashboardComponent implements OnInit {
               defaultCode = '—';
             }
 
+            const studentAvatar = u.avatar_url || u.avatarUrl || u.avatar || undefined;
             return {
               id: u._id,
               name: u.full_name || (role === 'PARENT' ? 'ولي أمر' : 'طالب مسجل'),
-              avatarUrl: u.avatar_url || u.avatarUrl,
+              avatarUrl: studentAvatar,
+              avatar_url: studentAvatar,
               role,
               haCode: defaultCode,
               email: u.email,

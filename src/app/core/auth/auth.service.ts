@@ -13,6 +13,7 @@ export interface IUserDto {
   readonly parent_phone?: string;
   readonly country?: string;
   readonly avatar_url?: string;
+  readonly avatarUrl?: string;
   readonly role: UserRole;
   readonly curriculum?: string;
   readonly grade_level?: string;
@@ -56,14 +57,21 @@ export class AuthService {
    * Sets authenticated session and persists credentials in client storage.
    */
   setSession(token: string, user: IUserDto): void {
+    const avatar = user.avatar_url || (user as any).avatarUrl;
+    const normalizedUser: IUserDto = {
+      ...user,
+      avatar_url: avatar,
+      avatarUrl: avatar
+    };
+
     this.currentToken.set(token);
-    this.currentUser.set(user);
+    this.currentUser.set(normalizedUser);
     this.isPendingDeviceApproval.set(false);
 
     if (isPlatformBrowser(this.platformId)) {
       try {
         localStorage.setItem(this.TOKEN_KEY, token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        localStorage.setItem(this.USER_KEY, JSON.stringify(normalizedUser));
       } catch (err) {
         console.error('[AuthService] Failed to save session:', err);
       }
@@ -74,7 +82,13 @@ export class AuthService {
    * Updates partial properties on the active user signal.
    */
   updateCurrentUser(patch: Partial<IUserDto>): void {
-    this.currentUser.update(current => current ? { ...current, ...patch } : null);
+    const avatar = patch.avatar_url || (patch as any).avatarUrl;
+    const normalizedPatch: Partial<IUserDto> = {
+      ...patch,
+      ...(avatar !== undefined ? { avatar_url: avatar, avatarUrl: avatar } : {})
+    };
+
+    this.currentUser.update(current => current ? { ...current, ...normalizedPatch } : null);
     if (isPlatformBrowser(this.platformId)) {
       const user = this.currentUser();
       if (user) {
@@ -115,7 +129,13 @@ export class AuthService {
         const userJson = localStorage.getItem(this.USER_KEY);
 
         if (token && userJson) {
-          const user = JSON.parse(userJson) as IUserDto;
+          const rawUser = JSON.parse(userJson) as IUserDto;
+          const avatar = rawUser.avatar_url || (rawUser as any).avatarUrl;
+          const user: IUserDto = {
+            ...rawUser,
+            avatar_url: avatar,
+            avatarUrl: avatar
+          };
           this.currentToken.set(token);
           this.currentUser.set(user);
         }

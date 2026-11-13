@@ -907,19 +907,22 @@ export class StudentOverviewComponent implements OnInit {
       parentPhone: parentPhone || undefined,
       country,
       governorate: this.isEditEgypt() ? this.editGovernorate() : null,
-      avatarUrl: this.editAvatarUrl() || undefined
+      avatarUrl: this.editAvatarUrl() || undefined,
+      avatar_url: this.editAvatarUrl() || undefined
     }).subscribe({
       next: (res) => {
         this.isSavingProfile.set(false);
         const updated = res.data?.user;
         if (updated) {
+          const resolvedAvatar = updated.avatarUrl || updated.avatar_url || this.editAvatarUrl();
           const patch: Partial<IUserDto> = {
             full_name: updated.fullName || updated.full_name || name,
             phone: updated.phone || phone,
             parent_phone: updated.parentPhone || updated.parent_phone || parentPhone,
             country: updated.country || country,
             governorate: updated.governorate || this.editGovernorate(),
-            avatar_url: updated.avatarUrl || updated.avatar_url || this.editAvatarUrl()
+            avatar_url: resolvedAvatar,
+            avatarUrl: resolvedAvatar
           };
           this.authService.updateCurrentUser(patch);
           this.profileSuccessMessage.set('تم حفظ البيانات بنجاح');
