@@ -395,7 +395,7 @@
               </div>
             } @empty {
               <div class="text-[11px] text-text-muted italic py-1 col-span-2">
-                {{ langService.isArabic() ? 'لا توجد محاضرات مضافة بعد. اضغط على "+ محاضرة" لإضافة روابط الشرح والملفات.' : 'No lectures added yet. Click "+ Lecture" to add lesson videos and PDFs.' }}
+                {{ langService.isArabic() ? 'لا توجد محاضرات بعد. أضيفي محاضرة جديدة.' : 'No lectures yet. Add a lecture.' }}
               </div>
             }
           </div>
@@ -490,7 +490,7 @@
             </div>
           } @empty {
             <div class="text-[11px] text-text-muted italic py-1">
-              {{ langService.isArabic() ? 'لا توجد امتحانات أو واجبات مضافة بعد بالوحدة. اضغط على إضافة تقييم لتعيين أسئلته.' : 'No assessments or homework added yet. Click "Add Quiz / Homework / Exam" to create one.' }}
+              {{ langService.isArabic() ? 'لا توجد امتحانات أو واجبات مضافة بعد.' : 'No assessments or homework added yet.' }}
             </div>
           }
         </div>
@@ -518,9 +518,9 @@
       } @else {
         <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
           <app-icon name="book-open" [size]="32" className="text-text-muted mx-auto" />
-          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد باقات أو وحدات مسجلة لهذا المنهج والصف حالياً' : 'No packages or units registered for this grade yet.' }}</h4>
+          <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد وحدات لهذا الصف حالياً' : 'No units for this grade' }}</h4>
           <p class="text-xs text-text-secondary max-w-md mx-auto">
-            {{ langService.isArabic() ? 'يمكنك إنشاء باقة جديدة فورياً من خلال النقر على زر إضافة وحدة وربط المحاضرات المشفرة والامتحانات التفاعلية.' : 'Create a new package instantly by clicking "Add New Unit" to attach lectures and exams.' }}
+            {{ langService.isArabic() ? 'اضغطي "إضافة وحدة" لربط المحاضرات والامتحانات.' : 'Click "Add New Unit" to attach lectures and exams.' }}
           </p>
           <button
             type="button"
@@ -1177,10 +1177,10 @@
               <app-icon name="alert-triangle" [size]="18" className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <div>
                 <span class="font-black text-xs block mb-0.5">
-                  {{ langService.isArabic() ? 'تنبيه: لم يتم إضافة أي أسئلة لهذا التقييم بعد' : 'Notice: No questions added to this assessment yet' }}
+                  {{ langService.isArabic() ? 'لا توجد أسئلة مضافة بعد' : 'No questions added yet' }}
                 </span>
                 <p class="leading-relaxed text-[11px]">
-                  {{ langService.isArabic() ? 'هذا التقييم محجوب تلقائياً ولن يظهر لأي طالب على المنصة حتى تقومي بإضافة سؤال واحد على الأقل والضغط على زر اعتماد وحفظ إعدادات الامتحان بالأسفل.' : 'This assessment is hidden until you add at least one question and save settings below.' }}
+                  {{ langService.isArabic() ? 'لن يظهر هذا التقييم للطلاب حتى تتم إضافة سؤال واحد على الأقل وحفظه.' : 'Assessment remains hidden until at least one question is added and saved.' }}
                 </p>
               </div>
             </div>

@@ -6,7 +6,7 @@
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
           <app-icon name="award" [size]="22" className="text-brand-primary" />
-          <span>{{ langService.isArabic() ? 'قسم وسجل تسليمات الكويزات والامتحانات' : 'Quiz & Exam Submissions Log' }}</span>
+          <span>{{ langService.isArabic() ? 'سجل التسليمات' : 'Submissions Log' }}</span>
         </h2>
       </div>
 
@@ -750,7 +750,7 @@
             class="px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>{{ langService.isArabic() ? 'اعتماد النتيجة وإرسال الإشعار للطالب وولي الأمر' : 'Publish Result & Notify Student and Parent' }}</span>
+            <span>{{ langService.isArabic() ? 'اعتماد النتيجة وإشعار ولي الأمر' : 'Publish Result & Notify' }}</span>
           </button>
         </div>
 

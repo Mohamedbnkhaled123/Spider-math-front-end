@@ -400,7 +400,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   }
 
   deleteTestimonial(item: AdminTestimonialItem): void {
-    if (!confirm('هل أنتِ متأكدة من حذف هذا الرأي نهائياً؟')) return;
+    if (!confirm('حذف هذا الرأي نهائياً؟')) return;
     this.testimonialsService.deleteAdminTestimonial(item.id).subscribe({
       next: () => {
         this.adminTestimonials.update((list) => list.filter((t) => t.id !== item.id));
@@ -675,11 +675,11 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     });
 
     this.closeHonoreeModal();
-    this.toastTriggered.emit({ text: 'تم حفظ بيانات الطالب في القائمة بنجاح! تذكري الضغط على "حفظ التعديلات" بالأسفل لنشرها على الموقع.', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم الحفظ في القائمة. اضغطي "حفظ التعديلات" لنشرها.', type: 'success' });
   }
 
   deleteHonoree(index: number): void {
-    if (!confirm('هل أنتِ متأكدة من حذف هذا الطالب من لوحة الشرف؟')) return;
+    if (!confirm('حذف هذا الطالب من لوحة الشرف؟')) return;
     this.editableCms.update(cfg => {
       const currentList = (cfg.honorBoardList || []).filter((_, i) => i !== index);
       const reindexed = currentList.map((h, i) => ({ ...h, rank: i + 1 }));
@@ -740,12 +740,12 @@ export class LeadsAndLandingCmsComponent implements OnInit {
 
   populateDefaultHonorees(): void {
     if ((this.editableCms().honorBoardList || []).length > 0) {
-      if (!confirm('هذا الإجراء سيستبدل قائمة لوحة الشرف الحالية بالنموذج الافتراضي. هل تريدين المتابعة؟')) return;
+      if (!confirm('استبدال لوحة الشرف الحالية بالنموذج الافتراضي؟')) return;
     }
     this.editableCms.update(cfg => ({
       ...cfg,
       honorBoardList: JSON.parse(JSON.stringify(this.defaultHonorBoardTemplate))
     }));
-    this.toastTriggered.emit({ text: 'تم تحميل نموذج لوحة الشرف بنجاح. يمكنك تعديل أسماء وبيانات الطلاب والضغط على حفظ.', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم تحميل نموذج لوحة الشرف بنجاح.', type: 'success' });
   }
 }

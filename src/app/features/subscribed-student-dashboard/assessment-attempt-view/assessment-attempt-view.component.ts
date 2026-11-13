@@ -214,32 +214,32 @@ export class AssessmentAttemptViewComponent implements OnInit {
           }
 
           if (errorCode === 'NO_ACTIVE_SUBSCRIPTION_403') {
-            const msg = err?.error?.error?.message || 'عذراً، هذا الاختبار مخصص للطلاب المشتركين فقط. يرجى تفعيل اشتراكك للوصول إليه.';
+            const msg = err?.error?.error?.message || (this.langService.isArabic() ? 'هذا الاختبار للمشتركين فقط.' : 'Assessment is for subscribers only.');
             alert(msg);
             this.router.navigate(['/student']);
             return;
           }
 
           if (errorCode === 'FORBIDDEN_403') {
-            const msg = err?.error?.error?.message || 'عذراً، هذا الاختبار مخصص لصف دراسي آخر أو غير متاح لحسابك.';
+            const msg = err?.error?.error?.message || (this.langService.isArabic() ? 'هذا الاختبار غير متاح لصفك الدراسي.' : 'Assessment not available for your grade.');
             alert(msg);
             this.router.navigate(['/student']);
             return;
           }
 
           if (errorCode === 'ASSESSMENT_NOT_STARTED_YET') {
-            alert('عذراً، هذا الاختبار لم يحن موعد بدئه بعد وفقاً لجدول النشر.');
+            alert(this.langService.isArabic() ? 'لم يحن موعد بدء الاختبار بعد.' : 'This assessment is not open yet.');
             this.router.navigate(['/student']);
             return;
           }
 
           if (errorCode === 'ASSESSMENT_EXPIRED') {
-            alert('عذراً، لقد انتهى الموعد المحدد لتسليم هذا الاختبار.');
+            alert(this.langService.isArabic() ? 'انتهى موعد تسليم هذا الاختبار.' : 'Submission deadline has passed.');
             this.router.navigate(['/student']);
             return;
           }
 
-          const fallbackMsg = err?.error?.error?.message || err?.error?.message || 'عذراً، تعذر بدء الاختبار في الوقت الحالي.';
+          const fallbackMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر بدء الاختبار حالياً.' : 'Unable to start assessment.');
           alert(fallbackMsg);
           this.router.navigate(['/student']);
         }
@@ -354,20 +354,20 @@ export class AssessmentAttemptViewComponent implements OnInit {
         const numbersList = unanswered.map((u) => u.order).join('، ');
         this.submissionWarning.set(
           this.langService.isArabic()
-            ? `تنبيه: لا يمكن إنهاء الموديول الأول لوجود أسئلة غير مجاب عنها! يرجى إجابة الأسئلة التالية أولاً: (سؤال رقم: ${numbersList})`
-            : `Warning: Cannot finish Module 1 with unanswered questions! Please answer: (${numbersList})`
+            ? `يرجى إجابة الأسئلة أولاً: (${numbersList})`
+            : `Please answer remaining questions: (${numbersList})`
         );
         this.activeQuestionIdx.set(unanswered[0].index);
         return;
       }
 
       const confirmed = await this.confirmDialogService.confirm({
-        title: this.langService.isArabic() ? 'تأكيد إنهاء وتسليم الموديول الأول' : 'Confirm Finishing Module 1',
+        title: this.langService.isArabic() ? 'تسليم الموديول الأول' : 'Submit Module 1',
         message: this.langService.isArabic()
-          ? 'تنبيه هام: بمجرد تأكيد إنهاء وتسليم الموديول الأول، لن تتمكن من العودة إليه أو تعديل إجاباته نهائياً، وسيتم الانتقال تلقائياً إلى الموديول الثاني. هل تود المتابعة؟'
-          : 'Important Notice: Once you confirm completion of Module 1, you cannot return to review or edit your answers, and you will proceed to Module 2. Do you want to proceed?',
-        confirmLabel: this.langService.isArabic() ? 'نعم، الانتقال للموديول الثاني' : 'Yes, Proceed to Module 2',
-        cancelLabel: this.langService.isArabic() ? 'مراجعة أسئلة الموديول الأول' : 'Review Module 1 Questions',
+          ? 'لن تتمكن من تعديل إجابات الموديول الأول بعد تسليمه. متابعة؟'
+          : 'You cannot edit Module 1 after submitting. Proceed?',
+        confirmLabel: this.langService.isArabic() ? 'الانتقال للموديول الثاني' : 'Proceed to Module 2',
+        cancelLabel: this.langService.isArabic() ? 'مراجعة الموديول الأول' : 'Review Module 1',
         icon: 'alert-triangle',
         isDestructive: false
       });
@@ -401,7 +401,9 @@ export class AssessmentAttemptViewComponent implements OnInit {
       if (unanswered.length > 0) {
         const numbersList = unanswered.map((u) => u.order).join('، ');
         this.submissionWarning.set(
-          `تنبيه: لا يمكن تسليم التقييم لوجود أسئلة غير مجاب عنها! يرجى إجابة الأسئلة التالية أولاً: (سؤال رقم: ${numbersList})`
+          this.langService.isArabic()
+            ? `يرجى إجابة الأسئلة أولاً: (${numbersList})`
+            : `Please answer remaining questions: (${numbersList})`
         );
         // Automatically jump to the first unanswered question!
         this.activeQuestionIdx.set(unanswered[0].index);
@@ -409,11 +411,11 @@ export class AssessmentAttemptViewComponent implements OnInit {
       }
 
       const confirmed = await this.confirmDialogService.confirm({
-        title: this.langService.isArabic() ? 'تأكيد تسليم التقييم النهائي' : 'Confirm Final Exam Submission',
+        title: this.langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment',
         message: this.langService.isArabic()
-          ? 'هل أنت متأكد من تسليم إجاباتك نهائياً؟ بمجرد التسليم لن تتمكن من تعديل الإجابات.'
-          : 'Are you sure you want to submit your answers? Once submitted, no further changes can be made.',
-        confirmLabel: this.langService.isArabic() ? 'نعم، تسليم التقييم' : 'Yes, Submit Exam',
+          ? 'تسليم التقييم نهائياً؟ لا يمكن التعديل بعد التسليم.'
+          : 'Submit assessment? You cannot edit answers after submission.',
+        confirmLabel: this.langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment',
         cancelLabel: this.langService.isArabic() ? 'مراجعة الإجابات' : 'Review Answers',
         icon: 'check-circle',
         isDestructive: false

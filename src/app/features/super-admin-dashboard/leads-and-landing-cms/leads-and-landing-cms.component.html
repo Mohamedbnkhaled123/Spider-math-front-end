@@ -6,14 +6,14 @@
       <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
         <div>
           <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
-            {{ langService.isArabic() ? 'سجل متابعة العملاء المحتملين' : 'Leads CRM Record' }}
+            {{ langService.isArabic() ? 'سجل متابعة العملاء' : 'Leads Record' }}
           </h2>
           <p class="text-xs text-text-secondary mt-0.5">
-            {{ langService.isArabic() ? 'الطلاب الذين أدوا امتحان تحديد المستوى أو سجلوا بياناتهم للتواصل عبر واتساب.' : 'Students who took the placement test or registered for WhatsApp consultation.' }}
+            {{ langService.isArabic() ? 'طلاب تحديد المستوى والتسجيل عبر واتساب.' : 'Students from placement test or WhatsApp registration.' }}
           </p>
         </div>
         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-          {{ leadsList().length }} {{ langService.isArabic() ? 'عملاء مسجلين' : 'Registered Leads' }}
+          {{ leadsList().length }} {{ langService.isArabic() ? 'عملاء' : 'Leads' }}
         </span>
       </div>
 
@@ -91,7 +91,7 @@
               } @else {
                 <tr>
                   <td colspan="7" class="p-8 text-center text-xs text-text-muted">
-                    {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
+                    {{ langService.isArabic() ? 'لا يوجد عملاء مسجلين حالياً.' : 'No new leads registered.' }}
                   </td>
                 </tr>
               }
@@ -175,7 +175,7 @@
             }
           } @else {
             <div class="p-8 text-center text-xs text-text-muted rounded-2xl border border-surface-border bg-surface-card">
-              {{ langService.isArabic() ? 'لا توجد طلبات عملاء جدد مسجلين حالياً.' : 'No new leads or customer inquiries registered yet.' }}
+              {{ langService.isArabic() ? 'لا يوجد عملاء مسجلين حالياً.' : 'No new leads registered.' }}
             </div>
           }
         }
@@ -191,13 +191,13 @@
       <div>
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 text-[11px] font-black mb-1.5">
           <app-icon name="grid" [size]="13" />
-          <span>{{ langService.isArabic() ? 'التحكم الشامل في نصوص المنصة' : 'Platform Bilingual Content Management (CMS)' }}</span>
+          <span>{{ langService.isArabic() ? 'إدارة نصوص المنصة' : 'Content Management (CMS)' }}</span>
         </div>
         <h3 class="text-lg sm:text-xl font-black text-text-primary tracking-tight">
-          {{ langService.isArabic() ? 'محرر محتوى الصفحة الرئيسية' : 'Landing Page CMS Editor' }}
+          {{ langService.isArabic() ? 'محرر الصفحة الرئيسية' : 'Landing Page CMS' }}
         </h3>
         <p class="text-xs text-text-secondary mt-0.5">
-          {{ langService.isArabic() ? 'يمكنك تعديل كل حرف وكلمة تظهر للزوار في الواجهة الرئيسية بالعربية والإنجليزية مع الحفظ الفوري.' : 'Edit platform text for visitors in both Arabic and English with instant publish.' }}
+          {{ langService.isArabic() ? 'تعديل نصوص الواجهة بالعربية والإنجليزية مع الحفظ الفوري.' : 'Edit landing page copy in Arabic and English.' }}
         </p>
       </div>
 
@@ -208,7 +208,7 @@
         class="px-5 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
       >
         <app-icon name="check" [size]="16" />
-        <span>{{ langService.isArabic() ? 'حفظ ونشر التعديلات فورياً' : 'Save & Publish Changes' }}</span>
+        <span>{{ langService.isArabic() ? 'حفظ ونشر التعديلات' : 'Save & Publish' }}</span>
       </button>
     </div>
 
@@ -256,7 +256,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'GENERAL'"
       >
         <app-icon name="settings" [size]="14" />
-        <span>{{ langService.isArabic() ? 'الإعدادات العامة والوسائط' : 'General & Media Settings' }}</span>
+        <span>{{ langService.isArabic() ? 'الإعدادات العامة' : 'General Settings' }}</span>
       </button>
 
       <button
@@ -271,7 +271,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'UNITS'"
       >
         <app-icon name="book-open" [size]="14" />
-        <span>{{ langService.isArabic() ? ('الوحدات المعروضة لصفحة الهبوط (' + (editableCms().landingUnitIds?.length || 0) + ')') : ('Showcased Landing Units (' + (editableCms().landingUnitIds?.length || 0) + ')') }}</span>
+        <span>{{ langService.isArabic() ? ('الوحدات المعروضة (' + (editableCms().landingUnitIds?.length || 0) + ')') : ('Showcased Units (' + (editableCms().landingUnitIds?.length || 0) + ')') }}</span>
       </button>
 
       <button
@@ -286,7 +286,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'TESTIMONIALS'"
       >
         <app-icon name="message-circle" [size]="14" />
-        <span>{{ langService.isArabic() ? ('آراء الطلاب وأولياء الأمور (' + adminTestimonials().length + ')') : ('Testimonials (' + adminTestimonials().length + ')') }}</span>
+        <span>{{ langService.isArabic() ? ('آراء الطلاب (' + adminTestimonials().length + ')') : ('Testimonials (' + adminTestimonials().length + ')') }}</span>
         @if (pendingTestimonialsCount() > 0) {
           <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">
             {{ pendingTestimonialsCount() }}
@@ -306,7 +306,7 @@
         [class.hover:bg-surface-card]="activeCmsTab() !== 'HONOR_BOARD'"
       >
         <app-icon name="award" [size]="14" />
-        <span>{{ langService.isArabic() ? ('لوحة الشرف والتكريم (' + (editableCms().honorBoardList?.length || 0) + ')') : ('Honor Board (' + (editableCms().honorBoardList?.length || 0) + ')') }}</span>
+        <span>{{ langService.isArabic() ? ('لوحة الشرف (' + (editableCms().honorBoardList?.length || 0) + ')') : ('Honor Board (' + (editableCms().honorBoardList?.length || 0) + ')') }}</span>
       </button>
     </div>
 
@@ -320,10 +320,10 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
           <div class="flex items-center gap-2 text-brand-primary font-black text-sm">
             <span>✦</span>
-            <h4>{{ langService.isArabic() ? 'شريط الإعلانات العاجل' : 'Urgent Announcement Bar (Arabic)' }}</h4>
+            <h4>{{ langService.isArabic() ? 'شريط الإعلانات' : 'Announcement Bar (Arabic)' }}</h4>
           </div>
           <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الإعلان أو الخصم الذي يظهر بأعلى المنصة:' : 'Banner Announcement Text (Arabic):' }}</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص شريط الإعلانات:' : 'Banner Announcement Text (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().announcementBannerText"
@@ -396,7 +396,7 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
-            <h4>{{ langService.isArabic() ? 'قسم نبذة المعلمة ومؤهلاتها' : 'Teacher Profile & Bio (Arabic)' }}</h4>
+            <h4>{{ langService.isArabic() ? 'نبذة المعلمة ومؤهلاتها' : 'Teacher Profile & Bio (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -421,7 +421,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'النبذة التعريفية المفصلة:' : 'Detailed Bio (Arabic):' }}</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'النبذة التعريفية:' : 'Detailed Bio (Arabic):' }}</label>
             <textarea
               rows="3"
               [(ngModel)]="editableCms().teacherBioAr"
@@ -432,7 +432,7 @@
 
           <!-- قائمة المؤهلات والإنجازات (عربي) -->
           <div class="space-y-2 pt-2">
-            <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'قائمة المؤهلات والإنجازات البارزة:' : 'Key Qualifications & Achievements (Arabic):' }}</label>
+            <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'المؤهلات والإنجازات:' : 'Key Qualifications & Achievements (Arabic):' }}</label>
             <div class="flex gap-2">
               <input
                 type="text"
@@ -470,7 +470,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر التواصل المباشر عبر واتساب:' : 'WhatsApp CTA Button Text (Arabic):' }}</label>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر واتساب:' : 'WhatsApp CTA Button Text (Arabic):' }}</label>
             <input
               type="text"
               [(ngModel)]="editableCms().teacherWhatsappCtaAr"
@@ -484,7 +484,7 @@
         <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="target" [size]="16" />
-            <h4>{{ langService.isArabic() ? 'قسم امتحان تحديد المستوى وتشخيص المهارات' : 'Placement Test Section (Arabic)' }}</h4>
+            <h4>{{ langService.isArabic() ? 'قسم امتحان تحديد المستوى' : 'Placement Test Section (Arabic)' }}</h4>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

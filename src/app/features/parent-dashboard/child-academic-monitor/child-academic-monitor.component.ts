@@ -280,7 +280,7 @@ export class ChildAcademicMonitorComponent {
           haCode: data.student?.studentCode || data.haCode || '',
           presence: {
             isOnline: !!data.presence?.isOnline,
-            activityTextAr: data.presence?.activityTextAr || (data.presence?.isOnline ? 'نشاط حي مباشر الآن' : 'غير متصل حالياً'),
+            activityTextAr: data.presence?.activityTextAr || (data.presence?.isOnline ? 'متصل الآن' : 'غير متصل'),
             activityTextEn: data.presence?.activityTextEn || (data.presence?.isOnline ? 'Online' : 'Offline'),
             lastActiveTextAr: data.presence?.lastActiveTextAr || 'اليوم',
             lastActiveTextEn: data.presence?.lastActiveTextEn || 'Today'
@@ -334,7 +334,7 @@ export class ChildAcademicMonitorComponent {
         rawUrl: trimmed,
         embedUrl: embed,
         type: 'VIDEO',
-        title: this.langService.isArabic() ? 'فيديو الحل وشرح الخطأ' : 'Video Solution & Error Analysis'
+        title: this.langService.isArabic() ? 'فيديو الحل' : 'Video Solution'
       });
     } else {
       const safePostUrl = this.sanitizer.bypassSecurityTrustResourceUrl(trimmed);
@@ -342,7 +342,7 @@ export class ChildAcademicMonitorComponent {
         rawUrl: trimmed,
         embedUrl: safePostUrl,
         type: 'POST',
-        title: this.langService.isArabic() ? 'منشور الحل النموذجي' : 'Community Post Solution'
+        title: this.langService.isArabic() ? 'منشور الحل' : 'Solution Post'
       });
     }
   }

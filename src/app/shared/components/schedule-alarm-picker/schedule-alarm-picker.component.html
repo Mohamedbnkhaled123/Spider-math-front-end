@@ -39,14 +39,14 @@
             </span>
           </div>
           <span class="text-[10px] text-text-muted block mt-0.5 font-mono">
-            {{ langService.isArabic() ? 'انقر لتعديل اليوم أو وقت المنبه' : 'Click to edit day or alarm time' }}
+            {{ langService.isArabic() ? 'انقر لتعديل الموعد' : 'Click to edit schedule' }}
           </span>
         } @else {
           <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors block">
             {{ placeholder() }}
           </span>
           <span class="text-[10px] text-text-muted block mt-0.5">
-            {{ langService.isArabic() ? 'تقويم تفاعلي ومنبه لاختيار الساعة والدقيقة بدقة' : 'Interactive calendar and clock to pick hour and minute' }}
+            {{ langService.isArabic() ? 'اختر التاريخ والوقت بدقة' : 'Pick date and time' }}
           </span>
         }
       </div>
@@ -58,7 +58,7 @@
           type="button"
           (click)="clear($event)"
           class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-          [title]="langService.isArabic() ? 'إلغاء ومسح الموعد' : 'Clear schedule'"
+          [title]="langService.isArabic() ? 'مسح الموعد' : 'Clear'"
         >
           <app-icon name="x" [size]="14" />
         </button>
@@ -88,10 +88,10 @@
           </div>
           <div>
             <h3 class="text-sm font-black text-text-primary">
-              {{ langService.isArabic() ? 'ضبط موعد الامتحان (التقويم وساعة المنبه)' : 'Set Exam Schedule (Calendar & Clock)' }}
+              {{ langService.isArabic() ? 'ضبط موعد الامتحان' : 'Set Exam Schedule' }}
             </h3>
             <p class="text-[11px] text-text-secondary mt-0.5">
-              {{ langService.isArabic() ? 'اختر يوم الاختبار من التقويم واضبط وقت الإتاحة كأنك تضبط منبهاً' : 'Select exam day from calendar and set unlock time like an alarm' }}
+              {{ langService.isArabic() ? 'اختر اليوم ووقت الإتاحة.' : 'Select day and unlock time.' }}
             </p>
           </div>
         </div>
@@ -380,7 +380,7 @@
               {{ formattedSummary() }}
             </span>
           } @else {
-            <span class="text-text-muted italic">{{ langService.isArabic() ? 'يرجى اختيار اليوم وضبط المنبه' : 'Please select day and set alarm' }}</span>
+            <span class="text-text-muted italic">{{ langService.isArabic() ? 'اختر اليوم والوقت' : 'Select day and time' }}</span>
           }
         </div>
 
@@ -391,7 +391,7 @@
             (click)="clear()"
             class="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:border-rose-500 hover:text-rose-500 transition-colors cursor-pointer"
           >
-            {{ langService.isArabic() ? 'مسح الموعد' : 'Clear Schedule' }}
+            {{ langService.isArabic() ? 'مسح' : 'Clear' }}
           </button>
 
           <button
@@ -400,7 +400,7 @@
             class="flex-1 sm:flex-none px-5 py-2 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="14" />
-            <span>{{ langService.isArabic() ? 'تأكيد واعتماد الموعد' : 'Confirm & Set Schedule' }}</span>
+            <span>{{ langService.isArabic() ? 'تأكيد الموعد' : 'Confirm Schedule' }}</span>
           </button>
         </div>
       </div>

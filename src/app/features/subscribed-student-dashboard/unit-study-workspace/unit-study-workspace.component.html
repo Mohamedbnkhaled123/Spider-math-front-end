@@ -10,7 +10,7 @@
         class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
       >
         <app-icon name="arrow-right" [size]="14" />
-        <span>{{ returnToHome() ? (langService.isArabic() ? 'العودة للصفحة الرئيسية' : 'Back to Home') : (langService.isArabic() ? 'العودة للوحة الوحدات' : 'Back to Units Dashboard') }}</span>
+        <span>{{ returnToHome() ? (langService.isArabic() ? 'الرئيسية' : 'Home') : (langService.isArabic() ? 'لوحة الوحدات' : 'Units') }}</span>
       </a>
 
       <span class="text-xs text-text-muted">|</span>
@@ -52,7 +52,7 @@
           {{ workspaceData().titleAr }}
         </h1>
         <p class="text-xs text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'محاضرات تفاعلية مصممة خصيصاً بنظام حلول ديسموس وحماية الملكية الفكرية.' : 'Interactive lectures designed with Desmos solutions and anti-tamper security.' }}
+          {{ langService.isArabic() ? 'محاضرات تفاعلية وحلول ديسموس.' : 'Interactive lectures and Desmos solutions.' }}
         </p>
       </div>
     </div>
@@ -125,7 +125,7 @@
               [class.text-text-secondary]="activeTab() !== 'video'"
             >
               <app-icon name="play" [size]="14" />
-              <span>{{ langService.isArabic() ? 'فيديو المحاضرة المحمي' : 'Protected Lecture Video' }}</span>
+              <span>{{ langService.isArabic() ? 'فيديو المحاضرة' : 'Lecture Video' }}</span>
             </button>
 
             <button
@@ -138,7 +138,7 @@
               [class.text-text-secondary]="activeTab() !== 'pdf'"
             >
               <app-icon name="file-text" [size]="14" />
-              <span>{{ langService.isArabic() ? 'ملزمة الشرح التفاعلية' : 'Interactive Study Handout' }}</span>
+              <span>{{ langService.isArabic() ? 'ملزمة الشرح' : 'Study Handout' }}</span>
             </button>
           </div>
 
@@ -161,7 +161,7 @@
               @if (isAssessmentsOnly()) {
                 <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30 mb-3 flex items-center gap-1.5">
                   <app-icon name="shield" [size]="14" />
-                  {{ langService.isArabic() ? 'اشتراكك مخصص لاختبارات وكويزات الوحدة فقط' : 'Your subscription is for unit quizzes and assessments only' }}
+                  {{ langService.isArabic() ? 'اشتراكك لاختبارات الوحدة فقط' : 'Unit quizzes subscription only' }}
                 </span>
 
                 <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
@@ -169,7 +169,7 @@
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
-                  {{ langService.isArabic() ? 'أنت مسجل حالياً في باقة الكويزات والاختبارات لهذه الوحدة. يمكنك أداء وحل كافة كويزات وامتحانات الوحدة من قسم الاختبارات أدناه. لفتح مشاهدة الشروحات والمحاضرات، تواصل مع المنصة لترقية باقتك للوحدة كاملة.' : 'You are currently enrolled in quizzes & assessments for this unit. You can solve all unit tests below. To unlock lecture videos, contact support to upgrade to full unit access.' }}
+                  {{ langService.isArabic() ? 'اشتراكك للاختبارات فقط. لفتح المحاضرات، تواصل لترقية باقتك للوحدة كاملة.' : 'Quizzes only subscription. Contact support to upgrade to full unit.' }}
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -178,12 +178,12 @@
                     class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 shadow-md transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <app-icon name="award" [size]="16" />
-                    <span>{{ langService.isArabic() ? 'الانتقال لحل كويزات واختبارات الوحدة' : 'Go to Unit Quizzes & Assessments' }}</span>
+                    <span>{{ langService.isArabic() ? 'اختبارات الوحدة' : 'Unit Quizzes' }}</span>
                   </a>
                 </div>
               } @else {
                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-                  {{ langService.isArabic() ? 'محتوى مخصص للطلاب المشتركين فقط' : 'Content for Subscribed Students Only' }}
+                  {{ langService.isArabic() ? 'للمشتركين فقط' : 'Subscribers Only' }}
                 </span>
 
                 <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
@@ -191,7 +191,7 @@
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
-                  {{ langService.isArabic() ? 'هذه المحاضرة وملزمة الشرح التفاعلية والاختبارات التابعة لها متاحة فقط لطلاب الوحدة المشتركين. اشترك الآن في الوحدة لفتح المحاضرة وكافة تدريبات ديسموس.' : 'This lecture, study handout, and assessments are available for subscribed students. Subscribe now to unlock.' }}
+                  {{ langService.isArabic() ? 'هذا المحتوى لطلاب الوحدة المشتركين فقط. اشترك الآن للفتح.' : 'This content is for subscribed students only. Subscribe now to unlock.' }}
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -200,7 +200,7 @@
                     class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <app-icon name="award" [size]="16" />
-                    <span>{{ langService.isArabic() ? 'العودة والاشتراك في الوحدة' : 'Back & Subscribe to Unit' }}</span>
+                    <span>{{ langService.isArabic() ? 'اشترك في الوحدة' : 'Subscribe to Unit' }}</span>
                   </a>
                 </div>
               }
@@ -219,7 +219,7 @@
             } @else {
               <div class="relative w-full aspect-video min-h-[380px] bg-black flex flex-col items-center justify-center gap-3 text-text-muted">
                 <app-icon name="loader" [size]="36" className="text-brand-primary animate-spin" />
-                <span class="text-xs font-bold">{{ langService.isArabic() ? 'جارِ تحميل مشغل الفيديو...' : 'Loading video player...' }}</span>
+                <span class="text-xs font-bold">{{ langService.isArabic() ? 'جارِ التحميل...' : 'Loading...' }}</span>
               </div>
             }
           } @else {
@@ -245,7 +245,7 @@
               @if (lec.isCompleted) {
                 <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
                   <app-icon name="check-circle" [size]="13" />
-                  <span>{{ langService.isArabic() ? 'تم إنجازها واحتساب نقاط التميز (+50 XP)' : 'Completed & XP Earned (+50 XP)' }}</span>
+                  <span>{{ langService.isArabic() ? 'تم الإنجاز (+50 XP)' : 'Completed (+50 XP)' }}</span>
                 </span>
               }
             </div>
@@ -262,7 +262,7 @@
                 class="px-4 py-3 rounded-xl font-bold text-xs border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary shadow-sm transition-all flex items-center gap-2 cursor-pointer"
               >
                 <app-icon name="arrow-right" [size]="15" />
-                <span>{{ langService.isArabic() ? 'إنهاء والعودة للرئيسية' : 'Finish & Return Home' }}</span>
+                <span>{{ langService.isArabic() ? 'الرئيسية' : 'Home' }}</span>
               </a>
             }
 
@@ -284,7 +284,7 @@
                   class="px-5 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
                 >
                   <app-icon name="award" [size]="16" />
-                  <span>{{ langService.isArabic() ? 'ابدأ الواجب / الكويز' : 'Start Homework / Quiz' }}</span>
+                  <span>{{ langService.isArabic() ? 'ابدأ الاختبار' : 'Start Exam' }}</span>
                 </button>
               }
             }
@@ -380,7 +380,7 @@
                       class="w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-brand-primary dark:text-brand-accent bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <app-icon name="award" [size]="13" />
-                      <span>{{ langService.isArabic() ? 'ابدأ الواجب / الكويز' : 'Start Homework / Quiz' }}</span>
+                      <span>{{ langService.isArabic() ? 'ابدأ الاختبار' : 'Start Exam' }}</span>
                     </button>
                   }
                 </div>
@@ -405,10 +405,10 @@
             </div>
             <div>
               <h2 class="text-base sm:text-lg font-black text-text-primary">
-                {{ langService.isArabic() ? 'الاختبارات والواجبات الدورية للوحدة' : 'Unit Periodic Quizzes & Assessments' }}
+                {{ langService.isArabic() ? 'اختبارات وواجبات الوحدة' : 'Unit Quizzes & Homework' }}
               </h2>
               <p class="text-xs text-text-muted">
-                {{ langService.isArabic() ? (workspaceData().assessments.length + ' تقييمات مخصصة لقياس فهمك الرياضي') : (workspaceData().assessments.length + ' assessments to evaluate math comprehension') }}
+                {{ langService.isArabic() ? (workspaceData().assessments.length + ' تقييمات') : (workspaceData().assessments.length + ' assessments') }}
               </p>
             </div>
           </div>
@@ -434,7 +434,7 @@
                     </span>
                   } @else {
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                      {{ langService.isArabic() ? 'متاح للحل الآن' : 'Available to Solve' }}
+                      {{ langService.isArabic() ? 'متاح الآن' : 'Available' }}
                     </span>
                   }
                 </div>
@@ -460,7 +460,7 @@
                     class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-amber-600 hover:bg-amber-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <app-icon name="clock" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'استئناف المحاولة الجارية' : 'Resume In-Progress Attempt' }}</span>
+                    <span>{{ langService.isArabic() ? 'استئناف المحاولة' : 'Resume' }}</span>
                   </a>
                 } @else if ((asm.studentAttemptStatus?.completedAttemptsCount ?? 0) >= asm.maxAttempts) {
                   @if (asm.studentAttemptStatus?.latestSubmissionId; as subId) {
@@ -483,7 +483,7 @@
                     }
                   } @else {
                     <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-text-muted bg-surface-card border border-surface-border text-center block">
-                      {{ langService.isArabic() ? 'استنفدت جميع المحاولات' : 'All Attempts Used' }}
+                      {{ langService.isArabic() ? 'استنفدت المحاولات' : 'No Attempts Left' }}
                     </span>
                   }
                 } @else if (asm.studentAttemptStatus?.timeWindowState === 'OPEN') {
@@ -493,15 +493,15 @@
                     class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <app-icon name="play" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now' }}</span>
+                    <span>{{ langService.isArabic() ? 'ابدأ الاختبار' : 'Start Exam' }}</span>
                   </button>
                 } @else if (asm.studentAttemptStatus?.timeWindowState === 'UPCOMING') {
                   <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 text-center block">
-                    {{ langService.isArabic() ? 'يُفتح قريباً حسب الجدولة' : 'Opens soon according to schedule' }}
+                    {{ langService.isArabic() ? 'يُفتح قريباً' : 'Opens Soon' }}
                   </span>
                 } @else {
                   <span class="w-full py-2 px-3 rounded-xl text-[11px] font-bold text-text-muted bg-surface-card border border-surface-border text-center block">
-                    {{ langService.isArabic() ? 'انتهت نافذة تسليم الاختبار' : 'Submission window has closed' }}
+                    {{ langService.isArabic() ? 'انتهى موعد التسليم' : 'Submission Closed' }}
                   </span>
                 }
               </div>
@@ -516,13 +516,13 @@
         <app-icon name="play" [size]="32" />
       </div>
       <h3 class="text-lg font-black text-text-primary mb-2">
-        {{ langService.isArabic() ? 'لا توجد محاضرات منشورة بعد في هذه الوحدة' : 'No lectures published yet in this unit' }}
+        {{ langService.isArabic() ? 'لا توجد محاضرات منشورة بعد' : 'No lectures published yet' }}
       </h3>
       <p class="text-xs text-text-secondary leading-relaxed mb-6">
-        {{ langService.isArabic() ? 'تقوم المهندسة هبة عبد الوهاب بإعداد المحاضرات ورفع الفيديوهات المشفرة وملفات الشرح الخاصة بهذه الوحدة.' : 'Eng. Heba Abdel-Wahab is preparing encrypted lectures and handouts for this unit.' }}
+        {{ langService.isArabic() ? 'يجري إعداد المحاضرات وملفات الشرح وستتاح قريباً.' : 'Lectures and handouts are being prepared.' }}
       </p>
       <a routerLink="/student" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all">
-        {{ langService.isArabic() ? 'العودة للوحة الوحدات' : 'Back to Units Dashboard' }}
+        {{ langService.isArabic() ? 'لوحة الوحدات' : 'Units Dashboard' }}
       </a>
     </div>
   }

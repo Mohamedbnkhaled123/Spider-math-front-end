@@ -9,7 +9,7 @@
       </a>
       <span class="text-text-muted/40">/</span>
       <a routerLink="/topics" class="hover:text-brand-gold transition-colors">
-        {{ langService.isArabic() ? 'فهرس الموضوعات والمناهج' : 'Topics Directory' }}
+        {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Directory' }}
       </a>
       <span class="text-text-muted/40">/</span>
       <span class="text-brand-gold font-semibold truncate max-w-[220px] sm:max-w-md">
@@ -38,10 +38,10 @@
             type="button"
             (click)="copyPageUrl()"
             class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-card hover:bg-surface-secondary text-xs text-text-secondary border border-surface-border transition-colors cursor-pointer"
-            [title]="langService.isArabic() ? 'نسخ رابط الصفحة' : 'Copy page link'"
+            [title]="langService.isArabic() ? 'نسخ الرابط' : 'Copy link'"
           >
             <app-icon name="copy" [size]="14" />
-            <span>{{ copiedToast() ? (langService.isArabic() ? 'تم النسخ!' : 'Copied!') : (langService.isArabic() ? 'مشاركة الرابط' : 'Share') }}</span>
+            <span>{{ copiedToast() ? (langService.isArabic() ? 'تم النسخ!' : 'Copied!') : (langService.isArabic() ? 'مشاركة' : 'Share') }}</span>
           </button>
         </div>
 
@@ -52,10 +52,10 @@
 
         <!-- Bilingual Keyword & Translation Bar -->
         <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-surface-secondary/90 border border-brand-gold/30 text-xs sm:text-sm font-semibold mb-6 flex-wrap">
-          <span class="text-text-muted">{{ langService.isArabic() ? 'الكلمة المفتاحية:' : 'Primary Topic:' }}</span>
+          <span class="text-text-muted">{{ langService.isArabic() ? 'الكلمة المفتاحية:' : 'Topic:' }}</span>
           <span class="text-text-primary font-bold">{{ langService.isArabic() ? item.keywordAr : item.keywordEn }}</span>
           <span class="text-brand-gold font-bold mx-1">⇄</span>
-          <span class="text-text-muted">{{ langService.isArabic() ? 'الترجمة المعتمدة:' : 'Translation:' }}</span>
+          <span class="text-text-muted">{{ langService.isArabic() ? 'الترجمة:' : 'Translation:' }}</span>
           <span class="text-brand-gold font-mono" [dir]="langService.isArabic() ? 'ltr' : 'rtl'">
             {{ langService.isArabic() ? item.keywordEn : item.keywordAr }}
           </span>
@@ -73,7 +73,7 @@
             class="btn-gold-metallic py-3.5 px-7 text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-brand-glow"
           >
             <app-icon name="target" [size]="18" />
-            <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى مجاناً' : 'Free Placement Assessment' }}</span>
+            <span>{{ langService.isArabic() ? 'تحديد المستوى مجاناً' : 'Free Placement Test' }}</span>
           </a>
 
           <a
@@ -83,14 +83,14 @@
             class="btn-ghost-academic py-3.5 px-6 text-sm sm:text-base font-semibold flex items-center justify-center gap-2.5"
           >
             <app-icon name="whatsapp" [size]="18" className="text-emerald-500" />
-            <span>{{ langService.isArabic() ? 'استشارة واتساب مع ميس هبة' : 'WhatsApp Consultation' }}</span>
+            <span>{{ langService.isArabic() ? 'استشارة واتساب' : 'WhatsApp Consultation' }}</span>
           </a>
 
           <a
             routerLink="/login"
             class="inline-flex items-center justify-center py-3.5 px-5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-brand-gold transition-colors"
           >
-            <span>{{ langService.isArabic() ? 'تسجيل الدخول للمنصة ←' : 'Sign in to Platform →' }}</span>
+            <span>{{ langService.isArabic() ? 'تسجيل الدخول ←' : 'Sign in →' }}</span>
           </a>
         </div>
       </div>
@@ -108,7 +108,7 @@
               <app-icon name="book-open" [size]="20" />
             </div>
             <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
-              {{ langService.isArabic() ? 'نظرة عامة والمنهج الأكاديمي' : 'Academic Overview & Framework' }}
+              {{ langService.isArabic() ? 'نظرة عامة والمنهج' : 'Overview & Framework' }}
             </h2>
           </div>
 
@@ -148,10 +148,10 @@
               </div>
               <div>
                 <h3 class="text-lg sm:text-xl font-bold text-text-primary">
-                  {{ langService.isArabic() ? 'دليل مصطلحات الدبلومة الأمريكية وترجمتها' : 'American Diploma Bilingual Terminology' }}
+                  {{ langService.isArabic() ? 'مصطلحات الدبلومة الأمريكية' : 'American Diploma Terms' }}
                 </h3>
                 <p class="text-xs text-text-muted">
-                  {{ langService.isArabic() ? 'أهم الكلمات المفتاحية باللغتين العربية والإنجليزية لطلاب SAT و EST و ACT' : 'Key test modules and strategic terms with dual English/Arabic translations' }}
+                  {{ langService.isArabic() ? 'أهم المصطلحات لطلاب SAT و EST و ACT' : 'Key terms for SAT, EST, and ACT' }}
                 </p>
               </div>
             </div>
@@ -212,7 +212,7 @@
         <section class="space-y-4">
           <h2 class="text-xl sm:text-2xl font-bold text-text-primary flex items-center gap-2.5">
             <app-icon name="award" [size]="22" className="text-brand-gold" />
-            <span>{{ langService.isArabic() ? 'مميزات هذا الكورس على سبايدر ماث' : 'Course Highlights & Methodology' }}</span>
+            <span>{{ langService.isArabic() ? 'مميزات الكورس' : 'Course Highlights' }}</span>
           </h2>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -241,7 +241,7 @@
               <app-icon name="file-text" [size]="20" />
             </div>
             <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
-              {{ langService.isArabic() ? 'محتوى الوحدات والدروس' : 'Curriculum Units & Syllabus' }}
+              {{ langService.isArabic() ? 'محتوى الوحدات' : 'Curriculum Syllabus' }}
             </h2>
           </div>
 
@@ -274,7 +274,7 @@
                 <app-icon name="message-circle" [size]="20" />
               </div>
               <h2 class="text-xl sm:text-2xl font-bold text-text-primary">
-                {{ langService.isArabic() ? 'الأسئلة الشائعة حول هذا الموضوع' : 'Frequently Asked Questions' }}
+                {{ langService.isArabic() ? 'الأسئلة الشائعة' : 'FAQs' }}
               </h2>
             </div>
 
@@ -326,12 +326,12 @@
               {{ langService.isArabic() ? 'المهندسة / هبة عبدالوهاب' : 'Eng. Heba Abdel-Wahab' }}
             </h3>
             <div class="text-xs text-brand-gold font-semibold mt-0.5">
-              {{ langService.isArabic() ? 'ميس هبة عياد — خبيرة تدريس الرياضيات' : 'Miss Heba Ayad — Senior Math Lecturer' }}
+              {{ langService.isArabic() ? 'ميس هبة عياد — تدريس الرياضيات' : 'Miss Heba Ayad — Math Lecturer' }}
             </div>
             <p class="text-xs text-text-muted mt-2 leading-relaxed">
               {{ langService.isArabic()
-                ? 'خبرة هندسية وأكاديمية تمتد لأكثر من 10 سنوات في تبسيط الماث لطلاب الثانوية والدبلومة الأمريكية وإعداد أوائل الجمهورية.'
-                : 'Over a decade of academic experience demystifying mathematics for Thanaweya Amma and American Diploma candidates.' }}
+                ? 'خبرة تزيد عن 10 سنوات في تدريس الماث للثانوية والدبلومة الأمريكية.'
+                : '10+ years experience teaching math for Thanaweya Amma and American Diploma.' }}
             </p>
           </div>
 
@@ -358,7 +358,7 @@
               class="w-full btn-gold-metallic py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2"
             >
               <app-icon name="whatsapp" [size]="16" />
-              <span>{{ langService.isArabic() ? 'حجز استشارة أو باقة' : 'Inquire via WhatsApp' }}</span>
+              <span>{{ langService.isArabic() ? 'حجز استشارة' : 'Inquire via WhatsApp' }}</span>
             </a>
           </div>
         </div>
@@ -369,18 +369,18 @@
             <app-icon name="target" [size]="22" />
           </div>
           <h4 class="text-base font-bold text-text-primary mb-1">
-            {{ langService.isArabic() ? 'مش متأكد من مستواك؟' : 'Unsure About Your Level?' }}
+            {{ langService.isArabic() ? 'حدد مستواك' : 'Check Your Level' }}
           </h4>
           <p class="text-xs text-text-secondary leading-relaxed mb-4">
             {{ langService.isArabic()
-              ? 'ابدأ الآن امتحان تحديد المستوى الذكي (10 إلى 15 دقيقة) وتعرّف على نقاط ضعفك وقوتك مجاناً.'
-              : 'Take our free smart diagnostic assessment (10-15 mins) to evaluate your current math mastery.' }}
+              ? 'ابدأ اختبار تحديد المستوى (10-15 دقيقة) مجاناً.'
+              : 'Free 10-15 min placement test to evaluate your level.' }}
           </p>
           <a
             routerLink="/placement-test"
             class="w-full btn-ghost-academic py-2.5 text-xs font-bold flex items-center justify-center gap-2 border-brand-gold/40 hover:border-brand-gold text-brand-gold"
           >
-            <span>{{ langService.isArabic() ? 'ابدأ التقييم الآن ←' : 'Start Assessment Now →' }}</span>
+            <span>{{ langService.isArabic() ? 'ابدأ التقييم ←' : 'Start Assessment →' }}</span>
           </a>
         </div>
 
@@ -415,7 +415,7 @@
                 routerLink="/topics"
                 class="text-xs font-semibold text-brand-gold hover:underline inline-flex items-center gap-1"
               >
-                <span>{{ langService.isArabic() ? 'عرض جميع الموضوعات الـ 75 ←' : 'View all 75 topics →' }}</span>
+                <span>{{ langService.isArabic() ? 'عرض كل الموضوعات ←' : 'All Topics →' }}</span>
               </a>
             </div>
           </div>
@@ -428,12 +428,12 @@
     <section class="spider-rim-glass-card p-8 sm:p-12 text-center bg-gradient-to-r from-brand-violet/25 via-surface-card to-brand-gold/20 border-brand-gold/30 relative overflow-hidden">
       <div class="max-w-3xl mx-auto relative z-10">
         <h2 class="text-2xl sm:text-3xl font-black text-text-primary mb-3">
-          {{ langService.isArabic() ? 'جاهز للتفوق الرياضي وتحقيق الدرجة النهائية؟' : 'Ready to Conquer Mathematics with 100% Scores?' }}
+          {{ langService.isArabic() ? 'جاهز للتفوق والدرجة النهائية؟' : 'Ready for Top Scores?' }}
         </h2>
         <p class="text-sm sm:text-base text-text-secondary mb-6 leading-relaxed">
           {{ langService.isArabic()
-            ? 'انضم اليوم لآلاف الطلاب المتفوقين على منصة سبايدر ماث مع المهندسة هبة عبدالوهاب (ميس هبة عياد).'
-            : 'Join thousands of high-achieving students on Spider Math Platform with Eng. Heba Abdel-Wahab.' }}
+            ? 'انضم لطلاب سبايدر ماث مع المهندسة هبة عبدالوهاب.'
+            : 'Join Spider Math students with Eng. Heba Abdel-Wahab.' }}
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -442,7 +442,7 @@
             class="btn-gold-metallic py-3.5 px-8 text-sm sm:text-base font-bold flex items-center justify-center gap-2 shadow-brand-glow w-full sm:w-auto"
           >
             <app-icon name="target" [size]="18" />
-            <span>{{ langService.isArabic() ? 'ابدأ تحديد مستواك فوراً' : 'Start Placement Test' }}</span>
+            <span>{{ langService.isArabic() ? 'ابدأ تحديد المستوى' : 'Start Placement Test' }}</span>
           </a>
 
           <a
@@ -450,7 +450,7 @@
             class="btn-ghost-academic py-3.5 px-8 text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <app-icon name="user" [size]="18" />
-            <span>{{ langService.isArabic() ? 'تسجيل حساب جديد' : 'Register Account' }}</span>
+            <span>{{ langService.isArabic() ? 'حساب جديد' : 'Register' }}</span>
           </a>
         </div>
       </div>
@@ -463,16 +463,16 @@
         <app-icon name="alert-circle" [size]="32" />
       </div>
       <h1 class="text-2xl font-bold text-text-primary mb-2">
-        {{ langService.isArabic() ? 'عذراً، لم يتم العثور على هذا الموضوع' : 'Topic Not Found' }}
+        {{ langService.isArabic() ? 'الموضوع غير موجود' : 'Topic Not Found' }}
       </h1>
       <p class="text-sm text-text-secondary mb-6">
         {{ langService.isArabic()
-          ? 'الموضوع المطلوب غير مسجل أو ربما تم تغيير رابطه. يمكنك استعراض جميع الموضوعات المتاحة من الفهرس العام.'
-          : 'The requested topic was not found. Please browse our comprehensive topics index.' }}
+          ? 'الموضوع غير متوفر. يمكنك تصفح الفهرس العام.'
+          : 'Topic not found. Browse our topics index.' }}
       </p>
       <a routerLink="/topics" class="btn-gold-metallic py-3 px-6 text-sm font-bold inline-flex items-center gap-2">
         <app-icon name="book-open" [size]="16" />
-        <span>{{ langService.isArabic() ? 'تصفح فهرس الموضوعات والمناهج' : 'Browse Topics Directory' }}</span>
+        <span>{{ langService.isArabic() ? 'تصفح فهرس الموضوعات' : 'Browse Topics' }}</span>
       </a>
     </div>
   }

@@ -8,7 +8,7 @@
         <div class="flex items-center gap-2 mb-2">
           <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 flex items-center gap-1.5">
             <app-icon name="shield" [size]="14" />
-            <span>{{ langService.isArabic() ? 'بوابة أولياء الأمور المعتمدة' : 'Verified Parent Portal' }}</span>
+            <span>{{ langService.isArabic() ? 'بوابة أولياء الأمور' : 'Parent Portal' }}</span>
           </span>
           <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
             {{ langService.isArabic() ? 'إشراف: م. هبة عبد الوهاب' : 'Supervision: Eng. Heba Abdel-Wahab' }}
@@ -17,13 +17,13 @@
 
         <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
           @if (langService.isArabic()) {
-            لوحة المتابعة الأكاديمية اللحظية <span class="text-gold-accent">لأبنائك</span> <span class="inline-flex items-center text-brand-gold ml-1"><svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.25"/></svg></span>
+            متابعة <span class="text-gold-accent">الأبناء</span> <span class="inline-flex items-center text-brand-gold ml-1"><svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.25"/></svg></span>
           } @else {
-            Live Academic Monitoring Dashboard for <span class="text-gold-accent">Your Children</span> <span class="inline-flex items-center text-brand-gold ml-1"><svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.25"/></svg></span>
+            Academic Progress of <span class="text-gold-accent">Your Children</span> <span class="inline-flex items-center text-brand-gold ml-1"><svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.25"/></svg></span>
           }
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'رادار الحضور المباشر، نسب استكمال المحاضرات، ونتائج الواجبات والامتحانات مع الشرح العلاجي.' : 'Live attendance sonar, lecture completion rates, homework and exam results with video explanations.' }}
+          {{ langService.isArabic() ? 'متابعة مباشرة للحضور، إكمال المحاضرات، ونتائج التقييمات.' : 'Live tracking for attendance, lecture progress, and exam results.' }}
         </p>
       </div>
 
@@ -35,7 +35,7 @@
           class="px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold btn-gold-metallic shadow-gold-glow flex items-center gap-2 cursor-pointer hover:opacity-95 transition-all"
         >
           <app-icon name="user-plus" [size]="16" />
-          <span>{{ langService.isArabic() ? 'ربط طالب إضافي (HAxxxx)' : 'Link Additional Student (HAxxxx)' }}</span>
+          <span>{{ langService.isArabic() ? 'ربط طالب' : 'Link Student' }}</span>
         </button>
       </div>
     </div>
@@ -50,14 +50,14 @@
         <app-icon name="grid" [size]="14" />
         <span>
           @if (isLoadingChildren() && linkedChildren().length === 0) {
-            {{ langService.isArabic() ? 'قائمة الطلاب المرتبطين بحسابك' : 'Linked Students List' }}
+            {{ langService.isArabic() ? 'الطلاب المرتبطون' : 'Linked Students' }}
             <span class="inline-block skeleton-gold h-3.5 w-6 rounded ml-1 align-middle"></span>
           } @else {
-            {{ langService.isArabic() ? ('قائمة الطلاب المرتبطين بحسابك (' + linkedChildren().length + ')') : ('Linked Students List (' + linkedChildren().length + ')') }}
+            {{ langService.isArabic() ? ('الطلاب المرتبطون (' + linkedChildren().length + ')') : ('Linked Students (' + linkedChildren().length + ')') }}
           }
         </span>
       </h2>
-      <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'اضغط على بطاقة الطالب لعرض تقريره' : 'Click on student card to view report' }}</span>
+      <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'اختر طالباً لعرض تقريره' : 'Select a student to view report' }}</span>
     </div>
 
     <!-- Children Cards Carousel / Horizontal Grid -->
@@ -188,17 +188,17 @@
         <app-icon name="user-plus" [size]="32" />
       </div>
       <h3 class="text-base font-bold text-text-primary mb-1">
-        {{ langService.isArabic() ? 'لم يتم ربط أي طالب بحساب ولي الأمر بعد' : 'No students linked to your parent account yet' }}
+        {{ langService.isArabic() ? 'لا يوجد طلاب مرتبطون بحسابك بعد' : 'No students linked yet' }}
       </h3>
       <p class="text-xs text-text-secondary leading-relaxed mb-4">
-        {{ langService.isArabic() ? 'قم بربط كود الطالب الخاص بنجلك لمتابعة حضوره ومشاهدته للمحاضرات ودرجات امتحاناته أولاً بأول.' : 'Link your student unique code to track live attendance, lecture progress, and exam scores in real-time.' }}
+        {{ langService.isArabic() ? 'اربط كود الطالب لمتابعة الحضور والدرجات.' : 'Link student code to track attendance and grades.' }}
       </p>
       <button
         type="button"
         (click)="openLinkModal()"
         class="px-5 py-2.5 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow transition-all cursor-pointer"
       >
-        {{ langService.isArabic() ? 'ربط طالب الآن' : 'Link Student Now' }}
+        {{ langService.isArabic() ? 'ربط طالب' : 'Link Student' }}
       </button>
     </div>
   }
@@ -223,10 +223,10 @@
             <app-icon name="user-plus" [size]="22" />
           </div>
           <h3 class="text-lg font-black text-text-primary">
-            {{ langService.isArabic() ? 'ربط حساب طالب جديد' : 'Link New Student Account' }}
+            {{ langService.isArabic() ? 'ربط طالب جديد' : 'Link New Student' }}
           </h3>
           <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'أدخل كود الطالب الفريد (HAxxxx) لربطه بحسابك ومتابعة تقدمه اللحظي فوراً.' : 'Enter unique student code (HAxxxx) to link to your account and track progress immediately.' }}
+            {{ langService.isArabic() ? 'أدخل كود الطالب (HAxxxx) لربطه بحسابك.' : 'Enter student code (HAxxxx) to link.' }}
           </p>
         </div>
 
@@ -249,7 +249,7 @@
         <div class="space-y-4">
           <div>
             <label for="haCodeInput" class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'كود الطالب الفريد (HA Code)' : 'Unique Student Code (HA Code)' }}
+              {{ langService.isArabic() ? 'كود الطالب (HA Code)' : 'Student Code (HA Code)' }}
             </label>
             <div class="relative">
               <input
@@ -263,7 +263,7 @@
               />
             </div>
             <p class="text-[11px] text-text-muted mt-1.5">
-              {{ langService.isArabic() ? 'ستجد الكود في أعلى لوحة تحكم الطالب أو في رسالة إتمام الاشتراك المرسلة عبر واتساب.' : 'You can find the code on student dashboard header or in the confirmation WhatsApp message.' }}
+              {{ langService.isArabic() ? 'تجد الكود في لوحة تحكم الطالب أو في رسالة الواتساب.' : 'Find code on student dashboard or WhatsApp confirmation.' }}
             </p>
           </div>
 

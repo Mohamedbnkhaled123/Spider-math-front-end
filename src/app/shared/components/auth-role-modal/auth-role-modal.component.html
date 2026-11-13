@@ -22,13 +22,13 @@
       <div class="mb-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-accent text-xs font-black mb-2">
           <app-icon name="shield" [size]="14" />
-          <span>{{ langService.isArabic() ? 'بوابة الصلاحيات وتسجيل الدخول — منصة سبايدر ماث' : 'Roles & Authentication Portal — Spider Math' }}</span>
+          <span>{{ langService.isArabic() ? 'بوابة تسجيل الدخول' : 'Login Portal' }}</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-          {{ langService.isArabic() ? 'اختر الصلاحية لتجربة كافة شاشات وميزات المنصة' : 'Select a role to explore platform features and screens' }}
+          {{ langService.isArabic() ? 'اختر الدور لتجربة المنصة' : 'Select a role to explore' }}
         </h2>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'بإمكانك التبديل الفوري بين أي من أدوار المنصة الـ 5 بنقرة واحدة لتجربة المحاضرات والامتحانات ورادار السونار ولوحة الإدارة.' : 'Switch instantly between any of the 5 roles to test lectures, assessments, sonar radar, and admin studio.' }}
+          {{ langService.isArabic() ? 'بدّل بين أدوار المنصة لتجربة المحاضرات والامتحانات ولوحة الإدارة.' : 'Switch between platform roles to test lectures, exams, and dashboards.' }}
         </p>
       </div>
 
@@ -44,7 +44,7 @@
           [class.text-text-secondary]="activeTab() !== 'presets'"
         >
           <app-icon name="user" [size]="14" />
-          <span>{{ langService.isArabic() ? 'محاكاة الأدوار الـ 5 فوراً' : 'Simulate 5 Roles Instantly' }}</span>
+          <span>{{ langService.isArabic() ? 'محاكاة الأدوار' : 'Simulate Roles' }}</span>
         </button>
 
         <button
@@ -57,7 +57,7 @@
           [class.text-text-secondary]="activeTab() !== 'student-login'"
         >
           <app-icon name="graduation-cap" [size]="14" />
-          <span>{{ langService.isArabic() ? 'دخول الطالب (HA Code)' : 'Student Login (HA Code)' }}</span>
+          <span>{{ langService.isArabic() ? 'دخول الطالب' : 'Student Login' }}</span>
         </button>
 
         <button
@@ -128,7 +128,7 @@
               class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <app-icon name="log-out" [size]="14" />
-              <span>{{ langService.isArabic() ? 'العودة كزائر (Guest Mode)' : 'Continue as Guest' }}</span>
+              <span>{{ langService.isArabic() ? 'المتابعة كزائر' : 'Continue as Guest' }}</span>
             </button>
           </div>
         </div>
@@ -153,7 +153,7 @@
               class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono font-bold tracking-widest uppercase placeholder:text-text-muted/60 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-sm"
             />
             <p class="text-[11px] text-text-muted mt-1.5">
-              @if (langService.isArabic()) { أدخل كود الطالب المسلم لك عند الاشتراك أو استخدم الكود التجريبي: <span class="font-mono font-bold text-brand-secondary">HA4920</span> } @else { Enter the student code issued upon enrollment or use demo code: <span class="font-mono font-bold text-brand-secondary">HA4920</span> }
+              @if (langService.isArabic()) { أدخل كود الطالب أو الكود التجريبي: <span class="font-mono font-bold text-brand-secondary">HA4920</span> } @else { Enter student code or demo: <span class="font-mono font-bold text-brand-secondary">HA4920</span> }
             </p>
           </div>
 
@@ -169,7 +169,7 @@
                 <span>{{ langService.isArabic() ? 'جاري تسجيل الدخول...' : 'Logging in...' }}</span>
               } @else {
                 <app-icon name="graduation-cap" [size]="16" />
-                <span>{{ langService.isArabic() ? 'دخول استوديو الطالب' : 'Enter Student Studio' }}</span>
+                <span>{{ langService.isArabic() ? 'دخول الطالب' : 'Student Login' }}</span>
               }
             </button>
           </div>

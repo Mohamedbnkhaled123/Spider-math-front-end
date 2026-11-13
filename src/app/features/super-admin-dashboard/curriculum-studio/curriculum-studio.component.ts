@@ -451,7 +451,7 @@ export class CurriculumStudioComponent implements OnInit {
     );
 
     if (hasDuplicate) {
-      this.toastTriggered.emit({ text: 'هذا الصف الدراسي مضاف بالفعل داخل هذا القسم!', type: 'error' });
+      this.toastTriggered.emit({ text: 'هذا الصف مضاف بالفعل!', type: 'error' });
       return;
     }
 
@@ -479,8 +479,8 @@ export class CurriculumStudioComponent implements OnInit {
     const gradeTitle = grade?.titleAr || gradeCode;
 
     this.openConfirm(
-      'تأكيد حذف الصف الدراسي',
-      `هل أنت متأكدة من حذف "${gradeTitle}" من ${track?.nameAr || 'هذا القسم'} نهائياً؟`,
+      'حذف الصف',
+      `حذف "${gradeTitle}" نهائياً؟`,
       () => {
         this.allCurriculaTracks.update((tracks) =>
           tracks.map((t) =>
@@ -493,7 +493,7 @@ export class CurriculumStudioComponent implements OnInit {
         this.executeSaveActiveGrades(`تم حذف "${gradeTitle}" واعتماد التعديلات بنجاح!`);
       },
       true,
-      'نعم، احذف الصف',
+      'حذف',
       'إلغاء'
     );
   }
@@ -501,26 +501,26 @@ export class CurriculumStudioComponent implements OnInit {
   confirmSectionChanges(trackCode: CurriculumCode): void {
     const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
     this.openConfirm(
-      'تأكيد حفظ تعديلات القسم',
-      `هل تودين اعتماد وتأكيد كافة الصفوف والتعديلات الخاصة بقسم "${track?.nameAr}" وتطبيقها فوراً؟`,
+      'حفظ تعديلات القسم',
+      `حفظ وتطبيق تعديلات "${track?.nameAr}"؟`,
       () => {
         this.executeSaveActiveGrades(`تم حفظ واعتماد تعديلات قسم "${track?.nameAr}" بنجاح!`);
       },
       false,
-      'تأكيد وحفظ القسم',
+      'حفظ',
       'تراجع'
     );
   }
 
   saveActiveGrades(): void {
     this.openConfirm(
-      'تأكيد حفظ كافة الصفوف والمناهج',
-      'هل تودين اعتماد وحفظ كافة الصفوف المفعلة وتعديلات الأقسام للعام الدراسي الحالي؟',
+      'حفظ الصفوف والمناهج',
+      'حفظ كافة الصفوف والمناهج المفعلة؟',
       () => {
         this.executeSaveActiveGrades('تم حفظ واعتماد تفعيل كافة الصفوف والأقسام بنجاح!');
       },
       false,
-      'تأكيد وحفظ الكل',
+      'حفظ',
       'تراجع'
     );
   }
@@ -598,8 +598,8 @@ export class CurriculumStudioComponent implements OnInit {
 
   deleteUnit(unit: UnitPackageAdminItem): void {
     this.openConfirm(
-      'تأكيد حذف الوحدة التعليمية',
-      `هل أنت متأكدة من حذف الوحدة "${unit.titleAr}" نهائياً بكافة محاضراتها وامتحاناتها؟ هذا القرار غير قابل للتراجع.`,
+      'حذف الوحدة',
+      `حذف الوحدة "${unit.titleAr}" نهائياً؟`,
       () => {
         this.http.delete(`/api/v1/admin/units/${unit.id}`).subscribe({
           next: () => {
@@ -724,7 +724,7 @@ export class CurriculumStudioComponent implements OnInit {
   saveUnitPackage(): void {
     const form = this.unitForm();
     if (!form.titleAr.trim()) {
-      this.toastTriggered.emit({ text: 'برجاء كتابة عنوان الوحدة باللغة العربية!', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخلي عنوان الوحدة بالعربية', type: 'error' });
       return;
     }
 
@@ -811,7 +811,7 @@ export class CurriculumStudioComponent implements OnInit {
     const unitId = this.editingUnitId();
     const form = this.editUnitForm();
     if (!unitId || !form.titleAr.trim()) {
-      this.toastTriggered.emit({ text: 'برجاء كتابة عنوان الوحدة باللغة العربية!', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخلي عنوان الوحدة بالعربية', type: 'error' });
       return;
     }
 
@@ -1389,7 +1389,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
-      this.toastTriggered.emit({ text: 'برجاء كتابة نص السؤال أو رفع صورة السؤال أولاً!', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخلي نص السؤال أو ارفعي صورته أولاً', type: 'error' });
       return;
     }
 
@@ -1449,15 +1449,15 @@ export class CurriculumStudioComponent implements OnInit {
     if (!asm) return;
 
     this.openConfirm(
-      'تأكيد حذف السؤال',
-      `هل أنت متأكدة من حذف السؤال رقم ${order} من هذا الامتحان؟`,
+      'حذف السؤال',
+      `حذف السؤال رقم ${order}؟`,
       () => {
         const filtered = asm.questions.filter((q) => q.order !== order);
         this.activeAssessment.set({ ...asm, questions: filtered });
         this.toastTriggered.emit({ text: 'تم حذف السؤال من الامتحان!', type: 'warning' });
       },
       true,
-      'نعم، احذف السؤال',
+      'حذف',
       'إلغاء'
     );
   }

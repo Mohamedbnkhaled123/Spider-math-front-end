@@ -207,8 +207,8 @@ export class AiQuestionExtractionModalComponent {
     } else {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'صيغة الملف غير مدعومة. يرجى اختيار ملف PDF أو صورة (PNG, JPG, WebP).'
-          : 'Unsupported file format. Please choose a PDF or an Image file (PNG, JPG, WebP).'
+          ? 'صيغة غير مدعومة. اختر PDF أو صورة (PNG, JPG, WebP).'
+          : 'Unsupported format. Choose PDF or image (PNG, JPG, WebP).'
       );
     }
   }
@@ -218,7 +218,7 @@ export class AiQuestionExtractionModalComponent {
 
     this.isProcessing.set(true);
     this.processingMessage.set(
-      this.langService.isArabic() ? 'جاري تجهيز الصورة ومعالجتها بدقة فائقة...' : 'Processing high-res image...'
+      this.langService.isArabic() ? 'جاري تجهيز الصورة...' : 'Processing image...'
     );
 
     try {
@@ -253,8 +253,8 @@ export class AiQuestionExtractionModalComponent {
     } catch (err: any) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'تعذر قراءة ملف الصورة. يرجى التأكد من سلامة الملف والمحاولة مرة أخرى.'
-          : 'Failed to read image file. Please verify file integrity.'
+          ? 'تعذر قراءة ملف الصورة. تحقق من الملف وأعد المحاولة.'
+          : 'Unable to read image. Verify file and try again.'
       );
     } finally {
       this.isProcessing.set(false);
@@ -286,8 +286,8 @@ export class AiQuestionExtractionModalComponent {
     if (!this.currentCanvas && !this.currentDataUrl()) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى الانتظار حتى اكتمال تحميل وعرض الصفحة.'
-          : 'Please wait for the page preview to load completely.'
+          ? 'انتظري حتى اكتمال تحميل الصفحة.'
+          : 'Wait for page to load.'
       );
       return;
     }
@@ -302,8 +302,8 @@ export class AiQuestionExtractionModalComponent {
     if (!dataUrl) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى الانتظار حتى اكتمال تحميل وعرض الصفحة.'
-          : 'Please wait for the page preview to load completely.'
+          ? 'انتظري حتى اكتمال تحميل الصفحة.'
+          : 'Wait for page to load.'
       );
       return;
     }
@@ -442,9 +442,9 @@ export class AiQuestionExtractionModalComponent {
     this.confirmationDialog.set({
       title: this.langService.isArabic() ? 'تأكيد حذف السؤال' : 'Confirm Question Deletion',
       message: this.langService.isArabic()
-        ? 'هل أنت متأكدة من رغبتك في استبعاد هذا السؤال من منطقة المراجعة؟ لن يتم إدراجه في الامتحان.'
-        : 'Are you sure you want to remove this question from staging? It will not be added to the assessment.',
-      confirmText: this.langService.isArabic() ? 'نعم، احذف السؤال' : 'Yes, Delete',
+        ? 'استبعاد هذا السؤال من المراجعة؟'
+        : 'Remove this question from staging?',
+      confirmText: this.langService.isArabic() ? 'حذف' : 'Delete',
       cancelText: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       onConfirm: () => {
         this.deleteStagedQuestion(id);
@@ -461,9 +461,9 @@ export class AiQuestionExtractionModalComponent {
     this.confirmationDialog.set({
       title: this.langService.isArabic() ? 'تأكيد إزالة الرسم الهندسي' : 'Confirm Diagram Removal',
       message: this.langService.isArabic()
-        ? 'هل أنت متأكدة من إزالة هذا الرسم الهندسي المقصوص من السؤال؟'
-        : 'Are you sure you want to remove the cropped diagram from this question?',
-      confirmText: this.langService.isArabic() ? 'نعم، إزالة الرسم' : 'Yes, Remove',
+        ? 'إزالة هذا الرسم المقصوص من السؤال؟'
+        : 'Remove cropped image from question?',
+      confirmText: this.langService.isArabic() ? 'إزالة' : 'Remove',
       cancelText: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       onConfirm: () => {
         this.removeCroppedImage(q);
@@ -622,8 +622,8 @@ export class AiQuestionExtractionModalComponent {
     if (checked.length === 0) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى تحديد سؤال واحد على الأقل لإدراجه بالامتحان.'
-          : 'Please check at least one question to insert.'
+          ? 'حددي سؤالاً واحداً على الأقل لإدراجه.'
+          : 'Select at least one question to insert.'
       );
       return;
     }

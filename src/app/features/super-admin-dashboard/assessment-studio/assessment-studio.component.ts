@@ -508,8 +508,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.cachedFileSession.set(session);
     this.toastTriggered.emit({
       text: this.langService.isArabic()
-        ? `تم اعتماد ملف "${session.fileName}" (صفحة ${session.pageNumber}) للقص اليدوي! يمكنك الآن النقر على "قص يدوي" لإرفاق الصورة بأي مسألة.`
-        : `File "${session.fileName}" (page ${session.pageNumber}) ready for manual cropping!`,
+        ? `تم تجهيز ملف "${session.fileName}" (صفحة ${session.pageNumber}) للقص اليدوي.`
+        : `File "${session.fileName}" (page ${session.pageNumber}) ready for cropping.`,
       type: 'success'
     });
   }
@@ -835,8 +835,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     this.toastTriggered.emit({
       text: this.langService.isArabic()
-        ? 'تمت استعادة المسودة بنجاح بكامل الأسئلة والإعدادات!'
-        : 'Draft restored successfully with all questions and settings!',
+        ? 'تمت استعادة المسودة بنجاح!'
+        : 'Draft restored successfully!',
       type: 'success'
     });
   }
@@ -845,7 +845,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     await this.draftService.deleteDraft(draftId);
     this.pendingDraft.set(null);
     this.toastTriggered.emit({
-      text: this.langService.isArabic() ? 'تم تجاهل وحذف مسودة الامتحان' : 'Draft discarded',
+      text: this.langService.isArabic() ? 'تم حذف المسودة' : 'Draft discarded',
       type: 'warning'
     });
   }
@@ -1258,15 +1258,15 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     if (nextState && (!item.questions || item.questions.length === 0)) {
       this.toastTriggered.emit({
-        text: 'تنبيه: لا يمكن تفعيل ونشر كويز فارغ! يرجى إضافة الأسئلة أولاً قبل النشر.',
+        text: 'لا يمكن نشر كويز فارغ. أضف أسئلة أولاً.',
         type: 'error'
       });
       return;
     }
 
     this.openConfirm(
-      `تأكيد ${actionText} الامتحان`,
-      `هل تودين ${actionText} امتحان "${item.titleAr}"؟ ${nextState ? 'سيصبح متاحاً للحل فوراً لطلاب ' + item.gradeLevel : 'سيتم إخفاؤه عن الطلاب وتحويله لمسودة'}.`,
+      `${actionText} الامتحان`,
+      `${actionText} "${item.titleAr}"؟`,
       () => {
         this.http.patch(`/api/v1/admin/assessments/${item.id}`, { is_published: nextState }).subscribe({
           next: () => {
@@ -1341,8 +1341,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
   deleteAssessment(item: AssessmentItem): void {
     this.openConfirm(
-      'تأكيد حذف الامتحان نهائياً',
-      `هل أنت متأكدة من حذف امتحان "${item.titleAr}" المخصص لـ (${item.gradeLevel})؟ هذا الإجراء غير قابل للتراجع.`,
+      'حذف الامتحان',
+      `حذف امتحان "${item.titleAr}" نهائياً؟`,
       () => {
         this.http.delete(`/api/v1/admin/assessments/${item.id}`).subscribe({
           next: async () => {
@@ -1783,15 +1783,15 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     if (asm.submissionsCount > 0) {
       this.toastTriggered.emit({
-        text: 'ممنوع حذف الأسئلة بعد بدء تسليمات الطلاب لضمان عدم اختلال موازين التقييم!',
+        text: 'لا يمكن حذف الأسئلة بعد بدء التسليمات.',
         type: 'error'
       });
       return;
     }
 
     this.openConfirm(
-      'تأكيد حذف السؤال',
-      `هل أنت متأكدة من حذف السؤال رقم ${order} من هذا الامتحان؟`,
+      'حذف السؤال',
+      `حذف السؤال رقم ${order}؟`,
       () => {
         const deletedQuestion = asm.questions.find((q) => q.order === order);
         if (deletedQuestion && deletedQuestion.id === this.editingQuestionId()) {

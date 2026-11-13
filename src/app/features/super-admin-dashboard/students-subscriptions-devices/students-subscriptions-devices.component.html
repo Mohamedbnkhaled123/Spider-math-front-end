@@ -60,7 +60,7 @@
           </div>
         } @else {
           <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
-            {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً — كافة الأجهزة معتمدة ومطابقة لشروط الأمان.' : 'No pending device requests — all devices approved and secured.' }}
+            {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً.' : 'No pending device requests.' }}
           </div>
         }
       }
@@ -670,7 +670,7 @@
             <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2 mt-2">
               <app-icon name="alert-circle" [size]="16" />
               <span>
-                {{ langService.isArabic() ? ('تنبيه: لا توجد أي وحدات دراسية مسجلة حالياً لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). لا يمكن تفعيل وحدات من صفوف أخرى لهذا الطالب منعاً للتداخل الأكاديمي. يمكنك إضافة وحدات لهذا الصف من تبويب استوديو المناهج.') : ('Notice: No study units are registered yet for (' + student.curriculum + ' - ' + student.gradeLevel + '). You can add units in Curriculum Studio.') }}
+                {{ langService.isArabic() ? ('لا توجد وحدات مسجلة لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). أضيفي وحدات من استوديو المناهج.') : ('No units registered for (' + student.curriculum + ' - ' + student.gradeLevel + '). Add units in Curriculum Studio.') }}
               </span>
             </div>
           }

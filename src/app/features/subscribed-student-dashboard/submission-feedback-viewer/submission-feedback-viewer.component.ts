@@ -92,9 +92,9 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     const days = Math.floor(hours / 24);
     const remainingHours = hours % 24;
     if (days > 0) {
-      return `متبقي ${days} يوم و ${remainingHours} ساعة على انتهاء فترة المراجعة`;
+      return `متبقي ${days} يوم و ${remainingHours} ساعة`;
     }
-    return `متبقي ${hours} ساعة على انتهاء فترة المراجعة`;
+    return `متبقي ${hours} ساعة`;
   });
 
   readonly totalQuestionsCount = computed(() => this.feedback().questionsReview.length);

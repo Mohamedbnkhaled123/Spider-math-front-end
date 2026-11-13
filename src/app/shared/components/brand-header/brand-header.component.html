@@ -99,7 +99,7 @@
           [routerLink]="['/']"
           [queryParams]="{ view: 'public' }"
           class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
-          [title]="langService.isArabic() ? 'استعراض الصفحة الرئيسية للمنصة' : 'View Public Landing Page'"
+          [title]="langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home'"
         >
           <app-icon name="home" [size]="14" />
           <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home' }}</span>
@@ -109,7 +109,7 @@
           <a
             routerLink="/student"
             class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
-            [title]="langService.isArabic() ? 'لوحة المذاكرة الخاصة بالطالب' : 'Student Study Dashboard'"
+            [title]="langService.isArabic() ? 'لوحة المذاكرة' : 'Study Dashboard'"
           >
             <app-icon name="book-open" [size]="14" />
             <span>{{ langService.isArabic() ? 'لوحة المذاكرة' : 'Study Dashboard' }}</span>
@@ -192,7 +192,7 @@
               <div class="flex items-center gap-2">
                 <app-icon name="bell" [size]="16" className="text-brand-gold" />
                 <span class="text-xs font-black text-text-primary">
-                  {{ langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Alerts & Notifications' }}
+                  {{ langService.isArabic() ? 'الإشعارات' : 'Notifications' }}
                 </span>
               </div>
 

@@ -299,12 +299,12 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
       }
 
       const confirmed = await this.confirmDialogService.confirm({
-        title: this.langService.isArabic() ? 'تأكيد تسليم امتحان تحديد المستوى' : 'Confirm Placement Exam Submission',
+        title: this.langService.isArabic() ? 'تأكيد التسليم' : 'Confirm Submission',
         message: this.langService.isArabic()
-          ? 'هل أنت متأكد من رغبتك في إنهاء الامتحان وتسليم إجاباتك؟'
-          : 'Are you sure you want to finish the exam and submit your answers?',
-        confirmLabel: this.langService.isArabic() ? 'نعم، تسليم الامتحان' : 'Yes, Submit Exam',
-        cancelLabel: this.langService.isArabic() ? 'مراجعة الإجابات' : 'Review Answers',
+          ? 'إنهاء وتسليم إجاباتك؟'
+          : 'Finish and submit your answers?',
+        confirmLabel: this.langService.isArabic() ? 'تسليم الامتحان' : 'Submit Exam',
+        cancelLabel: this.langService.isArabic() ? 'مراجعة' : 'Review',
         icon: 'check-circle',
         isDestructive: false
       });

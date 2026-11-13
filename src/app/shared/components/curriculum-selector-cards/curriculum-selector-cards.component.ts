@@ -768,9 +768,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           this.confirmDialogService.confirm({
             title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
             message: this.langService.isArabic()
-              ? `هل أنت مستعد لبدء "${quiz.titleAr || quiz.titleEn}" الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
-              : `Are you ready to start "${quiz.titleEn || quiz.titleAr}" now? The countdown timer begins immediately and cannot be paused.`,
-            confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+              ? `بدء "${quiz.titleAr || quiz.titleEn}"؟ سيبدأ المؤقت فوراً ولا يمكن إيقافه.`
+              : `Start "${quiz.titleEn || quiz.titleAr}"? The timer will start immediately and cannot be paused.`,
+            confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار' : 'Start Exam',
             cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
             icon: 'play-circle',
             isDestructive: false

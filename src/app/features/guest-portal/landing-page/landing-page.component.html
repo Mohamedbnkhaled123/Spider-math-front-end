@@ -23,7 +23,7 @@
       <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-surface-border glass-panel mb-8 shadow-sm">
         <span class="flex h-2.5 w-2.5 rounded-full bg-feedback-success animate-pulse"></span>
         <span class="text-xs sm:text-sm font-bold text-text-secondary">
-          {{ langService.isArabic() ? 'العام الأكاديمي 2026 / 2027 متاح الآن — بإشراف م/ هبة عبدالوهاب' : 'Academic Year 2026/2027 Open — Supervised by Eng. Heba Abdel-Wahab' }}
+          {{ langService.isArabic() ? 'العام الأكاديمي 2026 / 2027 — م/ هبة عبدالوهاب' : 'Academic Year 2026/2027 — Eng. Heba Abdel-Wahab' }}
         </span>
       </div>
 
@@ -49,9 +49,9 @@
       <!-- Subtitle -->
       <p class="mt-6 text-base sm:text-xl text-text-secondary max-w-2xl mx-auto font-medium leading-relaxed">
         @if (langService.isArabic()) {
-          تدريس تفاعلي شامل للمناهج المصرية والخليجية والدولية والأمريكية — بنوك أسئلة ذكية، امتحانات تفاعلية، وشروحات احترافية لحاسبة ديسموس.
+          تدريس تفاعلي للمناهج المصرية والخليجية والدولية والأمريكية وبنوك أسئلة وشروحات ديسموس.
         } @else {
-          Under the personal instruction of Eng. Heba Abdel-Wahab — interactive lectures, smart question banks, and Desmos calculator mastery.
+          Interactive lectures, smart question banks, and Desmos calculator mastery with Eng. Heba.
         }
       </p>
 
@@ -61,14 +61,14 @@
           href="#curriculum-section"
           class="px-8 py-3.5 rounded-xl font-extrabold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
         >
-          {{ langService.isArabic() ? 'اختار منهجك وابدأ الآن' : 'Choose Your Curriculum & Begin' }}
+          {{ langService.isArabic() ? 'اختر منهجك وابدأ' : 'Choose Curriculum & Start' }}
         </a>
         <a
           routerLink="/"
           class="px-8 py-3.5 rounded-xl font-bold border border-surface-border bg-surface-card hover:border-brand-accent text-text-primary hover:shadow-card active:scale-95 transition-all duration-200 flex items-center gap-2"
         >
           <span class="text-brand-accent animate-spark-twinkle">✦</span>
-          <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى المجاني' : 'Free Placement Test' }}</span>
+          <span>{{ langService.isArabic() ? 'تحديد المستوى' : 'Placement Test' }}</span>
         </a>
       </div>
     </div>
@@ -212,7 +212,7 @@
           <div class="mt-8">
             <h4 class="text-xs font-extrabold uppercase tracking-wider text-text-muted mb-4 flex items-center gap-2">
               <span class="text-brand-accent">✦</span>
-              <span>{{ langService.isArabic() ? 'الصفوف والمقررات المتاحة ضمن هذا المسار' : 'Available Grade Levels & Courses' }}</span>
+              <span>{{ langService.isArabic() ? 'الصفوف والمقررات المتاحة' : 'Available Grades & Courses' }}</span>
             </h4>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">

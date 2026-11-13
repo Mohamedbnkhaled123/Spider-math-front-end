@@ -2,7 +2,7 @@
   "BRAND": {
     "NAME": "Spider Math",
     "TAGLINE": "Excellence in Mathematics with Eng. Heba Abdel-Wahab",
-    "SUBTITLE": "From Fundamentals to World-Class Mathematical Mastery",
+    "SUBTITLE": "From fundamentals to mathematical mastery",
     "TEACHER": "Eng. Heba Abdel-Wahab"
   },
   "NAV": {
@@ -18,26 +18,26 @@
   },
   "CURRICULUM": {
     "CHOOSE_TITLE": "Choose Your Curriculum",
-    "CHOOSE_SUBTITLE": "Comprehensive mathematics curricula tailored for highest academic scores",
+    "CHOOSE_SUBTITLE": "Curricula tailored for highest academic scores",
     "EGYPTIAN": {
       "TITLE": "Egyptian Curriculum",
       "TAGLINE": "From Fundamentals to Thanaweya Amma Excellence",
-      "DESCRIPTION": "Complete coverage of Prep and Secondary mathematics with continuous drills and exam simulations."
+      "DESCRIPTION": "Full coverage of Prep and Secondary with drills and exams."
     },
     "GULF": {
       "TITLE": "Gulf Curriculum",
       "TAGLINE": "Clear Explanations & Continuous Mastery",
-      "DESCRIPTION": "Aligned with UAE, Saudi Arabia, and Gulf ministerial standards for Grades 7 to 12."
+      "DESCRIPTION": "Aligned with Gulf ministerial standards (Grades 7–12)."
     },
     "INTERNATIONAL": {
       "TITLE": "International Curricula (IGCSE / British)",
       "TAGLINE": "Global Standard Mathematics",
-      "DESCRIPTION": "Cambridge & Pearson Edexcel IGCSE, OL, AS & AL Mathematics with comprehensive past-paper workouts."
+      "DESCRIPTION": "Cambridge & Edexcel (OL, AS, AL) with past-paper workouts."
     },
     "AMERICAN": {
       "TITLE": "American Diploma (SAT • EST • ACT)",
       "TAGLINE": "SAT • EST • ACT College Board Readiness",
-      "DESCRIPTION": "High-scoring strategies, mental math shortcuts, and Desmos calculator mastery."
+      "DESCRIPTION": "Scoring strategies, shortcuts, and Desmos mastery."
     },
     "TERMS": {
       "TERM_1": "First Term",
@@ -46,10 +46,10 @@
   },
   "DEVICE_LOCK": {
     "TITLE": "Device Pending Approval",
-    "DESCRIPTION": "This new device has been linked to your account and is waiting for teacher authorization.",
-    "STATUS": "Pending Teacher Approval",
-    "NOTICE": "Eng. Heba Abdel-Wahab will review and approve your device shortly. Your existing devices remain fully active.",
-    "REFRESH": "Check Approval Status"
+    "DESCRIPTION": "New device linked. Waiting for teacher authorization.",
+    "STATUS": "Pending Approval",
+    "NOTICE": "Your device will be reviewed shortly. Existing devices remain active.",
+    "REFRESH": "Check Status"
   },
   "COMMON": {
     "LOADING": "Loading...",

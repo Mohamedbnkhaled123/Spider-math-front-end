@@ -154,10 +154,10 @@
               <div>
                 <h2 class="text-lg sm:text-xl font-black text-text-primary tracking-tight flex items-center gap-2 font-academic-serif">
                   <app-icon name="activity" [size]="20" className="text-brand-primary" />
-                  <span>@if (langService.isArabic()) { لوحة الإحصائيات المركزية <span class="text-gold-accent">وغرفة العمليات</span> } @else { Central Analytics & <span class="text-gold-accent">Operations Studio</span> }</span>
+                  <span>@if (langService.isArabic()) { لوحة الإحصائيات المركزية } @else { Central Analytics }</span>
                 </h2>
                 <p class="text-xs text-text-secondary mt-0.5">
-                  {{ langService.isArabic() ? 'متابعة حركة الطلاب اللحظية، طلبات اعتماد الأجهزة الجديدة، والامتحانات بانتظار الاعتماد.' : 'Real-time student monitoring, new device approvals, and assessments awaiting grading.' }}
+                  {{ langService.isArabic() ? 'متابعة حركة الطلاب، طلبات الأجهزة، والامتحانات بانتظار التصحيح.' : 'Student activity, pending devices, and pending grading.' }}
                 </p>
               </div>
 
@@ -168,7 +168,7 @@
                   class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <app-icon name="shield" [size]="14" className="text-brand-secondary" />
-                  <span>{{ langService.isArabic() ? 'معاينة بوابة ولي الأمر' : 'Preview Parent Portal' }}</span>
+                  <span>{{ langService.isArabic() ? 'بوابة ولي الأمر' : 'Parent Portal' }}</span>
                 </a>
 
                 <a
@@ -176,7 +176,7 @@
                   class="px-3 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-primary text-text-secondary text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <app-icon name="graduation-cap" [size]="14" className="text-brand-primary" />
-                  <span>{{ langService.isArabic() ? 'معاينة بوابة الطالب' : 'Preview Student Portal' }}</span>
+                  <span>{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
                 </a>
               </div>
             </div>
@@ -193,7 +193,7 @@
                 [title]="langService.isArabic() ? 'عرض الأجهزة بانتظار الاعتماد' : 'View Pending Device Approvals'"
               >
                 <div>
-                  <span class="text-xs font-bold text-text-muted group-hover:text-amber-500 transition-colors block">{{ langService.isArabic() ? 'أجهزة بانتظار الاعتماد' : 'Pending Device Approvals' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-amber-500 transition-colors block">{{ langService.isArabic() ? 'أجهزة معلقة' : 'Pending Devices' }}</span>
                   @if (isLoading() && analyticsSnapshot().pendingDevicesCount === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -241,7 +241,7 @@
                 [title]="langService.isArabic() ? 'عرض قائمة الطلاب المسجلين' : 'View Registered Students'"
               >
                 <div>
-                  <span class="text-xs font-bold text-text-muted group-hover:text-emerald-500 transition-colors block">{{ langService.isArabic() ? 'إجمالي الطلاب المسجلين' : 'Total Registered Students' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-emerald-500 transition-colors block">{{ langService.isArabic() ? 'الطلاب المسجلون' : 'Registered Students' }}</span>
                   @if (isLoading() && analyticsSnapshot().registeredStudents === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -265,7 +265,7 @@
                 [title]="langService.isArabic() ? 'عرض العملاء والزوار الجدد' : 'View Leads'"
               >
                 <div>
-                  <span class="text-xs font-bold text-text-muted group-hover:text-brand-secondary transition-colors block">{{ langService.isArabic() ? 'العملاء والزوار الجدد' : 'New Leads' }}</span>
+                  <span class="text-xs font-bold text-text-muted group-hover:text-brand-secondary transition-colors block">{{ langService.isArabic() ? 'العملاء الجدد' : 'New Leads' }}</span>
                   @if (isLoading() && analyticsSnapshot().newLeadsCount === 0) {
                     <span class="inline-block skeleton-gold h-7 w-12 rounded-lg mt-1"></span>
                   } @else {
@@ -286,7 +286,7 @@
                 <div class="flex items-center gap-2">
                   <app-icon name="bell" [size]="16" className="text-brand-accent" />
                   <h3 class="text-sm font-black text-text-primary">
-                    {{ langService.isArabic() ? 'الإجراءات العاجلة المعلقة بغرفة العمليات' : 'Urgent Actions Pending in Operations Studio' }}
+                    {{ langService.isArabic() ? 'الإجراءات العاجلة المعلقة' : 'Urgent Pending Actions' }}
                   </h3>
                 </div>
               </div>
@@ -304,7 +304,7 @@
                           <span class="font-mono text-[10px] text-brand-primary shrink-0">({{ dev.haCode }})</span>
                         </div>
                         <span class="text-text-muted text-[11px] font-mono break-all line-clamp-2 mt-0.5 block">
-                          {{ dev.deviceInfo }} • {{ langService.isArabic() ? 'محاولة دخول من جهاز جديد' : 'New device login attempt' }}
+                          {{ dev.deviceInfo }} • {{ langService.isArabic() ? 'جهاز جديد' : 'New device' }}
                         </span>
                       </div>
                     </div>
@@ -328,7 +328,7 @@
                   </div>
                 } @empty {
                   <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
-                    {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً — غرفة العمليات في حالة هدوء واستقرار كامل.' : 'No pending device requests — operations studio is fully stable.' }}
+                    {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً.' : 'No pending device requests.' }}
                   </div>
                 }
               </div>
@@ -416,16 +416,16 @@
 
         <div class="text-center space-y-1">
           <h3 class="text-base font-black text-text-primary">
-            {{ langService.isArabic() ? 'تأكيد تفريغ صور واجبات الترم المنتهي' : 'Confirm Purging Homework Images for Ended Term' }}
+            {{ langService.isArabic() ? 'تفريغ صور واجبات الترم' : 'Purge Homework Images' }}
           </h3>
           <p class="text-text-muted leading-relaxed">
-            {{ langService.isArabic() ? 'سيتم حذف كافة ملفات صور واجبات الطلاب المؤقتة من مجلد التخزين لتوفير المساحة السحابية. (درجات الطلاب وسجلات الحلول ستبقى محفوظة بشكل دائم).' : 'All temporary homework images will be removed from cloud storage to save space. (Student scores and records remain permanently saved).' }}
+            {{ langService.isArabic() ? 'سيتم حذف ملفات صور الواجبات المؤقتة لتوفير المساحة. (درجات وسجلات الطلاب محفوظة دائماً).' : 'Temporary homework images will be purged to save space. Scores and records remain saved.' }}
           </p>
         </div>
 
         <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold flex items-center gap-2">
           <app-icon name="alert-triangle" [size]="16" />
-          <span>{{ langService.isArabic() ? 'هذا الإجراء غير قابل للتراجع. هل أنت متأكدة من الاستمرار؟' : 'This action cannot be undone. Are you sure you want to proceed?' }}</span>
+          <span>{{ langService.isArabic() ? 'هذا الإجراء لا يمكن التراجع عنه. متابعة؟' : 'This cannot be undone. Proceed?' }}</span>
         </div>
 
         <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
@@ -434,7 +434,7 @@
             (click)="showPurgeConfirmModal.set(false)"
             class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted cursor-pointer"
           >
-            {{ langService.isArabic() ? 'إلغاء التراجع' : 'Cancel' }}
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
           
           <button
@@ -444,7 +444,7 @@
             class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <app-icon [name]="isPurgingHomework() ? 'loader' : 'trash'" [size]="14" [className]="isPurgingHomework() ? 'animate-spin' : ''" />
-            <span>{{ isPurgingHomework() ? (langService.isArabic() ? 'جاري الحذف والتفريغ...' : 'Purging...') : (langService.isArabic() ? 'نعم، قم بالتفريغ الآن' : 'Yes, Purge Now') }}</span>
+            <span>{{ isPurgingHomework() ? (langService.isArabic() ? 'جاري التفريغ...' : 'Purging...') : (langService.isArabic() ? 'تفريغ الآن' : 'Purge Now') }}</span>
           </button>
         </div>
       </div>

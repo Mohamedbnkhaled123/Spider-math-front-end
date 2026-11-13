@@ -143,10 +143,10 @@
 
               <div>
                 <h4 class="font-bold text-text-primary text-sm mb-1">
-                  {{ langService.isArabic() ? 'اسحبي وأفلتي ملف الامتحان هنا، أو اضغطي للتصفح' : 'Drag & drop exam file here, or click to browse' }}
+                  {{ langService.isArabic() ? 'اسحب ملف الامتحان هنا، أو انقر للتصفح' : 'Drag & drop exam file, or click to browse' }}
                 </h4>
                 <p class="text-text-muted text-[11px]">
-                  {{ langService.isArabic() ? 'يدعم ملفات PDF متعددة الصفحات، وصور JPG, PNG, WebP عالية الدقة' : 'Supports multi-page PDF documents and high-res JPG, PNG, WebP images' }}
+                  {{ langService.isArabic() ? 'يدعم ملفات PDF متعددة الصفحات وصور JPG, PNG, WebP' : 'Supports multi-page PDF and JPG, PNG, WebP' }}
                 </p>
               </div>
 
@@ -161,7 +161,7 @@
             <!-- Extraction Modes Grid -->
             <div>
               <label class="block font-bold text-text-secondary mb-2">
-                {{ langService.isArabic() ? 'اختاري نمط الاستخراج بالذكاء الاصطناعي:' : 'Select AI Extraction Mode:' }}
+                {{ langService.isArabic() ? 'نمط الاستخراج بالذكاء الاصطناعي:' : 'AI Extraction Mode:' }}
               </label>
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -180,19 +180,19 @@
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                       <span class="font-black text-text-primary text-xs">
-                        {{ langService.isArabic() ? 'الوضع الهجين الذكي' : 'Smart Hybrid Mode' }}
+                        {{ langService.isArabic() ? 'النمط الهجين الذكي' : 'Smart Hybrid' }}
                       </span>
                       <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-500">
                         {{ langService.isArabic() ? 'موصى به' : 'Recommended' }}
                       </span>
                     </div>
                     <p class="text-[11px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'استخراج النصوص والخيارات كمعادلات LaTeX نقية، مع قص تلقائي للرسومات الهندسية والمنحنيات فقط.' : 'Extracts text & options as clean LaTeX, auto-cropping only geometric figures & charts.' }}
+                      {{ langService.isArabic() ? 'استخراج النصوص كمعادلات LaTeX مع قص تلقائي للرسومات.' : 'Extracts LaTeX text with auto-cropped diagrams.' }}
                     </p>
                   </div>
                   <div class="flex items-center gap-1.5 text-[10px] text-amber-500 font-bold">
                     <app-icon name="check" [size]="12" />
-                    <span>{{ langService.isArabic() ? 'معادلات LaTeX + رسومات مقصوصة' : 'LaTeX + Cropped Diagrams' }}</span>
+                    <span>{{ langService.isArabic() ? 'معادلات LaTeX ورسومات' : 'LaTeX + Cropped Diagrams' }}</span>
                   </div>
                 </button>
 
@@ -213,12 +213,12 @@
                       {{ langService.isArabic() ? 'نصوص ومعادلات فقط' : 'Text & LaTeX Only' }}
                     </span>
                     <p class="text-[11px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'مناسب للمسائل الجبرية والتحليلية التي لا تحتوي على أي رسومات هندسية (نص ومعادلات رقمية 100%).' : 'Ideal for pure algebra and calculus worksheets with no diagrams.' }}
+                      {{ langService.isArabic() ? 'مناسب للمسائل الجبرية والتحليلية دون رسومات هندسية.' : 'Ideal for algebra and calculus without diagrams.' }}
                     </p>
                   </div>
                   <div class="flex items-center gap-1.5 text-[10px] text-brand-primary font-bold">
                     <app-icon name="calculator" [size]="12" />
-                    <span>{{ langService.isArabic() ? 'نصوص وخيارات LaTeX نقية' : 'Pure Text & LaTeX MCQ' }}</span>
+                    <span>{{ langService.isArabic() ? 'نصوص وخيارات LaTeX' : 'Text & LaTeX MCQ' }}</span>
                   </div>
                 </button>
 
@@ -236,15 +236,15 @@
                 >
                   <div class="space-y-1.5">
                     <span class="font-black text-text-primary text-xs block">
-                      {{ langService.isArabic() ? 'قص كل سؤال كصورة كاملة' : 'Full Question Image Crop' }}
+                      {{ langService.isArabic() ? 'قص السؤال كصورة كاملة' : 'Full Question Image' }}
                     </span>
                     <p class="text-[11px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'قص كل سؤال بالكامل (النص والخيارات والرسم) كصورة WebP فائقة الدقة والوضوح.' : 'Crops each entire question problem as a high-DPI WebP image.' }}
+                      {{ langService.isArabic() ? 'قص السؤال بالكامل كصورة WebP عالية الدقة.' : 'Crops entire question problem as high-res WebP.' }}
                     </p>
                   </div>
                   <div class="flex items-center gap-1.5 text-[10px] text-cyan-600 font-bold">
                     <app-icon name="image" [size]="12" />
-                    <span>{{ langService.isArabic() ? 'صور مقصوصة بالكامل' : 'Full Image Question Cards' }}</span>
+                    <span>{{ langService.isArabic() ? 'صور مقصوصة بالكامل' : 'Full Image Cards' }}</span>
                   </div>
                 </button>
               </div>
@@ -262,10 +262,10 @@
                   </div>
                   <div>
                     <span class="text-xs font-bold text-text-primary block">
-                      {{ langService.isArabic() ? 'مفتاح Gemini API مخصص (اختياري)' : 'Custom Gemini API Key (Optional)' }}
+                      {{ langService.isArabic() ? 'مفتاح Gemini API (اختياري)' : 'Custom Gemini API Key (Optional)' }}
                     </span>
                     <span class="text-[10px] text-text-muted">
-                      {{ langService.isArabic() ? 'الخادم مزود بمفتاح ذكاء اصطناعي يعمل تلقائياً، يمكنك تخصيص مفتاحك هنا إذا رغبت' : 'The server has a working default key configured; you can override it here if desired' }}
+                      {{ langService.isArabic() ? 'مفتاح افتراضي يعمل تلقائياً، يمكنك استبداله هنا.' : 'Default key configured; override here if desired.' }}
                     </span>
                   </div>
                 </div>
@@ -298,7 +298,7 @@
                     }
                   </div>
                   <p class="text-[10px] text-text-muted">
-                    {{ langService.isArabic() ? 'يتم حفظ المفتاح محلياً في متصفحك واستخدامه تلقائياً في طلبات الاستخراج.' : 'The key is saved locally in your browser and used automatically for extraction requests.' }}
+                    {{ langService.isArabic() ? 'يُحفظ محلياً في متصفحك ويُستخدم تلقائياً.' : 'Saved locally in browser and used automatically.' }}
                   </p>
                 </div>
               }
@@ -312,7 +312,7 @@
                   (click)="goToStep('PREVIEW_AND_PAGE')"
                   class="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white font-bold transition-all cursor-pointer flex items-center gap-2 shadow-sm text-xs"
                 >
-                  <span>{{ langService.isArabic() ? 'متابعة لمعاينة الصفحة واختيارها' : 'Continue to Page Preview' }}</span>
+                  <span>{{ langService.isArabic() ? 'معاينة الصفحة' : 'Continue to Preview' }}</span>
                   <app-icon [name]="langService.isRtl() ? 'chevron-left' : 'chevron-right'" [size]="14" />
                 </button>
               </div>
@@ -331,7 +331,7 @@
                   {{ langService.isArabic() ? ('صفحة ' + currentPageNumber() + ' من ' + totalPages()) : ('Page ' + currentPageNumber() + ' of ' + totalPages()) }}
                 </span>
                 <span class="text-text-muted text-[11px]">
-                  {{ langService.isArabic() ? 'حددي الصفحة التي تريدين استخراج أسئلتها بالذكاء الاصطناعي:' : 'Select the target page to extract questions from:' }}
+                  {{ langService.isArabic() ? 'اختر الصفحة المراد استخراجها:' : 'Select target page:' }}
                 </span>
               </div>
 
@@ -342,7 +342,7 @@
                   class="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <app-icon name="rotate-ccw" [size]="13" />
-                  <span>{{ langService.isArabic() ? 'تغيير الملف أو النمط' : 'Change File / Mode' }}</span>
+                  <span>{{ langService.isArabic() ? 'تغيير الملف' : 'Change File' }}</span>
                 </button>
 
                 <button
@@ -350,11 +350,11 @@
                   (click)="useFileForManualSlicing()"
                   [disabled]="isProcessing() || !currentDataUrl()"
                   class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
-                  [title]="langService.isArabic() ? 'نقل هذه الصفحة مباشرة للامتحان للقص اليدوي للمسائل بدون استخدام الذكاء الاصطناعي' : 'Transfer this page to assessment studio for manual cropping without AI'"
+                  [title]="langService.isArabic() ? 'نقل الصفحة للقص اليدوي للمسائل' : 'Transfer page for manual cropping'"
                 >
                   <app-icon name="image" [size]="14" />
                   <span>
-                    {{ langService.isArabic() ? 'القص اليدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
+                    {{ langService.isArabic() ? 'قص يدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
                   </span>
                 </button>
 
@@ -366,7 +366,7 @@
                 >
                   <app-icon name="sparkles" [size]="14" />
                   <span>
-                    {{ langService.isArabic() ? ('استخراج أسئلة صفحة ' + currentPageNumber()) : ('Extract Questions from Page ' + currentPageNumber()) }}
+                    {{ langService.isArabic() ? ('استخراج صفحة ' + currentPageNumber()) : ('Extract Page ' + currentPageNumber()) }}
                   </span>
                 </button>
               </div>
@@ -414,12 +414,12 @@
                     class="w-4 h-4 rounded text-brand-primary focus:ring-brand-primary cursor-pointer"
                   />
                   <span>
-                    {{ langService.isArabic() ? ('تحديد الكل (' + selectedCount() + ' من ' + stagedQuestions().length + ' محدد)') : ('Select All (' + selectedCount() + ' of ' + stagedQuestions().length + ')') }}
+                    {{ langService.isArabic() ? ('تحديد الكل (' + selectedCount() + ' من ' + stagedQuestions().length + ')') : ('Select All (' + selectedCount() + ' of ' + stagedQuestions().length + ')') }}
                   </span>
                 </label>
 
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                  {{ extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين الذكي' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات فقط' : 'قص كامل') }}
+                  {{ extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات' : 'قص كامل') }}
                 </span>
               </div>
 
@@ -435,7 +435,7 @@
                   [class.bg-surface-card]="!isMathKeyboardOpen()"
                   [class.text-brand-primary]="!isMathKeyboardOpen()"
                   [class.border-brand-primary/30]="!isMathKeyboardOpen()"
-                  [title]="langService.isArabic() ? 'فتح لوحة الرموز الرياضية العائمة لتعديل المعادلات' : 'Open Draggable Math Virtual Keyboard'"
+                  [title]="langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard'"
                 >
                   <app-icon name="calculator" [size]="14" />
                   <span>{{ langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard' }}</span>
@@ -447,7 +447,7 @@
                   class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <app-icon name="chevron-right" [size]="13" />
-                  <span>{{ langService.isArabic() ? 'استخراج صفحة أخرى من الملف' : 'Extract Another Page' }}</span>
+                  <span>{{ langService.isArabic() ? 'صفحة أخرى' : 'Another Page' }}</span>
                 </button>
               </div>
             </div>
@@ -526,7 +526,7 @@
                         type="button"
                         (click)="promptDeleteQuestion(q.id)"
                         class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
-                        [title]="langService.isArabic() ? 'استبعاد هذا السؤال' : 'Remove this question'"
+                        [title]="langService.isArabic() ? 'استبعاد السؤال' : 'Remove question'"
                       >
                         <app-icon name="trash" [size]="14" />
                       </button>
@@ -536,7 +536,7 @@
                   <!-- Question Text Area (Clean Single Display - No Preview Duplication) -->
                   <div class="space-y-1.5">
                     <label class="font-bold text-text-secondary text-[11px] block">
-                      {{ langService.isArabic() ? 'نص المسألة الرياضية:' : 'Question Statement:' }}
+                      {{ langService.isArabic() ? 'نص المسألة:' : 'Question Statement:' }}
                     </label>
 
                     <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-bg focus-within:border-brand-primary transition-all p-2.5">
@@ -557,7 +557,7 @@
                       <div class="flex items-center justify-between">
                         <span class="text-[11px] font-bold text-amber-500 flex items-center gap-1.5">
                           <app-icon name="image" [size]="13" />
-                          <span>{{ langService.isArabic() ? 'الرسم الهندسي / الصورة المقصوصة تلقائياً:' : 'Auto-cropped Diagram:' }}</span>
+                          <span>{{ langService.isArabic() ? 'الرسم المقصوص:' : 'Auto-cropped Diagram:' }}</span>
                         </span>
 
                         <div class="flex items-center gap-2">
@@ -565,17 +565,17 @@
                             type="button"
                             (click)="openManualSlicerForQuestion(q)"
                             class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
-                            [title]="langService.isArabic() ? 'تعديل وتحديد مساحة القص يدوياً' : 'Fine-tune crop area manually'"
+                            [title]="langService.isArabic() ? 'تعديل مساحة القص' : 'Fine-tune crop area'"
                           >
                             <app-icon name="edit" [size]="12" />
-                            <span>{{ langService.isArabic() ? 'تعديل القص يدوياً' : 'Fine-tune Crop' }}</span>
+                            <span>{{ langService.isArabic() ? 'تعديل القص' : 'Fine-tune Crop' }}</span>
                           </button>
 
                           <button
                             type="button"
                             (click)="promptRemoveCroppedImage(q)"
                             class="p-1 rounded-lg text-text-muted hover:text-rose-500 transition-all cursor-pointer"
-                            [title]="langService.isArabic() ? 'حذف الرسم المرفق' : 'Remove diagram'"
+                            [title]="langService.isArabic() ? 'حذف الرسم' : 'Remove diagram'"
                           >
                             <app-icon name="trash" [size]="13" />
                           </button>
@@ -593,14 +593,14 @@
                   } @else {
                     <!-- Optional Manual Crop Action if no diagram was detected -->
                     <div class="flex items-center justify-between pt-1 text-[11px] text-text-muted">
-                      <span>{{ langService.isArabic() ? 'لا يوجد رسم هندسي مرفق بهذا السؤال' : 'No diagram attached' }}</span>
+                      <span>{{ langService.isArabic() ? 'لا يوجد رسم هندسي' : 'No diagram attached' }}</span>
                       <button
                         type="button"
                         (click)="openManualSlicerForQuestion(q)"
                         class="px-2.5 py-1 rounded-lg border border-surface-border hover:border-amber-500 text-text-secondary hover:text-amber-500 font-bold transition-all cursor-pointer flex items-center gap-1"
                       >
                         <app-icon name="image" [size]="12" />
-                        <span>{{ langService.isArabic() ? 'إرفاق رسم هندسي من الصفحة' : 'Attach Diagram from Page' }}</span>
+                        <span>{{ langService.isArabic() ? 'إرفاق رسم' : 'Attach Diagram' }}</span>
                       </button>
                     </div>
                   }
@@ -609,7 +609,7 @@
                   @if (q.type === 'MCQ') {
                     <div class="space-y-2 pt-2 border-t border-surface-border">
                       <label class="font-bold text-text-secondary text-[11px] block">
-                        {{ langService.isArabic() ? 'خيارات الإجابة (حددي الإجابة الصحيحة بالضغط على الدائرة):' : 'Answer Options (Select correct choice radio):' }}
+                        {{ langService.isArabic() ? 'خيارات الإجابة (حدد الصحيحة):' : 'Answer Options (Select correct):' }}
                       </label>
 
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -654,10 +654,10 @@
                       <app-icon name="alert-circle" [size]="16" className="text-brand-primary mt-0.5 shrink-0" />
                       <div class="text-xs">
                         <span class="font-bold text-text-primary">
-                          {{ langService.isArabic() ? 'سؤال مقالي أو بياني (بدون اختيارات):' : 'Written / Essay Question (No options):' }}
+                          {{ langService.isArabic() ? 'سؤال مقالي:' : 'Essay Question:' }}
                         </span>
                         <p class="text-text-secondary mt-0.5 leading-relaxed text-[11px]">
-                          {{ langService.isArabic() ? 'هذا السؤال مقالي، لا يشترط إضافة اختيارات. يستطيع الطالب كتابة خطوات الحل أو التقاط ورفع صورة كشكول الحل بالكاميرا كإجابة معتمدة لتصحيحها من المعلمة.' : 'Essay question allows students to write steps or upload handwritten solution photos for manual teacher grading.' }}
+                          {{ langService.isArabic() ? 'سؤال مقالي يتيح للطالب كتابة خطوات الحل أو رفع صورة كشكول الحل للتصحيح اليدوي.' : 'Essay question allows students to write steps or upload handwritten solution photos for manual grading.' }}
                         </p>
                       </div>
                     </div>
@@ -675,11 +675,11 @@
         <div class="text-text-muted text-[11px]">
           @if (currentStep() === 'STAGING_REVIEW') {
             <span>
-              {{ langService.isArabic() ? ('تم اختيار ' + selectedCount() + ' من إجمالي ' + stagedQuestions().length + ' سؤال للإدراج.') : (selectedCount() + ' of ' + stagedQuestions().length + ' questions selected.') }}
+              {{ langService.isArabic() ? ('محدد ' + selectedCount() + ' من ' + stagedQuestions().length + ' سؤال للإدراج.') : (selectedCount() + ' of ' + stagedQuestions().length + ' selected.') }}
             </span>
           } @else {
             <span>
-              {{ langService.isArabic() ? 'Spider-Math AI Engine • KaTeX Math Rendering • Zero Serverless Binary Routing' : 'Spider-Math AI Engine • KaTeX Math Rendering' }}
+              {{ langService.isArabic() ? 'Spider-Math AI Engine • KaTeX Math Rendering' : 'Spider-Math AI Engine • KaTeX Math Rendering' }}
             </span>
           }
         </div>
@@ -702,11 +702,11 @@
             >
               @if (isInserting()) {
                 <app-icon name="loader" [size]="14" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري رفع الصور وإدراج الأسئلة...' : 'Inserting...' }}</span>
+                <span>{{ langService.isArabic() ? 'جاري الإدراج...' : 'Inserting...' }}</span>
               } @else {
                 <app-icon name="check" [size]="14" />
                 <span>
-                  {{ langService.isArabic() ? ('إدراج الأسئلة المحددة بالامتحان (' + selectedCount() + ' أسئلة)') : ('Insert Selected Questions (' + selectedCount() + ')') }}
+                  {{ langService.isArabic() ? ('إدراج الأسئلة (' + selectedCount() + ')') : ('Insert Questions (' + selectedCount() + ')') }}
                 </span>
               }
             </button>
@@ -722,7 +722,7 @@
           </div>
           <div class="space-y-1.5 max-w-md">
             <h4 class="text-sm font-black text-text-primary">
-              {{ langService.isArabic() ? 'جاري التحليل بالذكاء الاصطناعي...' : 'AI Vision Processing...' }}
+              {{ langService.isArabic() ? 'جاري التحليل بالذكاء الاصطناعي...' : 'AI Processing...' }}
             </h4>
             <p class="text-xs text-text-muted leading-relaxed">
               {{ processingMessage() }}
@@ -743,7 +743,7 @@
     [imageSource]="activeSlicingQuestion()?.pageDataUrl || currentDataUrl() || currentCanvas"
     [initialBox2d]="slicerInitialBox2d()"
     [uploadToCloudinary]="false"
-    [modalTitle]="activeSlicingQuestion()?.has_geometry_diagram ? (langService.isArabic() ? 'تعديل مساحة القص للرسم الهندسي' : 'Fine-tune Crop Area') : (langService.isArabic() ? 'إرفاق وتحديد رسم هندسي من الصفحة' : 'Attach & Slice Diagram from Page')"
+    [modalTitle]="activeSlicingQuestion()?.has_geometry_diagram ? (langService.isArabic() ? 'تعديل مساحة القص' : 'Fine-tune Crop') : (langService.isArabic() ? 'إرفاق رسم هندسي' : 'Attach Diagram')"
     (sliceSaved)="onSliceSaved($event)"
     (cancelled)="onSlicerCancelled()"
   />

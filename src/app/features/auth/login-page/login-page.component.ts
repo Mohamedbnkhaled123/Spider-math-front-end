@@ -323,7 +323,7 @@ export class LoginPageComponent implements OnInit {
       const isLoaded = await this.ensureGoogleScriptLoaded();
       if (!isLoaded || !win.google?.accounts?.oauth2) {
         this.googleAuthErrorMessage.set(
-          'جاري الاتصال بخدمات Google... يرجى الانتظار بضع ثوانٍ أو التحقق من اتصال الإنترنت ثم إعادة المحاولة.'
+          'تعذر الاتصال. تحقق من الإنترنت وأعد المحاولة.'
         );
         return;
       }
@@ -340,10 +340,10 @@ export class LoginPageComponent implements OnInit {
             if (response.error !== 'popup_closed_by_user') {
               if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
                 this.googleAuthErrorMessage.set(
-                  'تعذر إتمام تسجيل الدخول عبر Google حالياً. يرجى استخدام تسجيل الدخول بكود الطالب أو المحاولة لاحقاً.'
+                  'تعذر الدخول عبر Google. استخدم كود الطالب أو أعد المحاولة.'
                 );
               } else {
-                this.googleAuthErrorMessage.set('تعذر استكمال الاتصال بحساب Google. يرجى إعادة المحاولة.');
+                this.googleAuthErrorMessage.set('تعذر الاتصال بـ Google. أعد المحاولة.');
               }
             }
             return;
@@ -390,7 +390,7 @@ export class LoginPageComponent implements OnInit {
         const data = res.data;
 
         if (data.isPendingApproval) {
-          this.googleAuthErrorMessage.set('هذا الجهاز غير معتمد بعد، وهو قيد المراجعة لدى م. هبة عبد الوهاب.');
+          this.googleAuthErrorMessage.set('الجهاز قيد مراجعة المعلمة.');
           return;
         }
 
@@ -435,11 +435,11 @@ export class LoginPageComponent implements OnInit {
         if (err.status === 404 && intent === 'login') {
           this.unregisteredGoogleEmail.set('unregistered');
           this.googleAuthErrorMessage.set(
-            'هذا الحساب غير مسجل في المنصة مسبقاً. يرجى إنشاء حساب جديد كطالب أولاً.'
+            'الحساب غير مسجل. أنشئ حساب طالب أولاً.'
           );
         } else {
           this.googleAuthErrorMessage.set(
-            this.extractErrorMessage(err, 'حدث خطأ أثناء التحقق من حساب Google. يرجى إعادة المحاولة.')
+            this.extractErrorMessage(err, 'خطأ في التحقق من Google. أعد المحاولة.')
           );
         }
       }
@@ -459,7 +459,7 @@ export class LoginPageComponent implements OnInit {
   async submitStudentLogin(): Promise<void> {
     const code = this.studentHaCode().trim().toUpperCase();
     if (!code) {
-      this.errorMessage.set('يرجى إدخال كود الطالب الخاص بك (HAxxxx)');
+      this.errorMessage.set('أدخل كود الطالب (HAxxxx)');
       return;
     }
 
@@ -522,7 +522,7 @@ export class LoginPageComponent implements OnInit {
     const code = this.parentStudentCode().trim().toUpperCase();
 
     if (!phone || !code) {
-      this.errorMessage.set('يرجى إدخال رقم هاتف ولي الأمر وكود الطالب معاً');
+      this.errorMessage.set('أدخل هاتف ولي الأمر وكود الطالب.');
       return;
     }
 
@@ -550,7 +550,7 @@ export class LoginPageComponent implements OnInit {
           });
           this.router.navigateByUrl('/parent');
         } else {
-          this.errorMessage.set('بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق وإعادة المحاولة.');
+          this.errorMessage.set('البيانات غير مطابقة. تحقق وأعد المحاولة.');
         }
       },
       error: (err) => {
@@ -558,7 +558,7 @@ export class LoginPageComponent implements OnInit {
         this.errorMessage.set(
           this.extractErrorMessage(
             err,
-            'بيانات ولي الأمر أو كود الطالب غير مطابقة. يرجى التحقق من الأرقام وإعادة المحاولة.'
+            'البيانات غير مطابقة. تحقق وأعد المحاولة.'
           )
         );
       }
@@ -582,7 +582,7 @@ export class LoginPageComponent implements OnInit {
           this.authService.setSession(res.data.token, res.data.user);
           this.router.navigateByUrl('/admin');
         } else {
-          this.errorMessage.set('تعذر تسجيل دخول المشرف. يرجى إعادة المحاولة.');
+          this.errorMessage.set('تعذر تسجيل الدخول. أعد المحاولة.');
         }
       },
       error: (err) => {

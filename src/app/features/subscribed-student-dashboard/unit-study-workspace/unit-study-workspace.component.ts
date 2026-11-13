@@ -278,11 +278,11 @@ export class UnitStudyWorkspaceComponent implements OnInit {
     const displayTitle = title || asm?.titleAr || asm?.titleEn || '';
 
     const confirmed = await this.confirmDialogService.confirm({
-      title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+      title: this.langService.isArabic() ? 'بدء الاختبار' : 'Start Exam',
       message: this.langService.isArabic()
-        ? `هل أنت مستعد لبدء الاختبار${displayTitle ? ` "${displayTitle}"` : ''} الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
-        : `Are you ready to start ${displayTitle ? `"${displayTitle}"` : 'the exam'} now? The countdown timer begins immediately and cannot be paused.`,
-      confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+        ? `بدء الاختبار${displayTitle ? ` "${displayTitle}"` : ''} الآن؟ يبدأ الوقت فور الدخول.`
+        : `Start ${displayTitle ? `"${displayTitle}"` : 'exam'} now? Timer begins immediately.`,
+      confirmLabel: this.langService.isArabic() ? 'ابدأ الآن' : 'Start Now',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       icon: 'play-circle',
       isDestructive: false

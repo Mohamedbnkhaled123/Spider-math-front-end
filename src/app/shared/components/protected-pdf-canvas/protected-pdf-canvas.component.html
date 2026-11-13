@@ -75,7 +75,7 @@
           'bg-brand-primary/80 text-white cursor-wait animate-pulse': isPrinting(),
           'bg-surface-card border border-surface-border text-text-muted opacity-60 cursor-not-allowed': !isPrintAllowed()
         }"
-        [title]="isPrintAllowed() ? (langService.isArabic() ? 'طباعة المذكرة مع العلامة المائية' : 'Print handout with watermark') : (langService.isArabic() ? 'الطباعة غير مصرح بها لهذا الملف' : 'Printing is not permitted for this file')"
+        [title]="isPrintAllowed() ? (langService.isArabic() ? 'طباعة مع العلامة المائية' : 'Print with watermark') : (langService.isArabic() ? 'الطباعة غير مصرح بها' : 'Print not allowed')"
       >
         @if (isPrinting()) {
           <app-icon name="refresh" [size]="13" className="animate-spin text-white" />
@@ -85,7 +85,7 @@
         } @else {
           <app-icon [name]="isPrintAllowed() ? 'award' : 'lock'" [size]="14" />
           <span class="hidden sm:inline">
-            {{ isPrintAllowed() ? (langService.isArabic() ? 'طباعة مصرح بها' : 'Print Allowed') : (langService.isArabic() ? 'الطباعة مقفلة' : 'Printing Locked') }}
+            {{ isPrintAllowed() ? (langService.isArabic() ? 'طباعة' : 'Print') : (langService.isArabic() ? 'الطباعة مقفلة' : 'Locked') }}
           </span>
         }
       </button>
@@ -101,7 +101,7 @@
       <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-card/80 backdrop-blur-sm z-10">
         <app-icon name="refresh" [size]="32" className="animate-spin text-brand-primary" />
         <span class="text-xs font-bold text-text-muted">
-          {{ langService.isArabic() ? 'جاري فك تشفير وتجهيز صفحات المستند...' : 'Decrypting and rendering document pages...' }}
+          {{ langService.isArabic() ? 'جاري تجهيز صفحات المستند...' : 'Loading document pages...' }}
         </span>
       </div>
     } @else if (errorMessage()) {

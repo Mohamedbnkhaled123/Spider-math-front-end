@@ -599,11 +599,11 @@ export class SuperAdminDashboardComponent implements OnInit {
         a.download = `spider_math_complete_backup_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         window.URL.revokeObjectURL(url);
-        this.showToast('تم تصدير وتحميل النسخة الاحتياطية الكاملة للمنصة بنجاح!', 'success');
+        this.showToast('تم تصدير النسخة الاحتياطية بنجاح!', 'success');
       },
       error: () => {
         this.isExportingBackup.set(false);
-        this.showToast('تعذر تحميل النسخة الاحتياطية حالياً، يرجى إعادة المحاولة.', 'error');
+        this.showToast('تعذر تحميل النسخة الاحتياطية. أعد المحاولة.', 'error');
       }
     });
   }
@@ -614,12 +614,12 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: () => {
         this.isPurgingHomework.set(false);
         this.showPurgeConfirmModal.set(false);
-        this.showToast('تم تفريغ صور واجبات الترم المنتهي بنجاح وتوفير مساحة التخزين!', 'success');
+        this.showToast('تم تفريغ صور الواجبات بنجاح!', 'success');
       },
       error: () => {
         this.isPurgingHomework.set(false);
         this.showPurgeConfirmModal.set(false);
-        this.showToast('تم تفريغ صور واجبات الترم المنتهي فورياً وتوفير مساحة التخزين السحابي!', 'success');
+        this.showToast('تم تفريغ صور الواجبات بنجاح!', 'success');
       }
     });
   }
@@ -677,11 +677,11 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.delete(`/api/v1/admin/units/${unitId}`).subscribe({
       next: () => {
         this.unitsList.update((list) => list.filter((u) => u.id !== unitId));
-        this.triggerToast('تم حذف الوحدة الدراسية بنجاح!', 'warning');
+        this.triggerToast('تم حذف الوحدة!', 'warning');
       },
       error: () => {
         this.unitsList.update((list) => list.filter((u) => u.id !== unitId));
-        this.triggerToast('تم حذف الوحدة الدراسية!', 'warning');
+        this.triggerToast('تم حذف الوحدة!', 'warning');
       }
     });
   }
@@ -718,7 +718,7 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: () => {
         this.pendingDevices.update((list) => list.filter((d) => d.id !== dev.id));
         this.fetchRealAtlasData();
-        this.triggerToast(`تم اعتماد جهاز الطالب ${dev.studentName} بنجاح!`, 'success');
+        this.triggerToast(`تم اعتماد جهاز الطالب ${dev.studentName}`, 'success');
       },
       error: () => {
         this.pendingDevices.update((list) => list.filter((d) => d.id !== dev.id));
@@ -732,7 +732,7 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: () => {
         this.pendingDevices.update((list) => list.filter((d) => d.id !== dev.id));
         this.fetchRealAtlasData();
-        this.triggerToast(`تم رفض جهاز الطالب ${dev.studentName}.`, 'warning');
+        this.triggerToast(`تم رفض جهاز الطالب ${dev.studentName}`, 'warning');
       },
       error: () => {
         this.pendingDevices.update((list) => list.filter((d) => d.id !== dev.id));

@@ -49,7 +49,7 @@
         type="button"
         (click)="toggleNotifications()"
         class="relative p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer"
-        [title]="langService.isArabic() ? 'الإشعارات المجمعة' : 'Batched Notifications'"
+        [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
       >
         <app-icon name="bell" [size]="15" />
         @if (batchedNotifications().length > 0) {
@@ -65,7 +65,7 @@
           type="button"
           (click)="toggleMobileTools()"
           class="p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
-          [title]="langService.isArabic() ? 'أدوات الصيانة والنسخ الاحتياطي' : 'Maintenance & Backup Tools'"
+          [title]="langService.isArabic() ? 'أدوات الصيانة' : 'Maintenance Tools'"
         >
           <app-icon name="settings" [size]="14" />
           <span class="hidden sm:inline">{{ langService.isArabic() ? 'الأدوات' : 'Tools' }}</span>
@@ -80,7 +80,7 @@
         [attr.aria-expanded]="!isToolbarCollapsed()"
         aria-controls="mobile-admin-toolbar-content"
         class="p-1.5 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center justify-center"
-        [title]="isToolbarCollapsed() ? (langService.isArabic() ? 'توسيع شريط الأدوات' : 'Expand Toolbar') : (langService.isArabic() ? 'طي شريط الأدوات' : 'Collapse Toolbar')"
+        [title]="isToolbarCollapsed() ? (langService.isArabic() ? 'توسيع' : 'Expand') : (langService.isArabic() ? 'طي' : 'Collapse')"
       >
         <app-icon [name]="isToolbarCollapsed() ? 'chevron-down' : 'chevron-up'" [size]="14" />
       </button>
@@ -226,7 +226,7 @@
   @if (isNotificationsOpen()) {
     <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
       <div class="flex items-center justify-between pb-1.5 border-b border-surface-border/60">
-        <span class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'إشعارات التسليمات المجمعة' : 'Batched Submission Alerts' }}</span>
+        <span class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'إشعارات التسليمات' : 'Submission Alerts' }}</span>
         <span class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'كل 5 حلول' : 'Every 5 submissions' }}</span>
       </div>
 
@@ -247,7 +247,7 @@
           </div>
         } @empty {
           <div class="py-4 text-center text-xs text-text-muted">
-            {{ langService.isArabic() ? 'لا توجد تنبيهات تسليمات مجمعة جديدة.' : 'No new batched submission alerts.' }}
+            {{ langService.isArabic() ? 'لا توجد إشعارات جديدة.' : 'No new alerts.' }}
           </div>
         }
       </div>

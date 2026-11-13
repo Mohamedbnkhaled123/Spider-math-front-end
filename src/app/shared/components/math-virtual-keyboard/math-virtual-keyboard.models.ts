@@ -164,19 +164,19 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'FRACTION':
       return {
         type: 'FRACTION',
-        titleAr: 'تعديل الكسر الرياضي مباشرة',
-        titleEn: 'Edit Fraction Directly',
+        titleAr: 'تعديل الكسر',
+        titleEn: 'Edit Fraction',
         slots: [
-          { id: 'num', labelAr: 'البسط (أعلى)', labelEn: 'Numerator', placeholder: '3', value: '' },
-          { id: 'den', labelAr: 'المقام (أسفل)', labelEn: 'Denominator', placeholder: '5', value: '' }
+          { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: '' },
+          { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: '' }
         ],
         activeSlotIndex: 0
       };
     case 'SQRT':
       return {
         type: 'SQRT',
-        titleAr: 'تعديل الجذر التربيعي مباشرة',
-        titleEn: 'Edit Square Root Directly',
+        titleAr: 'تعديل الجذر التربيعي',
+        titleEn: 'Edit Square Root',
         slots: [
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '16', value: '' }
         ],
@@ -185,8 +185,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'NTH_ROOT':
       return {
         type: 'NTH_ROOT',
-        titleAr: 'تعديل الجذر النوني مباشرة',
-        titleEn: 'Edit N-th Root Directly',
+        titleAr: 'تعديل الجذر النوني',
+        titleEn: 'Edit N-th Root',
         slots: [
           { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: '' },
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: '' }
@@ -196,8 +196,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'POWER':
       return {
         type: 'POWER',
-        titleAr: 'تعديل الأس مباشرة',
-        titleEn: 'Edit Exponent Directly',
+        titleAr: 'تعديل الأس',
+        titleEn: 'Edit Exponent',
         slots: [
           { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: 'x' },
           { id: 'exp', labelAr: 'الأس', labelEn: 'Exponent', placeholder: '2', value: '2' }
@@ -207,8 +207,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'SUBSCRIPT':
       return {
         type: 'SUBSCRIPT',
-        titleAr: 'تعديل الدليل السفلي مباشرة',
-        titleEn: 'Edit Subscript Directly',
+        titleAr: 'تعديل الدليل السفلي',
+        titleEn: 'Edit Subscript',
         slots: [
           { id: 'base', labelAr: 'الرمز الأساسي', labelEn: 'Base', placeholder: 'x', value: 'x' },
           { id: 'sub', labelAr: 'الدليل السفلي', labelEn: 'Subscript', placeholder: '1', value: '1' }
@@ -218,8 +218,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'INTEGRAL':
       return {
         type: 'INTEGRAL',
-        titleAr: 'تعديل التكامل المحدد مباشرة',
-        titleEn: 'Edit Definite Integral Directly',
+        titleAr: 'تعديل التكامل المحدد',
+        titleEn: 'Edit Definite Integral',
         slots: [
           { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: '0' },
           { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: '1' },
@@ -230,8 +230,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'INDEFINITE_INTEGRAL':
       return {
         type: 'INDEFINITE_INTEGRAL',
-        titleAr: 'تعديل التكامل غير المحدد مباشرة',
-        titleEn: 'Edit Indefinite Integral Directly',
+        titleAr: 'تعديل التكامل غير المحدد',
+        titleEn: 'Edit Indefinite Integral',
         slots: [
           { id: 'expr', labelAr: 'الدالة المراد مكاملتها', labelEn: 'Integrand', placeholder: 'x', value: 'x' }
         ],
@@ -240,8 +240,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'LIMIT':
       return {
         type: 'LIMIT',
-        titleAr: 'تعديل النهاية مباشرة',
-        titleEn: 'Edit Limit Directly',
+        titleAr: 'تعديل النهاية',
+        titleEn: 'Edit Limit',
         slots: [
           { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: '0' },
           { id: 'expr', labelAr: 'الدالة المراد دراستها', labelEn: 'Expression', placeholder: 'f(x)', value: '' }
@@ -251,8 +251,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'SUMMATION':
       return {
         type: 'SUMMATION',
-        titleAr: 'تعديل رمز التجميع (سيجما)',
-        titleEn: 'Edit Summation Directly',
+        titleAr: 'تعديل التجميع',
+        titleEn: 'Edit Summation',
         slots: [
           { id: 'lower', labelAr: 'بداية التجميع', labelEn: 'Lower limit', placeholder: 'i=1', value: 'i=1' },
           { id: 'upper', labelAr: 'نهاية التجميع', labelEn: 'Upper limit', placeholder: 'n', value: 'n' },
@@ -263,8 +263,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'LOG':
       return {
         type: 'LOG',
-        titleAr: 'تعديل اللوغاريتم مباشرة',
-        titleEn: 'Edit Logarithm Directly',
+        titleAr: 'تعديل اللوغاريتم',
+        titleEn: 'Edit Logarithm',
         slots: [
           { id: 'base', labelAr: 'أساس اللوغاريتم (a)', labelEn: 'Base (a)', placeholder: '10', value: '10' },
           { id: 'val', labelAr: 'العدد (b)', labelEn: 'Value (b)', placeholder: 'x', value: 'x' }
@@ -274,8 +274,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'LN':
       return {
         type: 'LN',
-        titleAr: 'تعديل اللوغاريتم الطبيعي (ln)',
-        titleEn: 'Edit Natural Log Directly',
+        titleAr: 'تعديل اللوغاريتم (ln)',
+        titleEn: 'Edit Natural Log',
         slots: [
           { id: 'val', labelAr: 'العدد (x)', labelEn: 'Value (x)', placeholder: 'x', value: 'x' }
         ],
@@ -284,8 +284,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'ABS':
       return {
         type: 'ABS',
-        titleAr: 'تعديل القيمة المطلقة / المقياس',
-        titleEn: 'Edit Absolute Value Directly',
+        titleAr: 'تعديل القيمة المطلقة',
+        titleEn: 'Edit Absolute Value',
         slots: [
           { id: 'val', labelAr: 'ما بداخل المقياس', labelEn: 'Inside Value', placeholder: 'x', value: '' }
         ],
@@ -294,8 +294,8 @@ export function createVisualTemplate(type: VisualTemplateType): IVisualTemplate 
     case 'PARENS':
       return {
         type: 'PARENS',
-        titleAr: 'تعديل ما بداخل القوسين',
-        titleEn: 'Edit Parentheses Directly',
+        titleAr: 'تعديل الأقواس',
+        titleEn: 'Edit Parentheses',
         slots: [
           { id: 'val', labelAr: 'ما بداخل القوسين', labelEn: 'Inside Parentheses', placeholder: 'x', value: '' }
         ],
@@ -521,8 +521,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'FRACTION',
-        titleAr: 'تعديل الكسر الرياضي مباشرة',
-        titleEn: 'Edit Fraction Directly',
+        titleAr: 'تعديل الكسر',
+        titleEn: 'Edit Fraction',
         slots: [
           { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: num },
           { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: den }
@@ -549,8 +549,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: raw,
       template: {
         type: 'FRACTION',
-        titleAr: 'تعديل الكسر الرياضي مباشرة',
-        titleEn: 'Edit Fraction Directly',
+        titleAr: 'تعديل الكسر',
+        titleEn: 'Edit Fraction',
         slots: [
           { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: num },
           { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: den }
@@ -577,8 +577,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'NTH_ROOT',
-        titleAr: 'تعديل الجذر النوني مباشرة',
-        titleEn: 'Edit N-th Root Directly',
+        titleAr: 'تعديل الجذر النوني',
+        titleEn: 'Edit N-th Root',
         slots: [
           { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: deg },
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: rad }
@@ -605,8 +605,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: raw,
       template: {
         type: 'NTH_ROOT',
-        titleAr: 'تعديل الجذر النوني مباشرة',
-        titleEn: 'Edit N-th Root Directly',
+        titleAr: 'تعديل الجذر النوني',
+        titleEn: 'Edit N-th Root',
         slots: [
           { id: 'degree', labelAr: 'دليل الجذر (n)', labelEn: 'Degree (n)', placeholder: '3', value: deg },
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '27', value: rad }
@@ -632,8 +632,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'SQRT',
-        titleAr: 'تعديل الجذر التربيعي مباشرة',
-        titleEn: 'Edit Square Root Directly',
+        titleAr: 'تعديل الجذر التربيعي',
+        titleEn: 'Edit Square Root',
         slots: [
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '16', value: rad }
         ],
@@ -658,8 +658,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: raw,
       template: {
         type: 'SQRT',
-        titleAr: 'تعديل الجذر التربيعي مباشرة',
-        titleEn: 'Edit Square Root Directly',
+        titleAr: 'تعديل الجذر التربيعي',
+        titleEn: 'Edit Square Root',
         slots: [
           { id: 'radicand', labelAr: 'ما بداخل الجذر', labelEn: 'Radicand', placeholder: '16', value: rad }
         ],
@@ -686,8 +686,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'SUMMATION',
-        titleAr: 'تعديل رمز التجميع مباشرة',
-        titleEn: 'Edit Summation Directly',
+        titleAr: 'تعديل التجميع',
+        titleEn: 'Edit Summation',
         slots: [
           { id: 'lower', labelAr: 'بداية التجميع', labelEn: 'Lower limit', placeholder: 'i=1', value: lower },
           { id: 'upper', labelAr: 'نهاية التجميع', labelEn: 'Upper limit', placeholder: 'n', value: upper },
@@ -716,8 +716,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'INTEGRAL',
-        titleAr: 'تعديل التكامل المحدد مباشرة',
-        titleEn: 'Edit Definite Integral Directly',
+        titleAr: 'تعديل التكامل المحدد',
+        titleEn: 'Edit Definite Integral',
         slots: [
           { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: a },
           { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: b },
@@ -744,8 +744,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'INDEFINITE_INTEGRAL',
-        titleAr: 'تعديل التكامل غير المحدد مباشرة',
-        titleEn: 'Edit Indefinite Integral Directly',
+        titleAr: 'تعديل التكامل غير المحدد',
+        titleEn: 'Edit Indefinite Integral',
         slots: [
           { id: 'expr', labelAr: 'الدالة المراد مكاملتها', labelEn: 'Integrand', placeholder: 'x', value: expr }
         ],
@@ -771,8 +771,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'LIMIT',
-        titleAr: 'تعديل النهاية مباشرة',
-        titleEn: 'Edit Limit Directly',
+        titleAr: 'تعديل النهاية',
+        titleEn: 'Edit Limit',
         slots: [
           { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: toVal },
           { id: 'expr', labelAr: 'الدالة المراد دراستها', labelEn: 'Expression', placeholder: 'f(x)', value: expr }
@@ -799,8 +799,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'LOG',
-        titleAr: 'تعديل اللوغاريتم مباشرة',
-        titleEn: 'Edit Logarithm Directly',
+        titleAr: 'تعديل اللوغاريتم',
+        titleEn: 'Edit Logarithm',
         slots: [
           { id: 'base', labelAr: 'أساس اللوغاريتم (a)', labelEn: 'Base (a)', placeholder: '10', value: base },
           { id: 'val', labelAr: 'العدد (b)', labelEn: 'Value (b)', placeholder: 'x', value: val }
@@ -826,8 +826,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'LN',
-        titleAr: 'تعديل اللوغاريتم الطبيعي مباشرة',
-        titleEn: 'Edit Natural Log Directly',
+        titleAr: 'تعديل اللوغاريتم (ln)',
+        titleEn: 'Edit Natural Log',
         slots: [
           { id: 'val', labelAr: 'العدد (x)', labelEn: 'Value (x)', placeholder: 'x', value: val }
         ],
@@ -853,7 +853,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'POWER',
-        titleAr: 'تعديل الأس مباشرة',
+        titleAr: 'تعديل الأس',
         titleEn: 'Edit Power Directly',
         slots: [
           { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: base },
@@ -882,7 +882,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: raw,
       template: {
         type: 'POWER',
-        titleAr: 'تعديل الأس مباشرة',
+        titleAr: 'تعديل الأس',
         titleEn: 'Edit Power Directly',
         slots: [
           { id: 'base', labelAr: 'الأساس', labelEn: 'Base', placeholder: 'x', value: base },
@@ -910,8 +910,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'SUBSCRIPT',
-        titleAr: 'تعديل الدليل السفلي مباشرة',
-        titleEn: 'Edit Subscript Directly',
+        titleAr: 'تعديل الدليل السفلي',
+        titleEn: 'Edit Subscript',
         slots: [
           { id: 'base', labelAr: 'الرمز الأساسي', labelEn: 'Base', placeholder: 'x', value: base },
           { id: 'sub', labelAr: 'الدليل السفلي', labelEn: 'Subscript', placeholder: '1', value: sub }
@@ -937,8 +937,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'ABS',
-        titleAr: 'تعديل القيمة المطلقة مباشرة',
-        titleEn: 'Edit Absolute Value Directly',
+        titleAr: 'تعديل القيمة المطلقة',
+        titleEn: 'Edit Absolute Value',
         slots: [
           { id: 'val', labelAr: 'ما بداخل المقياس', labelEn: 'Inside Value', placeholder: 'x', value: val }
         ],
@@ -963,8 +963,8 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       displayPreview: toVisualMath(raw),
       template: {
         type: 'PARENS',
-        titleAr: 'تعديل ما بداخل القوسين مباشرة',
-        titleEn: 'Edit Parentheses Directly',
+        titleAr: 'تعديل الأقواس',
+        titleEn: 'Edit Parentheses',
         slots: [
           { id: 'val', labelAr: 'ما بداخل القوسين', labelEn: 'Inside Parentheses', placeholder: 'x', value: val }
         ],

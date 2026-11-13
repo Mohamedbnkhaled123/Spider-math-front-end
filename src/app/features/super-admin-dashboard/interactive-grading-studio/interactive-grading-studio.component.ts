@@ -296,7 +296,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
     this.http.post<{ success: boolean; message: string }>(`/api/v1/admin/submissions/${sub.id}/approve`, {}).subscribe({
       next: () => {
         this.toastTriggered.emit({
-          text: `تم اعتماد ونشر نتيجة الطالب "${sub.studentName}" بنجاح وإشعار ولي أمره ورصد النقاط!`,
+          text: `تم اعتماد نتيجة ${sub.studentName} بنجاح`,
           type: 'success'
         });
         this.fetchAllSubmissions();
@@ -306,7 +306,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
       },
       error: (err) => {
         this.toastTriggered.emit({
-          text: err?.error?.message || 'تعذر اعتماد النتيجة، يُرجى المحاولة مرة أخرى.',
+          text: err?.error?.message || 'تعذر اعتماد النتيجة. أعد المحاولة.',
           type: 'error'
         });
       }
@@ -437,7 +437,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
         this.isGradingModalOpen.set(false);
         this.fetchAllSubmissions();
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة الطالب ${item.studentName} ونشر التقرير وإشعار ولي أمره بنجاح!`,
+          text: `تم اعتماد نتيجة ${item.studentName}`,
           type: 'success'
         });
       },
@@ -448,7 +448,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
         this.isGradingModalOpen.set(false);
         this.fetchAllSubmissions();
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة الطالب ${item.studentName} وتحديث التقرير فورياً!`,
+          text: `تم اعتماد نتيجة ${item.studentName}`,
           type: 'success'
         });
       }

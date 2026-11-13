@@ -150,8 +150,8 @@ export class InactiveDashboardComponent implements OnInit {
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
-      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد!`
+      : `⏳ Coming Soon — "${title}" is being prepared!`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {
@@ -345,11 +345,11 @@ export class InactiveDashboardComponent implements OnInit {
 
   async logout(): Promise<void> {
     const confirmed = await this.confirmDialogService.confirm({
-      title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
+      title: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
       message: this.langService.isArabic()
-        ? 'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟'
-        : 'Are you sure you want to log out of your account?',
-      confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
+        ? 'تسجيل الخروج من حسابك؟'
+        : 'Log out of your account?',
+      confirmLabel: this.langService.isArabic() ? 'خروج' : 'Log Out',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       isDestructive: true,
       icon: 'log-out'

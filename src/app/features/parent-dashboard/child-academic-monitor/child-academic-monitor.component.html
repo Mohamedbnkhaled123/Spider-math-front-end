@@ -75,7 +75,7 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-xs font-black tracking-wide uppercase" [class.text-emerald-500]="rep.presence.isOnline" [class.text-text-muted]="!rep.presence.isOnline">
-                {{ rep.presence.isOnline ? (langService.isArabic() ? 'نشاط حي مباشر الآن' : 'Live Active Now') : (langService.isArabic() ? 'غير متصل حالياً' : 'Currently Offline') }}
+                {{ rep.presence.isOnline ? (langService.isArabic() ? 'متصل الآن' : 'Online') : (langService.isArabic() ? 'غير متصل' : 'Offline') }}
               </span>
               <span class="text-text-muted text-xs">•</span>
               <span class="text-xs font-mono font-bold text-text-secondary">
@@ -128,7 +128,7 @@
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
           <app-icon name="book-open" [size]="20" className="text-brand-primary dark:text-brand-accent" />
-          <span>{{ langService.isArabic() ? 'متابعة إنجاز الوحدات الدراسية واشتراكات الفصل' : 'Unit Progress & Term Subscriptions' }}</span>
+          <span>{{ langService.isArabic() ? 'إنجاز الوحدات الدراسية' : 'Unit Progress' }}</span>
         </h3>
         <span class="text-xs font-bold text-text-muted">
           {{ langService.isArabic() ? (rep.units.length + ' وحدات مفعلة') : (rep.units.length + ' Active Units') }}
@@ -243,10 +243,10 @@
         <div>
           <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
             <app-icon name="award" [size]="20" className="text-brand-accent" />
-            <span>{{ langService.isArabic() ? 'سجل نتائج الامتحانات والواجبات وتقارير التصحيح' : 'Exam & Homework Results & Correction Reports' }}</span>
+            <span>{{ langService.isArabic() ? 'سجل النتائج والتقارير' : 'Results & Reports' }}</span>
           </h3>
           <p class="text-xs text-text-secondary mt-0.5">
-            {{ langService.isArabic() ? 'عرض منظم ومقسم حسب الامتحانات والواجبات والوحدات الدراسية مع ملاحظات م/ هبة وشرح فيديو للأخطاء.' : 'Structured view categorized by exams, quizzes, homework, and units with Eng. Heba feedback.' }}
+            {{ langService.isArabic() ? 'عرض منظم للامتحانات والواجبات مع ملاحظات المعلمة وشرح الحل.' : 'Exams and homework with teacher feedback and video solutions.' }}
           </p>
         </div>
 
@@ -641,11 +641,11 @@
           } @else if (!sub.isPendingReview && !sub.isInProgress && sub.finalTotalScore === sub.maxScore && sub.maxScore > 0) {
             <div class="mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs font-bold text-emerald-500 flex items-center gap-2">
               <app-icon name="check-circle" [size]="16" />
-              <span>{{ langService.isArabic() ? 'إجابات نموذجية كاملة بدون أي أخطاء — أحسنت!' : 'Perfect model answers with zero mistakes — Excellent!' }}</span>
+              <span>{{ langService.isArabic() ? 'إجابة نموذجية بدون أخطاء — أحسنت!' : 'Perfect score — Excellent!' }}</span>
             </div>
           } @else if (!sub.isPendingReview && !sub.isInProgress) {
             <div class="mt-4 p-3 rounded-xl bg-surface-bg border border-surface-border text-xs text-text-muted text-center">
-              {{ langService.isArabic() ? 'تم رصد الدرجة، ولا توجد ملاحظات أخطاء إضافية مسجلة.' : 'Score recorded with no additional mistake notes logged.' }}
+              {{ langService.isArabic() ? 'تم رصد الدرجة كاملة.' : 'Full score recorded.' }}
             </div>
           }
         </div>
@@ -657,10 +657,10 @@
         <app-icon name="activity" [size]="32" />
       </div>
       <h3 class="text-base font-bold text-text-primary mb-1">
-        {{ langService.isArabic() ? 'لا توجد تقارير دراسية متاحة بعد لهذا الطالب' : 'No academic reports available yet for this student' }}
+        {{ langService.isArabic() ? 'لا توجد تقارير متاحة بعد' : 'No reports available yet' }}
       </h3>
       <p class="text-xs text-text-secondary leading-relaxed">
-        {{ langService.isArabic() ? 'ستظهر هنا تفاصيل الحضور ونقاط الخبرة والدرجات فور بدء الطالب في مشاهدة المحاضرات وحل الامتحانات.' : 'Attendance details, XP points, and exam grades will appear here once the student starts watching lectures and solving assessments.' }}
+        {{ langService.isArabic() ? 'ستظهر التفاصيل والدرجات فور بدء الطالب في المذاكرة.' : 'Details and grades will appear once the student starts studying.' }}
       </p>
     </div>
   }
@@ -682,8 +682,8 @@
               </h3>
               <p class="text-[11px] text-text-muted">
                 {{ sol.type === 'VIDEO'
-                  ? (langService.isArabic() ? 'يتم عرض فيديو الحل النموذجي لولي الأمر مباشرة داخل منصة سبايدر ماث' : 'Streaming solution video directly inside Spider Math')
-                  : (langService.isArabic() ? 'يتم عرض منشور الحل التوضيحي مباشرة داخل منصة سبايدر ماث' : 'Viewing solution post directly inside Spider Math') }}
+                  ? (langService.isArabic() ? 'مشاهدة فيديو الحل' : 'Streaming solution video')
+                  : (langService.isArabic() ? 'عرض منشور الحل' : 'Viewing solution post') }}
               </p>
             </div>
           </div>
@@ -715,10 +715,10 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <h4 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
-                  {{ langService.isArabic() ? 'منشور الحل التوضيحي المعتمد' : 'Verified Community Post Solution' }}
+                  {{ langService.isArabic() ? 'منشور الحل' : 'Solution Post' }}
                 </h4>
                 <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
-                  {{ langService.isArabic() ? 'أرفقت المعلمة هذا المنشور على يوتيوب كشرح إضافي توضيحي لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
+                  {{ langService.isArabic() ? 'شرح توضيحي للمسألة من المعلمة.' : 'Teacher explanation for this problem.' }}
                 </p>
               </div>
 
@@ -738,7 +738,7 @@
         <div class="flex items-center justify-between pt-2">
           <span class="text-[10px] text-text-muted flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>{{ langService.isArabic() ? 'مشاهدة آمنة ومحمية داخل المنصة' : 'Protected in-platform viewing' }}</span>
+            <span>{{ langService.isArabic() ? 'مشاهدة محمية' : 'Protected viewing' }}</span>
           </span>
 
           <button
@@ -852,7 +852,7 @@
         <!-- Modal Footer -->
         <div class="pt-3 border-t border-surface-border flex items-center justify-between">
           <span class="text-[11px] text-text-muted">
-            {{ langService.isArabic() ? 'يمكن للطالب مراجعة الحل النموذجي عبر فيديوهات الشرح المرفقة.' : 'Student can review model answers via the attached explanation videos.' }}
+            {{ langService.isArabic() ? 'راجع الحل النموذجي عبر فيديوهات الشرح.' : 'Review model answers via explanation videos.' }}
           </span>
           <button
             type="button"

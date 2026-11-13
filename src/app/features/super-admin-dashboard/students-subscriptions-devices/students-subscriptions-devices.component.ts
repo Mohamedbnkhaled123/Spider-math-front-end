@@ -243,14 +243,14 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       next: () => {
         this.deviceApproved.emit(dev);
         this.toastTriggered.emit({
-          text: `تم اعتماد الجهاز بنجاح للطالب ${dev.studentName} دون مساس بأجهزته السابقة!`,
+          text: `تم اعتماد جهاز ${dev.studentName}`,
           type: 'success'
         });
       },
       error: () => {
         this.deviceApproved.emit(dev);
         this.toastTriggered.emit({
-          text: `تم اعتماد جهاز الطالب ${dev.studentName} فورياً!`,
+          text: `تم اعتماد جهاز ${dev.studentName}`,
           type: 'success'
         });
       }
@@ -262,14 +262,14 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       next: () => {
         this.deviceRejected.emit(dev);
         this.toastTriggered.emit({
-          text: `تم رفض الجهاز للطالب ${dev.studentName}!`,
+          text: `تم رفض جهاز ${dev.studentName}`,
           type: 'warning'
         });
       },
       error: () => {
         this.deviceRejected.emit(dev);
         this.toastTriggered.emit({
-          text: `تم رفض الجهاز للطالب ${dev.studentName}!`,
+          text: `تم رفض جهاز ${dev.studentName}`,
           type: 'warning'
         });
       }
@@ -297,7 +297,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     if (!student) return;
     if (!unitId) {
       this.toastTriggered.emit({
-        text: 'يرجى اختيار وحدة دراسية صالحة من قاعدة البيانات',
+        text: 'اختر وحدة دراسية',
         type: 'warning'
       });
       return;
@@ -318,15 +318,15 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.isActivateModalOpen.set(false);
-        const scopeLabel = this.activationScope() === 'ASSESSMENTS_ONLY' ? 'باقة الاختبارات والكويزات فقط' : 'باقة الوحدة كاملة (محاضرات + اختبارات)';
+        const scopeLabel = this.activationScope() === 'ASSESSMENTS_ONLY' ? 'اختبارات فقط' : 'الوحدة كاملة';
         this.toastTriggered.emit({
-          text: `تم تفعيل (${scopeLabel}) للطالب ${student.name} بنجاح!`,
+          text: `تم تفعيل ${scopeLabel} لـ ${student.name}`,
           type: 'success'
         });
       },
       error: (err) => {
         this.isActivatingUnit.set(false);
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'فشل تفعيل الوحدة. تأكد من صحة بيانات الوحدة والطالب.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'فشل تفعيل الوحدة. تحقق من البيانات.';
         this.toastTriggered.emit({
           text: errMsg,
           type: 'error'
@@ -348,7 +348,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.toastTriggered.emit({
-          text: `تم تحديث حالة اشتراك الطالب ${student.name} إلى ${status}!`,
+          text: `تم تحديث حالة اشتراك ${student.name} إلى ${status}`,
           type: 'success'
         });
       },
@@ -360,7 +360,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.toastTriggered.emit({
-          text: `تم تحديث حالة اشتراك الطالب ${student.name} إلى ${status}!`,
+          text: `تم تحديث حالة اشتراك ${student.name} إلى ${status}`,
           type: 'success'
         });
       }
@@ -395,7 +395,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         this.studentUpdated.emit(updated);
         this.isXpModalOpen.set(false);
         this.toastTriggered.emit({
-          text: `تم ${delta >= 0 ? 'منح بونص' : 'خصم'} ${Math.abs(delta)} XP للطالب ${student.name} بنجاح!`,
+          text: `تم ${delta >= 0 ? 'إضافة' : 'خصم'} ${Math.abs(delta)} XP لـ ${student.name}`,
           type: 'success'
         });
       },
@@ -407,7 +407,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         this.studentUpdated.emit(updated);
         this.isXpModalOpen.set(false);
         this.toastTriggered.emit({
-          text: `تم ${delta >= 0 ? 'منح بونص' : 'خصم'} ${Math.abs(delta)} XP للطالب ${student.name} فورياً!`,
+          text: `تم ${delta >= 0 ? 'إضافة' : 'خصم'} ${Math.abs(delta)} XP لـ ${student.name}`,
           type: 'success'
         });
       }
@@ -431,7 +431,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.toastTriggered.emit({
-          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف بنجاح!`,
+          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف`,
           type: 'success'
         });
       },
@@ -442,7 +442,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         };
         this.studentUpdated.emit(updated);
         this.toastTriggered.emit({
-          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف!`,
+          text: `تم ${nextState ? 'إخفاء' : 'إظهار'} الطالب في لوحة الشرف`,
           type: 'success'
         });
       }

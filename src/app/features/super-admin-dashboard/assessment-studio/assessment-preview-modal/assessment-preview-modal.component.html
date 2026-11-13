@@ -19,7 +19,7 @@
                 {{ asm.gradeLevel }}
               </span>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-                {{ langService.isArabic() ? 'محاكاة الطالب (معاينة)' : 'Student Simulation' }}
+                {{ langService.isArabic() ? 'محاكاة الطالب' : 'Simulation' }}
               </span>
               <h3 class="text-sm sm:text-base font-black text-text-primary truncate max-w-xs sm:max-w-md">
                 {{ asm.titleAr }}
@@ -204,7 +204,7 @@
                   <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-text-secondary flex items-center gap-1.5">
                       <app-icon name="file-text" [size]="15" className="text-brand-primary" />
-                      <span>{{ langService.isArabic() ? 'كتابة خطوات الحل الرياضية (محاكاة إجابة الطالب):' : 'Write solution steps (Simulate student answer):' }}</span>
+                      <span>{{ langService.isArabic() ? 'خطوات الحل (محاكاة الطالب):' : 'Solution steps (Simulation):' }}</span>
                     </span>
                   </div>
 
@@ -213,7 +213,7 @@
                     (ngModelChange)="updateEssayAnswer(q.id, $event)"
                     rows="3"
                     class="w-full p-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
-                    [placeholder]="langService.isArabic() ? 'يمكنك كتابة خطوات تجريبية هنا لمحاكاة حل الطالب في الامتحان...' : 'Type sample solution steps here...'"
+                    [placeholder]="langService.isArabic() ? 'اكتب خطوات تجريبية هنا...' : 'Type sample solution steps here...'"
                     [attr.data-testid]="'preview-essay-textarea-' + q.id"
                   ></textarea>
 
@@ -232,15 +232,15 @@
                     >
                       @if (essayPhotoAttached()[q.id]) {
                         <app-icon name="check-circle" [size]="14" />
-                        <span>{{ langService.isArabic() ? 'تمت محاكاة إرفاق صورة الحل اليدوي (كشكول الطالب)' : 'Handwritten solution photo simulated' }}</span>
+                        <span>{{ langService.isArabic() ? 'تمت محاكاة إرفاق صورة الحل' : 'Handwritten photo simulated' }}</span>
                       } @else {
                         <app-icon name="camera" [size]="14" />
-                        <span>{{ langService.isArabic() ? 'محاكاة إرفاق صورة حل يدوي من كشكول الطالب' : 'Simulate uploading handwritten photo' }}</span>
+                        <span>{{ langService.isArabic() ? 'محاكاة إرفاق صورة الحل' : 'Simulate handwritten photo' }}</span>
                       }
                     </button>
 
                     <span class="text-[11px] text-text-muted">
-                      {{ langService.isArabic() ? 'ملاحظة: هذا محاكي تدريبي فقط ولا يتم رفع أي ملفات للسيرفر.' : 'Pure simulation: no files are uploaded to the server.' }}
+                      {{ langService.isArabic() ? 'محاكي تدريبي؛ لا يتم رفع ملفات للسيرفر.' : 'Simulation only: no files uploaded.' }}
                     </span>
                   </div>
                 </div>
@@ -318,7 +318,7 @@
             <div class="p-6 rounded-3xl bg-surface-bg border border-surface-border flex flex-col sm:flex-row items-center justify-between gap-6">
               <div class="space-y-1 text-center sm:text-start">
                 <span class="text-xs font-bold text-text-muted">
-                  {{ langService.isArabic() ? 'نتيجة محاكاة الطالب في المعاينة' : 'Simulation Result' }}
+                  {{ langService.isArabic() ? 'نتيجة المحاكاة' : 'Simulation Result' }}
                 </span>
                 <div class="flex items-baseline justify-center sm:justify-start gap-2">
                   <span class="text-3xl sm:text-4xl font-black font-mono text-brand-primary" data-testid="preview-percentage">
@@ -338,7 +338,7 @@
                       ? ('يتضمن الامتحان ' + scoringSummary().essayCount + ' أسئلة مقالية بإجمالي ' + scoringSummary().essayTotalPoints + ' درجة مستثناة من التصحيح الآلي.')
                       : ('تم احتساب جميع درجات أسئلة الاختيار من متعدد تلقائياً.') }}
                   } @else {
-                    {{ langService.isArabic() ? 'كافة أسئلة الامتحان اختيار من متعدد وحُسبت نتيجتها بالكامل.' : 'All questions are MCQ and fully auto-graded.' }}
+                    {{ langService.isArabic() ? 'كافة الأسئلة اختيار من متعدد وحُسبت نتيجتها.' : 'All questions are MCQ and fully auto-graded.' }}
                   }
                 </p>
               </div>
@@ -369,7 +369,7 @@
             <div class="space-y-4">
               <h4 class="text-xs sm:text-sm font-black text-text-primary flex items-center gap-2">
                 <app-icon name="file-text" [size]="15" className="text-brand-primary" />
-                <span>{{ langService.isArabic() ? 'نموذج الإجابات والتفسيرات التفصيلية للمسائل:' : 'Model Answers & Explanations:' }}</span>
+                <span>{{ langService.isArabic() ? 'نموذج الإجابات والتفسيرات:' : 'Model Answers & Explanations:' }}</span>
               </h4>
 
               @for (q of questions(); track q.id; let idx = $index) {
@@ -473,7 +473,7 @@
                   @if (isQuestionEssayType(q)) {
                     <div class="p-3 rounded-xl bg-surface-bg border border-surface-border space-y-1 text-xs">
                       <span class="text-[11px] font-bold text-text-muted block">
-                        {{ langService.isArabic() ? 'ما سجله الطالب في المحاكاة لهذا السؤال:' : 'Simulated student submission for this question:' }}
+                        {{ langService.isArabic() ? 'إجابة الطالب في المحاكاة:' : 'Simulated student submission:' }}
                       </span>
                       @if (essayAnswers()[q.id]; as textAns) {
                         <p class="text-text-primary italic font-mono bg-surface-card p-2 rounded-lg border border-surface-border/50">
@@ -483,12 +483,12 @@
                       @if (essayPhotoAttached()[q.id]) {
                         <div class="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] pt-1">
                           <app-icon name="check-circle" [size]="13" />
-                          <span>{{ langService.isArabic() ? 'تمت محاكاة إرفاق صورة الحل اليدوي بالكشكول' : 'Handwritten notebook photo attached' }}</span>
+                          <span>{{ langService.isArabic() ? 'تم إرفاق صورة الحل' : 'Solution photo attached' }}</span>
                         </div>
                       }
                       @if (!essayAnswers()[q.id] && !essayPhotoAttached()[q.id]) {
                         <p class="text-text-muted italic text-[11px]">
-                          {{ langService.isArabic() ? '(لم يتم تسجيل خطوات حل تجريبية في المحاكاة لهذا السؤال)' : '(No solution was simulated for this question)' }}
+                          {{ langService.isArabic() ? '(لم تُسجل خطوات حل تجريبية)' : '(No solution was simulated)' }}
                         </p>
                       }
                     </div>
@@ -499,7 +499,7 @@
                     <div class="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/15 space-y-1">
                       <span class="text-[11px] font-bold text-brand-primary flex items-center gap-1.5">
                         <app-icon name="file-text" [size]="13" />
-                        <span>{{ langService.isArabic() ? 'التفسير والشرح النموذجي للمعلمة:' : 'Model Answer Explanation:' }}</span>
+                        <span>{{ langService.isArabic() ? 'التفسير والشرح النموذجي:' : 'Model Answer Explanation:' }}</span>
                       </span>
                       <div class="text-xs text-text-secondary leading-relaxed">
                         <app-math-formula [text]="q.explanationAr" />
@@ -527,8 +527,8 @@
                         <app-icon [name]="isYoutubePost(q.youtubeSolutionUrl) ? 'file-text' : 'play'" [size]="13" />
                         <span>
                           {{ isYoutubePost(q.youtubeSolutionUrl)
-                            ? (langService.isArabic() ? 'عرض منشور حل المسألة (داخل المنصة)' : 'View Post Solution on Platform')
-                            : (langService.isArabic() ? 'مشاهدة فيديو حل المسألة (داخل المنصة)' : 'Watch Video Solution on Platform') }}
+                            ? (langService.isArabic() ? 'منشور الحل' : 'View Post Solution')
+                            : (langService.isArabic() ? 'فيديو الحل' : 'Watch Video Solution') }}
                         </span>
                       </button>
                     </div>
@@ -563,7 +563,7 @@
           <div class="flex items-center gap-2">
             <app-icon name="file-text" [size]="16" className="text-brand-primary" />
             <h4 class="font-bold text-sm text-text-primary">
-              {{ langService.isArabic() ? 'ورقة القوانين والمفاهيم الرياضية' : 'Formula & Reference Sheet' }}
+              {{ langService.isArabic() ? 'ورقة القوانين والمفاهيم' : 'Formula & Reference Sheet' }}
             </h4>
           </div>
           <button
@@ -604,8 +604,8 @@
               </h3>
               <p class="text-[11px] text-text-muted">
                 {{ sol.type === 'VIDEO'
-                  ? (langService.isArabic() ? 'معاينة فيديو الحل النموذجي مباشرة داخل المنصة' : 'Previewing video solution directly inside platform')
-                  : (langService.isArabic() ? 'معاينة منشور الحل التوضيحي مباشرة داخل المنصة' : 'Previewing post solution directly inside platform') }}
+                  ? (langService.isArabic() ? 'فيديو الحل النموذجي' : 'Video Solution')
+                  : (langService.isArabic() ? 'منشور الحل التوضيحي' : 'Post Solution') }}
               </p>
             </div>
           </div>
@@ -637,10 +637,10 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <h4 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
-                  {{ langService.isArabic() ? 'منشور الحل التوضيحي المعتمد' : 'Verified Community Post Solution' }}
+                  {{ langService.isArabic() ? 'منشور الحل التوضيحي' : 'Verified Community Post Solution' }}
                 </h4>
                 <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
-                  {{ langService.isArabic() ? 'أرفقت المعلمة هذا المنشور على يوتيوب كشرح إضافي توضيحي لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
+                  {{ langService.isArabic() ? 'شرح توضيحي إضافي من المعلمة لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
                 </p>
               </div>
 
@@ -660,7 +660,7 @@
         <div class="flex items-center justify-between pt-2">
           <span class="text-[10px] text-text-muted flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>{{ langService.isArabic() ? 'مشاهدة آمنة ومحمية داخل المنصة' : 'Protected in-platform viewing' }}</span>
+            <span>{{ langService.isArabic() ? 'مشاهدة محمية داخل المنصة' : 'Protected in-platform viewing' }}</span>
           </span>
 
           <button

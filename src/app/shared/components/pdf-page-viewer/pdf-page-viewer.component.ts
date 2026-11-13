@@ -172,7 +172,9 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       console.error('Failed to load PDF document:', err);
-      const msg = 'تعذر فتح ملف الـ PDF. يرجى التأكد من صلاحية الملف والمحاولة مرة أخرى.';
+      const msg = this.langService.isArabic()
+        ? 'تعذر فتح ملف PDF. تحقق من الملف وأعد المحاولة.'
+        : 'Unable to open PDF. Verify file and try again.';
       this.errorMessage.set(msg);
       this.errorOccurred.emit(msg);
       this.isLoading.set(false);

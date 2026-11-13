@@ -77,7 +77,7 @@
       <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
         <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl btn-gold-metallic shadow-gold-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
           <span class="text-xl animate-spark-twinkle">✦</span>
-          <span>{{ langService.isArabic() ? '+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح' : '+50 XP ✦ Great job! Completed 85% of lecture' }}</span>
+          <span>{{ langService.isArabic() ? '+50 XP ✦ أتممت 85% من المحاضرة!' : '+50 XP ✦ 85% Completed!' }}</span>
         </div>
       </div>
     }
@@ -92,7 +92,7 @@
       <div
         (click)="seek($event)"
         class="relative w-full h-4 flex items-center cursor-pointer mb-2 sm:mb-3 group/seek"
-        [title]="langService.isArabic() ? 'انقر للتقديم أو التأخير' : 'Click to seek'"
+        [title]="langService.isArabic() ? 'تقديم / تأخير' : 'Seek'"
       >
         <!-- Background Track -->
         <div class="w-full h-1 sm:h-1.5 rounded-full bg-white/20 relative">
@@ -155,7 +155,7 @@
             (click)="toggleFullscreen()"
             class="p-2 rounded-xl hover:bg-white/15 text-white/80 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
             [attr.aria-label]="isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen'"
-            [title]="isFullscreen() ? (langService.isArabic() ? 'إنهاء ملء الشاشة' : 'Exit Fullscreen') : (langService.isArabic() ? 'ملء الشاشة' : 'Fullscreen')"
+            [title]="isFullscreen() ? (langService.isArabic() ? 'تصغير' : 'Exit Fullscreen') : (langService.isArabic() ? 'ملء الشاشة' : 'Fullscreen')"
           >
             <app-icon [name]="isFullscreen() ? 'minimize' : 'maximize'" [size]="16" />
           </button>

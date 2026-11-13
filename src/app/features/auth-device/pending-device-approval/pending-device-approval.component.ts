@@ -41,8 +41,8 @@ export class PendingDeviceApprovalComponent {
     const confirmed = await this.confirmDialogService.confirm({
       title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
       message: this.langService.isArabic()
-        ? 'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟'
-        : 'Are you sure you want to log out of your account?',
+        ? 'تسجيل الخروج من حسابك؟'
+        : 'Log out of your account?',
       confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       isDestructive: true,

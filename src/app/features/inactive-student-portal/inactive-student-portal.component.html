@@ -5,10 +5,10 @@
     </div>
     
     <h2 class="text-2xl sm:text-3xl font-black mb-3">
-      {{ langService.isArabic() ? 'مرحباً بك في بوابة الطالب' : 'Welcome to Spider Math Student Portal' }}
+      {{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}
     </h2>
     <p class="text-sm text-text-secondary max-w-xl mx-auto mb-8">
-      {{ langService.isArabic() ? 'حسابك مسجل بنجاح، بانتظار تفعيل اشتراكك الأكاديمي لبدء مشاهدة الحصص وحل الواجبات.' : 'Your account is registered. Activate your academic subscription to unlock protected lectures, quizzes and homework.' }}
+      {{ langService.isArabic() ? 'حسابك مسجل. فعّل اشتراكك لفتح الحصص والواجبات.' : 'Account registered. Activate subscription to unlock lessons.' }}
     </p>
 
     <!-- Student HA Code Badge -->
@@ -25,7 +25,7 @@
         class="px-8 py-3.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/25 flex items-center gap-2 mx-auto"
       >
         <app-icon name="message-circle" [size]="18" />
-        <span>{{ langService.isArabic() ? 'طلب تفعيل الاشتراك عبر واتساب' : 'Request Subscription via WhatsApp' }}</span>
+        <span>{{ langService.isArabic() ? 'تفعيل الاشتراك عبر واتساب' : 'Subscribe via WhatsApp' }}</span>
       </button>
     </div>
   </div>

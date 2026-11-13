@@ -113,8 +113,8 @@ export class StudentOverviewComponent implements OnInit {
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
-      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد!`
+      : `⏳ Coming Soon — "${title}" is being prepared!`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {
@@ -256,11 +256,11 @@ export class StudentOverviewComponent implements OnInit {
   async startQuiz(quiz: StudentDueQuizItem): Promise<void> {
     const quizTitle = quiz.titleAr || (quiz as any).title || '';
     const confirmed = await this.confirmDialogService.confirm({
-      title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+      title: this.langService.isArabic() ? 'بدء الاختبار' : 'Start Exam',
       message: this.langService.isArabic()
-        ? `هل أنت مستعد لبدء "${quizTitle}" الآن؟ سيبدأ احتساب الوقت فور الدخول ولن تتمكن من إيقاف المؤقت بعد البدء.`
-        : `Are you ready to start "${quizTitle}" now? The countdown timer begins immediately and cannot be paused.`,
-      confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار الآن' : 'Start Exam Now',
+        ? `بدء "${quizTitle}" الآن؟ يبدأ الوقت فور الدخول.`
+        : `Start "${quizTitle}" now? Timer begins immediately.`,
+      confirmLabel: this.langService.isArabic() ? 'ابدأ الآن' : 'Start Now',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       icon: 'play-circle',
       isDestructive: false
@@ -922,7 +922,7 @@ export class StudentOverviewComponent implements OnInit {
             avatar_url: updated.avatarUrl || updated.avatar_url || this.editAvatarUrl()
           };
           this.authService.updateCurrentUser(patch);
-          this.profileSuccessMessage.set('تم حفظ وتحديث بيانات حسابك بنجاح');
+          this.profileSuccessMessage.set('تم حفظ البيانات بنجاح');
           setTimeout(() => {
             if (this.isProfileModalOpen()) {
               this.closeProfileModal();

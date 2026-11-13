@@ -18,7 +18,7 @@
         }
       </h1>
       <p class="text-xs sm:text-base text-text-secondary mt-2">
-        {{ langService.isArabic() ? 'المنظومة التعليمية الهندسية لمادة الرياضيات — بإشراف المهندسة / هبة عبد الوهاب' : 'The Engineering Math Educational System — Under the Supervision of Eng. Heba Abdelwahab' }}
+        {{ langService.isArabic() ? 'المنظومة الهندسية للرياضيات — إشراف م/ هبة عبد الوهاب' : 'Engineering Math System — Eng. Heba Abdelwahab' }}
       </p>
     </div>
 
@@ -43,7 +43,7 @@
             [class.hover:text-text-primary]="activeTab() !== 'student'"
           >
             <app-icon name="graduation-cap" [size]="15" />
-            <span class="truncate">{{ langService.isArabic() ? 'بوابة الطالب' : 'Student Portal' }}</span>
+            <span class="truncate">{{ langService.isArabic() ? 'الطالب' : 'Student' }}</span>
           </button>
 
           <button
@@ -57,7 +57,7 @@
             [class.hover:text-text-primary]="activeTab() !== 'parent'"
           >
             <app-icon name="shield" [size]="15" />
-            <span class="truncate">{{ langService.isArabic() ? 'ولي الأمر' : 'Parent Portal' }}</span>
+            <span class="truncate">{{ langService.isArabic() ? 'ولي الأمر' : 'Parent' }}</span>
           </button>
 
           <button
@@ -71,7 +71,7 @@
             [class.hover:text-text-primary]="activeTab() !== 'admin'"
           >
             <app-icon name="user" [size]="15" />
-            <span class="truncate">{{ langService.isArabic() ? 'إدارة المنصة' : 'Admin Studio' }}</span>
+            <span class="truncate">{{ langService.isArabic() ? 'الإدارة' : 'Admin' }}</span>
           </button>
         </div>
 
@@ -135,7 +135,7 @@
                   @if (unregisteredGoogleEmail()) {
                     <div class="pt-2 border-t border-rose-500/20 flex flex-col gap-2">
                       <p class="text-[11px] text-text-secondary leading-tight">
-                        {{ langService.isArabic() ? 'لم يتم العثور على حساب مسجل بهذا البريد. هل ترغب في تسجيل حساب طالب جديد الآن؟' : 'No account found with this email. Would you like to create a new student account now?' }}
+                        {{ langService.isArabic() ? 'لا يوجد حساب بهذا البريد. إنشاء حساب جديد؟' : 'No account found. Create new account?' }}
                       </p>
                       <button
                         type="button"
@@ -143,7 +143,7 @@
                         class="w-full py-2.5 px-3 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white font-extrabold text-xs shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <app-icon name="user-plus" [size]="14" />
-                        <span>{{ langService.isArabic() ? 'إنشاء حساب جديد كطالب عبر Google الآن' : 'Create New Student Account with Google Now' }}</span>
+                        <span>{{ langService.isArabic() ? 'إنشاء حساب عبر Google' : 'Sign Up with Google' }}</span>
                       </button>
                     </div>
                   }
@@ -171,7 +171,7 @@
                   />
                 </div>
                 <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                  {{ langService.isArabic() ? 'أدخل الكود المخصص لك المكوّن من حرفي HA متبوعاً بأرقامك (مثال: HA1001).' : 'Enter your designated code starting with HA followed by your digits (e.g. HA1001).' }}
+                  {{ langService.isArabic() ? 'كود الطالب يبدأ بـ HA متبوعاً بالأرقام (مثال: HA1001).' : 'Starts with HA followed by digits (e.g. HA1001).' }}
                 </p>
               </div>
 
@@ -186,7 +186,7 @@
                   <span>{{ langService.isArabic() ? 'جاري التحقق من الكود...' : 'Verifying code...' }}</span>
                 } @else {
                   <app-icon name="log-in" [size]="18" />
-                  <span>{{ langService.isArabic() ? 'دخول بوابة الطالب بالكود' : 'Access Student Portal with Code' }}</span>
+                  <span>{{ langService.isArabic() ? 'دخول بالكود' : 'Sign In with Code' }}</span>
                 }
               </button>
 
@@ -214,11 +214,11 @@
                       <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                       <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                     </svg>
-                    <span>{{ langService.isArabic() ? 'تسجيل الدخول عبر Google (للطلاب المسجلين)' : 'Sign In with Google (Registered Students)' }}</span>
+                    <span>{{ langService.isArabic() ? 'دخول عبر Google' : 'Sign In with Google' }}</span>
                   }
                 </button>
                 <p class="text-[10px] text-text-muted text-center mt-1.5">
-                  {{ langService.isArabic() ? 'يفتح نافذة Google الرسمية لاختيار حسابك المسجل مسبقاً في المنصة.' : 'Opens official Google window to select your registered platform account.' }}
+                  {{ langService.isArabic() ? 'اختر حساب Google المسجل بالمنصة.' : 'Select registered Google account.' }}
                 </p>
               </div>
 
@@ -254,7 +254,7 @@
                   </span>
                 </div>
                 <p class="text-[11px] text-text-muted mb-3 leading-relaxed">
-                  {{ langService.isArabic() ? 'يمكنك التسجيل مباشرة بحساب Google لتسهيل الدخول مستقبلاً بضغطة زر واحدة دون الحاجة لحفظ كلمات مرور.' : 'You can register directly with your Google account for seamless one-click logins in the future without passwords.' }}
+                  {{ langService.isArabic() ? 'تسجيل مباشر بحساب Google للدخول السريع دون كلمات مرور.' : 'Direct Google registration for quick passwordless login.' }}
                 </p>
 
                 @if (googleAuthErrorMessage()) {
@@ -280,7 +280,7 @@
                       <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                       <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                     </svg>
-                    <span>{{ langService.isArabic() ? 'التسجيل والمتابعة بحساب Google' : 'Register & Continue with Google' }}</span>
+                    <span>{{ langService.isArabic() ? 'متابعة عبر Google' : 'Continue with Google' }}</span>
                   }
                 </button>
               </div>
@@ -289,7 +289,7 @@
               <div class="relative my-2 flex items-center justify-center">
                 <div class="border-t border-surface-border w-full"></div>
                 <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">
-                  {{ langService.isArabic() ? 'أو استمارة التسجيل المباشر بدون Google' : 'OR Direct Registration without Google' }}
+                  {{ langService.isArabic() ? 'أو التسجيل المباشر' : 'OR Direct Registration' }}
                 </span>
               </div>
 
@@ -415,7 +415,7 @@
                 <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300">
                   <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
                   <span class="leading-relaxed font-bold">
-                    {{ langService.isArabic() ? 'تنبيه أمني هام: رقم ولي الأمر يجب أن يكون مختلفاً تماماً عن رقم هاتف الطالب لضمان تفعيل رادار المتابعة وإرسال التنبيهات.' : 'Important Security Notice: Parent phone must be strictly different from student phone to enable live sonar radar alerts.' }}
+                    {{ langService.isArabic() ? 'تنبيه: يجب أن يختلف رقم ولي الأمر عن رقم الطالب لتفعيل المتابعة.' : 'Notice: Parent phone must differ from student phone for alerts.' }}
                   </span>
                 </div>
 
@@ -491,7 +491,7 @@
                     <span>{{ langService.isArabic() ? 'جاري إنشاء الحساب وإصدار كود HA...' : 'Creating account & generating HA Code...' }}</span>
                   } @else {
                     <app-icon name="check" [size]="18" />
-                    <span>{{ langService.isArabic() ? 'إنشاء حساب الطالب وإصدار كود HA' : 'Create Student Account & Issue HA Code' }}</span>
+                    <span>{{ langService.isArabic() ? 'إنشاء الحساب' : 'Create Account' }}</span>
                   }
                 </button>
               </form>
@@ -559,7 +559,7 @@
                 />
               </div>
               <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                {{ langService.isArabic() ? 'كود ابنك المسجل في المنصة لمطابقة حسابه وتفعيل رادار السونار الحي.' : 'Your student registered code to sync account and activate live sonar radar monitoring.' }}
+                {{ langService.isArabic() ? 'كود الطالب لمطابقة الحساب وتفعيل المتابعة.' : 'Student code to sync account and alerts.' }}
               </p>
             </div>
 
@@ -574,7 +574,7 @@
                 <span>{{ langService.isArabic() ? 'جاري ربط حساب ولي الأمر...' : 'Linking parent account...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="18" />
-                <span>{{ langService.isArabic() ? 'دخول بوابة متابعة الأبناء' : 'Access Parent Monitoring Portal' }}</span>
+                <span>{{ langService.isArabic() ? 'دخول ولي الأمر' : 'Parent Login' }}</span>
               }
             </button>
 
@@ -606,7 +606,7 @@
                   {{ langService.isArabic() ? 'إدارة المنصة المركزية — م. هبة عبد الوهاب' : 'Central Platform Administration — Eng. Heba Abdelwahab' }}
                 </h3>
                 <p class="text-xs text-text-secondary mt-0.5">
-                  {{ langService.isArabic() ? 'اعتماد الأجهزة الإضافية، تصحيح الأسئلة المقالية وإدارة بنك الأسئلة والاشتراكات.' : 'Approve additional student devices, grade essay questions, and manage question bank & subscriptions.' }}
+                  {{ langService.isArabic() ? 'اعتماد الأجهزة، تصحيح المقالي، وبنك الأسئلة والاشتراكات.' : 'Device approvals, grading, question bank, and subscriptions.' }}
                 </p>
               </div>
             </div>
@@ -622,7 +622,7 @@
                 <span>{{ langService.isArabic() ? 'جاري فتح لوحة الإدارة...' : 'Opening Admin Studio...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="18" />
-                <span>{{ langService.isArabic() ? 'فتح استوديو الإدارة المركزية (Super Admin)' : 'Open Central Admin Studio (Super Admin)' }}</span>
+                <span>{{ langService.isArabic() ? 'فتح استوديو الإدارة' : 'Open Admin Studio' }}</span>
               }
             </button>
           </div>
@@ -637,7 +637,7 @@
             class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <app-icon name="arrow-right" [size]="14" />
-            <span>{{ langService.isArabic() ? 'العودة للصفحة الرئيسية (Guest Mode)' : 'Return to Home Page (Guest Mode)' }}</span>
+            <span>{{ langService.isArabic() ? 'الرئيسية' : 'Home' }}</span>
           </button>
         </div>
       </div>

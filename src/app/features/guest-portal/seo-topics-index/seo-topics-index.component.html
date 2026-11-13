@@ -8,7 +8,7 @@
     </a>
     <span class="text-text-muted/40">/</span>
     <span class="text-brand-gold font-semibold">
-      {{ langService.isArabic() ? 'فهرس الموضوعات والمناهج' : 'Topics Directory' }}
+      {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Directory' }}
     </span>
   </nav>
 
@@ -20,17 +20,17 @@
     <div class="relative z-10 max-w-3xl mx-auto">
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-violet/15 border border-brand-violet/30 text-xs sm:text-sm font-semibold text-brand-gold mb-3">
         <app-icon name="book-open" [size]="14" />
-        <span>{{ langService.isArabic() ? 'دليل الكلمات المفتاحية والمناهج (75 موضوعاً)' : 'Comprehensive Math Curricula Directory (75 Topics)' }}</span>
+        <span>{{ langService.isArabic() ? 'فهرس المناهج (75 موضوعاً)' : 'Curricula Directory (75 Topics)' }}</span>
       </div>
 
       <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-text-primary tracking-tight mb-3">
-        {{ langService.isArabic() ? 'فهرس مواضيع ومناهج سبايدر ماث' : 'Spider Math Topics & Curricula Index' }}
+        {{ langService.isArabic() ? 'فهرس المناهج والمواضيع' : 'Curricula & Topics Index' }}
       </h1>
 
       <p class="text-sm sm:text-base text-text-secondary leading-relaxed mb-6 font-reading">
         {{ langService.isArabic()
-          ? 'دليلك الشامل لجميع المناهج الدراسية، الشهادات الدولية، مراجعات ليلة الامتحان، وكورسات المهندسة هبة عبدالوهاب (ميس هبة عياد).'
-          : 'Your all-in-one directory for national and international curricula, standardized test prep, and courses by Eng. Heba Abdel-Wahab.' }}
+          ? 'دليل المناهج الدراسية والشهادات الدولية وكورسات ميس هبة عياد.'
+          : 'All-in-one directory for curricula, standardized tests, and courses.' }}
       </p>
 
       <!-- Live Search Box -->
@@ -45,7 +45,7 @@
           type="text"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
-          [placeholder]="langService.isArabic() ? 'ابحث عن أي موضوع أو منهج أو كلمة مفتاحية...' : 'Search any topic, curriculum, or keyword...'"
+          [placeholder]="langService.isArabic() ? 'ابحث عن موضوع أو منهج...' : 'Search topic or curriculum...'"
           class="w-full ps-11 pe-10 py-3 rounded-xl bg-surface-secondary/80 border border-surface-border text-sm text-text-primary placeholder:text-text-muted/60 focus:outline-none focus:border-brand-gold transition-colors"
         />
 
@@ -128,7 +128,7 @@
 
           <!-- Bottom Action Link -->
           <div class="pt-3 border-t border-surface-border/50 flex items-center justify-between text-xs font-semibold text-brand-gold group-hover:underline">
-            <span>{{ langService.isArabic() ? 'استعرض تفاصيل الموضوع' : 'Explore Topic' }}</span>
+            <span>{{ langService.isArabic() ? 'استعرض الموضوع' : 'Explore' }}</span>
             <app-icon
               [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'"
               [size]="14"
@@ -147,19 +147,19 @@
         </svg>
       </div>
       <h3 class="text-lg font-bold text-text-primary mb-1">
-        {{ langService.isArabic() ? 'لم يتم العثور على نتائج' : 'No Topics Found' }}
+        {{ langService.isArabic() ? 'لا توجد نتائج' : 'No Results' }}
       </h3>
       <p class="text-xs sm:text-sm text-text-secondary mb-4">
         {{ langService.isArabic()
-          ? 'لم نجد أي موضوع يطابق بحثك. جرب كتابة كلمة أخرى أو تصفح كل الموضوعات.'
-          : 'No topics matched your search query. Try another keyword or reset the filter.' }}
+          ? 'لا توجد موضوعات مطابقة. جرب كلمة أخرى.'
+          : 'No matches found. Try another search.' }}
       </p>
       <button
         type="button"
         (click)="clearSearch(); setCategory('all')"
         class="btn-gold-metallic py-2.5 px-5 text-xs font-bold inline-flex items-center gap-2"
       >
-        <span>{{ langService.isArabic() ? 'إعادة ضبط البحث' : 'Reset Filters' }}</span>
+        <span>{{ langService.isArabic() ? 'إعادة الضبط' : 'Reset' }}</span>
       </button>
     </div>
   }

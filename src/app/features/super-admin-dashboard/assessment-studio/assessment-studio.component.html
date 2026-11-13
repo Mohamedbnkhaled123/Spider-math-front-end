@@ -420,11 +420,11 @@
             </div>
             <h4 class="text-sm font-bold text-text-primary">
               {{ currentCurriculumHasTerms()
-                ? (langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف في هذا الترم حالياً' : 'No assessments available for this grade in this term.')
-                : (langService.isArabic() ? 'لا توجد امتحانات مخصصة لهذا الصف حالياً' : 'No assessments available for this grade currently.') }}
+                ? (langService.isArabic() ? 'لا توجد امتحانات لهذا الصف في هذا الترم' : 'No assessments for this grade in this term.')
+                : (langService.isArabic() ? 'لا توجد امتحانات لهذا الصف حالياً' : 'No assessments for this grade currently.') }}
             </h4>
             <p class="text-xs text-text-muted max-w-sm mx-auto">
-              {{ langService.isArabic() ? ('يمكنك الضغط على زر إنشاء امتحان جديد بالأعلى لتدشين كويز حصري لطلاب (' + selectedGrade() + ').') : ('Click "Create New Assessment" above to create a quiz for (' + selectedGrade() + ').') }}
+              {{ langService.isArabic() ? ('اضغطي "إنشاء امتحان جديد" بالأعلى لإضافة كويز لـ (' + selectedGrade() + ').') : ('Click "Create New Assessment" above to add a quiz for (' + selectedGrade() + ').') }}
             </p>
           </div>
         }
@@ -1093,7 +1093,7 @@
           <div class="p-4 bg-amber-500/10 border-b border-amber-500/20 text-amber-600 text-xs flex items-center gap-2">
             <app-icon name="alert-triangle" [size]="16" />
             <span>
-              {{ langService.isArabic() ? 'تنبيه حماية التصحيح: هناك طلاب قاموا بتسليم حلولهم بالفعل! تعديل الإجابات النموذجية سيقوم بإعادة تصحيح كافة تسليمات الطلاب وتحديث سجل درجاتهم تلقائياً فور الحفظ.' : 'Grading Protection Notice: Students have already submitted! Modifying model answers will trigger automatic regrading.' }}
+              {{ langService.isArabic() ? 'تنبيه: توجد تسليمات سابقة. تعديل الإجابات النموذجية سيعيد تصحيح درجات الطلاب تلقائياً.' : 'Notice: Submissions exist. Modifying model answers will trigger automatic regrading.' }}
             </span>
           </div>
         }
@@ -2276,7 +2276,7 @@
                   </div>
                 } @empty {
                   <div class="py-8 text-center text-text-muted">
-                    {{ langService.isArabic() ? 'لا توجد أسئلة مدرجة في هذا الامتحان بعد. أضيفي السؤال الأول بالأعلى.' : 'No questions in this assessment yet. Add the first question above.' }}
+                    {{ langService.isArabic() ? 'لا توجد أسئلة بعد. أضيفي سؤالاً بالأعلى.' : 'No questions yet. Add a question above.' }}
                   </div>
                 }
 

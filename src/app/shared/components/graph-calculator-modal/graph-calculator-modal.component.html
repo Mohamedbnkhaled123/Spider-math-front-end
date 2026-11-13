@@ -27,12 +27,12 @@
               DESMOS
             </span>
             <span class="text-xs font-bold text-text-primary hidden sm:inline">
-              | {{ langService.isArabic() ? 'آلة ديسموس البيانية الرسمية الكاملة' : 'Official Full Desmos Calculator' }}
+              | {{ langService.isArabic() ? 'آلة ديسموس البيانية' : 'Desmos Calculator' }}
             </span>
           </div>
 
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 hidden md:inline-flex">
-            {{ langService.isArabic() ? 'لوحة المعادلات + لوحة المفاتيح' : 'Expressions Panel + Keypad' }}
+            {{ langService.isArabic() ? 'معادلات + مفاتيح' : 'Expressions + Keypad' }}
           </span>
         </div>
 
@@ -50,7 +50,7 @@
             type="button"
             (click)="toggleCollapse()"
             class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors"
-            [title]="isCollapsed() ? (langService.isArabic() ? 'توسيع' : 'Expand') : (langService.isArabic() ? 'طي النافذة' : 'Collapse')"
+            [title]="isCollapsed() ? (langService.isArabic() ? 'توسيع' : 'Expand') : (langService.isArabic() ? 'طي' : 'Collapse')"
           >
             <app-icon [name]="isCollapsed() ? 'chevron-down' : 'minus'" [size]="14" />
           </button>
@@ -60,7 +60,7 @@
             type="button"
             (click)="toggleMaximize()"
             class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors hidden sm:inline-flex"
-            [title]="isMaximized() ? (langService.isArabic() ? 'استعادة الحجم' : 'Restore Size') : (langService.isArabic() ? 'تكبير الشاشة' : 'Maximize')"
+            [title]="isMaximized() ? (langService.isArabic() ? 'استعادة' : 'Restore') : (langService.isArabic() ? 'تكبير' : 'Maximize')"
           >
             <app-icon [name]="isMaximized() ? 'minimize' : 'maximize'" [size]="14" />
           </button>
@@ -70,7 +70,7 @@
             type="button"
             (click)="closeModal()"
             class="p-1.5 rounded-lg text-text-muted hover:text-feedback-danger hover:bg-feedback-danger/10 transition-colors"
-            [title]="langService.isArabic() ? 'إغلاق الآلة الحاسبة' : 'Close calculator'"
+            [title]="langService.isArabic() ? 'إغلاق' : 'Close'"
           >
             <app-icon name="x" [size]="16" />
           </button>
@@ -116,7 +116,7 @@
             <div class="absolute inset-0 flex items-center justify-center bg-surface-card/90 backdrop-blur-sm z-20">
               <div class="flex items-center gap-2.5 text-xs font-bold text-brand-primary dark:text-brand-accent p-4 rounded-2xl border border-surface-border glass-panel">
                 <app-icon name="loader" [size]="20" className="animate-spin text-brand-accent" />
-                <span>{{ langService.isArabic() ? 'جارِ تحميل محرك ديسموس الرسمي الكامل...' : 'Loading official Desmos engine (Equations & Keypad)...' }}</span>
+                <span>{{ langService.isArabic() ? 'جارِ تحميل ديسموس...' : 'Loading Desmos...' }}</span>
               </div>
             </div>
           }
@@ -124,7 +124,7 @@
 
         <!-- Footer Hint -->
         <div class="modal-footer px-3 py-1.5 bg-surface-card/90 border-t border-surface-border/50 flex items-center justify-between text-[11px] text-text-muted">
-          <span>{{ langService.isArabic() ? 'اسحب النافذة بحرية من الشريط العلوي | يمكنك كتابة المعادلات في القائمة واستخدام لوحة المفاتيح' : 'Drag window from top bar | Write equations on expressions list and use on-screen keypad' }}</span>
+          <span>{{ langService.isArabic() ? 'اسحب من الشريط العلوي للتحريك' : 'Drag from top bar to move' }}</span>
           <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Official Engine</span>
         </div>
       }
