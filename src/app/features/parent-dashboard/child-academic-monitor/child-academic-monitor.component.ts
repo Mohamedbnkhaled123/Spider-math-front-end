@@ -37,6 +37,34 @@ export class ChildAcademicMonitorComponent {
   readonly selectedUnitFilter = signal<string>('ALL');
   readonly isGroupedByUnit = signal<boolean>(false);
 
+  // Interactive submission details collapse & dedicated review modal
+  readonly expandedSubmissionIds = signal<Set<string>>(new Set<string>());
+  readonly selectedReviewSubmission = signal<ChildSubmissionSummary | null>(null);
+
+  toggleSubmissionDetails(submissionId: string): void {
+    this.expandedSubmissionIds.update(set => {
+      const next = new Set(set);
+      if (next.has(submissionId)) {
+        next.delete(submissionId);
+      } else {
+        next.add(submissionId);
+      }
+      return next;
+    });
+  }
+
+  isSubmissionExpanded(submissionId: string): boolean {
+    return this.expandedSubmissionIds().has(submissionId);
+  }
+
+  openSubmissionReviewModal(sub: ChildSubmissionSummary): void {
+    this.selectedReviewSubmission.set(sub);
+  }
+
+  closeSubmissionReviewModal(): void {
+    this.selectedReviewSubmission.set(null);
+  }
+
   setCategoryFilter(category: AssessmentCategoryType): void {
     this.selectedCategoryFilter.set(category);
   }

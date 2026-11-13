@@ -566,44 +566,78 @@
             </div>
           }
 
-          <!-- Mistake Cases & Clickable YouTube Solution Links -->
+          <!-- Actions & Mistake Review Bar -->
           @if (sub.mistakeCases.length > 0) {
-            <div class="mt-5 space-y-3">
-              <h5 class="text-xs font-black text-rose-500 flex items-center gap-1.5">
-                <app-icon name="alert-circle" [size]="14" />
-                <span>{{ langService.isArabic() ? ('الأسئلة التي تحتاج لمراجعة دقيقة والحل النموذجي (' + sub.mistakeCases.length + '):') : ('Questions Requiring Review & Model Solution (' + sub.mistakeCases.length + '):') }}</span>
-              </h5>
+            <div class="mt-4 pt-3 border-t border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-1.5">
+                  <app-icon name="alert-circle" [size]="14" />
+                  <span>{{ langService.isArabic() ? (sub.mistakeCases.length + ' أسئلة بحاجة لمراجعة الحل') : (sub.mistakeCases.length + ' mistakes to review') }}</span>
+                </span>
+              </div>
 
-              <div class="space-y-3">
-                @for (m of sub.mistakeCases; track m.questionOrder) {
-                  <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="space-y-1">
-                      <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-rose-500/10 text-rose-500 font-mono">
-                        {{ langService.isArabic() ? ('السؤال رقم ' + m.questionOrder) : ('Question #' + m.questionOrder) }}
-                      </span>
-                      <p class="text-xs text-text-primary font-medium leading-relaxed">
-                        {{ m.errorNote }}
-                      </p>
-                    </div>
+              <div class="flex items-center gap-2">
+                <!-- Open Dedicated Modal Dialog -->
+                <button
+                  type="button"
+                  (click)="openSubmissionReviewModal(sub)"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-primary text-white hover:bg-brand-primary/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                >
+                  <app-icon name="file-text" [size]="13" />
+                  <span>{{ langService.isArabic() ? 'مراجعة أخطاء الامتحان' : 'Review Mistakes' }}</span>
+                </button>
 
-                    @if (m.youtubeSolutionUrl) {
-                      <button
-                        type="button"
-                        (click)="openYoutubeSolution(m.youtubeSolutionUrl)"
-                        class="px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 flex items-center gap-2 shrink-0 shadow-sm cursor-pointer"
-                        [class.bg-rose-600]="!isYoutubePost(m.youtubeSolutionUrl)"
-                        [class.hover:bg-rose-700]="!isYoutubePost(m.youtubeSolutionUrl)"
-                        [class.bg-brand-primary]="isYoutubePost(m.youtubeSolutionUrl)"
-                        [class.hover:bg-brand-primary/90]="isYoutubePost(m.youtubeSolutionUrl)"
-                      >
-                        <app-icon [name]="isYoutubePost(m.youtubeSolutionUrl) ? 'file-text' : 'video'" [size]="14" />
-                        <span>{{ isYoutubePost(m.youtubeSolutionUrl) ? (langService.isArabic() ? 'عرض المنشور داخل المنصة' : 'View Post on Platform') : (langService.isArabic() ? 'مشاهدة الفيديو داخل المنصة' : 'Watch Video on Platform') }}</span>
-                      </button>
-                    }
-                  </div>
-                }
+                <!-- Inline Expand / Collapse Toggle -->
+                <button
+                  type="button"
+                  (click)="toggleSubmissionDetails(sub.submissionId)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-bg text-text-secondary hover:text-text-primary border border-surface-border transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <span>{{ isSubmissionExpanded(sub.submissionId) ? (langService.isArabic() ? 'إخفاء التفاصيل' : 'Hide') : (langService.isArabic() ? 'عرض سريع' : 'Expand') }}</span>
+                  <app-icon [name]="isSubmissionExpanded(sub.submissionId) ? 'chevron-up' : 'chevron-down'" [size]="13" />
+                </button>
               </div>
             </div>
+
+            <!-- Detailed Mistake Cases (Collapsible, hidden by default) -->
+            @if (isSubmissionExpanded(sub.submissionId)) {
+              <div class="mt-4 pt-4 border-t border-dashed border-surface-border space-y-3 animate-fade-in">
+                <h5 class="text-xs font-black text-rose-500 flex items-center gap-1.5">
+                  <app-icon name="alert-circle" [size]="14" />
+                  <span>{{ langService.isArabic() ? ('تفاصيل الأسئلة التي أخطأ بها الطالب والحل النموذجي (' + sub.mistakeCases.length + '):') : ('Question Mistake Details & Model Solution (' + sub.mistakeCases.length + '):') }}</span>
+                </h5>
+
+                <div class="space-y-3">
+                  @for (m of sub.mistakeCases; track m.questionOrder) {
+                    <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div class="space-y-1">
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-rose-500/10 text-rose-500 font-mono">
+                          {{ langService.isArabic() ? ('السؤال رقم ' + m.questionOrder) : ('Question #' + m.questionOrder) }}
+                        </span>
+                        <p class="text-xs text-text-primary font-medium leading-relaxed">
+                          {{ m.errorNote }}
+                        </p>
+                      </div>
+
+                      @if (m.youtubeSolutionUrl) {
+                        <button
+                          type="button"
+                          (click)="openYoutubeSolution(m.youtubeSolutionUrl)"
+                          class="px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 flex items-center gap-2 shrink-0 shadow-sm cursor-pointer"
+                          [class.bg-rose-600]="!isYoutubePost(m.youtubeSolutionUrl)"
+                          [class.hover:bg-rose-700]="!isYoutubePost(m.youtubeSolutionUrl)"
+                          [class.bg-brand-primary]="isYoutubePost(m.youtubeSolutionUrl)"
+                          [class.hover:bg-brand-primary/90]="isYoutubePost(m.youtubeSolutionUrl)"
+                        >
+                          <app-icon [name]="isYoutubePost(m.youtubeSolutionUrl) ? 'file-text' : 'video'" [size]="14" />
+                          <span>{{ isYoutubePost(m.youtubeSolutionUrl) ? (langService.isArabic() ? 'عرض المنشور داخل المنصة' : 'View Post on Platform') : (langService.isArabic() ? 'مشاهدة الفيديو داخل المنصة' : 'Watch Video on Platform') }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           } @else if (!sub.isPendingReview && !sub.isInProgress && sub.finalTotalScore === sub.maxScore && sub.maxScore > 0) {
             <div class="mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs font-bold text-emerald-500 flex items-center gap-2">
               <app-icon name="check-circle" [size]="16" />
@@ -716,6 +750,118 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  }
+
+  <!-- Dedicated Exam Mistakes Review Modal for Parents -->
+  @if (selectedReviewSubmission(); as revSub) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeSubmissionReviewModal()">
+      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-gold-accent/40 shadow-2xl space-y-4 max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+        
+        <!-- Modal Header -->
+        <div class="flex items-start justify-between pb-3 border-b border-surface-border">
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              @if (revSub.category === 'QUIZ') {
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                  <app-icon name="target" [size]="11" />
+                  <span>{{ langService.isArabic() ? 'كويز قصير' : 'Quiz' }}</span>
+                </span>
+              } @else if (revSub.category === 'HOMEWORK') {
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
+                  <app-icon name="book-open" [size]="11" />
+                  <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                </span>
+              } @else if (revSub.category === 'EXAM') {
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                  <app-icon name="award" [size]="11" />
+                  <span>{{ langService.isArabic() ? 'امتحان شامل' : 'Exam' }}</span>
+                </span>
+              }
+
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-surface-bg text-text-secondary border border-surface-border">
+                {{ revSub.unitTitleAr }}
+              </span>
+            </div>
+
+            <h3 class="text-base sm:text-lg font-black text-text-primary">
+              {{ langService.isArabic() ? revSub.assessmentTitleAr : (revSub.assessmentTitleEn || revSub.assessmentTitleAr) }}
+            </h3>
+
+            <div class="text-xs text-text-secondary font-mono flex items-center gap-2">
+              <span>{{ langService.isArabic() ? 'النتيجة:' : 'Score:' }} {{ revSub.finalTotalScore }} / {{ revSub.maxScore }} ({{ revSub.scorePercentage }}%)</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeSubmissionReviewModal()"
+            class="p-2 rounded-xl border border-surface-border hover:bg-surface-card text-text-muted hover:text-text-primary cursor-pointer transition-colors"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Teacher Note if available -->
+        @if (revSub.teacherNote) {
+          <div class="p-3.5 rounded-xl bg-surface-bg/80 border border-gold-accent/30 text-xs text-text-primary leading-relaxed">
+            <span class="font-bold text-brand-primary dark:text-brand-accent block mb-1">
+              {{ langService.isArabic() ? 'ملاحظات المعلمة م/ هبة:' : 'Teacher Feedback:' }}
+            </span>
+            {{ revSub.teacherNote }}
+          </div>
+        }
+
+        <!-- Mistake Questions Scrollable Area -->
+        <div class="flex-1 overflow-y-auto pr-1 space-y-3 max-h-[60vh]">
+          <div class="text-xs font-bold text-rose-500 mb-2 flex items-center gap-1.5">
+            <app-icon name="alert-circle" [size]="14" />
+            <span>{{ langService.isArabic() ? ('قائمة الأسئلة التي تحتاج مراجعة (' + revSub.mistakeCases.length + '):') : ('Mistake Questions List (' + revSub.mistakeCases.length + '):') }}</span>
+          </div>
+
+          @for (m of revSub.mistakeCases; track m.questionOrder) {
+            <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-rose-500/10 text-rose-500 font-mono">
+                  {{ langService.isArabic() ? ('السؤال رقم ' + m.questionOrder) : ('Question #' + m.questionOrder) }}
+                </span>
+                <p class="text-xs text-text-primary font-medium leading-relaxed">
+                  {{ m.errorNote }}
+                </p>
+              </div>
+
+              @if (m.youtubeSolutionUrl) {
+                <button
+                  type="button"
+                  (click)="openYoutubeSolution(m.youtubeSolutionUrl)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
+                  [class.bg-rose-600]="!isYoutubePost(m.youtubeSolutionUrl)"
+                  [class.hover:bg-rose-700]="!isYoutubePost(m.youtubeSolutionUrl)"
+                  [class.bg-brand-primary]="isYoutubePost(m.youtubeSolutionUrl)"
+                  [class.hover:bg-brand-primary/90]="isYoutubePost(m.youtubeSolutionUrl)"
+                >
+                  <app-icon [name]="isYoutubePost(m.youtubeSolutionUrl) ? 'file-text' : 'video'" [size]="13" />
+                  <span>{{ isYoutubePost(m.youtubeSolutionUrl) ? (langService.isArabic() ? 'عرض المنشور' : 'View Post') : (langService.isArabic() ? 'فيديو الحل' : 'Video Solution') }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="pt-3 border-t border-surface-border flex items-center justify-between">
+          <span class="text-[11px] text-text-muted">
+            {{ langService.isArabic() ? 'يمكن للطالب مراجعة الحل النموذجي عبر فيديوهات الشرح المرفقة.' : 'Student can review model answers via the attached explanation videos.' }}
+          </span>
+          <button
+            type="button"
+            (click)="closeSubmissionReviewModal()"
+            class="px-5 py-2 rounded-xl text-xs font-bold bg-brand-primary text-white hover:bg-brand-primary/90 cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
+          </button>
+        </div>
       </div>
     </div>
   }
