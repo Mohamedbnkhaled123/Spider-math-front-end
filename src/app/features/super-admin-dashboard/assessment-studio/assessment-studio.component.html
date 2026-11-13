@@ -482,8 +482,8 @@
 
   <!-- Modal 1: Create Assessment Modal -->
   @if (isCreateModalOpen()) {
-    <div class="fixed inset-0 z-[60] bg-black/35 backdrop-blur-md flex justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-lg max-h-[92vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
+    <div class="fixed inset-0 z-[60] bg-black/75 backdrop-blur-md flex justify-center p-2 sm:p-4 overflow-y-auto">
+      <div class="w-full max-w-lg max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
         
         <div class="p-4 sm:p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between shrink-0">
           <div>
@@ -958,107 +958,107 @@
 
   <!-- Modal 2: Question & Settings Safe Visual Editor Modal -->
   @if (isEditorOpen() && activeAssessment(); as asm) {
-    <div class="fixed inset-0 z-[60] bg-black/35 backdrop-blur-md flex justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
+    <div class="fixed inset-0 z-[60] bg-black/75 backdrop-blur-md flex justify-center p-1.5 sm:p-4 overflow-y-auto">
+      <div class="w-full max-w-4xl max-h-[96vh] sm:max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
         
         <!-- Header -->
-        <div class="p-3.5 sm:p-5 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-start sm:items-center justify-between gap-3 shrink-0">
-          <div class="min-w-0 flex-1 space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-brand-primary text-white shadow-sm shrink-0">
+        <div class="p-3 sm:p-5 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex flex-col gap-2.5 shrink-0">
+          <!-- Top Row: Grade Badge + Title & Actions -->
+          <div class="w-full flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-brand-primary text-white shadow-sm shrink-0">
                 {{ asm.gradeLevel }}
               </span>
               <h3 class="text-xs sm:text-base font-black text-text-primary truncate">
-                {{ langService.isArabic() ? ('تعديل وإدارة الامتحان: ' + asm.titleAr) : ('Edit & Manage Assessment: ' + (asm.titleEn || asm.titleAr)) }}
+                {{ langService.isArabic() ? ('تعديل الامتحان: ' + asm.titleAr) : ('Edit Assessment: ' + (asm.titleEn || asm.titleAr)) }}
               </h3>
             </div>
-            
-            <!-- Clean Responsive Metadata Pills Cluster (Prevents awkward vertical stacking) -->
-            <div class="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary">
-                <app-icon name="book-open" [size]="11" className="text-brand-primary shrink-0" />
-                <span>{{ asm.curriculum }}</span>
-              </span>
 
-              @if (currentCurriculumHasTerms()) {
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary">
-                  <span>{{ langService.isArabic() ? (asm.term === 'TERM_1' ? 'الترم الأول' : 'الترم الثاني') : (asm.term === 'TERM_1' ? 'Term 1' : 'Term 2') }}</span>
-                </span>
-              }
-
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary">
-                <app-icon name="clock" [size]="11" className="text-amber-500 shrink-0" />
-                <span>{{ asm.durationMinutes }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}</span>
-              </span>
-
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary">
-                <app-icon name="check" [size]="11" className="text-emerald-500 shrink-0" />
-                <span>{{ langService.isArabic() ? ('النجاح: ' + asm.passPercentage + '%') : ('Pass: ' + asm.passPercentage + '%') }}</span>
-              </span>
-
-              <!-- Auto-Save Status Badge (R2 & R4 Strict Compliance) -->
-              @if (draftService.isAutoSaving() || draftService.lastSavedTimestamp()) {
-                <div
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border transition-colors"
-                  [class.bg-brand-primary/10]="draftService.isAutoSaving()"
-                  [class.border-brand-primary/20]="draftService.isAutoSaving()"
-                  [class.text-brand-primary]="draftService.isAutoSaving()"
-                  [class.bg-emerald-500/10]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                  [class.border-emerald-500/20]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                  [class.text-emerald-600]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                  [class.dark:text-emerald-400]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
-                  data-testid="editor-autosave-badge"
+            <div class="flex items-center gap-1.5 shrink-0">
+              <!-- Question Index / Drawer Button (Milestone 4 - R6) -->
+              @if (editorActiveTab() === 'QUESTIONS') {
+                <button
+                  type="button"
+                  data-testid="question-nav-drawer-toggle"
+                  class="question-drawer-toggle hidden sm:flex px-2.5 sm:px-3 py-1 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-xs font-bold text-text-primary transition-all items-center gap-1.5 cursor-pointer shrink-0"
+                  (click)="toggleQuestionDrawer()"
+                  [title]="langService.isArabic() ? 'فهرس الأسئلة' : 'Questions Index'"
                 >
-                  @if (draftService.isAutoSaving()) {
-                    <app-icon name="loader" [size]="11" className="animate-spin text-brand-primary" />
-                    <span>{{ langService.isArabic() ? 'جارٍ الحفظ التلقائي...' : 'Auto-saving...' }}</span>
-                  } @else if (draftService.lastSavedTimestamp()) {
-                    <app-icon name="check-circle" [size]="11" className="text-emerald-500" />
-                    <span>
-                      {{ langService.isArabic() ? 'محفوظ محلياً (مسودة آمنة)' : 'Saved locally (draft)' }}
-                    </span>
-                  }
-                </div>
+                  <app-icon name="menu" [size]="14" className="text-brand-primary" />
+                  <span class="hidden xs:inline">{{ langService.isArabic() ? 'فهرس الأسئلة' : 'Questions' }}</span>
+                  <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-brand-primary/10 text-brand-primary font-bold">
+                    {{ asm.questions.length }}
+                  </span>
+                </button>
               }
+
+              <button
+                type="button"
+                (click)="openPreviewModal(asm)"
+                class="px-2 sm:px-3 py-1 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                [title]="langService.isArabic() ? 'معاينة الامتحان' : 'Preview'"
+                data-testid="drawer-preview-btn"
+              >
+                <app-icon name="eye" [size]="14" className="text-brand-primary" />
+                <span class="hidden sm:inline">{{ langService.isArabic() ? 'معاينة' : 'Preview' }}</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="closeEditor()"
+                class="p-1.5 sm:p-2 rounded-xl text-text-muted hover:text-text-primary cursor-pointer shrink-0"
+                [title]="langService.isArabic() ? 'إغلاق' : 'Close'"
+              >
+                <app-icon name="x" [size]="17" />
+              </button>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <!-- Question Index / Drawer Button (Milestone 4 - R6) -->
-            @if (editorActiveTab() === 'QUESTIONS') {
-              <button
-                type="button"
-                data-testid="question-nav-drawer-toggle"
-                class="question-drawer-toggle hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-xs font-bold text-text-primary transition-all items-center gap-1.5 cursor-pointer shrink-0"
-                (click)="toggleQuestionDrawer()"
-                [title]="langService.isArabic() ? 'فهرس الأسئلة السريع والتنقل' : 'Quick Questions Index & Navigation'"
-              >
-                <app-icon name="menu" [size]="15" className="text-brand-primary" />
-                <span class="hidden xs:inline">{{ langService.isArabic() ? 'فهرس الأسئلة' : 'Questions' }}</span>
-                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-brand-primary/10 text-brand-primary font-bold">
-                  {{ asm.questions.length }}
-                </span>
-              </button>
+          <!-- Bottom Row: Metadata Badges (Full width, single neat row, never vertical tower) -->
+          <div class="w-full flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] sm:text-xs">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+              <app-icon name="book-open" [size]="10" className="text-brand-primary shrink-0" />
+              <span>{{ asm.curriculum }}</span>
+            </span>
+
+            @if (currentCurriculumHasTerms()) {
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+                <span>{{ langService.isArabic() ? (asm.term === 'TERM_1' ? 'الترم 1' : 'الترم 2') : (asm.term === 'TERM_1' ? 'Term 1' : 'Term 2') }}</span>
+              </span>
             }
 
-            <button
-              type="button"
-              (click)="openPreviewModal(asm)"
-              class="px-3 py-1.5 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-              [title]="langService.isArabic() ? 'معاينة المسودة ومحاكاة تجربة الطالب قبل الحفظ' : 'Preview draft simulation before saving'"
-              data-testid="drawer-preview-btn"
-            >
-              <app-icon name="eye" [size]="16" className="text-brand-primary" />
-              <span>{{ langService.isArabic() ? 'معاينة الامتحان' : 'Preview' }}</span>
-            </button>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+              <app-icon name="clock" [size]="10" className="text-amber-500 shrink-0" />
+              <span>{{ asm.durationMinutes }} دقيقة</span>
+            </span>
 
-            <button
-              type="button"
-              (click)="closeEditor()"
-              class="p-2 rounded-xl text-text-muted hover:text-text-primary cursor-pointer shrink-0"
-            >
-              <app-icon name="x" [size]="18" />
-            </button>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+              <app-icon name="check" [size]="10" className="text-emerald-500 shrink-0" />
+              <span>النجاح: {{ asm.passPercentage }}%</span>
+            </span>
+
+            <!-- Auto-Save Status Badge -->
+            @if (draftService.isAutoSaving() || draftService.lastSavedTimestamp()) {
+              <div
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border transition-colors shrink-0"
+                [class.bg-brand-primary/10]="draftService.isAutoSaving()"
+                [class.border-brand-primary/20]="draftService.isAutoSaving()"
+                [class.text-brand-primary]="draftService.isAutoSaving()"
+                [class.bg-emerald-500/10]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                [class.border-emerald-500/20]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                [class.text-emerald-600]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                [class.dark:text-emerald-400]="!draftService.isAutoSaving() && draftService.lastSavedTimestamp()"
+                data-testid="editor-autosave-badge"
+              >
+                @if (draftService.isAutoSaving()) {
+                  <app-icon name="loader" [size]="10" className="animate-spin text-brand-primary" />
+                  <span>{{ langService.isArabic() ? 'جارٍ الحفظ...' : 'Saving...' }}</span>
+                } @else if (draftService.lastSavedTimestamp()) {
+                  <app-icon name="check-circle" [size]="10" className="text-emerald-500" />
+                  <span>{{ langService.isArabic() ? 'مسودة محفوظة' : 'Saved' }}</span>
+                }
+              </div>
+            }
           </div>
         </div>
 
@@ -1707,26 +1707,21 @@
               </div>
 
               <!-- AI Question Extraction Prominent Banner -->
-              <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-brand-primary/10 to-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 shadow-inner">
-                    <app-icon name="sparkles" [size]="20" />
+              <div class="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-brand-primary/10 to-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 shadow-inner">
+                    <app-icon name="sparkles" [size]="16" />
                   </div>
-                  <div>
-                    <h4 class="font-black text-text-primary text-xs sm:text-sm flex items-center gap-2">
-                      <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي من PDF / صور' : 'AI Question Extraction from PDF / Images' }}</span>
-                    </h4>
-                    <p class="text-[11px] text-text-muted">
-                      {{ langService.isArabic() ? 'ارفعي ورقة امتحان أو كتاب تمارين، واختاري الصفحة ليتم استخراج المسائل ومعادلات KaTeX فوراً' : 'Upload exam papers or worksheets and auto-extract math questions into KaTeX instantly' }}
-                    </p>
-                  </div>
+                  <h4 class="font-bold text-text-primary text-xs sm:text-sm truncate">
+                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالـ AI' : 'AI Question Extraction' }}</span>
+                  </h4>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
                   @if (cachedFileSession()) {
-                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-[11px] text-text-primary">
-                      <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="13" className="text-amber-500" />
-                      <span class="truncate max-w-[140px] sm:max-w-[200px] font-bold">{{ cachedFileSession()?.fileName }}</span>
+                    <div class="col-span-2 sm:col-span-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-[11px] text-text-primary">
+                      <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="12" className="text-amber-500" />
+                      <span class="truncate max-w-[120px] font-bold">{{ cachedFileSession()?.fileName }}</span>
                       <span class="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 font-mono font-bold text-[10px]">
                         {{ langService.isArabic() ? ('ص ' + cachedFileSession()?.pageNumber) : ('p. ' + cachedFileSession()?.pageNumber) }}
                       </span>
@@ -1736,19 +1731,19 @@
                   <button
                     type="button"
                     (click)="openAiExtractionModal()"
-                    class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs shrink-0"
+                    class="px-3 py-2 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
                   >
-                    <app-icon name="image" [size]="14" className="text-amber-500" />
-                    <span>{{ cachedFileSession() ? (langService.isArabic() ? 'تغيير الملف أو الصفحة' : 'Change File / Page') : (langService.isArabic() ? 'رفع ملف للقص اليدوي (بدون AI)' : 'Upload for Manual Crop') }}</span>
+                    <app-icon name="image" [size]="13" className="text-amber-500" />
+                    <span>{{ cachedFileSession() ? (langService.isArabic() ? 'تغيير الملف' : 'Change File') : (langService.isArabic() ? 'قص يدوي' : 'Manual Crop') }}</span>
                   </button>
 
                   <button
                     type="button"
                     (click)="openAiExtractionModal()"
-                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm text-xs shrink-0"
+                    class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
                   >
-                    <app-icon name="sparkles" [size]="14" />
-                    <span>{{ langService.isArabic() ? 'استخراج بالذكاء الاصطناعي' : 'Extract with AI' }}</span>
+                    <app-icon name="sparkles" [size]="13" />
+                    <span>{{ langService.isArabic() ? 'استخراج بالـ AI' : 'AI Extract' }}</span>
                   </button>
                 </div>
               </div>
@@ -1776,7 +1771,7 @@
                         <span>{{ langService.isArabic() ? 'تعديل السؤال الحالي بالامتحان' : 'Edit Question in Assessment' }}</span>
                       } @else {
                         <app-icon name="plus" [size]="16" className="text-brand-primary" />
-                        <span>{{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان' : 'Add New Question to Assessment' }}</span>
+                        <span>{{ langService.isArabic() ? 'إضافة سؤال جديد' : 'Add Question' }}</span>
                       }
                     </h4>
                     @if (editingQuestionId()) {
@@ -2294,7 +2289,7 @@
                     data-testid="bottom-add-question-btn"
                   >
                     <app-icon name="plus" [size]="16" />
-                    <span>{{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان' : 'Add New Question to Assessment' }}</span>
+                    <span>{{ langService.isArabic() ? 'إضافة سؤال جديد' : 'Add Question' }}</span>
                   </button>
                 </div>
               </div>
@@ -2338,7 +2333,7 @@
             class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>{{ isSaving() ? (langService.isArabic() ? 'جارٍ حفظ التعديلات...' : 'Saving...') : (langService.isArabic() ? 'حفظ واعتماد التعديلات' : 'Save & Publish Changes') }}</span>
+            <span>{{ isSaving() ? (langService.isArabic() ? 'جارٍ الحفظ...' : 'Saving...') : (langService.isArabic() ? 'حفظ التعديلات' : 'Save Changes') }}</span>
           </button>
         </div>
 

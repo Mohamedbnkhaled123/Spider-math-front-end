@@ -1,6 +1,6 @@
 @if (isOpen()) {
   <div
-    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/35 backdrop-blur-md modal-backdrop"
+    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md modal-backdrop"
     (click)="close()"
   >
     <div
@@ -8,18 +8,15 @@
       (click)="$event.stopPropagation()"
     >
       <!-- MODAL HEADER -->
-      <div class="px-5 py-4 border-b border-surface-border bg-surface-bg/70 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-brand-primary/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
-            <app-icon name="sparkles" [size]="20" />
+      <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-surface-border bg-surface-bg/70 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-brand-primary/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
+            <app-icon name="sparkles" [size]="18" />
           </div>
           <div>
-            <h3 class="text-sm sm:text-base font-black text-text-primary flex items-center gap-2">
-              <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالذكاء الاصطناعي' : 'AI Math Question Extraction' }}</span>
+            <h3 class="text-xs sm:text-base font-bold text-text-primary flex items-center gap-2">
+              <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالـ AI' : 'AI Question Extraction' }}</span>
             </h3>
-            <p class="text-[11px] text-text-muted hidden sm:block">
-              {{ langService.isArabic() ? 'استخراج فوري للمسائل والمعادلات الرياضية (LaTeX) وقص الرسومات الهندسية بدقة فائقة' : 'Convert exam papers and worksheets into interactive digital LaTeX questions instantly' }}
-            </p>
           </div>
         </div>
 
