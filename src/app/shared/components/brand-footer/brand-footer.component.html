@@ -1,101 +1,116 @@
 <footer class="relative z-layer-content pt-10">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="footer-pill-container min-h-[84px] px-6 py-6 sm:py-8 flex flex-col md:flex-row items-center justify-between gap-6">
-      
-      <!-- 1. Left: Spider Mascot + Wordmark -->
-      <a [routerLink]="homeRoute()" (click)="scrollToTop()" class="flex items-center gap-2.5 group cursor-pointer shrink-0">
-        <img
-          src="/assets/branding/spider-mascot-nav-v3.webp?v=5"
-          alt="Spider Math Logo"
-          width="36"
-          height="36"
-          loading="lazy"
-          decoding="async"
-          class="w-9 h-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
-        />
-        <span class="academic-wordmark text-xl font-bold">
-          {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
-        </span>
-      </a>
+    <div class="footer-pill-container min-h-[84px] px-6 py-6 sm:py-8 flex flex-col gap-6">
 
-      <!-- 2. Center: Editorial Quick Links -->
-      <nav class="flex flex-wrap items-center justify-center gap-5 sm:gap-8 text-xs sm:text-sm font-medium text-text-secondary">
-        <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-brand-gold transition-colors cursor-pointer">
-          {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
-        </button>
-
-        <a routerLink="/topics" class="hover:text-brand-gold transition-colors">
-          {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Directory' }}
+      <!-- Main Footer Row -->
+      <div class="w-full flex flex-col md:flex-row items-center justify-between gap-6">
+        <!-- 1. Left: Spider Mascot + Wordmark -->
+        <a [routerLink]="homeRoute()" (click)="scrollToTop()" class="flex items-center gap-2.5 group cursor-pointer shrink-0">
+          <img
+            src="/assets/branding/spider-mascot-nav-v3.webp?v=5"
+            alt="Spider Math Logo"
+            width="36"
+            height="36"
+            loading="lazy"
+            decoding="async"
+            class="w-9 h-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+          />
+          <span class="academic-wordmark text-xl font-bold">
+            {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
+          </span>
         </a>
 
-        <a routerLink="/placement-test" class="hover:text-brand-gold transition-colors">
-          {{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}
-        </a>
+        <!-- 2. Center: Editorial Quick Links (Only on public landing/guest views; hidden in Student, Parent & Teacher/Admin portals) -->
+        @if (!isPortalRoute()) {
+          <nav class="flex flex-wrap items-center justify-center gap-5 sm:gap-8 text-xs sm:text-sm font-medium text-text-secondary">
+            <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-brand-gold transition-colors cursor-pointer">
+              {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
+            </button>
 
-        <a routerLink="/privacy-policy" class="hover:text-brand-gold transition-colors">
-          {{ langService.isArabic() ? 'سياسة الخصوصية' : 'Privacy Policy' }}
-        </a>
+            <button type="button" (click)="scrollToPlacementTest()" class="hover:text-brand-gold transition-colors cursor-pointer">
+              {{ langService.isArabic() ? 'اختبار تحديد المستوى' : 'Placement Test' }}
+            </button>
+          </nav>
+        }
 
-        <a routerLink="/terms-of-service" class="hover:text-brand-gold transition-colors">
-          {{ langService.isArabic() ? 'شروط الخدمة' : 'Terms of Service' }}
-        </a>
-      </nav>
+        <!-- 3. Right: Social Channels + Copyright -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 shrink-0 text-xs text-text-muted">
+          <!-- Social Icons -->
+          <div class="flex items-center gap-3">
+            @if (cleanWhatsappNumber()) {
+              <a
+                [href]="'https://wa.me/' + cleanWhatsappNumber()"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-emerald-500 transition-colors"
+                aria-label="WhatsApp"
+                title="WhatsApp"
+              >
+                <app-icon name="whatsapp" [size]="16" />
+              </a>
+            }
+            @if (cleanTelegramUrl(); as tgUrl) {
+              <a
+                [href]="tgUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-sky-400 transition-colors"
+                aria-label="Telegram"
+                title="Telegram"
+              >
+                <app-icon name="telegram" [size]="16" />
+              </a>
+            }
+            @if (contactChannels()?.youtube_channel_url) {
+              <a
+                [href]="contactChannels()?.youtube_channel_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-red-500 transition-colors"
+                aria-label="YouTube"
+                title="YouTube"
+              >
+                <app-icon name="youtube" [size]="16" />
+              </a>
+            }
+            @if (contactChannels()?.facebook_url) {
+              <a
+                [href]="contactChannels()?.facebook_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-sky-500 transition-colors"
+                aria-label="Facebook"
+                title="Facebook"
+              >
+                <app-icon name="facebook" [size]="16" />
+              </a>
+            }
+          </div>
 
-      <!-- 3. Right: Social Channels + Copyright -->
-      <div class="flex flex-col sm:flex-row items-center gap-4 shrink-0 text-xs text-text-muted">
-        <!-- Social Icons -->
-        <div class="flex items-center gap-3">
-          @if (cleanWhatsappNumber()) {
-            <a
-              [href]="'https://wa.me/' + cleanWhatsappNumber()"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-emerald-500 transition-colors"
-              aria-label="WhatsApp"
-              title="WhatsApp"
-            >
-              <app-icon name="whatsapp" [size]="16" />
-            </a>
-          }
-          @if (cleanTelegramUrl(); as tgUrl) {
-            <a
-              [href]="tgUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-sky-400 transition-colors"
-              aria-label="Telegram"
-              title="Telegram"
-            >
-              <app-icon name="telegram" [size]="16" />
-            </a>
-          }
-          @if (contactChannels()?.youtube_channel_url) {
-            <a
-              [href]="contactChannels()?.youtube_channel_url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-red-500 transition-colors"
-              aria-label="YouTube"
-              title="YouTube"
-            >
-              <app-icon name="youtube" [size]="16" />
-            </a>
-          }
-          @if (contactChannels()?.facebook_url) {
-            <a
-              [href]="contactChannels()?.facebook_url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-sky-500 transition-colors"
-              aria-label="Facebook"
-              title="Facebook"
-            >
-              <app-icon name="facebook" [size]="16" />
-            </a>
-          }
+          <span class="font-numeric">© {{ currentYear }} {{ langService.isArabic() ? 'سبايدر ماث. جميع الحقوق محفوظة.' : 'Spider Math. All rights reserved.' }}</span>
         </div>
+      </div>
 
-        <span class="font-numeric">© {{ currentYear }} {{ langService.isArabic() ? 'سبايدر ماث. جميع الحقوق محفوظة.' : 'Spider Math. All rights reserved.' }}</span>
+      <!-- 4. Developer Credit Attribution Link -->
+      <div class="w-full border-t border-surface-border/50 pt-4 flex items-center justify-center text-center">
+        <a
+          href="https://mohamedkhaled-dev-portfolio.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-xs sm:text-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer group"
+          dir="ltr"
+        >
+          <img
+            src="/assets/branding/developer-logo.webp"
+            alt="Eng. Mohamed Khaled Logo"
+            width="20"
+            height="18"
+            loading="lazy"
+            decoding="async"
+            class="w-5 h-auto object-contain opacity-85 group-hover:opacity-100 transition-opacity"
+          />
+          <span class="font-normal tracking-normal">This platform was made by Eng.Mohamed Khaled</span>
+        </a>
       </div>
 
     </div>

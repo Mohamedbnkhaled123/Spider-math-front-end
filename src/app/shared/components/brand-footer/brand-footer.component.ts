@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslocoPipe } from '@jsverse/transloco';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -19,6 +18,7 @@ import { PublicDiscoveryService } from '../../../core/services/public-discovery.
 export class BrandFooterComponent {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly discoveryService = inject(PublicDiscoveryService);
 
   readonly currentYear = new Date().getFullYear();
@@ -27,6 +27,27 @@ export class BrandFooterComponent {
   readonly landingData = toSignal(this.discoveryService.getLandingData(), { initialValue: null });
 
   readonly contactChannels = computed(() => this.landingData()?.contactChannels);
+
+  readonly isPortalRoute = computed(() => {
+    const url = this.router.url;
+    if (
+      url.startsWith('/student') ||
+      url.startsWith('/parent') ||
+      url.startsWith('/admin') ||
+      url.startsWith('/teacher') ||
+      url.startsWith('/exam') ||
+      url.startsWith('/quiz')
+    ) {
+      return true;
+    }
+    const user = this.authService.currentUser();
+    if (user && (user.role === 'STUDENT' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN')) {
+      if (url !== '/' && !url.startsWith('/?')) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   readonly cleanWhatsappNumber = computed(() => {
     const rawNumber = this.landingData()?.whatsappSupportNumber ||
@@ -65,7 +86,20 @@ export class BrandFooterComponent {
       const el = document.getElementById(sectionId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        this.router.navigate(['/'], { fragment: sectionId }).then(() => {
+          setTimeout(() => {
+            const target = document.getElementById(sectionId);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 150);
+        });
       }
     }
+  }
+
+  scrollToPlacementTest(): void {
+    this.scrollToSection('placement-test-section');
   }
 }
