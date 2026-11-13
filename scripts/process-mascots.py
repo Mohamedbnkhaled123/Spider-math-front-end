@@ -253,9 +253,14 @@ def main():
     print("\n=======================================================")
     print("2. Processing Arabic Hero Mascot (Looking right)...")
     print("=======================================================")
-    hero_ar_raw = local_raw_hero_ar if local_raw_hero_ar.exists() else src_hero_ar
-    hero_ar_rgba = remove_black_background(hero_ar_raw)
-    hero_ar_square = make_square_centered(hero_ar_rgba, margin_ratio=0.04)
+    hero_ar_orig = raw_dir / "spider-mascot-hero-ar-original.png"
+    if hero_ar_orig.exists():
+        from PIL import Image
+        hero_ar_rgba = Image.open(hero_ar_orig).convert('RGBA')
+    else:
+        hero_ar_raw = local_raw_hero_ar if local_raw_hero_ar.exists() else src_hero_ar
+        hero_ar_rgba = remove_black_background(hero_ar_raw)
+    hero_ar_square = make_square_centered(hero_ar_rgba, margin_ratio=0.03)
     save_variants(hero_ar_square, [
         {'path': branding_dir / 'spider-mascot-hero-book-ar-v3.webp', 'size': (640, 640), 'format': 'WEBP', 'quality': 85},
         {'path': branding_dir / 'spider-mascot-hero-book-ar-sm-v3.webp', 'size': (480, 480), 'format': 'WEBP', 'quality': 82},
@@ -264,13 +269,18 @@ def main():
         {'path': branding_dir / 'spider-mascot-hero-book-ar.png', 'size': (640, 640), 'format': 'PNG'},
     ])
 
-    if local_raw_hero_en.exists() or src_hero_en.exists():
+    hero_en_orig = raw_dir / "spider-mascot-hero-en-original.png"
+    if hero_en_orig.exists() or local_raw_hero_en.exists() or src_hero_en.exists():
         print("\n=======================================================")
         print("3. Processing English Hero Mascot (Looking left)...")
         print("=======================================================")
-        hero_en_raw = local_raw_hero_en if local_raw_hero_en.exists() else src_hero_en
-        hero_en_rgba = remove_black_background(hero_en_raw)
-        hero_en_square = make_square_centered(hero_en_rgba, margin_ratio=0.04)
+        if hero_en_orig.exists():
+            from PIL import Image
+            hero_en_rgba = Image.open(hero_en_orig).convert('RGBA')
+        else:
+            hero_en_raw = local_raw_hero_en if local_raw_hero_en.exists() else src_hero_en
+            hero_en_rgba = remove_black_background(hero_en_raw)
+        hero_en_square = make_square_centered(hero_en_rgba, margin_ratio=0.03)
         save_variants(hero_en_square, [
             {'path': branding_dir / 'spider-mascot-hero-book-v3.webp', 'size': (640, 640), 'format': 'WEBP', 'quality': 85},
             {'path': branding_dir / 'spider-mascot-hero-book-sm-v3.webp', 'size': (480, 480), 'format': 'WEBP', 'quality': 82},
