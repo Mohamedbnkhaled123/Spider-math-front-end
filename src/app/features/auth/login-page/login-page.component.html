@@ -695,4 +695,85 @@
 
   </div>
 
+  <!-- ========================================================================= -->
+  <!-- Pending Device Approval Modal (تظهر أمام الطالب مباشرة دون وميض أو توجيه)    -->
+  <!-- ========================================================================= -->
+  @if (isPendingApprovalModalOpen()) {
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+      <div class="max-w-md w-full rounded-3xl spider-rim-glass-card p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden bg-surface-card border border-amber-500/40 animate-scale-up">
+        <!-- Glow -->
+        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <!-- Lock Icon Badge -->
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 mx-auto flex items-center justify-center mb-4 shadow-sm relative">
+          <app-icon name="lock" [size]="32" />
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 animate-ping"></span>
+        </div>
+
+        <!-- Title & Description -->
+        <h3 class="text-xl sm:text-2xl font-black text-text-primary mb-2 font-academic-serif">
+          {{ langService.isArabic() ? 'الجهاز بانتظار موافقة المعلمة' : 'Device Awaiting Approval' }}
+        </h3>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-5">
+          {{ langService.isArabic()
+            ? 'تم تسجيل طلب الدخول من هذا الجهاز الجديد بنجاح، وهو قيد مراجعة واعتماد المهندسة هبة عبدالوهاب. سيتم تفعيل حسابك فور الموافقة.'
+            : 'Access request from this new device is awaiting approval from Eng. Heba Abdel-Wahab. Access will be unlocked automatically upon approval.' }}
+        </p>
+
+        <!-- Device Info Card -->
+        <div class="rounded-xl border border-surface-border bg-surface-bg/80 p-3.5 mb-5 text-xs text-right rtl:text-right space-y-2">
+          @if (pendingStudentCode()) {
+            <div class="flex items-center justify-between pb-2 border-b border-surface-border/50">
+              <span class="text-text-muted">{{ langService.isArabic() ? 'كود الطالب:' : 'Student Code:' }}</span>
+              <span class="font-mono font-bold text-brand-primary">{{ pendingStudentCode() }}</span>
+            </div>
+          }
+          <div class="flex items-center justify-between pb-2 border-b border-surface-border/50">
+            <span class="text-text-muted">{{ langService.isArabic() ? 'معرف الجهاز:' : 'Device UUID:' }}</span>
+            <span class="font-mono text-[11px] font-bold text-gold-accent truncate max-w-[180px]">{{ pendingDeviceUuid() }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-text-muted">{{ langService.isArabic() ? 'الحالة:' : 'Status:' }}</span>
+            <span class="inline-flex items-center gap-1.5 font-bold text-amber-500">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+              <span>{{ langService.isArabic() ? 'بانتظار الاعتماد...' : 'Pending approval...' }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Real-time Polling Notice -->
+        <p class="text-[11px] text-text-muted mb-5 flex items-center justify-center gap-1.5">
+          <app-icon name="refresh" [size]="12" className="animate-spin text-amber-500" />
+          <span>{{ langService.isArabic() ? 'جاري المتابعة والتحقق التلقائي...' : 'Auto-checking status every few seconds...' }}</span>
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col gap-2.5">
+          <button
+            type="button"
+            (click)="pollDeviceApprovalStatus(true)"
+            [disabled]="isCheckingApproval()"
+            class="w-full py-3 px-4 rounded-xl font-bold btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 text-xs sm:text-sm"
+          >
+            @if (isCheckingApproval()) {
+              <app-icon name="refresh" [size]="16" className="animate-spin" />
+              <span>{{ langService.isArabic() ? 'جاري التحقق...' : 'Checking...' }}</span>
+            } @else {
+              <app-icon name="refresh" [size]="16" />
+              <span>{{ langService.isArabic() ? 'التحقق الآن' : 'Check Status Now' }}</span>
+            }
+          </button>
+
+          <button
+            type="button"
+            (click)="closePendingApprovalModal()"
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إلغاء والعودة لتسجيل الدخول' : 'Cancel & Back to Login' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

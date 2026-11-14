@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -38,7 +38,7 @@ declare const google: any;
   styleUrl: './login-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginPageComponent implements OnInit {
+export class LoginPageComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly authService = inject(AuthService);
   private readonly fingerprintService = inject(DeviceFingerprintService);
@@ -56,6 +56,13 @@ export class LoginPageComponent implements OnInit {
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+
+  // Pending Device Approval Modal State (تظهر أمام الطالب مباشرة دون وميض أو توجيه)
+  readonly isPendingApprovalModalOpen = signal<boolean>(false);
+  readonly pendingDeviceUuid = signal<string>('');
+  readonly pendingStudentCode = signal<string>('');
+  readonly isCheckingApproval = signal<boolean>(false);
+  private approvalPollTimer: any = null;
 
   // Real Google OAuth Signals
   readonly isGoogleAuthenticating = signal<boolean>(false);
@@ -131,6 +138,12 @@ export class LoginPageComponent implements OnInit {
       this.ensureGoogleScriptLoaded().catch(() => {});
     }
 
+    if (this.authService.isPendingDeviceApproval()) {
+      this.pendingDeviceUuid.set(this.fingerprintService.getExistingDeviceUuidSync());
+      this.isPendingApprovalModalOpen.set(true);
+      this.startApprovalPolling();
+    }
+
     const qp = this.route.snapshot.queryParams;
     if (qp['roleMismatch'] === 'true' || qp['role']) {
       if (qp['requiredRole']?.includes('SUPER_ADMIN') || qp['role'] === 'ADMIN') {
@@ -171,6 +184,62 @@ export class LoginPageComponent implements OnInit {
     if (this.router.url.includes('parent')) {
       this.activeTab.set('parent');
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.approvalPollTimer) {
+      clearInterval(this.approvalPollTimer);
+      this.approvalPollTimer = null;
+    }
+  }
+
+  startApprovalPolling(): void {
+    if (this.approvalPollTimer) {
+      clearInterval(this.approvalPollTimer);
+    }
+    this.approvalPollTimer = setInterval(() => {
+      this.pollDeviceApprovalStatus(false);
+    }, 4000);
+  }
+
+  pollDeviceApprovalStatus(isManual = false): void {
+    if (isManual) {
+      this.isCheckingApproval.set(true);
+    }
+    const deviceUuid = this.pendingDeviceUuid() || this.fingerprintService.getExistingDeviceUuidSync();
+    this.http.get<{ success: boolean; data: any }>('/api/v1/auth/device-status', {
+      headers: { 'X-Device-UUID': deviceUuid }
+    }).subscribe({
+      next: (res) => {
+        if (isManual) {
+          this.isCheckingApproval.set(false);
+        }
+        if (res?.data?.isApproved && res?.data?.token && res?.data?.user) {
+          if (this.approvalPollTimer) {
+            clearInterval(this.approvalPollTimer);
+            this.approvalPollTimer = null;
+          }
+          this.isPendingApprovalModalOpen.set(false);
+          this.authService.setPendingDeviceApproval(false);
+          this.authService.setSession(res.data.token, res.data.user);
+          this.navigateStudentAfterAuth();
+        }
+      },
+      error: () => {
+        if (isManual) {
+          this.isCheckingApproval.set(false);
+        }
+      }
+    });
+  }
+
+  closePendingApprovalModal(): void {
+    if (this.approvalPollTimer) {
+      clearInterval(this.approvalPollTimer);
+      this.approvalPollTimer = null;
+    }
+    this.isPendingApprovalModalOpen.set(false);
+    this.authService.setPendingDeviceApproval(false);
   }
 
   setTab(tab: LoginTab): void {
@@ -438,7 +507,10 @@ export class LoginPageComponent implements OnInit {
         const data = res.data;
 
         if (data.isPendingApproval) {
-          this.googleAuthErrorMessage.set('الجهاز قيد مراجعة المعلمة.');
+          this.pendingDeviceUuid.set(deviceIdentity.deviceUuid);
+          this.isPendingApprovalModalOpen.set(true);
+          this.authService.setPendingDeviceApproval(true);
+          this.startApprovalPolling();
           return;
         }
 
@@ -481,6 +553,13 @@ export class LoginPageComponent implements OnInit {
       },
       error: (err) => {
         this.isGoogleAuthenticating.set(false);
+        if (err.status === 423 || err.error?.errorCode === 'DEVICE_PENDING_APPROVAL_423') {
+          this.pendingDeviceUuid.set(deviceIdentity.deviceUuid);
+          this.isPendingApprovalModalOpen.set(true);
+          this.authService.setPendingDeviceApproval(true);
+          this.startApprovalPolling();
+          return;
+        }
         if (err.status === 404 && intent === 'login') {
           this.unregisteredGoogleEmail.set('unregistered');
           this.googleAuthErrorMessage.set(
@@ -563,6 +642,14 @@ export class LoginPageComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting.set(false);
+        if (err.status === 423 || err.error?.errorCode === 'DEVICE_PENDING_APPROVAL_423') {
+          this.pendingDeviceUuid.set(deviceIdentity.deviceUuid);
+          this.pendingStudentCode.set(code);
+          this.isPendingApprovalModalOpen.set(true);
+          this.authService.setPendingDeviceApproval(true);
+          this.startApprovalPolling();
+          return;
+        }
         this.errorMessage.set(
           this.extractErrorMessage(
             err,

@@ -53,7 +53,9 @@ export class PendingDeviceApprovalComponent implements OnInit, OnDestroy {
       this.statusMessage.set(null);
     }
 
-    this.http.get<{ success: boolean; data: any }>('/api/v1/auth/device-status').subscribe({
+    this.http.get<{ success: boolean; data: any }>('/api/v1/auth/device-status', {
+      headers: { 'X-Device-UUID': this.deviceUuid() }
+    }).subscribe({
       next: (res) => {
         if (isManual) {
           this.isCheckingStatus.set(false);

@@ -25,13 +25,24 @@ export const errorRevokeInterceptor: HttpInterceptorFn = (req, next) => {
       // HTTP 423: Device Pending Teacher Approval
       if (error.status === 423) {
         authService.setPendingDeviceApproval(true);
-        router.navigate(['/pending-device-approval']);
+        // If the user is on the login page, let the login page display the approval card/modal in front of the student.
+        // Otherwise (e.g. from student dashboard or other protected routes), navigate to /pending-device-approval.
+        if (!router.url.includes('/login')) {
+          router.navigate(['/pending-device-approval']);
+        }
       }
 
       // HTTP 401: Unauthorized / Token Expired
       else if (error.status === 401) {
-        // Do not force logout if attempting guest authentication
-        if (!req.url.includes('/api/v1/auth/google') && !req.url.includes('/api/v1/auth/parent-login')) {
+        const isAuthExempt =
+          req.url.includes('/api/v1/auth/google') ||
+          req.url.includes('/api/v1/auth/parent-login') ||
+          req.url.includes('/api/v1/auth/device-status') ||
+          req.url.includes('/api/v1/auth/check-device-status') ||
+          req.url.includes('/api/v1/auth/student-code-login');
+
+        // Do not force logout if checking device status or currently awaiting approval
+        if (!isAuthExempt && !authService.isPendingDeviceApproval()) {
           authService.clearSession('/login');
         }
       }

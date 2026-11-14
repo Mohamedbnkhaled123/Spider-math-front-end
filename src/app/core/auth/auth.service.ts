@@ -34,6 +34,7 @@ export class AuthService {
 
   private readonly TOKEN_KEY = 'spider_math_jwt';
   private readonly USER_KEY = 'spider_math_user';
+  private readonly PENDING_DEVICE_KEY = 'spider_math_pending_device';
 
   // Signals
   readonly currentUser = signal<IUserDto | null>(null);
@@ -72,6 +73,7 @@ export class AuthService {
       try {
         localStorage.setItem(this.TOKEN_KEY, token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(normalizedUser));
+        sessionStorage.removeItem(this.PENDING_DEVICE_KEY);
       } catch (err) {
         console.error('[AuthService] Failed to save session:', err);
       }
@@ -102,6 +104,15 @@ export class AuthService {
    */
   setPendingDeviceApproval(status: boolean): void {
     this.isPendingDeviceApproval.set(status);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        if (status) {
+          sessionStorage.setItem(this.PENDING_DEVICE_KEY, 'true');
+        } else {
+          sessionStorage.removeItem(this.PENDING_DEVICE_KEY);
+        }
+      } catch {}
+    }
   }
 
   /**
@@ -115,6 +126,9 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
+      try {
+        sessionStorage.removeItem(this.PENDING_DEVICE_KEY);
+      } catch {}
       this.router.navigateByUrl(redirectUrl);
     }
   }
@@ -127,6 +141,11 @@ export class AuthService {
       try {
         const token = localStorage.getItem(this.TOKEN_KEY);
         const userJson = localStorage.getItem(this.USER_KEY);
+        const isPending = sessionStorage.getItem(this.PENDING_DEVICE_KEY) === 'true';
+
+        if (isPending) {
+          this.isPendingDeviceApproval.set(true);
+        }
 
         if (token && userJson) {
           const rawUser = JSON.parse(userJson) as IUserDto;
