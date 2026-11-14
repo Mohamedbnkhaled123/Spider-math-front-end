@@ -296,6 +296,16 @@
                     {{ langService.isArabic() ? 'تفعيل وحدة' : 'Activate Unit' }}
                   </button>
 
+                  <!-- Manage Unit Subscriptions / Revoke -->
+                  <button
+                    type="button"
+                    (click)="openSubscriptionsModal(student)"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-cyan-500/30 text-cyan-600 hover:bg-cyan-500/10 transition-colors cursor-pointer"
+                    [title]="langService.isArabic() ? 'عرض وإلغاء اشتراكات الوحدات' : 'Manage Unit Subscriptions'"
+                  >
+                    {{ langService.isArabic() ? 'اشتراكات الوحدات' : 'Units' }}
+                  </button>
+
                   <!-- Toggle Freeze / Unfreeze -->
                   @if (student.subscriptionStatus === 'ACTIVE') {
                     <button
@@ -495,6 +505,16 @@
               {{ langService.isArabic() ? 'تفعيل وحدة' : 'Activate Unit' }}
             </button>
 
+            <!-- Manage Unit Subscriptions / Revoke -->
+            <button
+              type="button"
+              (click)="openSubscriptionsModal(student)"
+              class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-cyan-500/40 bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20 text-center transition-colors cursor-pointer"
+              [title]="langService.isArabic() ? 'عرض وإلغاء اشتراكات الوحدات' : 'Manage Unit Subscriptions'"
+            >
+              {{ langService.isArabic() ? 'الوحدات' : 'Units' }}
+            </button>
+
             <!-- Toggle Freeze / Unfreeze -->
             @if (student.subscriptionStatus === 'ACTIVE') {
               <button
@@ -647,10 +667,63 @@
               {{ student.curriculum }} — {{ student.gradeLevel }}
             </span>
           </div>
-          <span class="text-[11px] text-text-muted">
-            {{ langService.isArabic() ? 'يتم عرض الوحدات المطابقة لصف ومسار الطالب فقط منعاً للتداخل' : 'Only units matching student grade & track are displayed.' }}
-          </span>
+          <button
+            type="button"
+            (click)="toggleShowAllUnits()"
+            class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1.5"
+            [class.bg-brand-primary/15]="showAllUnits()"
+            [class.border-brand-primary/40]="showAllUnits()"
+            [class.text-brand-primary]="showAllUnits()"
+            [class.bg-surface-card]="!showAllUnits()"
+            [class.border-surface-border]="!showAllUnits()"
+            [class.text-text-muted]="!showAllUnits()"
+          >
+            <app-icon [name]="showAllUnits() ? 'check' : 'filter'" [size]="12" />
+            <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض كل الوحدات (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كافة وحدات المناهج' : 'Show All Units') }}</span>
+          </button>
         </div>
+
+        <!-- Currently Enrolled Units (with 1-click Revoke capability) -->
+        @if (studentActiveSubscriptions().length > 0) {
+          <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-text-primary text-xs flex items-center gap-1.5">
+                <app-icon name="book-open" [size]="14" className="text-emerald-500" />
+                <span>{{ langService.isArabic() ? 'الوحدات المشترك بها حالياً:' : 'Currently Enrolled Units:' }}</span>
+              </span>
+              <span class="text-[10px] text-text-muted font-numeric">({{ studentActiveSubscriptions().length }})</span>
+            </div>
+            <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              @for (sub of studentActiveSubscriptions(); track (sub._id || sub.id)) {
+                <div class="p-2 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between gap-2 text-xs">
+                  <div class="min-w-0">
+                    <span class="font-bold text-text-primary block truncate">{{ sub.unitTitleAr }}</span>
+                    <span class="text-[10px] text-text-muted font-mono">{{ sub.curriculum }} • {{ sub.gradeLevel }} • {{ sub.accessScope === 'ASSESSMENTS_ONLY' ? 'اختبارات فقط' : 'كاملة' }}</span>
+                  </div>
+                  @if (sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired) {
+                    <button
+                      type="button"
+                      (click)="revokeStudentSubscription(sub)"
+                      [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
+                      class="px-2.5 py-1 rounded-lg text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50"
+                      [title]="langService.isArabic() ? 'إلغاء اشتراك الطالب في هذه الوحدة' : 'Revoke unit subscription'"
+                    >
+                      @if (isRevokingSubscription() === (sub._id || sub.id)) {
+                        <span class="animate-spin inline-block">⏳</span>
+                      } @else {
+                        <span>{{ langService.isArabic() ? 'إلغاء الاشتراك' : 'Revoke' }}</span>
+                      }
+                    </button>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-500/10 text-slate-400">
+                      {{ sub.subscriptionStatus === 'CANCELLED' ? (langService.isArabic() ? 'ملغي' : 'Cancelled') : (langService.isArabic() ? 'منتهي' : 'Expired') }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? ('اختر الوحدة المطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + '):') : ('Select Unit for Student (' + student.curriculum + ' - ' + student.gradeLevel + '):') }}</label>
@@ -815,6 +888,122 @@
             {{ langService.isArabic() ? 'اعتماد وحفظ النقاط' : 'Save & Publish XP' }}
           </button>
         </div>
+      </div>
+    </div>
+  }
+
+
+  <!-- ========================================================================= -->
+  <!-- 4. Student Subscriptions & Units Management Modal (Revoke / View)          -->
+  <!-- ========================================================================= -->
+  @if (isSubscriptionsModalOpen() && studentForSubscriptions(); as student) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div class="relative w-full max-w-lg rounded-3xl spider-rim-glass-card bg-surface-card p-6 shadow-2xl space-y-4 border border-surface-border">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <div class="flex items-center gap-2.5">
+            <span class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center">
+              <app-icon name="book-open" [size]="18" />
+            </span>
+            <div>
+              <h3 class="font-black text-sm text-text-primary">
+                {{ langService.isArabic() ? 'إدارة اشتراكات الطالب في الوحدات' : 'Manage Student Unit Subscriptions' }}
+              </h3>
+              <p class="text-[11px] text-text-muted mt-0.5 font-mono">
+                {{ student.name }} ({{ student.haCode }}) — {{ student.curriculum }}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="isSubscriptionsModalOpen.set(false)"
+            class="w-8 h-8 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Student Subscriptions List -->
+        <div class="space-y-3">
+          @if (isLoadingSubscriptions()) {
+            <div class="p-6 text-center text-text-muted space-y-2">
+              <span class="w-5 h-5 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin inline-block"></span>
+              <p class="text-xs">{{ langService.isArabic() ? 'جاري تحميل اشتراكات الوحدات...' : 'Loading subscriptions...' }}</p>
+            </div>
+          } @else if (studentActiveSubscriptions().length === 0) {
+            <div class="p-6 text-center rounded-2xl bg-surface-bg border border-surface-border space-y-2">
+              <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto opacity-40" />
+              <h4 class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد اشتراكات وحدات مسجلة لهذا الطالب' : 'No unit subscriptions found' }}</h4>
+              <p class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يمكنك تفعيل وحدات جديدة للطالب في أي وقت.' : 'You can activate new units anytime.' }}</p>
+            </div>
+          } @else {
+            <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+              @for (sub of studentActiveSubscriptions(); track (sub._id || sub.id)) {
+                <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 text-xs">
+                  <div class="min-w-0 space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-text-primary text-sm truncate">{{ sub.unitTitleAr }}</span>
+                      <span
+                        class="px-2 py-0.5 rounded-full text-[9px] font-bold"
+                        [class.bg-emerald-500/10]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
+                        [class.text-emerald-500]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
+                        [class.bg-rose-500/10]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
+                        [class.text-rose-500]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
+                      >
+                        {{ sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired ? (langService.isArabic() ? 'نشط' : 'Active') : sub.subscriptionStatus === 'CANCELLED' ? (langService.isArabic() ? 'ملغي' : 'Cancelled') : (langService.isArabic() ? 'منتهي' : 'Expired') }}
+                      </span>
+                    </div>
+                    <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-2">
+                      <span>{{ sub.curriculum }} • {{ sub.gradeLevel }}</span>
+                      <span>• {{ sub.accessScope === 'ASSESSMENTS_ONLY' ? (langService.isArabic() ? 'اختبارات فقط' : 'Quizzes Only') : (langService.isArabic() ? 'وحدة كاملة' : 'Full Unit') }}</span>
+                      @if (sub.pricePaidEgp !== undefined) {
+                        <span>• {{ sub.pricePaidEgp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Revoke Action -->
+                  @if (sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired) {
+                    <button
+                      type="button"
+                      (click)="revokeStudentSubscription(sub)"
+                      [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
+                      class="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                    >
+                      @if (isRevokingSubscription() === (sub._id || sub.id)) {
+                        <span class="w-3 h-3 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin"></span>
+                        <span>{{ langService.isArabic() ? 'جاري الإلغاء...' : 'Revoking...' }}</span>
+                      } @else {
+                        <app-icon name="trash" [size]="13" />
+                        <span>{{ langService.isArabic() ? 'إلغاء اشتراك الوحدة' : 'Revoke Subscription' }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-between gap-2">
+          <button
+            type="button"
+            (click)="isSubscriptionsModalOpen.set(false); openActivateModal(student)"
+            class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 font-bold text-xs hover:bg-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <app-icon name="plus" [size]="14" />
+            <span>{{ langService.isArabic() ? '+ تفعيل وحدة جديدة لهذا الطالب' : '+ Activate New Unit' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="isSubscriptionsModalOpen.set(false)"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted hover:bg-surface-card transition-all cursor-pointer text-xs"
+          >
+            {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
+          </button>
+        </div>
+
       </div>
     </div>
   }

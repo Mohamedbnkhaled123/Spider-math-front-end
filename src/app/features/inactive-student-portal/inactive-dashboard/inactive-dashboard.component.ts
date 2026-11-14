@@ -8,6 +8,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -38,6 +39,7 @@ import { SwrCacheService } from '../../../core/services/swr-cache.service';
 })
 export class InactiveDashboardComponent implements OnInit {
   readonly authService = inject(AuthService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly unitsService = inject(UnitsSubscriptionsService);
@@ -283,6 +285,39 @@ export class InactiveDashboardComponent implements OnInit {
         this.unitPackages.set(list);
         this.swrCache.set(unitsKey, list);
         this.isLoadingUnits.set(false);
+
+        // Hydrate real free trial lectures from curriculum units
+        if (list.length > 0) {
+          list.forEach(unit => {
+            const uId = (unit as any).id || (unit as any)._id;
+            this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${uId}/curriculum-contents`).subscribe({
+              next: cRes => {
+                const lecs = cRes?.data?.lectures || [];
+                const freeLecs = lecs.filter((l: any) => l.is_free || l.is_free_trial || l.isFree || l.isFreeTrial);
+                if (freeLecs.length > 0) {
+                  const mapped: ITrialLecture[] = freeLecs.map((fl: any) => ({
+                    _id: fl._id || fl.id,
+                    titleAr: fl.lecture_title_ar || fl.title_ar,
+                    titleEn: fl.lecture_title_en || fl.title_en || '',
+                    durationMinutes: fl.video_duration_sec ? Math.round(fl.video_duration_sec / 60) : (fl.duration_minutes || 45),
+                    curriculum: unit.curriculum,
+                    gradeLevel: (unit as any).grade_level || (unit as any).gradeLevel,
+                    academicTerm: (unit as any).academic_term || (unit as any).term,
+                    descriptionAr: fl.description_ar || 'حصة تجريبية مجانية مفتوحة لكافة الطلاب المسجلين بالمنصة.',
+                    descriptionEn: fl.description_en || 'Free trial lesson available for all registered students.',
+                    is_free_trial: true,
+                    videoEmbedId: fl.youtube_video_id || fl.youtube_url || fl.encrypted_video_id || fl.videoEmbedId || ''
+                  }));
+                  this.trialLectures.update(existing => {
+                    const existingIds = new Set(existing.map(e => e._id));
+                    const news = mapped.filter(m => !existingIds.has(m._id));
+                    return [...news, ...existing];
+                  });
+                }
+              }
+            });
+          });
+        }
       },
       error: () => {
         if (!this.swrCache.has(unitsKey)) {
@@ -309,6 +344,21 @@ export class InactiveDashboardComponent implements OnInit {
 
   closeTrialLecture(): void {
     this.activeTrialLecture.set(null);
+  }
+
+  getSafeVideoUrl(videoEmbedId: string): SafeResourceUrl {
+    const cleanId = this.extractYoutubeId(videoEmbedId);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube-nocookie.com/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1`
+    );
+  }
+
+  extractYoutubeId(input: string): string {
+    if (!input) return '';
+    const clean = input.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(clean)) return clean;
+    const match = clean.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? match[1] : clean;
   }
 
   subscribeViaWhatsApp(unit: IUnitPackageItem): void {

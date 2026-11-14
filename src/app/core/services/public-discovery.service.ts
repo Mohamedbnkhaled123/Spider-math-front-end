@@ -207,8 +207,8 @@ export class PublicDiscoveryService {
             placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || 'Strengths & Weaknesses Report',
             placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || 'متابعة شخصية من م/ هبة عبدالوهاب',
             placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || 'Eng. Heba Follow-up',
-            placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ اختبار تحديد المستوى الآن',
-            placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start Diagnostic Assessment Now',
+            placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ الآن',
+            placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start now',
 
             scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || 'جدول المواعيد والحصص',
             scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || 'Live Lecture Schedule',

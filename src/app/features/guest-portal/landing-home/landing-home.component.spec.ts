@@ -70,4 +70,45 @@ describe('LandingHomeComponent', () => {
       expect(heroImg?.getAttribute('src')).toContain('spider-mascot-hero-book');
     });
   });
+
+  describe('Placement Test Section Responsive & Ribbon Enhancements', () => {
+    it('should render placement section with lg:flex-row container preventing 768px tablet text squeezing', () => {
+      const placementSec: HTMLElement | null = fixture.nativeElement.querySelector('#placement-test-section');
+      expect(placementSec).toBeTruthy();
+
+      const flexContainer = placementSec?.querySelector('.spider-rim-glass-card .flex-col');
+      expect(flexContainer).toBeTruthy();
+      expect(flexContainer?.classList.contains('lg:flex-row')).toBeTrue();
+      expect(flexContainer?.classList.contains('md:flex-row')).toBeFalse();
+    });
+
+    it('should render corner ribbon with Free or مجاني text and not render old pill badge', () => {
+      const placementSec: HTMLElement | null = fixture.nativeElement.querySelector('#placement-test-section');
+      const ribbonWrapper = placementSec?.querySelector('.placement-corner-ribbon-wrapper');
+      expect(ribbonWrapper).toBeTruthy();
+
+      const ribbon = placementSec?.querySelector('.placement-corner-ribbon');
+      expect(ribbon).toBeTruthy();
+      const ribbonText = ribbon?.textContent || '';
+      expect(ribbonText.includes('Free') || ribbonText.includes('مجاني')).toBeTrue();
+
+      // Ensure the old inline pill badge with target icon is removed
+      const oldBadge = placementSec?.querySelector('.max-w-2xl .rounded-full.bg-brand-gold\\/15');
+      expect(oldBadge).toBeNull();
+    });
+
+    it('should render compact placement CTA button with "Start now" or "ابدأ الآن"', () => {
+      const placementSec: HTMLElement | null = fixture.nativeElement.querySelector('#placement-test-section');
+      const btn = placementSec?.querySelector('button.btn-gold-metallic');
+      expect(btn).toBeTruthy();
+
+      const btnText = btn?.textContent || '';
+      expect(btnText.includes('ابدأ الآن') || btnText.includes('Start now')).toBeTrue();
+      expect(btnText).not.toContain('Free Placement & Diagnostic Assessment');
+
+      // Verify compact styling on small screens
+      expect(btn?.classList.contains('w-full')).toBeFalse();
+      expect(btn?.classList.contains('inline-flex')).toBeTrue();
+    });
+  });
 });

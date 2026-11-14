@@ -40,29 +40,6 @@
       title="Spider Math DRM Security Shield"
     ></div>
 
-    <!-- 2.1 Center Luxury Play Button Overlay (علامة تشغيل الفيديو) -->
-    @if (!isPlaying()) {
-      <div class="center-play-overlay absolute inset-0 z-layer-shield flex items-center justify-center pointer-events-none transition-all duration-300">
-        <button
-          type="button"
-          (click)="togglePlay(); $event.stopPropagation()"
-          class="center-play-orb pointer-events-auto group/play-btn relative flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110 active:scale-95"
-          [attr.aria-label]="langService.isArabic() ? 'تشغيل الفيديو' : 'Play video'"
-          [title]="langService.isArabic() ? 'تشغيل الفيديو' : 'Play video'"
-        >
-          <!-- Outer Pulsing Halo -->
-          <span class="absolute -inset-2 rounded-full bg-[#D4AF6A]/20 blur-md animate-pulse"></span>
-          <!-- Glassmorphic Metallic Orb Frame -->
-          <span class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-[#2A1D37]/90 via-[#3B2554]/85 to-[#1A1123]/95 border-2 border-[#D4AF6A] shadow-[0_0_30px_rgba(212,175,106,0.45)] backdrop-blur-md">
-            <!-- Golden Play Icon (Optically centered) -->
-            <span class="text-[#E5C47E] group-hover/play-btn:text-white transition-colors duration-200 pl-1 flex items-center justify-center">
-              <app-icon name="play" [size]="28" />
-            </span>
-          </span>
-        </button>
-      </div>
-    }
-
     <!-- 3. Dynamic Anti-Tamper Watermark Component (z-layer-watermark: 25) -->
     @if (!isPublicHeroPromo()) {
       <app-anti-tamper-watermark
@@ -77,14 +54,13 @@
       <div class="xp-celebration-popup absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-layer-modal pointer-events-none text-center">
         <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl btn-gold-metallic shadow-gold-glow font-black text-sm sm:text-base border border-white/30 backdrop-blur-md">
           <span class="text-xl animate-spark-twinkle">✦</span>
-          <span>{{ langService.isArabic() ? '+50 XP ✦ أتممت 85% من المحاضرة!' : '+50 XP ✦ 85% Completed!' }}</span>
+          <span>{{ langService.isArabic() ? '+50 XP ✦ أحسنت! أتممت نسبة 85% من المحاضرة بنجاح' : '+50 XP ✦ Great job! Completed 85% of lecture' }}</span>
         </div>
       </div>
     }
 
     <!-- 6. Custom Video Controls & Scrubber (Simplified Minimal Interface) -->
     <div
-      dir="ltr"
       class="player-controls-bar absolute inset-x-0 bottom-0 z-layer-player-controls px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300"
       [ngClass]="{ 'opacity-100': showControls() || !isPlaying(), 'opacity-0 pointer-events-none': !showControls() && isPlaying() }"
     >
@@ -92,7 +68,7 @@
       <div
         (click)="seek($event)"
         class="relative w-full h-4 flex items-center cursor-pointer mb-2 sm:mb-3 group/seek"
-        [title]="langService.isArabic() ? 'تقديم / تأخير' : 'Seek'"
+        [title]="langService.isArabic() ? 'انقر للتقديم أو التأخير' : 'Click to seek'"
       >
         <!-- Background Track -->
         <div class="w-full h-1 sm:h-1.5 rounded-full bg-white/20 relative">
@@ -102,64 +78,36 @@
             [style.width]="progressPercentage() + '%'"
           >
             <!-- Glowing Spherical Head / Thumb -->
-            <div class="scrubber-thumb-orb absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2"></div>
+            <div class="scrubber-thumb-orb absolute right-0 rtl:right-auto rtl:left-0 top-1/2 -translate-y-1/2 translate-x-1/2 rtl:-translate-x-1/2"></div>
           </div>
         </div>
       </div>
 
-      <!-- Controls Row: Play/Pause, Audio, Duration, and Fullscreen -->
-      <div class="flex items-center justify-between text-white text-xs font-semibold select-none">
-        <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Play / Pause Button -->
-          <button
-            type="button"
-            (click)="togglePlay()"
-            class="p-2 rounded-xl bg-white/10 hover:bg-[#D4AF6A]/25 text-white hover:text-[#D4AF6A] border border-white/10 hover:border-[#D4AF6A]/40 transition-all duration-200 cursor-pointer flex items-center justify-center shadow-sm"
-            [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
-            [title]="isPlaying() ? (langService.isArabic() ? 'إيقاف مؤقت' : 'Pause') : (langService.isArabic() ? 'تشغيل' : 'Play')"
-          >
-            @if (isPlaying()) {
-              <app-icon name="pause" [size]="15" />
-            } @else {
-              <app-icon name="play" [size]="15" />
-            }
-          </button>
+      <!-- Controls Row: Play/Pause and Audio Toggle -->
+      <div class="flex items-center text-white text-xs gap-3 font-semibold">
+        <!-- Play / Pause Button -->
+        <button
+          type="button"
+          (click)="togglePlay()"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
+          [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+        >
+          @if (isPlaying()) {
+            <span class="w-4 h-4 flex items-center justify-center font-bold">❚❚</span>
+          } @else {
+            <app-icon name="play" [size]="16" />
+          }
+        </button>
 
-          <!-- Audio Icon Button (Toggles Mute) -->
-          <button
-            type="button"
-            (click)="toggleMute()"
-            [attr.aria-label]="isMuted() || volume() === 0 ? 'Unmute sound' : 'Mute sound'"
-            [title]="isMuted() || volume() === 0 ? (langService.isArabic() ? 'تشغيل الصوت' : 'Unmute') : (langService.isArabic() ? 'كتم الصوت' : 'Mute')"
-            class="p-2 rounded-xl hover:bg-white/15 text-white/90 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
-          >
-            <app-icon [name]="isMuted() || volume() === 0 ? 'volume-x' : 'volume-2'" [size]="16" />
-          </button>
-
-          <!-- Video Duration Display (المدة: الوقت الحالي / الوقت الإجمالي) -->
-          <div
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/55 border border-white/10 font-mono text-[11px] sm:text-xs text-white/90 tabular-nums shadow-inner"
-            dir="ltr"
-            [title]="langService.isArabic() ? 'مدة الفيديو' : 'Video Duration'"
-          >
-            <span class="text-[#E5C47E] font-bold">{{ formattedCurrentTime() }}</span>
-            <span class="text-white/40 font-normal">/</span>
-            <span class="text-white/80 font-normal">{{ formattedDuration() }}</span>
-          </div>
-        </div>
-
-        <!-- Right Side: Fullscreen Button -->
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            (click)="toggleFullscreen()"
-            class="p-2 rounded-xl hover:bg-white/15 text-white/80 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
-            [attr.aria-label]="isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen'"
-            [title]="isFullscreen() ? (langService.isArabic() ? 'تصغير' : 'Exit Fullscreen') : (langService.isArabic() ? 'ملء الشاشة' : 'Fullscreen')"
-          >
-            <app-icon [name]="isFullscreen() ? 'minimize' : 'maximize'" [size]="16" />
-          </button>
-        </div>
+        <!-- Audio Icon Button (Toggles Mute) -->
+        <button
+          type="button"
+          (click)="toggleMute()"
+          [attr.aria-label]="isMuted() || volume() === 0 ? 'Unmute sound' : 'Mute sound'"
+          class="p-2 rounded-xl hover:bg-white/15 transition-colors cursor-pointer"
+        >
+          <app-icon [name]="isMuted() || volume() === 0 ? 'volume-x' : 'volume-2'" [size]="16" />
+        </button>
       </div>
     </div>
   </div>

@@ -43,7 +43,7 @@ export class QuizCacheService implements OnDestroy {
   readonly remainingSeconds = computed(() => {
     const quiz = this.activeQuiz();
     if (!quiz) return 0;
-    let totalSeconds = (quiz.durationMinutes || 30) * 60;
+    let totalSeconds = (quiz.durationMinutes !== undefined && quiz.durationMinutes !== null ? quiz.durationMinutes : 30) * 60;
     if (quiz.isMultiModule) {
       const activeMins = quiz.currentModule === 2
         ? (quiz.module2DurationMinutes || 35)

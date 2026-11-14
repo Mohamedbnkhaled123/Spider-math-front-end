@@ -482,3 +482,79 @@ $axis-blue: #0284C7;
   animation: mascotGentleFloat 5s ease-in-out infinite;
   will-change: transform;
 }
+
+// ------------------------------------------------------------------------------
+// Placement Test Section — Corner Ribbon (مجاني / Free)
+// ------------------------------------------------------------------------------
+.placement-corner-ribbon-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 104px;
+  height: 104px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 25;
+
+  &.is-rtl {
+    right: auto;
+    left: 0;
+  }
+}
+
+:host-context([dir="rtl"]) .placement-corner-ribbon-wrapper,
+[dir="rtl"] .placement-corner-ribbon-wrapper {
+  right: auto;
+  left: 0;
+}
+
+.placement-corner-ribbon {
+  position: absolute;
+  top: 18px;
+  right: -32px;
+  width: 130px;
+  text-align: center;
+  padding: 0.32rem 0;
+  background: linear-gradient(135deg, #F5D77F 0%, #D4AF37 50%, #B88528 100%);
+  color: #080A14;
+  font-family: var(--font-english);
+  font-weight: 900;
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 10px rgba(212, 175, 55, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  transform: rotate(45deg);
+  transform-origin: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+
+  &.is-rtl {
+    right: auto;
+    left: -32px;
+    transform: rotate(-45deg);
+    font-family: var(--font-arabic-heading);
+    letter-spacing: 0;
+    font-size: 0.78rem;
+  }
+
+  .ribbon-sparkle {
+    font-size: 0.65rem;
+    line-height: 1;
+    opacity: 0.9;
+  }
+}
+
+:host-context([dir="rtl"]) .placement-corner-ribbon,
+[dir="rtl"] .placement-corner-ribbon {
+  right: auto;
+  left: -32px;
+  transform: rotate(-45deg);
+  font-family: var(--font-arabic-heading);
+  letter-spacing: 0;
+  font-size: 0.78rem;
+}

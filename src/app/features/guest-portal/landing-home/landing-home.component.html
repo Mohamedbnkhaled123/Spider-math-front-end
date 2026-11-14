@@ -249,10 +249,187 @@
 
   </section>
 
-  <!-- 3. 4-Curriculum Interactive Section ("اختار منهجك" - Component Embedded)  -->
+  <!-- ========================================================================= -->
+
+  <!-- 3. Dedicated Placement Test Section (اختبار تحديد المستوى وتشخيص المهارات) -->
 
   <!-- ========================================================================= -->
 
+  <section id="placement-test-section" class="w-full min-w-0 max-w-full py-20 sm:py-28 border-b border-surface-border relative overflow-hidden scroll-mt-20 sm:scroll-mt-24">
+    <!-- Ambient Specular Spotlights -->
+    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
+    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <!-- Luxury Floating Glass Card -->
+      <div class="spider-rim-glass-card rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 relative overflow-hidden">
+        <!-- Specular Edge Glows -->
+        <div class="hidden sm:block absolute -top-10 -left-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-secondary/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
+        <div class="hidden sm:block absolute -bottom-10 -right-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-gold/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
+
+        <!-- Free Ribbon on Corner -->
+        <div class="placement-corner-ribbon-wrapper" [class.is-rtl]="langService.isArabic()" aria-hidden="true">
+          <div class="placement-corner-ribbon" [class.is-rtl]="langService.isArabic()">
+            <span class="ribbon-sparkle">✦</span>
+            <span>{{ langService.isArabic() ? 'مجاني' : 'Free' }}</span>
+          </div>
+        </div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 lg:gap-12">
+          <!-- Left Column: Content -->
+          <div class="w-full lg:max-w-2xl space-y-3 sm:space-y-4 text-start">
+            <!-- Headline with Academic Serif & Gold Accent -->
+            <h2 class="font-academic-serif text-xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight leading-snug sm:leading-tight lg:leading-[1.2]">
+              @if (langService.isArabic()) {
+                اكتشف <span class="text-gold-accent">مستواك الحقيقي</span> في الرياضيات خلال <span class="text-gold-accent">5 دقائق</span>
+              } @else {
+                Discover Your <span class="text-gold-accent">True Math</span> Level in <span class="text-gold-accent">5 Minutes</span>
+              }
+            </h2>
+
+            <!-- Subtitle -->
+            <p class="text-xs sm:text-sm lg:text-base text-text-secondary leading-relaxed font-normal max-w-xl">
+              {{ placementSection().subtitle }}
+            </p>
+          </div>
+
+          <!-- Right Column: Glowing Gold Metallic Button -->
+          <div class="flex-shrink-0 flex items-center justify-start lg:justify-end pt-2 lg:pt-0">
+            <div class="relative group w-fit">
+              <!-- Warm Golden Aura behind button -->
+              <div class="absolute inset-0 rounded-xl bg-brand-gold/30 blur-lg opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
+              <button
+                type="button"
+                (click)="openPlacementModal()"
+                class="btn-gold-metallic relative w-auto inline-flex items-center justify-center px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base gap-2 sm:gap-2.5 shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+              >
+                <span>{{ langService.isArabic() ? 'ابدأ الآن' : 'Start now' }}</span>
+                <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Curriculum & Grade Selector Modal for Placement Test -->
+  @if (isPlacementModalOpen()) {
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+      <!-- Backdrop -->
+      <div
+        (click)="closePlacementModal()"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
+      ></div>
+
+      <!-- Modal Card -->
+      <div class="spider-rim-glass-card relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-modal/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl z-10 my-8 overflow-hidden">
+        <!-- Ambient Top Glow -->
+        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-52 h-52 bg-brand-gold/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Close Button -->
+        <button
+          type="button"
+          (click)="closePlacementModal()"
+          class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-text-primary p-2 rounded-xl hover:bg-surface-bg transition-colors cursor-pointer"
+        >
+          <app-icon name="x" [size]="18" />
+        </button>
+
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold mx-auto flex items-center justify-center mb-3">
+            <app-icon name="target" [size]="26" />
+          </div>
+
+          <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary">
+            {{ langService.isArabic() ? 'تحديد مسارك لبدء الاختبار' : 'Select Your Track for Assessment' }}
+          </h3>
+          <p class="text-xs text-text-secondary mt-1">
+            {{ langService.isArabic() ? 'اختر منهجك الدراسي وصفك الحالي للبدء الفوري:' : 'Select your curriculum and grade level to start:' }}
+          </p>
+        </div>
+
+        <!-- Form Selectors -->
+        <div class="space-y-4 text-left rtl:text-right">
+          <!-- 1. Curriculum Dropdown List -->
+          <div>
+            <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
+              {{ langService.isArabic() ? '١. المنهج الدراسي:' : '1. Curriculum Track:' }}
+            </label>
+            <div class="relative">
+              <select
+                [value]="placementCurriculum()"
+                (change)="setPlacementCurriculum($any($event.target).value)"
+                class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs sm:text-sm font-bold focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all cursor-pointer appearance-none"
+              >
+                @for (curr of canonicalCurricula; track curr.code) {
+                  <option [value]="curr.code">
+                    {{ langService.isArabic() ? curr.titleAr : curr.titleEn }}
+                  </option>
+                }
+              </select>
+              <div class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                <app-icon name="chevron-down" [size]="16" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Grade Level Dropdown List -->
+          <div>
+            <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
+              {{ langService.isArabic() ? '٢. الصف الدراسي:' : '2. Grade Level:' }}
+            </label>
+            <div class="relative">
+              <select
+                [value]="placementGrade()"
+                (change)="setPlacementGrade($any($event.target).value)"
+                class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs sm:text-sm font-bold focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all cursor-pointer appearance-none"
+              >
+                @for (grade of placementAvailableGrades(); track grade.code) {
+                  <option [value]="grade.code">
+                    {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
+                  </option>
+                }
+              </select>
+              <div class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                <app-icon name="chevron-down" [size]="16" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Term Notice -->
+          <div class="p-3 rounded-xl bg-surface-bg border border-surface-border text-[11px] text-text-secondary flex items-center justify-between">
+            <span class="font-bold text-text-muted">{{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}</span>
+            <span class="font-extrabold text-brand-primary dark:text-brand-accent">
+              {{ activeAcademicTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول (Term 1)' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني (Term 2)' : 'Term 2') }}
+            </span>
+          </div>
+
+          <!-- Action Button: Start Assessment -->
+          <div class="pt-2">
+            <button
+              type="button"
+              (click)="startPlacementExam()"
+              class="btn-gold-metallic w-full py-3.5 sm:py-4 rounded-xl font-black text-xs sm:text-sm text-center flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              <app-icon name="target" [size]="18" />
+              <span>{{ langService.isArabic() ? 'بدء الاختبار الآن' : 'Start Assessment Now' }}</span>
+              <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+
+  <!-- 4. 4-Curriculum Interactive Section ("اختار منهجك" - Component Embedded)  -->
+
+  <!-- ========================================================================= -->
+
+  <div id="curricula-section" class="scroll-mt-20 sm:scroll-mt-24 pointer-events-none"></div>
   <section id="curriculum-section" class="w-full min-w-0 max-w-full pt-12 pb-24 sm:pt-20 sm:pb-32 border-b border-surface-border relative z-10 scroll-mt-20 sm:scroll-mt-24 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Scenario A: Logged-in Student View (Only shows their enrolled curriculum & units) -->
@@ -487,179 +664,7 @@
 
   <!-- ========================================================================= -->
 
-  <!-- 3.5 Dedicated Placement Test Section (اختبار تحديد المستوى وتشخيص المهارات) -->
-
-  <!-- ========================================================================= -->
-
-  <section id="placement-test-section" class="w-full min-w-0 max-w-full py-20 sm:py-28 border-b border-surface-border relative overflow-hidden scroll-mt-20 sm:scroll-mt-24">
-    <!-- Ambient Specular Spotlights -->
-    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
-    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
-
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <!-- Luxury Floating Glass Card -->
-      <div class="spider-rim-glass-card rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-12 lg:p-14 relative overflow-hidden">
-        <!-- Specular Edge Glows -->
-        <div class="hidden sm:block absolute -top-10 -left-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-secondary/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
-        <div class="hidden sm:block absolute -bottom-10 -right-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-gold/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
-
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8 lg:gap-12">
-          <!-- Left Column: Content -->
-          <div class="max-w-2xl space-y-4 text-start">
-            <!-- Gold Badge -->
-            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-xs font-bold tracking-wide">
-              <app-icon name="target" [size]="14" />
-              <span>{{ placementSection().badge }}</span>
-            </div>
-
-            <!-- Headline with Academic Serif & Gold Accent -->
-            <h2 class="font-academic-serif text-2xl sm:text-4xl lg:text-5xl font-black text-text-primary tracking-tight leading-[1.2]">
-              @if (langService.isArabic()) {
-                اكتشف <span class="text-gold-accent">مستواك الحقيقي</span> في الرياضيات خلال <span class="text-gold-accent">5 دقائق</span>
-              } @else {
-                Discover Your <span class="text-gold-accent">True Math</span> Level in <span class="text-gold-accent">5 Minutes</span>
-              }
-            </h2>
-
-            <!-- Subtitle -->
-            <p class="text-sm sm:text-base text-text-secondary leading-relaxed font-normal">
-              {{ placementSection().subtitle }}
-            </p>
-          </div>
-
-          <!-- Right Column: Glowing Gold Metallic Button -->
-          <div class="flex-shrink-0 flex items-center justify-start md:justify-end">
-            <div class="relative group">
-              <!-- Warm Golden Aura behind button -->
-              <div class="absolute inset-0 rounded-xl bg-brand-gold/40 blur-xl opacity-80 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-
-              <button
-                type="button"
-                (click)="openPlacementModal()"
-                class="btn-gold-metallic relative px-8 sm:px-10 py-4 sm:py-4.5 rounded-xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                <span>{{ placementSection().cta }}</span>
-                <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="18" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive Curriculum & Grade Selector Modal for Placement Test -->
-  @if (isPlacementModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <!-- Backdrop -->
-      <div
-        (click)="closePlacementModal()"
-        class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
-      ></div>
-
-      <!-- Modal Card -->
-      <div class="spider-rim-glass-card relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-modal/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl z-10 my-8 overflow-hidden">
-        <!-- Ambient Top Glow -->
-        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-52 h-52 bg-brand-gold/20 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- Close Button -->
-        <button
-          type="button"
-          (click)="closePlacementModal()"
-          class="absolute top-5 right-5 rtl:right-auto rtl:left-5 text-text-muted hover:text-text-primary p-2 rounded-xl hover:bg-surface-bg transition-colors cursor-pointer"
-        >
-          <app-icon name="x" [size]="18" />
-        </button>
-
-        <div class="text-center mb-6">
-          <div class="w-14 h-14 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold mx-auto flex items-center justify-center mb-3">
-            <app-icon name="target" [size]="26" />
-          </div>
-
-          <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary">
-            {{ langService.isArabic() ? 'تحديد مسارك لبدء الاختبار' : 'Select Your Track for Assessment' }}
-          </h3>
-          <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'اختر منهجك الدراسي وصفك الحالي للبدء الفوري:' : 'Select your curriculum and grade level to start:' }}
-          </p>
-        </div>
-
-        <!-- Form Selectors -->
-        <div class="space-y-4 text-left rtl:text-right">
-          <!-- 1. Curriculum Dropdown List -->
-          <div>
-            <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
-              {{ langService.isArabic() ? '١. المنهج الدراسي:' : '1. Curriculum Track:' }}
-            </label>
-            <div class="relative">
-              <select
-                [value]="placementCurriculum()"
-                (change)="setPlacementCurriculum($any($event.target).value)"
-                class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs sm:text-sm font-bold focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all cursor-pointer appearance-none"
-              >
-                @for (curr of canonicalCurricula; track curr.code) {
-                  <option [value]="curr.code">
-                    {{ langService.isArabic() ? curr.titleAr : curr.titleEn }}
-                  </option>
-                }
-              </select>
-              <div class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
-                <app-icon name="chevron-down" [size]="16" />
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. Grade Level Dropdown List -->
-          <div>
-            <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
-              {{ langService.isArabic() ? '٢. الصف الدراسي:' : '2. Grade Level:' }}
-            </label>
-            <div class="relative">
-              <select
-                [value]="placementGrade()"
-                (change)="setPlacementGrade($any($event.target).value)"
-                class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs sm:text-sm font-bold focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all cursor-pointer appearance-none"
-              >
-                @for (grade of placementAvailableGrades(); track grade.code) {
-                  <option [value]="grade.code">
-                    {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
-                  </option>
-                }
-              </select>
-              <div class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
-                <app-icon name="chevron-down" [size]="16" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Term Notice -->
-          <div class="p-3 rounded-xl bg-surface-bg border border-surface-border text-[11px] text-text-secondary flex items-center justify-between">
-            <span class="font-bold text-text-muted">{{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}</span>
-            <span class="font-extrabold text-brand-primary dark:text-brand-accent">
-              {{ activeAcademicTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول (Term 1)' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني (Term 2)' : 'Term 2') }}
-            </span>
-          </div>
-
-          <!-- Action Button: Start Assessment -->
-          <div class="pt-2">
-            <button
-              type="button"
-              (click)="startPlacementExam()"
-              class="btn-gold-metallic w-full py-3.5 sm:py-4 rounded-xl font-black text-xs sm:text-sm text-center flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <app-icon name="target" [size]="18" />
-              <span>{{ langService.isArabic() ? 'بدء الاختبار الآن' : 'Start Assessment Now' }}</span>
-              <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ========================================================================= -->
-
-  <!-- 4. Class Timetables & Live Streaming Schedule (CMS Schedules Table)       -->
+  <!-- 5. Class Timetables & Live Streaming Schedule (CMS Schedules Table)       -->
 
   <!-- ========================================================================= -->
 

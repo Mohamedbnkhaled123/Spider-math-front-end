@@ -25,11 +25,13 @@ export interface IGradeItemData {
   titleEn?: string;
   shortLabelAr?: string;
   shortLabelEn?: string;
+  isCustom?: boolean;
 }
 
 export interface ICurriculumTrackItemData {
   code: CurriculumCode;
   nameAr: string;
+  nameEn?: string;
   grades: IGradeItemData[];
 }
 

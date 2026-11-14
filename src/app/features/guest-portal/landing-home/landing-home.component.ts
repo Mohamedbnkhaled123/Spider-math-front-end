@@ -383,8 +383,8 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
         ? (data?.placementFeature3Ar || 'متابعة شخصية من م/ هبة عبدالوهاب')
         : (data?.placementFeature3En || 'Eng. Heba Follow-up'),
       cta: isAr
-        ? (data?.placementCtaAr || 'ابدأ التقييم الآن')
-        : (data?.placementCtaEn || 'Start Assessment')
+        ? (data?.placementCtaAr || 'ابدأ الآن')
+        : (data?.placementCtaEn || 'Start now')
     };
   });
   readonly heroVideoAriaLabel = computed<string>(() => {
@@ -917,11 +917,11 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   scrollToSection(sectionId: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const el = document.getElementById(sectionId);
+    const targetId = (sectionId === 'curricula-section') ? 'curriculum-section' : sectionId;
+    const el = document.getElementById(targetId) || document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
   }
 
   openWhatsAppSupport(): void {

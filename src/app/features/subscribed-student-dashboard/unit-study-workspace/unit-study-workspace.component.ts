@@ -108,6 +108,11 @@ export class UnitStudyWorkspaceComponent implements OnInit {
       if (cached.lectures?.length > 0) {
         const first = cached.lectures[0];
         this.selectedLectureId.set(first._id);
+        if (!first.encryptedVideoId && first.googleDrivePdfFileId) {
+          this.activeTab.set('pdf');
+        } else {
+          this.activeTab.set('video');
+        }
         if (first.encryptedVideoId) {
           this.playbackToken.set(first.encryptedVideoId);
         }
@@ -139,8 +144,8 @@ export class UnitStudyWorkspaceComponent implements OnInit {
           isCompleted: !!l.isCompleted,
           hasAssessment: !!l.linked_assessment_id,
           assessmentId: l.linked_assessment_id,
-          isAccessible: l.isAccessible !== undefined ? !!l.isAccessible : (isSubscribed || !!l.is_free_trial),
-          isFreeTrial: !!l.is_free_trial
+          isAccessible: l.isAccessible !== undefined ? !!l.isAccessible : (isSubscribed || !!l.is_free_trial || !!l.is_free || !!l.isFreeTrial || !!l.isFree),
+          isFreeTrial: !!(l.is_free_trial || l.is_free || l.isFreeTrial || l.isFree)
         }));
 
         const mappedAssessments: UnitAssessmentItem[] = rawAssessments.map((a: any) => ({
@@ -174,7 +179,13 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         if (mappedLectures.length > 0 && !this.selectedLectureId()) {
           const first = mappedLectures[0];
           this.selectedLectureId.set(first._id);
+          if (!first.encryptedVideoId && first.googleDrivePdfFileId) {
+            this.activeTab.set('pdf');
+          } else {
+            this.activeTab.set('video');
+          }
           if (first.isAccessible !== false) {
+            this.isLectureLocked.set(false);
             if (first.encryptedVideoId) {
               this.playbackToken.set(first.encryptedVideoId);
             }
@@ -199,10 +210,16 @@ export class UnitStudyWorkspaceComponent implements OnInit {
       return;
     }
     this.isLectureLocked.set(false);
-    if (targetLecture?.encryptedVideoId) {
-      this.playbackToken.set(targetLecture.encryptedVideoId);
+    if (!targetLecture?.encryptedVideoId && targetLecture?.googleDrivePdfFileId) {
+      this.activeTab.set('pdf');
+      this.playbackToken.set('');
+    } else {
+      this.activeTab.set('video');
+      if (targetLecture?.encryptedVideoId) {
+        this.playbackToken.set(targetLecture.encryptedVideoId);
+      }
+      this.fetchPlaybackToken(lectureId);
     }
-    this.fetchPlaybackToken(lectureId);
   }
 
   fetchPlaybackToken(lectureId: string): void {

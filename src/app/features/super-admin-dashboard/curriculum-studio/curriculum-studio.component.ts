@@ -14,7 +14,16 @@ import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
-import { CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
+import {
+  CANONICAL_CURRICULUM_TREE,
+  curriculumHasTerms,
+  findGulfCountry,
+  getGulfCountryGrades,
+  GULF_COUNTRIES_DATA,
+  IGradeLevelMeta,
+  IGulfCountryData,
+  IGulfStageDefinition
+} from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
@@ -27,6 +36,86 @@ import {
   QuestionAdminItem,
   UnitPackageAdminItem
 } from './curriculum-studio.models';
+
+const GRADE_DESCENDING_ORDER: Record<string, number> = {
+  // Egyptian / Baccalaureate
+  SEC_3: 10,
+  SEC_2: 11,
+  SEC_1: 12,
+  BACC_12: 13,
+  BACC_11: 14,
+  BACC_10: 15,
+  PREP_3: 20,
+  PREP_2: 21,
+  PREP_1: 22,
+  PRI_6: 30,
+  PRI_5: 31,
+  PRI_4: 32,
+  PRI_3: 33,
+  PRI_2: 34,
+  PRI_1: 35,
+
+  // Gulf
+  GRADE_12: 10,
+  GRADE_11: 11,
+  GRADE_10: 12,
+  GRADE_9: 20,
+  GRADE_8: 21,
+  GRADE_7: 22,
+  GRADE_6: 30,
+  GRADE_5: 31,
+  GRADE_4: 32,
+  GRADE_3: 33,
+  GRADE_2: 34,
+  GRADE_1: 35,
+
+  // International
+  IGCSE_AL: 10,
+  IGCSE_AS: 11,
+  IGCSE_OL: 12,
+  IGCSE_YEAR_9: 20,
+  IGCSE_YEAR_8: 21,
+  IGCSE_YEAR_7: 22,
+  IGCSE_YEAR_6: 30,
+  IGCSE_YEAR_5: 31,
+  IGCSE_YEAR_4: 32,
+  IGCSE_YEAR_3: 33,
+  IGCSE_YEAR_2: 34,
+  IGCSE_YEAR_1: 35,
+  US_GRADE_12: 40,
+  US_GRADE_11: 41,
+  US_GRADE_10: 42,
+  US_GRADE_9: 43,
+  US_GRADE_8: 44,
+  US_GRADE_7: 45,
+  US_GRADE_6: 46,
+  US_GRADE_5: 47,
+  US_GRADE_4: 48,
+  US_GRADE_3: 49,
+  US_GRADE_2: 50,
+  US_GRADE_1: 51,
+
+  // American Diploma
+  ACT_2: 10,
+  ACT_1: 11,
+  ACT_MATH: 12,
+  EST_2: 13,
+  EST_1: 14,
+  EST_MATH: 15,
+  SAT_2: 16,
+  SAT_1: 17,
+  SAT_MATH: 18,
+  SAT: 19
+};
+
+export function sortGradesDescending(grades: GradeOption[]): GradeOption[] {
+  return [...grades].sort((a, b) => {
+    const orderA = GRADE_DESCENDING_ORDER[a.code] ?? 999;
+    const orderB = GRADE_DESCENDING_ORDER[b.code] ?? 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.code.localeCompare(b.code);
+  });
+}
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -100,6 +189,113 @@ export class CurriculumStudioComponent implements OnInit {
   // Full Canonical Tree reference for dropdown selections (from 1st Primary to 3rd Secondary)
   readonly canonicalCurriculumTree = CANONICAL_CURRICULUM_TREE;
 
+  // Gulf Countries List
+  readonly GULF_COUNTRIES = [
+    { code: 'SA' as const, nameAr: 'المملكة العربية السعودية', shortNameAr: 'السعودية', nameEn: 'Saudi Arabia', shortNameEn: 'Saudi', flag: '🇸🇦' },
+    { code: 'QA' as const, nameAr: 'دولة قطر', shortNameAr: 'قطر', nameEn: 'Qatar', shortNameEn: 'Qatar', flag: '🇶🇦' },
+    { code: 'AE' as const, nameAr: 'الإمارات العربية المتحدة', shortNameAr: 'الإمارات', nameEn: 'United Arab Emirates', shortNameEn: 'UAE', flag: '🇦🇪' },
+    { code: 'KW' as const, nameAr: 'دولة الكويت', shortNameAr: 'الكويت', nameEn: 'Kuwait', shortNameEn: 'Kuwait', flag: '🇰🇼' }
+  ];
+
+  readonly selectedGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly modalGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly modalAddGradeCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+
+  selectGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.selectedGulfCountry.set(code);
+    const countryData = findGulfCountry(code);
+    if (countryData && countryData.grades.length > 0) {
+      const exists = countryData.grades.some(g => g.code === this.selectedGrade());
+      if (!exists) {
+        this.gradeChange.emit(countryData.grades[0].code);
+      }
+    }
+  }
+
+  selectModalGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.modalGulfCountry.set(code);
+  }
+
+  onModalAddGradeCountryChange(countryCode: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.modalAddGradeCountry.set(countryCode);
+    const country = findGulfCountry(countryCode);
+    const firstGrade = country?.grades[0];
+    if (firstGrade) {
+      this.gradeModal.update((s) => ({
+        ...s,
+        selectedCanonicalCode: firstGrade.code,
+        code: firstGrade.code,
+        titleAr: firstGrade.titleAr,
+        titleEn: firstGrade.titleEn || ''
+      }));
+    }
+  }
+
+  getDisplayedGradesForTrack(track: CurriculumTrackItem): GradeOption[] {
+    if (track.code === 'GULF') {
+      const countryData = findGulfCountry(this.modalGulfCountry());
+      if (countryData) {
+        return track.grades.map(g => {
+          if (g.isCustom) {
+            return g;
+          }
+          const countryGrade = countryData.grades.find(cg => cg.code === g.code);
+          return {
+            code: g.code,
+            titleAr: countryGrade ? countryGrade.titleAr : g.titleAr,
+            titleEn: countryGrade ? (countryGrade.titleEn || countryGrade.titleAr) : (g.titleEn || g.titleAr),
+            isCustom: false
+          };
+        });
+      }
+    }
+    return track.grades;
+  }
+
+  getGulfStagesForModal(): readonly IGulfStageDefinition[] {
+    const country = findGulfCountry(this.modalGulfCountry());
+    return country?.stages || [];
+  }
+
+  getGradesForGulfStage(stage: IGulfStageDefinition, track: CurriculumTrackItem): GradeOption[] {
+    const displayed = this.getDisplayedGradesForTrack(track);
+    return displayed.filter((g) => stage.gradeCodes.includes(g.code));
+  }
+
+  getOtherGulfGrades(track: CurriculumTrackItem): GradeOption[] {
+    const country = findGulfCountry(this.modalGulfCountry());
+    if (!country) return [];
+    const allStageGradeCodes = new Set(country.stages.flatMap((s) => s.gradeCodes));
+    return this.getDisplayedGradesForTrack(track).filter((g) => !allStageGradeCodes.has(g.code));
+  }
+
+  getGulfStagesForFilter(): readonly IGulfStageDefinition[] {
+    const country = findGulfCountry(this.selectedGulfCountry());
+    return country?.stages || [];
+  }
+
+  getGradesForStageInFilter(stage: IGulfStageDefinition): GradeOption[] {
+    const options = this.gradeOptions();
+    return options.filter((g) => stage.gradeCodes.includes(g.code));
+  }
+
+  getGulfStagesForAddModal(): readonly IGulfStageDefinition[] {
+    const country = findGulfCountry(this.modalAddGradeCountry());
+    return country?.stages || [];
+  }
+
+  getGradesForStageInAddModal(stage: IGulfStageDefinition): readonly IGradeLevelMeta[] {
+    const country = findGulfCountry(this.modalAddGradeCountry());
+    if (!country) return [];
+    return country.grades.filter((g) => stage.gradeCodes.includes(g.code));
+  }
+
+  isGradeInCurrentTrack(gradeCode: string): boolean {
+    const trackCode = this.gradeModal().trackCode;
+    const track = this.allCurriculaTracks().find(t => t.code === trackCode);
+    return Boolean(track?.grades.some(g => g.code === gradeCode));
+  }
+
   // Grade Add / Edit Modal State
   readonly gradeModal = signal<{
     isOpen: boolean;
@@ -123,6 +319,10 @@ export class CurriculumStudioComponent implements OnInit {
 
   readonly canonicalGradesForModal = computed(() => {
     const trackCode = this.gradeModal().trackCode;
+    if (trackCode === 'GULF') {
+      const country = findGulfCountry(this.modalAddGradeCountry());
+      return country ? country.grades : [];
+    }
     const treeNode = this.canonicalCurriculumTree.find((c) => c.code === trackCode);
     return treeNode ? treeNode.grades : [];
   });
@@ -133,17 +333,29 @@ export class CurriculumStudioComponent implements OnInit {
     CANONICAL_CURRICULUM_TREE.map(c => ({
       code: c.code as CurriculumCode,
       nameAr: c.titleAr,
-      grades: c.grades.map(g => ({
+      nameEn: c.titleEn,
+      grades: sortGradesDescending(c.grades.map(g => ({
         code: g.code,
         titleAr: g.titleAr,
         titleEn: g.titleEn
-      }))
+      })))
     }))
   );
 
   // Grade Options Scoped by Selected Curriculum
   readonly gradeOptions = computed<GradeOption[]>(() => {
-    const track = this.allCurriculaTracks().find((t) => t.code === this.selectedCurriculum());
+    const curr = this.selectedCurriculum();
+    if (curr === 'GULF') {
+      const countryData = findGulfCountry(this.selectedGulfCountry());
+      if (countryData) {
+        return countryData.grades.map(g => ({
+          code: g.code,
+          titleAr: g.titleAr,
+          titleEn: g.titleEn
+        }));
+      }
+    }
+    const track = this.allCurriculaTracks().find((t) => t.code === curr);
     return track ? track.grades : [];
   });
 
@@ -277,7 +489,17 @@ export class CurriculumStudioComponent implements OnInit {
           this.activeGrades.set(res.data.activeGrades);
         }
         if (res?.data?.curriculaTracks && Array.isArray(res.data.curriculaTracks) && res.data.curriculaTracks.length > 0) {
-          this.allCurriculaTracks.set(res.data.curriculaTracks);
+          const canonical = this.canonicalCurriculumTree;
+          const formattedTracks: CurriculumTrackItem[] = res.data.curriculaTracks.map((t: any) => {
+            const node = canonical.find((c) => c.code === t.code);
+            return {
+              code: t.code,
+              nameAr: t.nameAr || node?.titleAr || t.code,
+              nameEn: t.nameEn || node?.titleEn || t.nameAr,
+              grades: sortGradesDescending(t.grades || [])
+            };
+          });
+          this.allCurriculaTracks.set(formattedTracks);
         }
       }
     });
@@ -296,6 +518,7 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   openGradesModal(): void {
+    this.modalGulfCountry.set(this.selectedGulfCountry());
     this.isGradesModalOpen.set(true);
   }
 
@@ -343,9 +566,18 @@ export class CurriculumStudioComponent implements OnInit {
   // Section-Level Grade CRUD
   // =========================================================================
   openAddGrade(trackCode?: CurriculumCode): void {
-    const code = trackCode || 'EGYPTIAN';
-    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === code);
-    const firstGrade = treeNode?.grades[0];
+    const code = trackCode || (this.selectedCurriculum() as CurriculumCode) || 'EGYPTIAN';
+    if (code === 'GULF') {
+      this.modalAddGradeCountry.set(this.modalGulfCountry());
+    }
+    let firstGrade: { code: string; titleAr: string; titleEn?: string } | undefined;
+    if (code === 'GULF') {
+      const country = findGulfCountry(this.modalAddGradeCountry());
+      firstGrade = country?.grades[0];
+    } else {
+      const treeNode = this.canonicalCurriculumTree.find((c) => c.code === code);
+      firstGrade = treeNode?.grades[0];
+    }
     this.gradeModal.set({
       isOpen: true,
       mode: 'add',
@@ -359,8 +591,14 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   onModalCurriculumChange(curr: CurriculumCode): void {
-    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === curr);
-    const firstGrade = treeNode?.grades[0];
+    let firstGrade: { code: string; titleAr: string; titleEn?: string } | undefined;
+    if (curr === 'GULF') {
+      const country = findGulfCountry(this.modalAddGradeCountry());
+      firstGrade = country?.grades[0];
+    } else {
+      const treeNode = this.canonicalCurriculumTree.find((c) => c.code === curr);
+      firstGrade = treeNode?.grades[0];
+    }
     this.gradeModal.update((s) => ({
       ...s,
       trackCode: curr,
@@ -372,20 +610,44 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   onModalGradeChange(gradeCode: string): void {
-    const treeNode = this.canonicalCurriculumTree.find((c) => c.code === this.gradeModal().trackCode);
-    const grade = treeNode?.grades.find((g) => g.code === gradeCode);
+    if (gradeCode === '__CUSTOM__') {
+      this.gradeModal.update((s) => ({
+        ...s,
+        selectedCanonicalCode: '__CUSTOM__',
+        code: 'GRADE_CUSTOM',
+        titleAr: this.langService.isArabic() ? 'صف دراسي مخصص' : 'Custom Grade',
+        titleEn: 'Custom Grade'
+      }));
+      return;
+    }
+    let grade: { code: string; titleAr: string; titleEn?: string } | undefined;
+    if (this.gradeModal().trackCode === 'GULF') {
+      const country = findGulfCountry(this.modalAddGradeCountry());
+      grade = country?.grades.find((g) => g.code === gradeCode);
+    } else {
+      const treeNode = this.canonicalCurriculumTree.find((c) => c.code === this.gradeModal().trackCode);
+      grade = treeNode?.grades.find((g) => g.code === gradeCode);
+    }
     if (grade) {
       this.gradeModal.update((s) => ({
         ...s,
-        selectedCanonicalCode: grade.code,
-        code: grade.code,
-        titleAr: grade.titleAr,
-        titleEn: grade.titleEn || ''
+        selectedCanonicalCode: grade!.code,
+        code: grade!.code,
+        titleAr: grade!.titleAr,
+        titleEn: grade!.titleEn || grade!.code
       }));
     }
   }
 
+  onCustomGradeCodeChange(val: string): void {
+    const clean = (val || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+    this.gradeModal.update((s) => ({ ...s, code: clean }));
+  }
+
   openEditGrade(trackCode: CurriculumCode, grade: GradeOption): void {
+    if (trackCode === 'GULF') {
+      this.modalAddGradeCountry.set(this.modalGulfCountry());
+    }
     this.gradeModal.set({
       isOpen: true,
       mode: 'edit',
@@ -408,6 +670,12 @@ export class CurriculumStudioComponent implements OnInit {
         return match.titleEn || match.titleAr;
       }
     }
+    for (const country of GULF_COUNTRIES_DATA) {
+      const match = country.grades.find((g) => g.code === code);
+      if (match) {
+        return match.titleEn || match.titleAr;
+      }
+    }
     return (code || '').replace(/_/g, ' ');
   }
 
@@ -417,7 +685,11 @@ export class CurriculumStudioComponent implements OnInit {
 
   saveGradeModal(): void {
     const gm = this.gradeModal();
-    if (!gm.code.trim() || !gm.titleAr.trim()) {
+    const cleanCode = gm.code.trim().toUpperCase();
+    const cleanTitleAr = gm.titleAr.trim();
+    const cleanTitleEn = gm.titleEn.trim() || cleanCode;
+
+    if (!cleanCode || !cleanTitleAr) {
       this.toastTriggered.emit({
         text: 'يرجى كتابة كود الصف واسم الصف باللغة العربية أولاً!',
         type: 'error'
@@ -426,34 +698,33 @@ export class CurriculumStudioComponent implements OnInit {
     }
 
     const newGrade: GradeOption = {
-      code: gm.code.trim().toUpperCase(),
-      titleAr: gm.titleAr.trim(),
-      titleEn: gm.titleEn.trim() || gm.code.trim()
+      code: cleanCode,
+      titleAr: cleanTitleAr,
+      titleEn: cleanTitleEn,
+      isCustom: true
     };
 
-    let hasDuplicate = false;
+    let updatedExisting = false;
     this.allCurriculaTracks.update((tracks) =>
       tracks.map((track) => {
         if (track.code !== gm.trackCode) return track;
         if (gm.mode === 'add') {
-          if (track.grades.some((g) => g.code === newGrade.code)) {
-            hasDuplicate = true;
-            return track;
+          const existingIdx = track.grades.findIndex((g) => g.code === newGrade.code);
+          if (existingIdx >= 0) {
+            updatedExisting = true;
+            const nextGrades = [...track.grades];
+            nextGrades[existingIdx] = newGrade;
+            return { ...track, grades: sortGradesDescending(nextGrades) };
           }
-          return { ...track, grades: [...track.grades, newGrade] };
+          return { ...track, grades: sortGradesDescending([...track.grades, newGrade]) };
         } else {
           return {
             ...track,
-            grades: track.grades.map((g) => (g.code === gm.originalCode ? newGrade : g))
+            grades: sortGradesDescending(track.grades.map((g) => (g.code === gm.originalCode ? newGrade : g)))
           };
         }
       })
     );
-
-    if (hasDuplicate) {
-      this.toastTriggered.emit({ text: 'هذا الصف مضاف بالفعل!', type: 'error' });
-      return;
-    }
 
     if (gm.mode === 'add') {
       this.activeGrades.update((cur) => (cur.includes(newGrade.code) ? cur : [...cur, newGrade.code]));
@@ -468,8 +739,11 @@ export class CurriculumStudioComponent implements OnInit {
     this.closeGradeModal();
     this.executeSaveActiveGrades(
       gm.mode === 'add'
-        ? 'تمت إضافة الصف الدراسي إلى القسم وحفظ التعديل بنجاح!'
-        : 'تم تعديل بيانات الصف الدراسي وحفظ التعديل بنجاح!'
+        ? (updatedExisting
+            ? 'تم تحديث اسم وبيانات الصف الدراسي بنجاح!'
+            : 'تمت إضافة الصف الدراسي إلى القسم وحفظ التعديل بنجاح!')
+        : 'تم تعديل بيانات الصف الدراسي وحفظ التعديل بنجاح!',
+      false
     );
   }
 
@@ -490,7 +764,7 @@ export class CurriculumStudioComponent implements OnInit {
           )
         );
         this.activeGrades.update((cur) => cur.filter((c) => c !== gradeCode));
-        this.executeSaveActiveGrades(`تم حذف "${gradeTitle}" واعتماد التعديلات بنجاح!`);
+        this.executeSaveActiveGrades(`تم حذف "${gradeTitle}" واعتماد التعديلات بنجاح!`, false);
       },
       true,
       'حذف',
@@ -504,7 +778,7 @@ export class CurriculumStudioComponent implements OnInit {
       'حفظ تعديلات القسم',
       `حفظ وتطبيق تعديلات "${track?.nameAr}"؟`,
       () => {
-        this.executeSaveActiveGrades(`تم حفظ واعتماد تعديلات قسم "${track?.nameAr}" بنجاح!`);
+        this.executeSaveActiveGrades(`تم حفظ واعتماد تعديلات قسم "${track?.nameAr}" بنجاح!`, true);
       },
       false,
       'حفظ',
@@ -517,7 +791,7 @@ export class CurriculumStudioComponent implements OnInit {
       'حفظ الصفوف والمناهج',
       'حفظ كافة الصفوف والمناهج المفعلة؟',
       () => {
-        this.executeSaveActiveGrades('تم حفظ واعتماد تفعيل كافة الصفوف والأقسام بنجاح!');
+        this.executeSaveActiveGrades('تم حفظ واعتماد تفعيل كافة الصفوف والأقسام بنجاح!', true);
       },
       false,
       'حفظ',
@@ -525,7 +799,7 @@ export class CurriculumStudioComponent implements OnInit {
     );
   }
 
-  private executeSaveActiveGrades(successMessage: string): void {
+  private executeSaveActiveGrades(successMessage: string, closeModal = true): void {
     this.isSavingActiveGrades.set(true);
     this.http.put<{ success: boolean; data: any }>('/api/v1/admin/cms-config/active-grades', {
       activeGrades: this.activeGrades(),
@@ -533,7 +807,9 @@ export class CurriculumStudioComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isSavingActiveGrades.set(false);
-        this.isGradesModalOpen.set(false);
+        if (closeModal) {
+          this.isGradesModalOpen.set(false);
+        }
         this.discoveryService.activeGrades.set(this.activeGrades());
         this.discoveryService.curriculaTracks.set(this.allCurriculaTracks() as any);
         this.toastTriggered.emit({
@@ -556,9 +832,16 @@ export class CurriculumStudioComponent implements OnInit {
   // =========================================================================
   selectCurriculum(curr: CurriculumCode): void {
     this.curriculumChange.emit(curr);
-    const track = this.allCurriculaTracks().find((t) => t.code === curr);
-    if (track && track.grades.length > 0) {
-      this.gradeChange.emit(track.grades[0].code);
+    if (curr === 'GULF') {
+      const countryData = findGulfCountry(this.selectedGulfCountry());
+      if (countryData && countryData.grades.length > 0) {
+        this.gradeChange.emit(countryData.grades[0].code);
+      }
+    } else {
+      const track = this.allCurriculaTracks().find((t) => t.code === curr);
+      if (track && track.grades.length > 0) {
+        this.gradeChange.emit(track.grades[0].code);
+      }
     }
   }
 
@@ -904,28 +1187,30 @@ export class CurriculumStudioComponent implements OnInit {
     }
 
     // Validate that Google Drive PDF is strictly a File ID, not an open public web link
-    let sanitizedDriveId = form.googleDrivePdfFileId.trim();
-    if (sanitizedDriveId.includes('drive.google.com')) {
-      const match = sanitizedDriveId.match(/[-\w]{25,}/);
-      if (match) {
-        sanitizedDriveId = match[0];
+    let sanitizedDriveId = (form.googleDrivePdfFileId || '').trim();
+    if (sanitizedDriveId) {
+      if (sanitizedDriveId.includes('drive.google.com')) {
+        const match = sanitizedDriveId.match(/[-\w]{25,}/);
+        if (match) {
+          sanitizedDriveId = match[0];
+        }
       }
-    }
 
-    // Strict validation: Reject non-PDF file extensions
-    if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
-      this.toastTriggered.emit({
-        text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
-        type: 'error'
-      });
-      return;
+      // Strict validation: Reject non-PDF file extensions
+      if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
+        this.toastTriggered.emit({
+          text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+          type: 'error'
+        });
+        return;
+      }
     }
 
     const payload = {
       unitId: unit.id,
       titleAr: form.titleAr.trim(),
       titleEn: form.titleAr.trim(),
-      youtubeUrl: form.youtubeUrl.trim(),
+      youtubeUrl: (form.youtubeUrl || '').trim(),
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
       durationMinutes: form.durationMinutes,
@@ -940,8 +1225,8 @@ export class CurriculumStudioComponent implements OnInit {
           id: createdLec?._id || createdLec?.id,
           order: createdLec?.order_index || unit.lectures.length + 1,
           titleAr: form.titleAr.trim(),
-          youtubeUrl: form.youtubeUrl.trim(),
-          encryptedVideoId: createdLec?.youtube_encrypted_id || ('U2FsdGVkX1_' + btoa(form.youtubeUrl.trim() || 'demo')),
+          youtubeUrl: (form.youtubeUrl || '').trim(),
+          encryptedVideoId: createdLec?.youtube_encrypted_id || '',
           googleDrivePdfFileId: sanitizedDriveId,
           isPrintAllowed: form.isPrintAllowed,
           durationMinutes: form.durationMinutes,
@@ -956,7 +1241,7 @@ export class CurriculumStudioComponent implements OnInit {
         this.unitUpdated.emit(updatedUnit);
         this.isLectureModalOpen.set(false);
         this.toastTriggered.emit({
-          text: 'تمت إضافة المحاضرة وتشفير الفيديو وحفظها بنجاح!',
+          text: 'تمت إضافة المحاضرة وحفظها بنجاح!',
           type: 'success'
         });
       },
@@ -996,27 +1281,29 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
-    let sanitizedDriveId = form.googleDrivePdfFileId.trim();
-    if (sanitizedDriveId.includes('drive.google.com')) {
-      const match = sanitizedDriveId.match(/[-\w]{25,}/);
-      if (match) {
-        sanitizedDriveId = match[0];
+    let sanitizedDriveId = (form.googleDrivePdfFileId || '').trim();
+    if (sanitizedDriveId) {
+      if (sanitizedDriveId.includes('drive.google.com')) {
+        const match = sanitizedDriveId.match(/[-\w]{25,}/);
+        if (match) {
+          sanitizedDriveId = match[0];
+        }
       }
-    }
 
-    // Strict validation: Reject non-PDF file extensions
-    if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
-      this.toastTriggered.emit({
-        text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
-        type: 'error'
-      });
-      return;
+      // Strict validation: Reject non-PDF file extensions
+      if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
+        this.toastTriggered.emit({
+          text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+          type: 'error'
+        });
+        return;
+      }
     }
 
     const payload = {
       titleAr: form.titleAr.trim(),
       titleEn: form.titleAr.trim(),
-      youtubeUrl: form.youtubeUrl.trim(),
+      youtubeUrl: (form.youtubeUrl || '').trim(),
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
       durationMinutes: form.durationMinutes,
@@ -1032,13 +1319,13 @@ export class CurriculumStudioComponent implements OnInit {
             return {
               ...l,
               titleAr: form.titleAr.trim(),
-              youtubeUrl: form.youtubeUrl.trim(),
+              youtubeUrl: (form.youtubeUrl || '').trim(),
               googleDrivePdfFileId: sanitizedDriveId,
               isPrintAllowed: form.isPrintAllowed,
               durationMinutes: form.durationMinutes,
               isFreeTrial: !!form.isFreeTrial,
               xpReward: form.xpReward,
-              encryptedVideoId: updatedLecData?.youtube_encrypted_id || l.encryptedVideoId
+              encryptedVideoId: updatedLecData?.youtube_encrypted_id || (form.youtubeUrl?.trim() ? l.encryptedVideoId : '')
             };
           }
           return l;

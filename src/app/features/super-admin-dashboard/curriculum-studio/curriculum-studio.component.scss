@@ -11,3 +11,27 @@ select {
   background-position: left 0.75rem center;
   background-size: 1em;
 }
+
+[dir="ltr"] select {
+  background-position: right 0.75rem center;
+}
+
+/* Responsive Active Grades Studio Cards */
+.active-grade-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 100%;
+}
+
+.active-grade-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.625rem;
+  margin-top: auto;
+  border-top: 1px solid var(--surface-border, rgba(255, 255, 255, 0.08));
+}

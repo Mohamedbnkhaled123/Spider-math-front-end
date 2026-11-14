@@ -89,6 +89,576 @@ export const CANONICAL_ACADEMIC_TERMS: readonly ITermMeta[] = [
   }
 ] as const;
 
+export interface IGulfStageDefinition {
+  readonly code: string;
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly gradeCodes: readonly string[];
+}
+
+export interface IGulfCountryData {
+  readonly code: 'SA' | 'QA' | 'AE' | 'KW';
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly flagEmoji: string;
+  readonly stages: readonly IGulfStageDefinition[];
+  readonly grades: readonly IGradeLevelMeta[];
+}
+
+export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
+  // 1. المملكة العربية السعودية (ابتدائي 1-6، متوسط 7-9، ثانوي 10-12)
+  {
+    code: 'SA',
+    nameAr: 'المملكة العربية السعودية',
+    nameEn: 'Saudi Arabia',
+    flagEmoji: '🇸🇦',
+    stages: [
+      {
+        code: 'SECONDARY',
+        nameAr: 'المرحلة الثانوية',
+        nameEn: 'Secondary Stage',
+        gradeCodes: ['GRADE_12', 'GRADE_11', 'GRADE_10']
+      },
+      {
+        code: 'INTERMEDIATE',
+        nameAr: 'المرحلة المتوسطة',
+        nameEn: 'Intermediate Stage',
+        gradeCodes: ['GRADE_9', 'GRADE_8', 'GRADE_7']
+      },
+      {
+        code: 'PRIMARY',
+        nameAr: 'المرحلة الابتدائية',
+        nameEn: 'Primary Stage',
+        gradeCodes: ['GRADE_6', 'GRADE_5', 'GRADE_4', 'GRADE_3', 'GRADE_2', 'GRADE_1']
+      }
+    ],
+    grades: [
+      {
+        code: 'GRADE_12',
+        titleAr: 'الصف الثالث الثانوي (السعودية)',
+        titleEn: 'Grade 12 (3rd Secondary — KSA)',
+        shortLabelAr: '٣ ثانوي',
+        shortLabelEn: 'Sec 3',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_11',
+        titleAr: 'الصف الثاني الثانوي (السعودية)',
+        titleEn: 'Grade 11 (2nd Secondary — KSA)',
+        shortLabelAr: '٢ ثانوي',
+        shortLabelEn: 'Sec 2',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_10',
+        titleAr: 'الصف الأول الثانوي (السعودية)',
+        titleEn: 'Grade 10 (1st Secondary — KSA)',
+        shortLabelAr: '١ ثانوي',
+        shortLabelEn: 'Sec 1',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_9',
+        titleAr: 'الصف الثالث المتوسط (السعودية)',
+        titleEn: 'Grade 9 (3rd Intermediate — KSA)',
+        shortLabelAr: '٣ متوسط',
+        shortLabelEn: 'Inter 3',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_8',
+        titleAr: 'الصف الثاني المتوسط (السعودية)',
+        titleEn: 'Grade 8 (2nd Intermediate — KSA)',
+        shortLabelAr: '٢ متوسط',
+        shortLabelEn: 'Inter 2',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_7',
+        titleAr: 'الصف الأول المتوسط (السعودية)',
+        titleEn: 'Grade 7 (1st Intermediate — KSA)',
+        shortLabelAr: '١ متوسط',
+        shortLabelEn: 'Inter 1',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس الابتدائي (السعودية)',
+        titleEn: 'Grade 6 (Primary — KSA)',
+        shortLabelAr: '٦ ابتدائي',
+        shortLabelEn: 'Pri 6',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس الابتدائي (السعودية)',
+        titleEn: 'Grade 5 (Primary — KSA)',
+        shortLabelAr: '٥ ابتدائي',
+        shortLabelEn: 'Pri 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع الابتدائي (السعودية)',
+        titleEn: 'Grade 4 (Primary — KSA)',
+        shortLabelAr: '٤ ابتدائي',
+        shortLabelEn: 'Pri 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث الابتدائي (السعودية)',
+        titleEn: 'Grade 3 (Primary — KSA)',
+        shortLabelAr: '٣ ابتدائي',
+        shortLabelEn: 'Pri 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني الابتدائي (السعودية)',
+        titleEn: 'Grade 2 (Primary — KSA)',
+        shortLabelAr: '٢ ابتدائي',
+        shortLabelEn: 'Pri 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول الابتدائي (السعودية)',
+        titleEn: 'Grade 1 (Primary — KSA)',
+        shortLabelAr: '١ ابتدائي',
+        shortLabelEn: 'Pri 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      }
+    ]
+  },
+
+  // 2. دولة قطر (ابتدائي 1-6، إعدادي 7-9، ثانوي 10-12)
+  {
+    code: 'QA',
+    nameAr: 'دولة قطر',
+    nameEn: 'Qatar',
+    flagEmoji: '🇶🇦',
+    stages: [
+      {
+        code: 'SECONDARY',
+        nameAr: 'المرحلة الثانوية',
+        nameEn: 'Secondary Stage',
+        gradeCodes: ['GRADE_12', 'GRADE_11', 'GRADE_10']
+      },
+      {
+        code: 'PREPARATORY',
+        nameAr: 'المرحلة الإعدادية',
+        nameEn: 'Preparatory Stage',
+        gradeCodes: ['GRADE_9', 'GRADE_8', 'GRADE_7']
+      },
+      {
+        code: 'PRIMARY',
+        nameAr: 'المرحلة الابتدائية',
+        nameEn: 'Primary Stage',
+        gradeCodes: ['GRADE_6', 'GRADE_5', 'GRADE_4', 'GRADE_3', 'GRADE_2', 'GRADE_1']
+      }
+    ],
+    grades: [
+      {
+        code: 'GRADE_12',
+        titleAr: 'الصف الثاني عشر الثانوي (قطر)',
+        titleEn: 'Grade 12 (Secondary — Qatar)',
+        shortLabelAr: '١٢ ثانوي',
+        shortLabelEn: 'Sec 12',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_11',
+        titleAr: 'الصف الحادي عشر الثانوي (قطر)',
+        titleEn: 'Grade 11 (Secondary — Qatar)',
+        shortLabelAr: '١١ ثانوي',
+        shortLabelEn: 'Sec 11',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_10',
+        titleAr: 'الصف العاشر الثانوي (قطر)',
+        titleEn: 'Grade 10 (Secondary — Qatar)',
+        shortLabelAr: '١٠ ثانوي',
+        shortLabelEn: 'Sec 10',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_9',
+        titleAr: 'الصف التاسع - الثالث الإعدادي (قطر)',
+        titleEn: 'Grade 9 (3rd Preparatory — Qatar)',
+        shortLabelAr: '٣ إعدادي',
+        shortLabelEn: 'Prep 3',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage'
+      },
+      {
+        code: 'GRADE_8',
+        titleAr: 'الصف الثامن - الثاني الإعدادي (قطر)',
+        titleEn: 'Grade 8 (2nd Preparatory — Qatar)',
+        shortLabelAr: '٢ إعدادي',
+        shortLabelEn: 'Prep 2',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage'
+      },
+      {
+        code: 'GRADE_7',
+        titleAr: 'الصف السابع - الأول الإعدادي (قطر)',
+        titleEn: 'Grade 7 (1st Preparatory — Qatar)',
+        shortLabelAr: '١ إعدادي',
+        shortLabelEn: 'Prep 1',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس الابتدائي (قطر)',
+        titleEn: 'Grade 6 (Primary — Qatar)',
+        shortLabelAr: '٦ ابتدائي',
+        shortLabelEn: 'Pri 6',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس الابتدائي (قطر)',
+        titleEn: 'Grade 5 (Primary — Qatar)',
+        shortLabelAr: '٥ ابتدائي',
+        shortLabelEn: 'Pri 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع الابتدائي (قطر)',
+        titleEn: 'Grade 4 (Primary — Qatar)',
+        shortLabelAr: '٤ ابتدائي',
+        shortLabelEn: 'Pri 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث الابتدائي (قطر)',
+        titleEn: 'Grade 3 (Primary — Qatar)',
+        shortLabelAr: '٣ ابتدائي',
+        shortLabelEn: 'Pri 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني الابتدائي (قطر)',
+        titleEn: 'Grade 2 (Primary — Qatar)',
+        shortLabelAr: '٢ ابتدائي',
+        shortLabelEn: 'Pri 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول الابتدائي (قطر)',
+        titleEn: 'Grade 1 (Primary — Qatar)',
+        shortLabelAr: '١ ابتدائي',
+        shortLabelEn: 'Pri 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      }
+    ]
+  },
+
+  // 3. الإمارات العربية المتحدة (الحلقة الأولى 1-4، الحلقة الثانية 5-8، الحلقة الثالثة 9-12)
+  {
+    code: 'AE',
+    nameAr: 'الإمارات العربية المتحدة',
+    nameEn: 'United Arab Emirates',
+    flagEmoji: '🇦🇪',
+    stages: [
+      {
+        code: 'CYCLE_3',
+        nameAr: 'الحلقة الثالثة',
+        nameEn: 'Cycle 3 (Grades 9-12)',
+        gradeCodes: ['GRADE_12', 'GRADE_11', 'GRADE_10', 'GRADE_9']
+      },
+      {
+        code: 'CYCLE_2',
+        nameAr: 'الحلقة الثانية',
+        nameEn: 'Cycle 2 (Grades 5-8)',
+        gradeCodes: ['GRADE_8', 'GRADE_7', 'GRADE_6', 'GRADE_5']
+      },
+      {
+        code: 'CYCLE_1',
+        nameAr: 'الحلقة الأولى',
+        nameEn: 'Cycle 1 (Grades 1-4)',
+        gradeCodes: ['GRADE_4', 'GRADE_3', 'GRADE_2', 'GRADE_1']
+      }
+    ],
+    grades: [
+      {
+        code: 'GRADE_12',
+        titleAr: 'الصف الثاني عشر - الحلقة 3 (الإمارات)',
+        titleEn: 'Grade 12 (Cycle 3 — UAE)',
+        shortLabelAr: 'صف ١٢',
+        shortLabelEn: 'Gr 12',
+        stageAr: 'الحلقة الثالثة',
+        stageEn: 'Cycle 3'
+      },
+      {
+        code: 'GRADE_11',
+        titleAr: 'الصف الحادي عشر - الحلقة 3 (الإمارات)',
+        titleEn: 'Grade 11 (Cycle 3 — UAE)',
+        shortLabelAr: 'صف ١١',
+        shortLabelEn: 'Gr 11',
+        stageAr: 'الحلقة الثالثة',
+        stageEn: 'Cycle 3'
+      },
+      {
+        code: 'GRADE_10',
+        titleAr: 'الصف العاشر - الحلقة 3 (الإمارات)',
+        titleEn: 'Grade 10 (Cycle 3 — UAE)',
+        shortLabelAr: 'صف ١٠',
+        shortLabelEn: 'Gr 10',
+        stageAr: 'الحلقة الثالثة',
+        stageEn: 'Cycle 3'
+      },
+      {
+        code: 'GRADE_9',
+        titleAr: 'الصف التاسع - الحلقة 3 (الإمارات)',
+        titleEn: 'Grade 9 (Cycle 3 — UAE)',
+        shortLabelAr: 'صف ٩',
+        shortLabelEn: 'Gr 9',
+        stageAr: 'الحلقة الثالثة',
+        stageEn: 'Cycle 3'
+      },
+      {
+        code: 'GRADE_8',
+        titleAr: 'الصف الثامن - الحلقة 2 (الإمارات)',
+        titleEn: 'Grade 8 (Cycle 2 — UAE)',
+        shortLabelAr: 'صف ٨',
+        shortLabelEn: 'Gr 8',
+        stageAr: 'الحلقة الثانية',
+        stageEn: 'Cycle 2'
+      },
+      {
+        code: 'GRADE_7',
+        titleAr: 'الصف السابع - الحلقة 2 (الإمارات)',
+        titleEn: 'Grade 7 (Cycle 2 — UAE)',
+        shortLabelAr: 'صف ٧',
+        shortLabelEn: 'Gr 7',
+        stageAr: 'الحلقة الثانية',
+        stageEn: 'Cycle 2'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس - الحلقة 2 (الإمارات)',
+        titleEn: 'Grade 6 (Cycle 2 — UAE)',
+        shortLabelAr: 'صف ٦',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'الحلقة الثانية',
+        stageEn: 'Cycle 2'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس - الحلقة 2 (الإمارات)',
+        titleEn: 'Grade 5 (Cycle 2 — UAE)',
+        shortLabelAr: 'صف ٥',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'الحلقة الثانية',
+        stageEn: 'Cycle 2'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع - الحلقة 1 (الإمارات)',
+        titleEn: 'Grade 4 (Cycle 1 — UAE)',
+        shortLabelAr: 'صف ٤',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'الحلقة الأولى',
+        stageEn: 'Cycle 1'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث - الحلقة 1 (الإمارات)',
+        titleEn: 'Grade 3 (Cycle 1 — UAE)',
+        shortLabelAr: 'صف ٣',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'الحلقة الأولى',
+        stageEn: 'Cycle 1'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني - الحلقة 1 (الإمارات)',
+        titleEn: 'Grade 2 (Cycle 1 — UAE)',
+        shortLabelAr: 'صف ٢',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'الحلقة الأولى',
+        stageEn: 'Cycle 1'
+      },
+      {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول - الحلقة 1 (الإمارات)',
+        titleEn: 'Grade 1 (Cycle 1 — UAE)',
+        shortLabelAr: 'صف ١',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'الحلقة الأولى',
+        stageEn: 'Cycle 1'
+      }
+    ]
+  },
+
+  // 4. دولة الكويت (ابتدائي 1-5، متوسط 6-9، ثانوي 10-12)
+  {
+    code: 'KW',
+    nameAr: 'دولة الكويت',
+    nameEn: 'Kuwait',
+    flagEmoji: '🇰🇼',
+    stages: [
+      {
+        code: 'SECONDARY',
+        nameAr: 'المرحلة الثانوية',
+        nameEn: 'Secondary Stage',
+        gradeCodes: ['GRADE_12', 'GRADE_11', 'GRADE_10']
+      },
+      {
+        code: 'INTERMEDIATE',
+        nameAr: 'المرحلة المتوسطة',
+        nameEn: 'Intermediate Stage',
+        gradeCodes: ['GRADE_9', 'GRADE_8', 'GRADE_7', 'GRADE_6']
+      },
+      {
+        code: 'PRIMARY',
+        nameAr: 'المرحلة الابتدائية',
+        nameEn: 'Primary Stage',
+        gradeCodes: ['GRADE_5', 'GRADE_4', 'GRADE_3', 'GRADE_2', 'GRADE_1']
+      }
+    ],
+    grades: [
+      {
+        code: 'GRADE_12',
+        titleAr: 'الصف الثاني عشر الثانوي (الكويت)',
+        titleEn: 'Grade 12 (Secondary — Kuwait)',
+        shortLabelAr: '١٢ ثانوي',
+        shortLabelEn: 'Sec 12',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_11',
+        titleAr: 'الصف الحادي عشر الثانوي (الكويت)',
+        titleEn: 'Grade 11 (Secondary — Kuwait)',
+        shortLabelAr: '١١ ثانوي',
+        shortLabelEn: 'Sec 11',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_10',
+        titleAr: 'الصف العاشر الثانوي (الكويت)',
+        titleEn: 'Grade 10 (Secondary — Kuwait)',
+        shortLabelAr: '١٠ ثانوي',
+        shortLabelEn: 'Sec 10',
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
+      },
+      {
+        code: 'GRADE_9',
+        titleAr: 'الصف التاسع المتوسط (الكويت)',
+        titleEn: 'Grade 9 (Intermediate — Kuwait)',
+        shortLabelAr: '٩ متوسط',
+        shortLabelEn: 'Inter 9',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_8',
+        titleAr: 'الصف الثامن المتوسط (الكويت)',
+        titleEn: 'Grade 8 (Intermediate — Kuwait)',
+        shortLabelAr: '٨ متوسط',
+        shortLabelEn: 'Inter 8',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_7',
+        titleAr: 'الصف السابع المتوسط (الكويت)',
+        titleEn: 'Grade 7 (Intermediate — Kuwait)',
+        shortLabelAr: '٧ متوسط',
+        shortLabelEn: 'Inter 7',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس المتوسط (الكويت)',
+        titleEn: 'Grade 6 (Intermediate — Kuwait)',
+        shortLabelAr: '٦ متوسط',
+        shortLabelEn: 'Inter 6',
+        stageAr: 'المرحلة المتوسطة',
+        stageEn: 'Intermediate Stage'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس الابتدائي (الكويت)',
+        titleEn: 'Grade 5 (Primary — Kuwait)',
+        shortLabelAr: '٥ ابتدائي',
+        shortLabelEn: 'Pri 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع الابتدائي (الكويت)',
+        titleEn: 'Grade 4 (Primary — Kuwait)',
+        shortLabelAr: '٤ ابتدائي',
+        shortLabelEn: 'Pri 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث الابتدائي (الكويت)',
+        titleEn: 'Grade 3 (Primary — Kuwait)',
+        shortLabelAr: '٣ ابتدائي',
+        shortLabelEn: 'Pri 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني الابتدائي (الكويت)',
+        titleEn: 'Grade 2 (Primary — Kuwait)',
+        shortLabelAr: '٢ ابتدائي',
+        shortLabelEn: 'Pri 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول الابتدائي (الكويت)',
+        titleEn: 'Grade 1 (Primary — Kuwait)',
+        shortLabelAr: '١ ابتدائي',
+        shortLabelEn: 'Pri 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      }
+    ]
+  }
+] as const;
+
 export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
   // 1. المنهج المصري (الابتدائي، الإعدادي، الثانوي العام 2027، والبكالوريا)
   {
@@ -109,108 +679,22 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     hasTerms: true,
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
-      // المرحلة الابتدائية (الصفوف 1 - 6)
-      {
-        code: 'PRI_1',
-        titleAr: 'الصف الأول الابتدائي',
-        titleEn: 'Primary 1 (Grade 1)',
-        shortLabelAr: '١ ابتدائي',
-        shortLabelEn: 'Pri 1',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-      {
-        code: 'PRI_2',
-        titleAr: 'الصف الثاني الابتدائي',
-        titleEn: 'Primary 2 (Grade 2)',
-        shortLabelAr: '٢ ابتدائي',
-        shortLabelEn: 'Pri 2',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-      {
-        code: 'PRI_3',
-        titleAr: 'الصف الثالث الابتدائي',
-        titleEn: 'Primary 3 (Grade 3)',
-        shortLabelAr: '٣ ابتدائي',
-        shortLabelEn: 'Pri 3',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-      {
-        code: 'PRI_4',
-        titleAr: 'الصف الرابع الابتدائي',
-        titleEn: 'Primary 4 (Grade 4)',
-        shortLabelAr: '٤ ابتدائي',
-        shortLabelEn: 'Pri 4',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-      {
-        code: 'PRI_5',
-        titleAr: 'الصف الخامس الابتدائي',
-        titleEn: 'Primary 5 (Grade 5)',
-        shortLabelAr: '٥ ابتدائي',
-        shortLabelEn: 'Pri 5',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-      {
-        code: 'PRI_6',
-        titleAr: 'الصف السادس الابتدائي',
-        titleEn: 'Primary 6 (Grade 6)',
-        shortLabelAr: '٦ ابتدائي',
-        shortLabelEn: 'Pri 6',
-        stageAr: 'المرحلة الابتدائية',
-        stageEn: 'Primary Stage'
-      },
-
-      // المرحلة الإعدادية (الصفوف 7 - 9: جبر + هندسة)
-      {
-        code: 'PREP_1',
-        titleAr: 'الصف الأول الإعدادي (جبر + هندسة)',
-        titleEn: 'Prep 1 (Grade 7 — Algebra + Geometry)',
-        shortLabelAr: '١ إعدادي',
-        shortLabelEn: 'Prep 1',
-        stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage',
-        subjectAr: 'جبر + هندسة',
-        subjectEn: 'Algebra + Geometry'
-      },
-      {
-        code: 'PREP_2',
-        titleAr: 'الصف الثاني الإعدادي (جبر + هندسة)',
-        titleEn: 'Prep 2 (Grade 8 — Algebra + Geometry)',
-        shortLabelAr: '٢ إعدادي',
-        shortLabelEn: 'Prep 2',
-        stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage',
-        subjectAr: 'جبر + هندسة',
-        subjectEn: 'Algebra + Geometry'
-      },
-      {
-        code: 'PREP_3',
-        titleAr: 'الصف الثالث الإعدادي (الشهادة الإعدادية - جبر + هندسة)',
-        titleEn: 'Prep 3 (Grade 9 — General Certificate — Algebra + Geometry)',
-        shortLabelAr: '٣ إعدادي',
-        shortLabelEn: 'Prep 3',
-        stageAr: 'المرحلة الإعدادية',
-        stageEn: 'Preparatory Stage',
-        subjectAr: 'جبر + هندسة',
-        subjectEn: 'Algebra + Geometry'
-      },
-
       // المرحلة الثانوية — الفرع الأول: الثانوية العامة المصرية 2027
       {
-        code: 'SEC_1',
-        titleAr: 'الصف الأول الثانوي',
-        titleEn: 'Secondary 1 (Grade 10)',
-        shortLabelAr: '١ ثانوي',
-        shortLabelEn: 'Sec 1',
+        code: 'SEC_3',
+        titleAr: 'الصف الثالث الثانوي (الثانوية العامة - علمي / رياضة / أدبي)',
+        titleEn: 'Secondary 3 (Grade 12 — Thanaweya Amma — Science / Math / Literary)',
+        shortLabelAr: '٣ ثانوي',
+        shortLabelEn: 'Sec 3',
         stageAr: 'المرحلة الثانوية العامة',
         stageEn: 'Secondary Stage (Thanaweya Amma)',
         branchAr: 'الثانوية العامة',
-        branchEn: 'Thanaweya Amma'
+        branchEn: 'Thanaweya Amma',
+        tracks: [
+          { code: 'SCIENCE', titleAr: 'علمي علوم', titleEn: 'Science' },
+          { code: 'MATH', titleAr: 'علمي رياضة', titleEn: 'Math' },
+          { code: 'LITERARY', titleAr: 'أدبي', titleEn: 'Literary' }
+        ]
       },
       {
         code: 'SEC_2',
@@ -229,33 +713,34 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         ]
       },
       {
-        code: 'SEC_3',
-        titleAr: 'الصف الثالث الثانوي (الثانوية العامة - علمي / رياضة / أدبي)',
-        titleEn: 'Secondary 3 (Grade 12 — Thanaweya Amma — Science / Math / Literary)',
-        shortLabelAr: '٣ ثانوي',
-        shortLabelEn: 'Sec 3',
+        code: 'SEC_1',
+        titleAr: 'الصف الأول الثانوي',
+        titleEn: 'Secondary 1 (Grade 10)',
+        shortLabelAr: '١ ثانوي',
+        shortLabelEn: 'Sec 1',
         stageAr: 'المرحلة الثانوية العامة',
         stageEn: 'Secondary Stage (Thanaweya Amma)',
         branchAr: 'الثانوية العامة',
-        branchEn: 'Thanaweya Amma',
-        tracks: [
-          { code: 'SCIENCE', titleAr: 'علمي علوم', titleEn: 'Science' },
-          { code: 'MATH', titleAr: 'علمي رياضة', titleEn: 'Math' },
-          { code: 'LITERARY', titleAr: 'أدبي', titleEn: 'Literary' }
-        ]
+        branchEn: 'Thanaweya Amma'
       },
 
       // المرحلة الثانوية — الفرع الثاني: نظام البكالوريا 2027
       {
-        code: 'BACC_10',
-        titleAr: 'الصف العاشر - المرحلة التمهيدية (البكالوريا)',
-        titleEn: 'Grade 10 — Preparatory Stage (Baccalaureate)',
-        shortLabelAr: '١٠ بكالوريا',
-        shortLabelEn: 'Bacc 10',
+        code: 'BACC_12',
+        titleAr: 'الصف الثاني عشر - المرحلة الأساسية (البكالوريا)',
+        titleEn: 'Grade 12 — Main Stage (Baccalaureate)',
+        shortLabelAr: '١٢ بكالوريا',
+        shortLabelEn: 'Bacc 12',
         stageAr: 'مرحلة البكالوريا',
         stageEn: 'Baccalaureate Stage',
         branchAr: 'البكالوريا',
-        branchEn: 'Baccalaureate'
+        branchEn: 'Baccalaureate',
+        tracks: [
+          { code: 'MEDICINE_LIFE_SCIENCE', titleAr: 'طب وعلوم الحياة', titleEn: 'Medicine & Life Science' },
+          { code: 'ENGINEERING_COMPUTER_SCIENCE', titleAr: 'هندسة وحاسبات', titleEn: 'Engineering & Computer Science' },
+          { code: 'BUSINESS', titleAr: 'أعمال وإدارة', titleEn: 'Business' },
+          { code: 'ARTS_HUMANITIES', titleAr: 'فنون وإنسانيات', titleEn: 'Arts & Humanities' }
+        ]
       },
       {
         code: 'BACC_11',
@@ -275,21 +760,106 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         ]
       },
       {
-        code: 'BACC_12',
-        titleAr: 'الصف الثاني عشر - المرحلة الأساسية (البكالوريا)',
-        titleEn: 'Grade 12 — Main Stage (Baccalaureate)',
-        shortLabelAr: '١٢ بكالوريا',
-        shortLabelEn: 'Bacc 12',
+        code: 'BACC_10',
+        titleAr: 'الصف العاشر - المرحلة التمهيدية (البكالوريا)',
+        titleEn: 'Grade 10 — Preparatory Stage (Baccalaureate)',
+        shortLabelAr: '١٠ بكالوريا',
+        shortLabelEn: 'Bacc 10',
         stageAr: 'مرحلة البكالوريا',
         stageEn: 'Baccalaureate Stage',
         branchAr: 'البكالوريا',
-        branchEn: 'Baccalaureate',
-        tracks: [
-          { code: 'MEDICINE_LIFE_SCIENCE', titleAr: 'طب وعلوم الحياة', titleEn: 'Medicine & Life Science' },
-          { code: 'ENGINEERING_COMPUTER_SCIENCE', titleAr: 'هندسة وحاسبات', titleEn: 'Engineering & Computer Science' },
-          { code: 'BUSINESS', titleAr: 'أعمال وإدارة', titleEn: 'Business' },
-          { code: 'ARTS_HUMANITIES', titleAr: 'فنون وإنسانيات', titleEn: 'Arts & Humanities' }
-        ]
+        branchEn: 'Baccalaureate'
+      },
+
+      // المرحلة الإعدادية (الصفوف 7 - 9: جبر + هندسة)
+      {
+        code: 'PREP_3',
+        titleAr: 'الصف الثالث الإعدادي (الشهادة الإعدادية - جبر + هندسة)',
+        titleEn: 'Prep 3 (Grade 9 — General Certificate — Algebra + Geometry)',
+        shortLabelAr: '٣ إعدادي',
+        shortLabelEn: 'Prep 3',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
+      },
+      {
+        code: 'PREP_2',
+        titleAr: 'الصف الثاني الإعدادي (جبر + هندسة)',
+        titleEn: 'Prep 2 (Grade 8 — Algebra + Geometry)',
+        shortLabelAr: '٢ إعدادي',
+        shortLabelEn: 'Prep 2',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
+      },
+      {
+        code: 'PREP_1',
+        titleAr: 'الصف الأول الإعدادي (جبر + هندسة)',
+        titleEn: 'Prep 1 (Grade 7 — Algebra + Geometry)',
+        shortLabelAr: '١ إعدادي',
+        shortLabelEn: 'Prep 1',
+        stageAr: 'المرحلة الإعدادية',
+        stageEn: 'Preparatory Stage',
+        subjectAr: 'جبر + هندسة',
+        subjectEn: 'Algebra + Geometry'
+      },
+
+      // المرحلة الابتدائية (الصفوف 1 - 6)
+      {
+        code: 'PRI_6',
+        titleAr: 'الصف السادس الابتدائي',
+        titleEn: 'Primary 6 (Grade 6)',
+        shortLabelAr: '٦ ابتدائي',
+        shortLabelEn: 'Pri 6',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_5',
+        titleAr: 'الصف الخامس الابتدائي',
+        titleEn: 'Primary 5 (Grade 5)',
+        shortLabelAr: '٥ ابتدائي',
+        shortLabelEn: 'Pri 5',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_4',
+        titleAr: 'الصف الرابع الابتدائي',
+        titleEn: 'Primary 4 (Grade 4)',
+        shortLabelAr: '٤ ابتدائي',
+        shortLabelEn: 'Pri 4',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_3',
+        titleAr: 'الصف الثالث الابتدائي',
+        titleEn: 'Primary 3 (Grade 3)',
+        shortLabelAr: '٣ ابتدائي',
+        shortLabelEn: 'Pri 3',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_2',
+        titleAr: 'الصف الثاني الابتدائي',
+        titleEn: 'Primary 2 (Grade 2)',
+        shortLabelAr: '٢ ابتدائي',
+        shortLabelEn: 'Pri 2',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
+      },
+      {
+        code: 'PRI_1',
+        titleAr: 'الصف الأول الابتدائي',
+        titleEn: 'Primary 1 (Grade 1)',
+        shortLabelAr: '١ ابتدائي',
+        shortLabelEn: 'Pri 1',
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       }
     ]
   },
@@ -314,92 +884,11 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     terms: CANONICAL_ACADEMIC_TERMS,
     grades: [
       {
-        code: 'GRADE_1',
-        titleAr: 'الصف الأول الابتدائي',
-        titleEn: 'Grade 1 (Primary / Cycle 1)',
-        shortLabelAr: 'صف ١',
-        shortLabelEn: 'Gr 1',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
-      },
-      {
-        code: 'GRADE_2',
-        titleAr: 'الصف الثاني الابتدائي',
-        titleEn: 'Grade 2 (Primary / Cycle 1)',
-        shortLabelAr: 'صف ٢',
-        shortLabelEn: 'Gr 2',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
-      },
-      {
-        code: 'GRADE_3',
-        titleAr: 'الصف الثالث الابتدائي',
-        titleEn: 'Grade 3 (Primary / Cycle 1)',
-        shortLabelAr: 'صف ٣',
-        shortLabelEn: 'Gr 3',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
-      },
-      {
-        code: 'GRADE_4',
-        titleAr: 'الصف الرابع الابتدائي',
-        titleEn: 'Grade 4 (Primary / Cycle 1)',
-        shortLabelAr: 'صف ٤',
-        shortLabelEn: 'Gr 4',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
-      },
-      {
-        code: 'GRADE_5',
-        titleAr: 'الصف الخامس الابتدائي',
-        titleEn: 'Grade 5 (Primary / Cycle 2)',
-        shortLabelAr: 'صف ٥',
-        shortLabelEn: 'Gr 5',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 2 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 2 (UAE)'
-      },
-      {
-        code: 'GRADE_6',
-        titleAr: 'الصف السادس',
-        titleEn: 'Grade 6 (Primary / Intermediate / Cycle 2)',
-        shortLabelAr: 'صف ٦',
-        shortLabelEn: 'Gr 6',
-        stageAr: 'الابتدائية (السعودية، قطر) • المتوسطة (الكويت) • الحلقة 2 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar) • Intermediate (Kuwait) • Cycle 2 (UAE)'
-      },
-      {
-        code: 'GRADE_7',
-        titleAr: 'الصف السابع',
-        titleEn: 'Grade 7 (Intermediate / Prep / Cycle 2)',
-        shortLabelAr: 'صف ٧',
-        shortLabelEn: 'Gr 7',
-        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
-      },
-      {
-        code: 'GRADE_8',
-        titleAr: 'الصف الثامن',
-        titleEn: 'Grade 8 (Intermediate / Prep / Cycle 2)',
-        shortLabelAr: 'صف ٨',
-        shortLabelEn: 'Gr 8',
-        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
-      },
-      {
-        code: 'GRADE_9',
-        titleAr: 'الصف التاسع',
-        titleEn: 'Grade 9 (Intermediate / Prep / Cycle 3)',
-        shortLabelAr: 'صف ٩',
-        shortLabelEn: 'Gr 9',
-        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 3 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 3 (UAE)'
-      },
-      {
-        code: 'GRADE_10',
-        titleAr: 'الصف العاشر (أول ثانوي)',
-        titleEn: 'Grade 10 (Secondary 1 / Cycle 3)',
-        shortLabelAr: 'صف ١٠',
-        shortLabelEn: 'Gr 10',
+        code: 'GRADE_12',
+        titleAr: 'الصف الثاني عشر (توجيهي / ثالث ثانوي)',
+        titleEn: 'Grade 12 (Senior / Thanaweya / Cycle 3)',
+        shortLabelAr: 'صف ١٢',
+        shortLabelEn: 'Gr 12',
         stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
         stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
       },
@@ -413,13 +902,94 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
       },
       {
-        code: 'GRADE_12',
-        titleAr: 'الصف الثاني عشر (توجيهي / ثالث ثانوي)',
-        titleEn: 'Grade 12 (Senior / Thanaweya / Cycle 3)',
-        shortLabelAr: 'صف ١٢',
-        shortLabelEn: 'Gr 12',
+        code: 'GRADE_10',
+        titleAr: 'الصف العاشر (أول ثانوي)',
+        titleEn: 'Grade 10 (Secondary 1 / Cycle 3)',
+        shortLabelAr: 'صف ١٠',
+        shortLabelEn: 'Gr 10',
         stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
         stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
+      },
+      {
+        code: 'GRADE_9',
+        titleAr: 'الصف التاسع',
+        titleEn: 'Grade 9 (Intermediate / Prep / Cycle 3)',
+        shortLabelAr: 'صف ٩',
+        shortLabelEn: 'Gr 9',
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 3 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 3 (UAE)'
+      },
+      {
+        code: 'GRADE_8',
+        titleAr: 'الصف الثامن',
+        titleEn: 'Grade 8 (Intermediate / Prep / Cycle 2)',
+        shortLabelAr: 'صف ٨',
+        shortLabelEn: 'Gr 8',
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
+      },
+      {
+        code: 'GRADE_7',
+        titleAr: 'الصف السابع',
+        titleEn: 'Grade 7 (Intermediate / Prep / Cycle 2)',
+        shortLabelAr: 'صف ٧',
+        shortLabelEn: 'Gr 7',
+        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
+        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
+      },
+      {
+        code: 'GRADE_6',
+        titleAr: 'الصف السادس',
+        titleEn: 'Grade 6 (Primary / Intermediate / Cycle 2)',
+        shortLabelAr: 'صف ٦',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'الابتدائية (السعودية، قطر) • المتوسطة (الكويت) • الحلقة 2 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar) • Intermediate (Kuwait) • Cycle 2 (UAE)'
+      },
+      {
+        code: 'GRADE_5',
+        titleAr: 'الصف الخامس الابتدائي',
+        titleEn: 'Grade 5 (Primary / Cycle 2)',
+        shortLabelAr: 'صف ٥',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 2 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 2 (UAE)'
+      },
+      {
+        code: 'GRADE_4',
+        titleAr: 'الصف الرابع الابتدائي',
+        titleEn: 'Grade 4 (Primary / Cycle 1)',
+        shortLabelAr: 'صف ٤',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+      },
+      {
+        code: 'GRADE_3',
+        titleAr: 'الصف الثالث الابتدائي',
+        titleEn: 'Grade 3 (Primary / Cycle 1)',
+        shortLabelAr: 'صف ٣',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+      },
+      {
+        code: 'GRADE_2',
+        titleAr: 'الصف الثاني الابتدائي',
+        titleEn: 'Grade 2 (Primary / Cycle 1)',
+        shortLabelAr: 'صف ٢',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+      },
+      {
+        code: 'GRADE_1',
+        titleAr: 'الصف الأول الابتدائي',
+        titleEn: 'Grade 1 (Primary / Cycle 1)',
+        shortLabelAr: 'صف ١',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
+        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
       }
     ]
   },
@@ -799,4 +1369,13 @@ export function findGradeByCode(curriculumCode: string, gradeCode: string): IGra
 
 export function findTermByCode(termCode: string): ITermMeta | undefined {
   return CANONICAL_ACADEMIC_TERMS.find(t => t.code === termCode);
+}
+
+export function findGulfCountry(code: string): IGulfCountryData | undefined {
+  return GULF_COUNTRIES_DATA.find(c => c.code === code);
+}
+
+export function getGulfCountryGrades(countryCode: string): readonly IGradeLevelMeta[] {
+  const country = findGulfCountry(countryCode);
+  return country ? country.grades : (findCurriculumByCode('GULF')?.grades || []);
 }

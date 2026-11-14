@@ -433,7 +433,7 @@
           @if (trial.videoEmbedId) {
             <iframe
               class="w-full h-full"
-              [src]="'https://www.youtube-nocookie.com/embed/' + trial.videoEmbedId + '?autoplay=1&rel=0&modestbranding=1'"
+              [src]="getSafeVideoUrl(trial.videoEmbedId)"
               title="Free Trial Lecture"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen

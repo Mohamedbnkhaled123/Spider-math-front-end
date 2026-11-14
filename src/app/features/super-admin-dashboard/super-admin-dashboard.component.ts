@@ -752,6 +752,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   onCmsConfigSaved(saved: CmsConfigAdminItem): void {
     this.cmsConfig.set(saved);
+    this.swrCache.set('admin_cms_config', saved);
   }
 
   triggerToast(text: string, type: 'success' | 'warning' | 'error' = 'success'): void {

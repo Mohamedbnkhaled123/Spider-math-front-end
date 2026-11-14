@@ -12,11 +12,13 @@ export interface GradeOption {
   code: string;
   titleAr: string;
   titleEn: string;
+  isCustom?: boolean;
 }
 
 export interface CurriculumTrackItem {
   code: CurriculumCode;
   nameAr: string;
+  nameEn?: string;
   grades: GradeOption[];
 }
 

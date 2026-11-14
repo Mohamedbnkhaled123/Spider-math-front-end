@@ -217,21 +217,56 @@
                 (progressUpdated)="onProgressUpdated($event)"
               />
             } @else {
-              <div class="relative w-full aspect-video min-h-[380px] bg-black flex flex-col items-center justify-center gap-3 text-text-muted">
-                <app-icon name="loader" [size]="36" className="text-brand-primary animate-spin" />
-                <span class="text-xs font-bold">{{ langService.isArabic() ? 'جارِ التحميل...' : 'Loading...' }}</span>
+              <div class="relative w-full aspect-video min-h-[380px] bg-slate-950 flex flex-col items-center justify-center gap-3 text-center p-6">
+                <div class="w-14 h-14 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center text-text-muted">
+                  <app-icon name="video" [size]="28" />
+                </div>
+                <p class="text-sm font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'لا يتوفر فيديو شرح لهذه المحاضرة' : 'No video lecture available for this lesson' }}
+                </p>
+                @if (lec.googleDrivePdfFileId) {
+                  <button
+                    type="button"
+                    (click)="setTab('pdf')"
+                    class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <app-icon name="file-text" [size]="14" />
+                    <span>{{ langService.isArabic() ? 'عرض ملزمة الشرح' : 'View Study Handout' }}</span>
+                  </button>
+                }
               </div>
             }
           } @else {
             <!-- Protected PDF Canvas Stream Integration -->
-            <div class="p-4 sm:p-6">
-              <app-protected-pdf-canvas
-                [lectureId]="lec._id"
-                [fileId]="lec.googleDrivePdfFileId || ''"
-                [isPrintAllowed]="lec.isPrintAllowed"
-                [watermarkText]="'Spider Math | ' + (authService.currentUser()?.student_ha_code ?? 'HA4920')"
-              />
-            </div>
+            @if (lec.googleDrivePdfFileId) {
+              <div class="p-4 sm:p-6">
+                <app-protected-pdf-canvas
+                  [lectureId]="lec._id"
+                  [fileId]="lec.googleDrivePdfFileId || ''"
+                  [isPrintAllowed]="lec.isPrintAllowed"
+                  [watermarkText]="'Spider Math | ' + (authService.currentUser()?.student_ha_code ?? 'HA4920')"
+                />
+              </div>
+            } @else {
+              <div class="relative w-full aspect-video min-h-[380px] bg-slate-950 flex flex-col items-center justify-center gap-3 text-center p-6">
+                <div class="w-14 h-14 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center text-text-muted">
+                  <app-icon name="file-text" [size]="28" />
+                </div>
+                <p class="text-sm font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'لا تتوفر ملزمة PDF مرفقة لهذه المحاضرة' : 'No PDF handout available for this lesson' }}
+                </p>
+                @if (lec.encryptedVideoId || playbackToken()) {
+                  <button
+                    type="button"
+                    (click)="setTab('video')"
+                    class="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <app-icon name="play" [size]="14" />
+                    <span>{{ langService.isArabic() ? 'مشاهدة فيديو المحاضرة' : 'Watch Lecture Video' }}</span>
+                  </button>
+                }
+              </div>
+            }
           }
         </div>
 

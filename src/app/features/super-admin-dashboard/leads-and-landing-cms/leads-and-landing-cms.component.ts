@@ -322,6 +322,13 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   }
 
   // Save Pure CMS Configuration
+  toggleAnnouncementActive(): void {
+    this.editableCms.update((cfg) => ({
+      ...cfg,
+      isAnnouncementActive: !cfg.isAnnouncementActive
+    }));
+  }
+
   saveCms(): void {
     const payload = this.editableCms();
     this.http.put('/api/v1/admin/cms-config', payload).subscribe({

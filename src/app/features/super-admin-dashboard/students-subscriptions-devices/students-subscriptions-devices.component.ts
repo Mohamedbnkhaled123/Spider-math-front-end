@@ -80,10 +80,21 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
   // Real Units from Database
   readonly realUnits = signal<any[]>([]);
+  readonly showAllUnits = signal<boolean>(false);
+
+  // Unit Subscriptions Management Modal
+  readonly isSubscriptionsModalOpen = signal<boolean>(false);
+  readonly studentForSubscriptions = signal<StudentAdminSummary | null>(null);
+  readonly studentActiveSubscriptions = signal<any[]>([]);
+  readonly isLoadingSubscriptions = signal<boolean>(false);
+  readonly isRevokingSubscription = signal<string | null>(null);
+
   readonly allAvailableUnits = computed(() => {
+    const dbUnits = this.realUnits();
+    if (dbUnits && dbUnits.length > 0) return dbUnits;
     const fromInput = this.availableUnits();
     if (fromInput && fromInput.length > 0) return fromInput;
-    return this.realUnits();
+    return [];
   });
 
   // Filtered Students Computed
@@ -168,22 +179,61 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     const student = this.studentToActivate();
     const all = this.allAvailableUnits();
     if (!student) return [];
+    if (this.showAllUnits()) return all;
 
     const sCurr = (student.curriculum || '').trim().toUpperCase();
     const sGrade = (student.gradeLevel || '').trim().toUpperCase();
 
+    const normalizeCurriculum = (c: string): string => {
+      const clean = (c || '').trim().toUpperCase();
+      if (clean.includes('EGYPT') || clean.includes('مصر')) return 'EGYPTIAN';
+      if (clean.includes('GULF') || clean.includes('خليج')) return 'GULF';
+      if (clean.includes('INT') || clean.includes('IGCSE') || clean.includes('بريطان') || clean.includes('دول')) return 'INTERNATIONAL';
+      if (clean.includes('AMER') || clean.includes('أمر') || clean.includes('SAT') || clean.includes('ACT') || clean.includes('EST')) return 'AMERICAN';
+      return clean;
+    };
+
+    const normalizeGrade = (g: string): string => {
+      const clean = (g || '').trim().toUpperCase();
+      if (clean.includes('SEC_1') || clean.includes('الأول الثانوي') || clean.includes('SECONDARY 1') || clean.includes('1ST SEC')) return 'SEC_1';
+      if (clean.includes('SEC_2') || clean.includes('الثاني الثانوي') || clean.includes('SECONDARY 2') || clean.includes('2ND SEC')) return 'SEC_2';
+      if (clean.includes('SEC_3') || clean.includes('الثالث الثانوي') || clean.includes('SECONDARY 3') || clean.includes('THANAWEYA') || clean.includes('3RD SEC')) return 'SEC_3';
+      if (clean.includes('PREP_1') || clean.includes('الأول الإعدادي') || clean.includes('PREP 1')) return 'PREP_1';
+      if (clean.includes('PREP_2') || clean.includes('الثاني الإعدادي') || clean.includes('PREP 2')) return 'PREP_2';
+      if (clean.includes('PREP_3') || clean.includes('الثالث الإعدادي') || clean.includes('PREP 3')) return 'PREP_3';
+      if (clean.includes('PRI_1') || clean.includes('الأول الابتدائي')) return 'PRI_1';
+      if (clean.includes('PRI_2') || clean.includes('الثاني الابتدائي')) return 'PRI_2';
+      if (clean.includes('PRI_3') || clean.includes('الثالث الابتدائي')) return 'PRI_3';
+      if (clean.includes('PRI_4') || clean.includes('الرابع الابتدائي')) return 'PRI_4';
+      if (clean.includes('PRI_5') || clean.includes('الخامس الابتدائي')) return 'PRI_5';
+      if (clean.includes('PRI_6') || clean.includes('السادس الابتدائي')) return 'PRI_6';
+      // Gulf
+      if (clean.includes('GRADE_12') || clean.includes('الثاني عشر') || clean.includes('توجيهي') || clean.includes('GRADE 12')) return 'GRADE_12';
+      if (clean.includes('GRADE_11') || clean.includes('الحادي عشر') || clean.includes('GRADE 11')) return 'GRADE_11';
+      if (clean.includes('GRADE_10') || clean.includes('العاشر') || clean.includes('GRADE 10')) return 'GRADE_10';
+      if (clean.includes('GRADE_9') || clean.includes('التاسع') || clean.includes('GRADE 9')) return 'GRADE_9';
+      // International
+      if (clean.includes('IGCSE_AL') || clean.includes('A-LEVEL') || clean.includes('AL') || clean.includes('A LEVEL')) return 'IGCSE_AL';
+      if (clean.includes('IGCSE_AS') || clean.includes('AS-LEVEL') || clean.includes('AS') || clean.includes('AS LEVEL')) return 'IGCSE_AS';
+      if (clean.includes('IGCSE_OL') || clean.includes('O-LEVEL') || clean.includes('OL') || clean.includes('O LEVEL')) return 'IGCSE_OL';
+      // American
+      if (clean.includes('SAT_MATH') || clean.includes('SAT')) return 'SAT_MATH';
+      if (clean.includes('ACT_MATH') || clean.includes('ACT')) return 'ACT_MATH';
+      if (clean.includes('EST_MATH') || clean.includes('EST')) return 'EST_MATH';
+      return clean;
+    };
+
+    const normSCurr = normalizeCurriculum(sCurr);
+    const normSGrade = normalizeGrade(sGrade);
+
     return all.filter((u) => {
       const uCurr = (u.curriculum || '').trim().toUpperCase();
       const uGrade = (u.gradeLevel || u.grade_level || '').trim().toUpperCase();
+      const normUCurr = normalizeCurriculum(uCurr);
+      const normUGrade = normalizeGrade(uGrade);
 
-      const isEgyptian = (sCurr.includes('EGYPTIAN') || sCurr.includes('المصري')) &&
-                         (uCurr.includes('EGYPTIAN') || uCurr.includes('المصري'));
-      const isGulf = sCurr.includes('GULF') && uCurr.includes('GULF');
-      const isIntl = sCurr.includes('INTERNATIONAL') && uCurr.includes('INTERNATIONAL');
-      const isAmerican = sCurr.includes('AMERICAN') && uCurr.includes('AMERICAN');
-      const currMatch = uCurr === sCurr || isEgyptian || isGulf || isIntl || isAmerican;
-
-      const gradeMatch = uGrade === sGrade;
+      const currMatch = uCurr === sCurr || normUCurr === normSCurr;
+      const gradeMatch = uGrade === sGrade || normUGrade === normSGrade;
 
       return currMatch && gradeMatch;
     });
@@ -196,9 +246,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   fetchDatabaseUnits(): void {
     if (cachedAdminUnits && cachedAdminUnits.length > 0) {
       this.realUnits.set(cachedAdminUnits);
-      if (!this.activationUnitId()) {
-        this.activationUnitId.set(cachedAdminUnits[0].id || cachedAdminUnits[0]._id);
-      }
+      this.syncSelectedActivationUnit();
       return;
     }
 
@@ -207,9 +255,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
           cachedAdminUnits = res.data;
           this.realUnits.set(res.data);
-          if (!this.activationUnitId()) {
-            this.activationUnitId.set(res.data[0].id || res.data[0]._id);
-          }
+          this.syncSelectedActivationUnit();
         }
       },
       error: () => {
@@ -219,14 +265,25 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
             if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
               cachedAdminUnits = res.data;
               this.realUnits.set(res.data);
-              if (!this.activationUnitId()) {
-                this.activationUnitId.set(res.data[0].id || res.data[0]._id);
-              }
+              this.syncSelectedActivationUnit();
             }
           }
         });
       }
     });
+  }
+
+  syncSelectedActivationUnit(): void {
+    const matching = this.studentMatchingUnits();
+    if (matching && matching.length > 0) {
+      const currentId = this.activationUnitId();
+      const stillValid = matching.some((u) => (u.id || u._id) === currentId);
+      if (!currentId || !stillValid) {
+        this.activationUnitId.set(matching[0].id || matching[0]._id);
+      }
+    } else {
+      this.activationUnitId.set('');
+    }
   }
 
   // XP Bonus/Penalty Modal
@@ -277,16 +334,101 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   }
 
   // =========================================================================
-  // Manual Unit Activation
   // =========================================================================
+  // Manual Unit Activation & Subscriptions Management
+  // =========================================================================
+  openSubscriptionsModal(student: StudentAdminSummary): void {
+    this.studentForSubscriptions.set(student);
+    this.isSubscriptionsModalOpen.set(true);
+    this.loadStudentSubscriptions(student.id);
+  }
+
+  loadStudentSubscriptions(studentId: string): void {
+    this.isLoadingSubscriptions.set(true);
+    this.http.get<{ success: boolean; data: any[] }>(`/api/v1/admin/subscriptions/student/${studentId}`).subscribe({
+      next: (res) => {
+        this.studentActiveSubscriptions.set(res?.data || []);
+        this.isLoadingSubscriptions.set(false);
+      },
+      error: () => {
+        this.studentActiveSubscriptions.set([]);
+        this.isLoadingSubscriptions.set(false);
+      }
+    });
+  }
+
+  revokeStudentSubscription(sub: any): void {
+    const student = this.studentForSubscriptions() || this.studentToActivate();
+    if (!student) return;
+
+    const subId = sub._id || sub.id;
+    this.isRevokingSubscription.set(subId);
+
+    this.http.post<{ success: boolean; remainingActiveCount: number; hasActiveSubscription: boolean }>(
+      '/api/v1/admin/subscriptions/revoke',
+      {
+        student_id: student.id,
+        subscription_id: subId,
+        unit_id: sub.unitPackageId || sub.unit_package_id || sub.unitId
+      }
+    ).subscribe({
+      next: (res) => {
+        this.isRevokingSubscription.set(null);
+        this.studentActiveSubscriptions.update(list =>
+          list.map(s => ((s._id || s.id) === subId) ? { ...s, subscriptionStatus: 'CANCELLED' } : s)
+        );
+
+        const hasActive = res?.hasActiveSubscription ?? (res?.remainingActiveCount > 0);
+        const updatedStudent: StudentAdminSummary = {
+          ...student,
+          hasActiveSubscription: hasActive,
+          subscriptionStatus: hasActive ? 'ACTIVE' : 'CANCELLED'
+        };
+
+        if (this.studentForSubscriptions()) {
+          this.studentForSubscriptions.set(updatedStudent);
+        }
+        if (this.studentToActivate()) {
+          this.studentToActivate.set(updatedStudent);
+        }
+
+        this.studentUpdated.emit(updatedStudent);
+        this.toastTriggered.emit({
+          text: `تم إلغاء اشتراك الطالب في وحدة "${sub.unitTitleAr || 'الدراسية'}" بنجاح!`,
+          type: 'success'
+        });
+      },
+      error: (err) => {
+        this.isRevokingSubscription.set(null);
+        this.toastTriggered.emit({
+          text: err?.error?.message || 'تعذر إلغاء اشتراك الوحدة.',
+          type: 'error'
+        });
+      }
+    });
+  }
+
+  toggleShowAllUnits(): void {
+    this.showAllUnits.update((v) => !v);
+    this.syncSelectedActivationUnit();
+  }
+
   openActivateModal(student: StudentAdminSummary): void {
     this.studentToActivate.set(student);
-    const units = this.studentMatchingUnits();
-    if (units && units.length > 0) {
-      this.activationUnitId.set(units[0].id || units[0]._id);
-    } else {
-      this.activationUnitId.set('');
-    }
+    this.showAllUnits.set(false);
+    this.fetchDatabaseUnits();
+    this.loadStudentSubscriptions(student.id);
+
+    // Auto-select first matching unit
+    setTimeout(() => {
+      const units = this.studentMatchingUnits();
+      if (units && units.length > 0) {
+        this.activationUnitId.set(units[0].id || units[0]._id);
+      } else {
+        this.activationUnitId.set('');
+      }
+    }, 0);
+
     this.activationScope.set('FULL');
     this.isActivateModalOpen.set(true);
   }
@@ -317,6 +459,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
           subscriptionStatus: 'ACTIVE'
         };
         this.studentUpdated.emit(updated);
+        this.loadStudentSubscriptions(student.id);
         this.isActivateModalOpen.set(false);
         const scopeLabel = this.activationScope() === 'ASSESSMENTS_ONLY' ? 'اختبارات فقط' : 'الوحدة كاملة';
         this.toastTriggered.emit({
