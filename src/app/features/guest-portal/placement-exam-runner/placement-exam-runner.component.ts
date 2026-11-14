@@ -16,6 +16,7 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { LeadGateModalComponent } from '../lead-gate-modal/lead-gate-modal.component';
 import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
+import { CelebrationModalComponent } from '../../../shared/components/celebration-modal/celebration-modal.component';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
   IPlacementQuestion,
@@ -42,7 +43,8 @@ import { SwrCacheService } from '../../../core/services/swr-cache.service';
     AppIconComponent,
     LeadGateModalComponent,
     GraphCalculatorModalComponent,
-    MathFormulaComponent
+    MathFormulaComponent,
+    CelebrationModalComponent
   ],
   templateUrl: './placement-exam-runner.component.html',
   styleUrl: './placement-exam-runner.component.scss',
@@ -83,6 +85,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     correctAnswersCount: number;
     totalQuestions: number;
   } | null>(null);
+  readonly isCelebrationOpen = signal<boolean>(false);
 
   // Available grades for the currently selected curriculum (for guest selector)
   readonly availableGradesForCurriculum = computed(() => {
@@ -331,6 +334,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
           // Logged in student: Direct Instant Score Report without lead gate!
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(result);
+          this.isCelebrationOpen.set(true);
         } else {
           // Guest: open lead gate to claim report and start onboarding
           this.submissionResult.set(result);
@@ -352,12 +356,30 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
         if (this.authService.isAuthenticated()) {
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(fallback);
+          this.isCelebrationOpen.set(true);
         } else {
           this.submissionResult.set(fallback);
           this.isLeadGateOpen.set(true);
         }
       }
     });
+  }
+
+  openCelebration(): void {
+    this.isCelebrationOpen.set(true);
+  }
+
+  closeCelebration(): void {
+    this.isCelebrationOpen.set(false);
+  }
+
+  onCelebrationReturn(): void {
+    this.isCelebrationOpen.set(false);
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/student']);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   retakeExam(): void {

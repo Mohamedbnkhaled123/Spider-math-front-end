@@ -208,6 +208,15 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            (click)="openCelebration()"
+            class="px-6 py-3.5 rounded-xl font-bold text-sm border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+          >
+            <app-icon name="award" [size]="16" />
+            <span>{{ langService.isArabic() ? 'احتفالية النتيجة 🏆' : 'Celebration 🏆' }}</span>
+          </button>
+
           <a
             routerLink="/student"
             class="px-8 py-3.5 rounded-xl font-black text-sm text-white bg-gradient-spider shadow-md hover:shadow-lg transition-all flex items-center gap-2"
@@ -219,7 +228,7 @@
           <button
             type="button"
             (click)="retakeExam()"
-            class="px-6 py-3.5 rounded-xl font-bold text-sm border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary transition-all flex items-center gap-2"
+            class="px-6 py-3.5 rounded-xl font-bold text-sm border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-primary transition-all flex items-center gap-2 cursor-pointer"
           >
             <app-icon name="refresh" [size]="16" />
             <span>{{ langService.isArabic() ? 'إعادة الاختبار' : 'Retake' }}</span>
@@ -444,6 +453,23 @@
       (unlocked)="onReportUnlocked($event)"
     />
   }
+
+  <!-- Success Celebration Modal -->
+  <app-celebration-modal
+    [isOpen]="isCelebrationOpen()"
+    [studentName]="currentStudentName()"
+    [score]="studentFinalResult()?.score ?? 0"
+    [totalScore]="studentFinalResult()?.maxScore ?? 20"
+    [percentage]="studentFinalResult()?.percentage"
+    [xpEarned]="(studentFinalResult()?.score ?? 10) * 10"
+    [returnUrl]="isStudentLoggedIn() ? '/student' : '/'"
+    [returnLabel]="isStudentLoggedIn() ? (langService.isArabic() ? 'لوحة المذاكرة' : 'Dashboard') : (langService.isArabic() ? 'الرئيسية' : 'Home')"
+    [reviewLabel]="langService.isArabic() ? 'عرض تقرير النتيجة' : 'View Report'"
+    [showReviewButton]="true"
+    (closed)="closeCelebration()"
+    (returned)="onCelebrationReturn()"
+    (reviewAnswers)="closeCelebration()"
+  />
 
 </div>
 

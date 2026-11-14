@@ -1,0 +1,111 @@
+@if (isOpen()) {
+  <div
+    class="celebration-backdrop"
+    (click)="onBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="celebration-student-name"
+  >
+    <div class="stage-wrapper" (click)="$event.stopPropagation()">
+      <!-- Skip / Close Button -->
+      <button
+        type="button"
+        class="skip-btn"
+        (click)="onClose()"
+        title="تخطي"
+        aria-label="إغلاق شاشة الاحتفال"
+      >
+        <span>✕</span>
+        <span>تخطي</span>
+      </button>
+
+      <!-- Stage Container -->
+      <div #stageElem class="stage" [class.go]="isAnimationActive()">
+        <!-- Background Golden Trophy Image -->
+        <img
+          class="bg"
+          src="assets/images/celebration-trophy.webp"
+          alt="كأس التفوق والاحتفال"
+          loading="eager"
+        />
+
+        <!-- Ambient Glow Elements -->
+        <div class="glow"></div>
+        <div class="abs trophy-glow"></div>
+
+        <!-- Student Engraved Plaque -->
+        <div class="abs plaque">
+          <div class="rank">{{ computedRankTitle() }}</div>
+          <div id="celebration-student-name" class="name">{{ studentName() }}</div>
+          <div class="msg">{{ computedMessage() }}</div>
+        </div>
+
+        <!-- Pop & Twinkle Stars -->
+        <div class="abs stars">
+          @for (s of starStates(); track $index) {
+            <svg
+              class="star"
+              [class.on]="s.on"
+              [class.lit]="s.lit"
+              [style.animationDelay]="(1.6 + $index * 0.35) + 's'"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z" />
+            </svg>
+          }
+        </div>
+
+        <!-- Stats Chips -->
+        <div class="abs stats">
+          <div class="chip c1">
+            <small>الدرجة</small>
+            <b>{{ displayedScore() }}</b>
+          </div>
+          <div class="chip c2 pc">
+            <small>النسبة</small>
+            <b>{{ displayedPercentage() }}</b>
+          </div>
+          <div class="chip c3 xp">
+            <small>نقاط الخبرة</small>
+            <b>{{ displayedXp() }}</b>
+            <div class="bar">
+              <i [style.--w]="xpProgressPercent()"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level Up Badge -->
+        <div class="abs lvl" [class.show]="isLevelUpVisible()">
+          ⬆️ Level Up!
+        </div>
+
+        <!-- Falling Colored Ribbons (Density scales with rank & score) -->
+        @for (r of ribbons(); track r.id) {
+          <div
+            class="ribbon"
+            [style.left]="r.left"
+            [style.width]="r.width"
+            [style.height]="r.height"
+            [style.background]="r.background"
+            [style.animationDuration]="r.duration"
+            [style.animationDelay]="r.delay"
+            [style.transform]="r.transform"
+          ></div>
+        }
+
+        <!-- Action Buttons (Shown after celebration sequence) -->
+        <div class="abs btns">
+          @if (showReviewButton()) {
+            <button type="button" class="b2" (click)="onReviewAnswers()">
+              {{ reviewLabel() }}
+            </button>
+          }
+          <button type="button" class="b1" (click)="onReturn()">
+            {{ returnLabel() }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

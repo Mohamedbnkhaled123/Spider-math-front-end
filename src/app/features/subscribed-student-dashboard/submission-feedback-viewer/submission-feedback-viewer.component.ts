@@ -4,16 +4,19 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
+import { CelebrationModalComponent } from '../../../shared/components/celebration-modal/celebration-modal.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback-viewer.models';
 
 /**
@@ -31,21 +34,32 @@ import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback
 @Component({
   selector: 'app-submission-feedback-viewer',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppIconComponent, MathFormulaComponent],
+  imports: [CommonModule, RouterLink, AppIconComponent, MathFormulaComponent, CelebrationModalComponent],
   templateUrl: './submission-feedback-viewer.component.html',
   styleUrls: ['./submission-feedback-viewer.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionFeedbackViewerComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
   private readonly swrCache = inject(SwrCacheService);
+  private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly isLoading = signal<boolean>(true);
   readonly loadError = signal<string | null>(null);
   readonly returnToHome = computed<boolean>(() => this.route.snapshot.queryParamMap.get('returnToHome') === 'true');
+
+  // Celebration Modal State
+  readonly isCelebrationOpen = signal<boolean>(false);
+  readonly studentName = computed(() => this.authService.currentUser()?.full_name || 'طالب متميز');
+  readonly earnedXp = computed(() => {
+    const f = this.feedback();
+    return Math.max(50, f.finalTotalScore * 10);
+  });
 
   readonly feedback = signal<SubmissionFeedbackData>({
     submissionId: '',
@@ -214,6 +228,19 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
             }))
           });
           this.swrCache.set(cacheKey, this.feedback());
+
+          // Trigger Celebration when results appear published
+          if (this.isPublished() && isPlatformBrowser(this.platformId)) {
+            try {
+              const celebrationKey = `sm_celebration_shown_${id}`;
+              if (!sessionStorage.getItem(celebrationKey)) {
+                sessionStorage.setItem(celebrationKey, 'true');
+                this.isCelebrationOpen.set(true);
+              }
+            } catch {
+              this.isCelebrationOpen.set(true);
+            }
+          }
         }
         this.isLoading.set(false);
       },
@@ -223,6 +250,27 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
         this.loadError.set(err?.error?.error?.message || 'لا يوجد تسليم معتمد.');
       }
     });
+  }
+
+  openCelebration(): void {
+    this.isCelebrationOpen.set(true);
+  }
+
+  closeCelebration(): void {
+    this.isCelebrationOpen.set(false);
+  }
+
+  onCelebrationReturn(): void {
+    this.isCelebrationOpen.set(false);
+    if (this.returnToHome()) {
+      this.router.navigate(['/']);
+    } else {
+      this.router.navigate(['/student']);
+    }
+  }
+
+  onCelebrationReviewAnswers(): void {
+    this.isCelebrationOpen.set(false);
   }
 
   readonly activeInPlatformSolution = signal<{
