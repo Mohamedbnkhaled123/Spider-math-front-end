@@ -76,6 +76,8 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly isExportingBackup = signal<boolean>(false);
   readonly isPurgingHomework = signal<boolean>(false);
   readonly showPurgeConfirmModal = signal<boolean>(false);
+  readonly isDesktopToolsOpen = signal<boolean>(false);
+  readonly isDesktopNotificationsOpen = signal<boolean>(false);
 
   // Curriculum State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
@@ -625,6 +627,26 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.showToast('تم تفريغ صور الواجبات', 'success');
       }
     });
+  }
+
+  // Desktop Header Actions (>= 1024px)
+  toggleDesktopTools(): void {
+    this.isDesktopToolsOpen.update((open) => !open);
+    if (this.isDesktopToolsOpen()) {
+      this.isDesktopNotificationsOpen.set(false);
+    }
+  }
+
+  toggleDesktopNotifications(): void {
+    this.isDesktopNotificationsOpen.update((open) => !open);
+    if (this.isDesktopNotificationsOpen()) {
+      this.isDesktopToolsOpen.set(false);
+    }
+  }
+
+  closeDesktopFlyouts(): void {
+    this.isDesktopToolsOpen.set(false);
+    this.isDesktopNotificationsOpen.set(false);
   }
 
   // Unit Events

@@ -33,4 +33,24 @@ describe('SuperAdminDashboardComponent', () => {
     expect(Array.isArray(component.unitsList())).toBeTrue();
     expect(Array.isArray(component.leadsList())).toBeTrue();
   });
+
+  it('should control desktop tools and notifications flyouts cleanly', () => {
+    expect(component.isDesktopToolsOpen()).toBeFalse();
+    expect(component.isDesktopNotificationsOpen()).toBeFalse();
+
+    // Toggle tools open
+    component.toggleDesktopTools();
+    expect(component.isDesktopToolsOpen()).toBeTrue();
+    expect(component.isDesktopNotificationsOpen()).toBeFalse();
+
+    // Toggle notifications open (must close tools)
+    component.toggleDesktopNotifications();
+    expect(component.isDesktopToolsOpen()).toBeFalse();
+    expect(component.isDesktopNotificationsOpen()).toBeTrue();
+
+    // Close flyouts
+    component.closeDesktopFlyouts();
+    expect(component.isDesktopToolsOpen()).toBeFalse();
+    expect(component.isDesktopNotificationsOpen()).toBeFalse();
+  });
 });

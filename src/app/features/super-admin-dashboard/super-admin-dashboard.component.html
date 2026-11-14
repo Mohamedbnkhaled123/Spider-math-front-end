@@ -51,7 +51,7 @@
     <main class="flex-1 w-full min-w-0 relative z-10">
 
       <!-- Desktop Permanent Top Workspace Navigation Bar (>= 1024px) -->
-      <div class="hidden lg:flex items-center justify-between p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in">
+      <div class="hidden lg:flex items-center justify-between p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in relative z-20">
         <div class="flex items-center gap-2.5 min-w-0">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
           <h1 class="text-sm font-bold text-text-primary font-academic-serif truncate">
@@ -63,87 +63,199 @@
           </h1>
         </div>
 
-        <!-- Quick Tab Navigation Pills -->
-        <div class="flex items-center gap-1.5 text-xs font-bold">
-          <button
-            type="button"
-            (click)="setTab('assessments')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-            [class.btn-gold-metallic]="activeTab() === 'assessments'"
-            [class.text-slate-950]="activeTab() === 'assessments'"
-            [class.text-text-secondary]="activeTab() !== 'assessments'"
-            [class.hover:text-text-primary]="activeTab() !== 'assessments'"
-          >
-            <app-icon name="award" [size]="14" />
-            <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
-          </button>
-          <button
-            type="button"
-            (click)="setTab('analytics')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-            [class.btn-gold-metallic]="activeTab() === 'analytics'"
-            [class.text-slate-950]="activeTab() === 'analytics'"
-            [class.text-text-secondary]="activeTab() !== 'analytics'"
-            [class.hover:text-text-primary]="activeTab() !== 'analytics'"
-          >
-            <app-icon name="activity" [size]="14" />
-            <span>{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
-          </button>
-          <button
-            type="button"
-            (click)="setTab('curriculum')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-            [class.btn-gold-metallic]="activeTab() === 'curriculum'"
-            [class.text-slate-950]="activeTab() === 'curriculum'"
-            [class.text-text-secondary]="activeTab() !== 'curriculum'"
-            [class.hover:text-text-primary]="activeTab() !== 'curriculum'"
-          >
-            <app-icon name="book-open" [size]="14" />
-            <span>{{ langService.isArabic() ? 'المناهج والوحدات' : 'Curricula' }}</span>
-          </button>
-          <button
-            type="button"
-            (click)="setTab('grading')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 relative"
-            [class.btn-gold-metallic]="activeTab() === 'grading'"
-            [class.text-slate-950]="activeTab() === 'grading'"
-            [class.text-text-secondary]="activeTab() !== 'grading'"
-            [class.hover:text-text-primary]="activeTab() !== 'grading'"
-          >
-            <app-icon name="file-text" [size]="14" />
-            <span>{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
-            @if (analyticsSnapshot().pendingGradingCount > 0) {
-              <span class="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-rose-500 text-white shrink-0">
-                {{ analyticsSnapshot().pendingGradingCount }}
-              </span>
+        <div class="flex items-center gap-3">
+          <!-- Quick Tab Navigation Pills -->
+          <div class="flex items-center gap-1.5 text-xs font-bold">
+            <button
+              type="button"
+              (click)="setTab('assessments')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              [class.btn-gold-metallic]="activeTab() === 'assessments'"
+              [class.text-slate-950]="activeTab() === 'assessments'"
+              [class.text-text-secondary]="activeTab() !== 'assessments'"
+              [class.hover:text-text-primary]="activeTab() !== 'assessments'"
+            >
+              <app-icon name="award" [size]="14" />
+              <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="setTab('analytics')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              [class.btn-gold-metallic]="activeTab() === 'analytics'"
+              [class.text-slate-950]="activeTab() === 'analytics'"
+              [class.text-text-secondary]="activeTab() !== 'analytics'"
+              [class.hover:text-text-primary]="activeTab() !== 'analytics'"
+            >
+              <app-icon name="activity" [size]="14" />
+              <span>{{ langService.isArabic() ? 'الإحصائيات' : 'Analytics' }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="setTab('curriculum')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              [class.btn-gold-metallic]="activeTab() === 'curriculum'"
+              [class.text-slate-950]="activeTab() === 'curriculum'"
+              [class.text-text-secondary]="activeTab() !== 'curriculum'"
+              [class.hover:text-text-primary]="activeTab() !== 'curriculum'"
+            >
+              <app-icon name="book-open" [size]="14" />
+              <span>{{ langService.isArabic() ? 'المناهج والوحدات' : 'Curricula' }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="setTab('grading')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 relative"
+              [class.btn-gold-metallic]="activeTab() === 'grading'"
+              [class.text-slate-950]="activeTab() === 'grading'"
+              [class.text-text-secondary]="activeTab() !== 'grading'"
+              [class.hover:text-text-primary]="activeTab() !== 'grading'"
+            >
+              <app-icon name="file-text" [size]="14" />
+              <span>{{ langService.isArabic() ? 'التصحيح' : 'Grading' }}</span>
+              @if (analyticsSnapshot().pendingGradingCount > 0) {
+                <span class="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-rose-500 text-white shrink-0">
+                  {{ analyticsSnapshot().pendingGradingCount }}
+                </span>
+              }
+            </button>
+            <button
+              type="button"
+              (click)="setTab('students')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              [class.btn-gold-metallic]="activeTab() === 'students'"
+              [class.text-slate-950]="activeTab() === 'students'"
+              [class.text-text-secondary]="activeTab() !== 'students'"
+              [class.hover:text-text-primary]="activeTab() !== 'students'"
+            >
+              <app-icon name="user" [size]="14" />
+              <span>{{ langService.isArabic() ? 'الطلاب والأجهزة' : 'Students' }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="setTab('leads_cms')"
+              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
+              [class.text-slate-950]="activeTab() === 'leads_cms'"
+              [class.text-text-secondary]="activeTab() !== 'leads_cms'"
+              [class.hover:text-text-primary]="activeTab() !== 'leads_cms'"
+            >
+              <app-icon name="grid" [size]="14" />
+              <span>{{ langService.isArabic() ? 'إدارة المحتوى' : 'CMS' }}</span>
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-6 w-px bg-surface-border"></div>
+
+          <!-- Desktop Tools & Notifications Section (>= 1024px) -->
+          <div class="flex items-center gap-2 relative">
+            <!-- Notifications Bell -->
+            <button
+              type="button"
+              (click)="toggleDesktopNotifications()"
+              class="relative p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer"
+              [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
+            >
+              <app-icon name="bell" [size]="15" />
+              @if (batchedNotifications().length > 0) {
+                <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white font-mono text-[8px] font-bold flex items-center justify-center animate-bounce">
+                  {{ batchedNotifications().length }}
+                </span>
+              }
+            </button>
+
+            <!-- Tools Button ("الأدوات") -->
+            <button
+              type="button"
+              (click)="toggleDesktopTools()"
+              class="p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+              [class.border-brand-primary]="isDesktopToolsOpen()"
+              [class.text-text-primary]="isDesktopToolsOpen()"
+              [title]="langService.isArabic() ? 'أدوات الصيانة والنظام' : 'Maintenance & System Tools'"
+            >
+              <app-icon name="settings" [size]="15" />
+              <span>{{ langService.isArabic() ? 'الأدوات' : 'Tools' }}</span>
+              <app-icon [name]="isDesktopToolsOpen() ? 'chevron-up' : 'chevron-down'" [size]="12" />
+            </button>
+
+            <!-- Desktop Tools Dropdown -->
+            @if (isDesktopToolsOpen()) {
+              <div
+                class="absolute left-0 rtl:left-0 rtl:right-auto top-full mt-2 w-56 rounded-2xl border border-surface-border bg-surface-card shadow-2xl p-2 z-50 animate-scale-up space-y-1"
+              >
+                <div class="px-3 py-1.5 text-[10px] font-bold text-text-muted uppercase tracking-wider border-b border-surface-border/60">
+                  {{ langService.isArabic() ? 'أدوات النظام والصيانة' : 'System & Maintenance' }}
+                </div>
+                <button
+                  type="button"
+                  (click)="exportPlatformBackup(); isDesktopToolsOpen.set(false)"
+                  [disabled]="isExportingBackup()"
+                  class="w-full text-right rtl:text-right p-2.5 rounded-xl hover:bg-surface-bg transition-colors flex items-center gap-2.5 text-xs font-bold text-text-primary cursor-pointer disabled:opacity-50"
+                >
+                  <app-icon [name]="isExportingBackup() ? 'loader' : 'upload-cloud'" [size]="15" [className]="isExportingBackup() ? 'animate-spin' : 'text-brand-primary'" />
+                  <div class="min-w-0">
+                    <span class="block">{{ langService.isArabic() ? 'نسخة احتياطية' : 'Platform Backup' }}</span>
+                    <span class="block text-[10px] text-text-muted font-normal">{{ langService.isArabic() ? 'تصدير قاعدة البيانات كاملة JSON' : 'Export DB as JSON' }}</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="showPurgeConfirmModal.set(true); isDesktopToolsOpen.set(false)"
+                  [disabled]="isPurgingHomework()"
+                  class="w-full text-right rtl:text-right p-2.5 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-colors flex items-center gap-2.5 text-xs font-bold cursor-pointer disabled:opacity-50"
+                >
+                  <app-icon name="trash" [size]="15" />
+                  <div class="min-w-0">
+                    <span class="block">{{ langService.isArabic() ? 'تفريغ الواجبات' : 'Purge Homework' }}</span>
+                    <span class="block text-[10px] text-text-muted font-normal">{{ langService.isArabic() ? 'حذف الصور المؤقتة القديمة' : 'Delete old homework photos' }}</span>
+                  </div>
+                </button>
+              </div>
             }
-          </button>
-          <button
-            type="button"
-            (click)="setTab('students')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-            [class.btn-gold-metallic]="activeTab() === 'students'"
-            [class.text-slate-950]="activeTab() === 'students'"
-            [class.text-text-secondary]="activeTab() !== 'students'"
-            [class.hover:text-text-primary]="activeTab() !== 'students'"
-          >
-            <app-icon name="user" [size]="14" />
-            <span>{{ langService.isArabic() ? 'الطلاب والأجهزة' : 'Students' }}</span>
-          </button>
-          <button
-            type="button"
-            (click)="setTab('leads_cms')"
-            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-            [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
-            [class.text-slate-950]="activeTab() === 'leads_cms'"
-            [class.text-text-secondary]="activeTab() !== 'leads_cms'"
-            [class.hover:text-text-primary]="activeTab() !== 'leads_cms'"
-          >
-            <app-icon name="grid" [size]="14" />
-            <span>{{ langService.isArabic() ? 'إدارة المحتوى' : 'CMS' }}</span>
-          </button>
+
+            <!-- Desktop Notifications Dropdown -->
+            @if (isDesktopNotificationsOpen()) {
+              <div
+                class="absolute left-0 rtl:left-0 rtl:right-auto top-full mt-2 w-80 rounded-2xl border border-surface-border bg-surface-card shadow-2xl p-3 z-50 animate-scale-up space-y-2"
+              >
+                <div class="flex items-center justify-between pb-1.5 border-b border-surface-border/60">
+                  <span class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'إشعارات التسليمات' : 'Submission Alerts' }}</span>
+                  <span class="text-[10px] text-text-muted">{{ langService.isArabic() ? 'كل 5 حلول' : 'Every 5 submissions' }}</span>
+                </div>
+
+                <div class="max-h-60 overflow-y-auto space-y-1.5 text-xs">
+                  @for (item of batchedNotifications(); track item.id) {
+                    <div class="p-2.5 rounded-xl border border-surface-border bg-surface-bg space-y-1">
+                      <div class="flex items-center justify-between text-[11px] font-bold text-brand-primary">
+                        <span>{{ item.curriculum }} • {{ item.gradeLevel }}</span>
+                        <span class="text-[9px] text-text-muted">{{ item.timestamp }}</span>
+                      </div>
+                      <p class="text-[11px] text-text-primary leading-snug">
+                        @if (langService.isArabic()) {
+                          دفعة جديدة تضم <strong class="text-rose-500">{{ item.batchCount }} تسليمات</strong> في {{ item.assessmentTitle }}.
+                        } @else {
+                          New batch of <strong class="text-rose-500">{{ item.batchCount }} submissions</strong> in {{ item.assessmentTitle }}.
+                        }
+                      </p>
+                    </div>
+                  } @empty {
+                    <div class="py-6 text-center text-xs text-text-muted">
+                      {{ langService.isArabic() ? 'لا توجد إشعارات جديدة.' : 'No new alerts.' }}
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
+
+      <!-- Backdrop overlay to close desktop flyouts when clicking outside -->
+      @if (isDesktopToolsOpen() || isDesktopNotificationsOpen()) {
+        <div class="fixed inset-0 z-15" (click)="closeDesktopFlyouts()"></div>
+      }
 
       @switch (activeTab()) {
 
