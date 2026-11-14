@@ -10,11 +10,11 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  background: rgba(10, 4, 20, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: radial-gradient(circle at 50% 45%, rgba(68, 25, 115, 0.9) 0%, rgba(20, 8, 38, 0.97) 60%, rgba(10, 4, 20, 0.99) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   animation: fadeIn 0.35s ease-out both;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -25,32 +25,34 @@
 .stage-wrapper {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  max-height: 94vh;
+  height: 100%;
+  max-width: none;
+  max-height: none;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .skip-btn {
   position: absolute;
-  top: -12px;
-  left: 12px;
+  top: 14px;
+  left: 14px;
   z-index: 30;
-  background: rgba(42, 18, 63, 0.85);
+  background: rgba(42, 18, 63, 0.88);
   color: #d9c2ff;
   border: 1px solid rgba(255, 217, 112, 0.4);
   border-radius: 9999px;
-  padding: 4px 14px;
-  font-size: 12px;
+  padding: 6px 16px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
 
   &:hover {
     background: rgba(58, 22, 96, 0.95);
@@ -61,16 +63,54 @@
 }
 
 .stage {
-  width: min(100%, 400px);
-  aspect-ratio: 1184 / 2096;
-  max-height: 90vh;
   position: relative;
   overflow: hidden;
-  border-radius: 24px;
   container-type: inline-size;
   background: #1a0b2e;
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 217, 112, 0.2);
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  // Responsive dynamic scaling on desktop/tablet: fills 94% of screen height!
+  height: 94vh;
+  height: 94dvh;
+  max-height: 94vh;
+  max-height: 94dvh;
+  aspect-ratio: 1184 / 2096;
+  width: auto;
+  max-width: 96vw;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 80px rgba(255, 217, 112, 0.15), 0 0 0 1px rgba(255, 217, 112, 0.25);
+}
+
+// Fullscreen on mobile devices
+@media (max-width: 640px) {
+  .celebration-backdrop {
+    padding: 0;
+  }
+
+  .stage-wrapper {
+    width: 100vw;
+    height: 100dvh;
+  }
+
+  .stage {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    aspect-ratio: unset;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .skip-btn {
+    top: calc(env(safe-area-inset-top, 14px) + 8px);
+    left: 14px;
+  }
 }
 
 .bg {

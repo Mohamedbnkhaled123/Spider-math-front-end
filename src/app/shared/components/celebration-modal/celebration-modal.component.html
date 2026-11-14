@@ -7,20 +7,20 @@
     aria-labelledby="celebration-student-name"
   >
     <div class="stage-wrapper" (click)="$event.stopPropagation()">
-      <!-- Skip / Close Button -->
-      <button
-        type="button"
-        class="skip-btn"
-        (click)="onClose()"
-        title="تخطي"
-        aria-label="إغلاق شاشة الاحتفال"
-      >
-        <span>&times;</span>
-        <span>تخطي</span>
-      </button>
-
       <!-- Stage Container -->
       <div #stageElem class="stage" [class.go]="isAnimationActive()">
+        <!-- Skip / Close Button -->
+        <button
+          type="button"
+          class="skip-btn"
+          (click)="onClose()"
+          title="تخطي"
+          aria-label="إغلاق شاشة الاحتفال"
+        >
+          <span>&times;</span>
+          <span>تخطي</span>
+        </button>
+
         <!-- Background Golden Trophy Image -->
         <img
           class="bg"
