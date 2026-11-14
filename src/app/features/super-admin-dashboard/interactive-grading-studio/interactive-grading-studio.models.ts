@@ -87,3 +87,19 @@ export interface PendingEssayGrading {
   status: 'PENDING' | 'PUBLISHED';
   submittedAt: string;
 }
+
+export interface StudentQuizGroup {
+  studentKey: string;
+  studentId: string;
+  haCode: string;
+  studentName: string;
+  gradeLevel: string;
+  curriculum: string;
+  parentPhone?: string;
+  totalQuizzes: number;
+  publishedQuizzes: number;
+  pendingQuizzes: number;
+  inProgressQuizzes: number;
+  quizzes: AllQuizSubmissionItem[];
+}
+

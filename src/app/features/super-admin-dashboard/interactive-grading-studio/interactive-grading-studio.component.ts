@@ -20,7 +20,8 @@ import {
   PendingEssayGrading,
   AllQuizSubmissionItem,
   QuizSubmissionStats,
-  QuestionAnswerDetail
+  QuestionAnswerDetail,
+  StudentQuizGroup
 } from './interactive-grading-studio.models';
 
 /**
@@ -113,9 +114,18 @@ export class InteractiveGradingStudioComponent implements OnInit {
   readonly pageSize = 15;
   readonly currentPage = signal<number>(1);
 
+  // Submissions View Mode: Grouped by Student (recommended default) vs Individual Submissions Feed
+  readonly viewGroupingMode = signal<'BY_STUDENT' | 'BY_SUBMISSION'>('BY_STUDENT');
+  readonly expandedStudentKeys = signal<Set<string>>(new Set<string>());
+  readonly isSubmittingCanvasGrade = signal<boolean>(false);
+
   // Answers Inspector Modal State
   readonly isAnswersModalOpen = signal<boolean>(false);
   readonly selectedSubmissionForReview = signal<AllQuizSubmissionItem | null>(null);
+
+  // Approval & Confirmation State
+  readonly isApprovingId = signal<string | null>(null);
+  readonly pendingApprovalSubmission = signal<AllQuizSubmissionItem | null>(null);
 
   // Lightbox Preview Modal State
   readonly previewImageUrl = signal<string | null>(null);
@@ -153,6 +163,177 @@ export class InteractiveGradingStudioComponent implements OnInit {
     }
     return list;
   });
+
+  // Summary map of quiz counts per student (Total, Published, Pending)
+  readonly studentQuizSummaryMap = computed(() => {
+    const map = new Map<string, { total: number; published: number; pending: number; inProgress: number; studentName: string; haCode: string }>();
+    for (const s of this.allSubmissions()) {
+      const key = s.studentId || s.haCode || s.studentName;
+      const entry = map.get(key) || {
+        total: 0,
+        published: 0,
+        pending: 0,
+        inProgress: 0,
+        studentName: s.studentName,
+        haCode: s.haCode
+      };
+      entry.total += 1;
+      if (s.status === 'PUBLISHED') {
+        entry.published += 1;
+      } else if (s.status === 'PENDING') {
+        entry.pending += 1;
+      } else if (s.status === 'IN_PROGRESS') {
+        entry.inProgress += 1;
+      }
+      map.set(key, entry);
+    }
+    return map;
+  });
+
+  getStudentPendingQuizCount(studentId?: string, haCode?: string, studentName?: string): number {
+    const key = studentId || haCode || studentName || '';
+    return this.studentQuizSummaryMap().get(key)?.pending ?? 0;
+  }
+
+  getStudentTotalQuizCount(studentId?: string, haCode?: string, studentName?: string): number {
+    const key = studentId || haCode || studentName || '';
+    return this.studentQuizSummaryMap().get(key)?.total ?? 0;
+  }
+
+  getStudentSummary(studentId?: string, haCode?: string, studentName?: string) {
+    const key = studentId || haCode || studentName || '';
+    return this.studentQuizSummaryMap().get(key);
+  }
+
+  readonly activeStudentSummary = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return null;
+    const filtered = this.filteredSubmissions();
+    if (filtered.length === 0) return null;
+    const first = filtered[0];
+    const allSameStudent = filtered.every(
+      (s) =>
+        (s.studentId && s.studentId === first.studentId) ||
+        (s.haCode && s.haCode === first.haCode) ||
+        s.studentName.toLowerCase() === first.studentName.toLowerCase()
+    );
+    if (allSameStudent) {
+      return this.getStudentSummary(first.studentId, first.haCode, first.studentName) || null;
+    }
+    return null;
+  });
+
+  // Grouped students with unreviewed/pending quizzes breakdown
+  readonly studentGroups = computed<StudentQuizGroup[]>(() => {
+    const map = new Map<string, StudentQuizGroup>();
+    const query = normalizeForMatch(this.searchQuery().trim().toLowerCase());
+    const statusFilter = this.activeStatusFilter();
+
+    for (const sub of this.allSubmissions()) {
+      const key = sub.studentId || sub.haCode || sub.studentName;
+      let group = map.get(key);
+      if (!group) {
+        group = {
+          studentKey: key,
+          studentId: sub.studentId,
+          haCode: sub.haCode,
+          studentName: sub.studentName,
+          gradeLevel: sub.gradeLevel,
+          curriculum: sub.curriculum,
+          parentPhone: sub.parentPhone,
+          totalQuizzes: 0,
+          publishedQuizzes: 0,
+          pendingQuizzes: 0,
+          inProgressQuizzes: 0,
+          quizzes: []
+        };
+        map.set(key, group);
+      }
+
+      group.totalQuizzes += 1;
+      if (sub.status === 'PUBLISHED') {
+        group.publishedQuizzes += 1;
+      } else if (sub.status === 'PENDING') {
+        group.pendingQuizzes += 1;
+      } else if (sub.status === 'IN_PROGRESS') {
+        group.inProgressQuizzes += 1;
+      }
+      group.quizzes.push(sub);
+    }
+
+    let groups = Array.from(map.values());
+
+    // Sort quizzes inside each group (highest attempt/newest first)
+    for (const g of groups) {
+      g.quizzes.sort((a, b) => (b.attemptNumber || 1) - (a.attemptNumber || 1));
+    }
+
+    // Apply status filter if active
+    if (statusFilter === 'PENDING') {
+      groups = groups.filter((g) => g.pendingQuizzes > 0);
+    } else if (statusFilter === 'PUBLISHED') {
+      groups = groups.filter((g) => g.publishedQuizzes > 0 && g.pendingQuizzes === 0);
+    } else if (statusFilter === 'IN_PROGRESS') {
+      groups = groups.filter((g) => g.inProgressQuizzes > 0);
+    }
+
+    // Apply search filter if query is present
+    if (query) {
+      groups = groups.filter((g) => {
+        const nameMatch = normalizeForMatch(g.studentName.toLowerCase()).includes(query);
+        const codeMatch = normalizeForMatch(g.haCode.toLowerCase()).includes(query);
+        const phoneMatch = g.parentPhone ? normalizeForMatch(g.parentPhone.toLowerCase()).includes(query) : false;
+        const quizMatch = g.quizzes.some((q) => normalizeForMatch(q.assessmentTitle.toLowerCase()).includes(query));
+        return nameMatch || codeMatch || phoneMatch || quizMatch;
+      });
+    }
+
+    // Sort: students with pending quizzes first, then by total quizzes descending, then student name
+    groups.sort((a, b) => {
+      if (b.pendingQuizzes !== a.pendingQuizzes) {
+        return b.pendingQuizzes - a.pendingQuizzes;
+      }
+      if (b.totalQuizzes !== a.totalQuizzes) {
+        return b.totalQuizzes - a.totalQuizzes;
+      }
+      return a.studentName.localeCompare(b.studentName, 'ar');
+    });
+
+    return groups;
+  });
+
+  isStudentExpanded(key: string): boolean {
+    if (this.searchQuery().trim()) {
+      return true;
+    }
+    return this.expandedStudentKeys().has(key);
+  }
+
+  toggleStudentExpanded(key: string): void {
+    this.expandedStudentKeys.update((set) => {
+      const next = new Set(set);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  viewStudentGroup(studentName: string): void {
+    this.setSearchQuery(studentName);
+    this.viewGroupingMode.set('BY_STUDENT');
+  }
+
+  filterByStudent(studentName: string): void {
+    this.setSearchQuery(studentName);
+    this.viewGroupingMode.set('BY_STUDENT');
+  }
+
+  clearStudentFilter(): void {
+    this.setSearchQuery('');
+  }
 
   // Paginated Submissions Slice
   readonly totalItems = computed(() => this.filteredSubmissions().length);
@@ -570,21 +751,59 @@ export class InteractiveGradingStudioComponent implements OnInit {
   }
 
   // Direct Teacher Approval (MCQ & General Assessments)
+  confirmAndApproveSubmission(sub: AllQuizSubmissionItem): void {
+    if (sub.status === 'PUBLISHED') {
+      return;
+    }
+    this.pendingApprovalSubmission.set(sub);
+  }
+
+  cancelApprovalConfirmation(): void {
+    this.pendingApprovalSubmission.set(null);
+  }
+
+  proceedWithApproval(): void {
+    const sub = this.pendingApprovalSubmission();
+    if (!sub) return;
+    this.approveSubmissionDirectly(sub);
+  }
+
   approveSubmissionDirectly(sub: AllQuizSubmissionItem): void {
-    this.http.post<{ success: boolean; message: string }>(`/api/v1/admin/submissions/${sub.id}/approve`, {}).subscribe({
+    if (sub.status === 'PUBLISHED') {
+      this.pendingApprovalSubmission.set(null);
+      return;
+    }
+    if (this.isApprovingId() === sub.id) {
+      return;
+    }
+    this.isApprovingId.set(sub.id);
+    this.http.post<{ success: boolean; data?: any; message?: string }>(`/api/v1/admin/submissions/${sub.id}/approve`, {}).subscribe({
       next: () => {
+        this.isApprovingId.set(null);
+        this.pendingApprovalSubmission.set(null);
+        sub.status = 'PUBLISHED';
+        if (this.selectedSubmissionForReview()?.id === sub.id) {
+          this.selectedSubmissionForReview.set({ ...sub, status: 'PUBLISHED' });
+        }
+        this.allSubmissions.update((list) =>
+          list.map((item) => (item.id === sub.id ? { ...sub, status: 'PUBLISHED' } : item))
+        );
+        if (submissionsMemoryCache) {
+          submissionsMemoryCache.submissions = this.allSubmissions();
+        }
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة ${sub.studentName}`,
+          text: this.langService.isArabic()
+            ? `تم اعتماد ونشر نتيجة ${sub.studentName} بنجاح`
+            : `Result for ${sub.studentName} successfully approved & published`,
           type: 'success'
         });
-        this.fetchAllSubmissions();
-        if (this.isAnswersModalOpen() && this.selectedSubmissionForReview()?.id === sub.id) {
-          this.closeAnswersInspector();
-        }
+        this.fetchAllSubmissions(true);
       },
       error: (err) => {
+        this.isApprovingId.set(null);
+        this.pendingApprovalSubmission.set(null);
         this.toastTriggered.emit({
-          text: err?.error?.message || 'تعذر اعتماد النتيجة. أعد المحاولة.',
+          text: err?.error?.message || (this.langService.isArabic() ? 'تعذر اعتماد النتيجة. أعد المحاولة.' : 'Failed to approve result.'),
           type: 'error'
         });
       }
@@ -693,6 +912,10 @@ export class InteractiveGradingStudioComponent implements OnInit {
     const item = this.currentGradingItem();
     if (!item) return;
 
+    if (this.isSubmittingCanvasGrade()) {
+      return;
+    }
+
     if (item.awardedScore < 0 || item.awardedScore > item.maxScore) {
       this.toastTriggered.emit({
         text: `الدرجة يجب أن تكون بين 0 و ${item.maxScore}`,
@@ -700,6 +923,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
       });
       return;
     }
+
+    this.isSubmittingCanvasGrade.set(true);
 
     const payload = {
       essay_manual_score: item.awardedScore,
@@ -714,23 +939,25 @@ export class InteractiveGradingStudioComponent implements OnInit {
 
     this.http.post(`/api/v1/admin/submissions/${item.id}/grade`, payload).subscribe({
       next: () => {
+        this.isSubmittingCanvasGrade.set(false);
         const approved: PendingEssayGrading = { ...item, status: 'PUBLISHED' };
         this.gradingSubmitted.emit(approved);
         this.isGradingModalOpen.set(false);
-        this.fetchAllSubmissions();
+        this.fetchAllSubmissions(true);
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة ${item.studentName}`,
+          text: this.langService.isArabic() ? `تم اعتماد نتيجة ${item.studentName}` : `Grade approved for ${item.studentName}`,
           type: 'success'
         });
       },
       error: () => {
+        this.isSubmittingCanvasGrade.set(false);
         // Optimistic UI fallback
         const approved: PendingEssayGrading = { ...item, status: 'PUBLISHED' };
         this.gradingSubmitted.emit(approved);
         this.isGradingModalOpen.set(false);
-        this.fetchAllSubmissions();
+        this.fetchAllSubmissions(true);
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة ${item.studentName}`,
+          text: this.langService.isArabic() ? `تم اعتماد نتيجة ${item.studentName}` : `Grade approved for ${item.studentName}`,
           type: 'success'
         });
       }

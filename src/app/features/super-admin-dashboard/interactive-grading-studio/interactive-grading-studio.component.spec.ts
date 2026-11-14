@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import {
   InteractiveGradingStudioComponent,
   normalizeForMatch,
@@ -10,6 +10,7 @@ import {
 describe('InteractiveGradingStudioComponent', () => {
   let component: InteractiveGradingStudioComponent;
   let fixture: ComponentFixture<InteractiveGradingStudioComponent>;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -20,10 +21,17 @@ describe('InteractiveGradingStudioComponent', () => {
       ]
     }).compileComponents();
 
+    httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(InteractiveGradingStudioComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('pendingSubmissions', []);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    // Clean up any pending initial requests
+    const pendingReqs = httpMock.match('/api/v1/admin/submissions');
+    pendingReqs.forEach((req) => req.flush({ success: true, data: { submissions: [], stats: {} } }));
   });
 
   it('should create interactive grading studio component', () => {
@@ -186,5 +194,157 @@ describe('InteractiveGradingStudioComponent', () => {
     expect(gradingItem).toBeTruthy();
     expect(gradingItem?.maxScore).toBe(5); // Essay points only, NOT 15!
     expect(gradingItem?.awardedScore).toBe(0); // Starts at essayManualScore (0), NOT finalTotalScore (10)!
+  });
+
+  it('should manage approval confirmation flow before publishing', () => {
+    const mockSub: any = {
+      id: 'sub_approve_test',
+      studentName: 'Ziad Ammar',
+      haCode: 'HA1002',
+      assessmentTitle: 'Algebra Quiz',
+      finalTotalScore: 10,
+      totalPoints: 10,
+      status: 'PENDING'
+    };
+
+    // 1. Trigger confirmation
+    component.confirmAndApproveSubmission(mockSub);
+    expect(component.pendingApprovalSubmission()).toEqual(mockSub);
+
+    // 2. Cancel confirmation
+    component.cancelApprovalConfirmation();
+    expect(component.pendingApprovalSubmission()).toBeNull();
+
+    // 3. Confirm and proceed with approval
+    component.confirmAndApproveSubmission(mockSub);
+    component.proceedWithApproval();
+    // In-flight state holds dialog and shows loading indicator
+    expect(component.isApprovingId()).toBe('sub_approve_test');
+    expect(component.pendingApprovalSubmission()).toEqual(mockSub);
+
+    const req = httpMock.expectOne('/api/v1/admin/submissions/sub_approve_test/approve');
+    expect(req.request.method).toBe('POST');
+    req.flush({ success: true, message: 'Approved' });
+
+    expect(component.isApprovingId()).toBeNull();
+    expect(component.pendingApprovalSubmission()).toBeNull();
+    expect(mockSub.status).toBe('PUBLISHED');
+  });
+
+  it('should prevent duplicate approval if submission is already PUBLISHED', () => {
+    const alreadyPublishedSub: any = {
+      id: 'sub_already_published',
+      studentName: 'Heba Student',
+      haCode: 'HA1003',
+      status: 'PUBLISHED'
+    };
+
+    // Attempting confirmation on already published submission does nothing
+    component.confirmAndApproveSubmission(alreadyPublishedSub);
+    expect(component.pendingApprovalSubmission()).toBeNull();
+
+    // Attempting direct approval on already published submission does not fire HTTP request
+    component.approveSubmissionDirectly(alreadyPublishedSub);
+    httpMock.expectNone('/api/v1/admin/submissions/sub_already_published/approve');
+  });
+
+  it('should accurately calculate unreviewed/pending quizzes per student (e.g. 5 submitted, 3 graded -> 2 pending)', () => {
+    const submissionsList: any[] = [
+      { id: 'sub_1', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Student One', status: 'PUBLISHED' },
+      { id: 'sub_2', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Student One', status: 'PUBLISHED' },
+      { id: 'sub_3', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Student One', status: 'PUBLISHED' },
+      { id: 'sub_4', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Student One', status: 'PENDING' },
+      { id: 'sub_5', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Student One', status: 'PENDING' },
+      { id: 'sub_6', studentId: 'stu_2', haCode: 'HA1002', studentName: 'Student Two', status: 'PUBLISHED' }
+    ];
+
+    component.allSubmissions.set(submissionsList);
+
+    // Student One: 5 total submitted quizzes, 3 published, 2 pending
+    expect(component.getStudentTotalQuizCount('stu_1', 'HA1001')).toBe(5);
+    expect(component.getStudentPendingQuizCount('stu_1', 'HA1001')).toBe(2);
+
+    const summaryOne = component.getStudentSummary('stu_1', 'HA1001');
+    expect(summaryOne).toBeTruthy();
+    expect(summaryOne?.total).toBe(5);
+    expect(summaryOne?.published).toBe(3);
+    expect(summaryOne?.pending).toBe(2);
+
+    // Student Two: 1 total, 1 published, 0 pending
+    expect(component.getStudentTotalQuizCount('stu_2', 'HA1002')).toBe(1);
+    expect(component.getStudentPendingQuizCount('stu_2', 'HA1002')).toBe(0);
+  });
+
+  it('should group submissions by student, displaying only unreviewed count and quizzes cleanly', () => {
+    const submissionsList: any[] = [
+      { id: 'sub_1', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Ahmed Ali', assessmentTitle: 'Quiz 1', attemptNumber: 1, status: 'PUBLISHED', totalPoints: 10, finalTotalScore: 10, scorePercentage: 100 },
+      { id: 'sub_2', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Ahmed Ali', assessmentTitle: 'Quiz 2', attemptNumber: 1, status: 'PUBLISHED', totalPoints: 10, finalTotalScore: 8, scorePercentage: 80 },
+      { id: 'sub_3', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Ahmed Ali', assessmentTitle: 'Quiz 3', attemptNumber: 1, status: 'PUBLISHED', totalPoints: 10, finalTotalScore: 9, scorePercentage: 90 },
+      { id: 'sub_4', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Ahmed Ali', assessmentTitle: 'Quiz 4', attemptNumber: 1, status: 'PENDING', totalPoints: 10, finalTotalScore: 7, scorePercentage: 70 },
+      { id: 'sub_5', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Ahmed Ali', assessmentTitle: 'Quiz 5', attemptNumber: 1, status: 'PENDING', totalPoints: 10, finalTotalScore: 6, scorePercentage: 60 },
+      { id: 'sub_6', studentId: 'stu_2', haCode: 'HA1002', studentName: 'Sara Nour', assessmentTitle: 'Quiz 1', attemptNumber: 1, status: 'PUBLISHED', totalPoints: 10, finalTotalScore: 10, scorePercentage: 100 }
+    ];
+
+    component.allSubmissions.set(submissionsList);
+
+    const groups = component.studentGroups();
+    expect(groups.length).toBe(2);
+
+    // Ahmed has 2 pending quizzes, so he is sorted first
+    const ahmedGroup = groups.find((g) => g.studentId === 'stu_1');
+    expect(ahmedGroup).toBeTruthy();
+    expect(ahmedGroup?.totalQuizzes).toBe(5);
+    expect(ahmedGroup?.publishedQuizzes).toBe(3);
+    expect(ahmedGroup?.pendingQuizzes).toBe(2);
+    expect(ahmedGroup?.quizzes.length).toBe(5);
+
+    // Sara has 0 pending quizzes
+    const saraGroup = groups.find((g) => g.studentId === 'stu_2');
+    expect(saraGroup).toBeTruthy();
+    expect(saraGroup?.totalQuizzes).toBe(1);
+    expect(saraGroup?.publishedQuizzes).toBe(1);
+    expect(saraGroup?.pendingQuizzes).toBe(0);
+
+    // Default view mode is BY_STUDENT
+    expect(component.viewGroupingMode()).toBe('BY_STUDENT');
+
+    // Toggle expand for Ahmed
+    expect(component.isStudentExpanded('stu_1')).toBeFalse();
+    component.toggleStudentExpanded('stu_1');
+    expect(component.isStudentExpanded('stu_1')).toBeTrue();
+
+    // Auto-expand on search
+    component.setSearchQuery('Sara');
+    expect(component.isStudentExpanded('stu_2')).toBeTrue();
+
+    // Switch view mode
+    component.viewStudentGroup('Ahmed Ali');
+    expect(component.viewGroupingMode()).toBe('BY_STUDENT');
+    expect(component.searchQuery()).toBe('Ahmed Ali');
+  });
+
+  it('should provide student filter and active student summary banner', () => {
+    const submissionsList: any[] = [
+      { id: 'sub_1', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Omar Khaled', assessmentTitle: 'Quiz 1', status: 'PUBLISHED' },
+      { id: 'sub_2', studentId: 'stu_1', haCode: 'HA1001', studentName: 'Omar Khaled', assessmentTitle: 'Quiz 2', status: 'PENDING' }
+    ];
+
+    component.allSubmissions.set(submissionsList);
+
+    // Filter by student
+    component.filterByStudent('Omar Khaled');
+    expect(component.searchQuery()).toBe('Omar Khaled');
+    expect(component.viewGroupingMode()).toBe('BY_STUDENT');
+
+    const summary = component.activeStudentSummary();
+    expect(summary).toBeTruthy();
+    expect(summary?.studentName).toBe('Omar Khaled');
+    expect(summary?.pending).toBe(1);
+    expect(summary?.total).toBe(2);
+
+    // Clear filter
+    component.clearStudentFilter();
+    expect(component.searchQuery()).toBe('');
+    expect(component.activeStudentSummary()).toBeNull();
   });
 });
