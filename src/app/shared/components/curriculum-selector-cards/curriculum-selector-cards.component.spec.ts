@@ -201,7 +201,7 @@ describe('CurriculumSelectorCardsComponent', () => {
       expect(component.getCurriculumBgImage('AMERICAN')).toBe('/assets/branding/curriculum-card-sat.webp');
       expect(component.getCurriculumBgImage('EGYPTIAN')).toBe('/assets/branding/curriculum-card-egyptian.webp');
       expect(component.getCurriculumBgImage('GULF')).toBe('/assets/branding/curriculum-card-gulf.webp');
-      expect(component.getCurriculumBgImage('INTERNATIONAL')).toBe('/assets/branding/curriculum-card-british.webp');
+      expect(component.getCurriculumBgImage('INTERNATIONAL')).toBe('/assets/branding/curriculum-card-british.webp?v=10');
     });
 
     it('should return responsive webp srcset with 320w and 512w descriptors for each curriculum', () => {
@@ -215,7 +215,7 @@ describe('CurriculumSelectorCardsComponent', () => {
         '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w'
       );
       expect(component.getCurriculumBgSrcset('INTERNATIONAL')).toBe(
-        '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w'
+        '/assets/branding/curriculum-card-british-sm.webp?v=10 320w, /assets/branding/curriculum-card-british.webp?v=10 512w'
       );
     });
 
@@ -254,9 +254,9 @@ describe('CurriculumSelectorCardsComponent', () => {
     });
 
     it('should fall back to british card for unknown or international curriculum codes', () => {
-      expect(component.getCurriculumBgImage('UNKNOWN' as any)).toBe('/assets/branding/curriculum-card-british.webp');
+      expect(component.getCurriculumBgImage('UNKNOWN' as any)).toBe('/assets/branding/curriculum-card-british.webp?v=10');
       expect(component.getCurriculumBgSrcset('UNKNOWN' as any)).toBe(
-        '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w'
+        '/assets/branding/curriculum-card-british-sm.webp?v=10 320w, /assets/branding/curriculum-card-british.webp?v=10 512w'
       );
     });
   });

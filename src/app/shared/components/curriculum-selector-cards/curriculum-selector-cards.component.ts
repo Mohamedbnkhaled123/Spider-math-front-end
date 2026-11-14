@@ -1234,7 +1234,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         return '/assets/branding/curriculum-card-gulf.webp';
       case 'INTERNATIONAL':
       default:
-        return '/assets/branding/curriculum-card-british.webp';
+        return '/assets/branding/curriculum-card-british.webp?v=10';
     }
   }
 
@@ -1248,7 +1248,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         return '/assets/branding/curriculum-card-gulf-sm.webp 320w, /assets/branding/curriculum-card-gulf.webp 512w';
       case 'INTERNATIONAL':
       default:
-        return '/assets/branding/curriculum-card-british-sm.webp 320w, /assets/branding/curriculum-card-british.webp 512w';
+        return '/assets/branding/curriculum-card-british-sm.webp?v=10 320w, /assets/branding/curriculum-card-british.webp?v=10 512w';
     }
   }
 
