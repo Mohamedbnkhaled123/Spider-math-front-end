@@ -146,8 +146,9 @@
 .z-layer-shield { z-index: 20; }          // .yt-security-shield
 .z-layer-watermark { z-index: 25; }       // <app-anti-tamper-watermark>
 .z-layer-player-controls { z-index: 30; } // Custom video player controls
-.z-layer-header { z-index: 40; }          // Sticky Navbar & Sync Banner
 .z-layer-modal { z-index: 1000; }         // Desmos Calculator, Lead Gate & Modals
+.z-layer-header { z-index: 1100; }        // Sticky Navbar & Sync Banner (Always visible above modals)
+.z-layer-header-dropdown { z-index: 1200; } // Mobile Navigation Menu & Notifications Dropdowns
 // ==============================================================================
 // Global Typography & Direction Resets
 // ==============================================================================

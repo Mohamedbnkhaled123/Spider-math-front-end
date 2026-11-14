@@ -308,7 +308,7 @@
   <!-- 4. Mobile Navigation Drawer / Dropdown -->
   @if (isMobileMenuOpen()) {
     <div
-      class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 drawer-smooth-05 space-y-4"
+      class="xl:hidden border-t border-surface-border/60 bg-surface-card/95 backdrop-blur-xl px-4 py-5 drawer-smooth-05 space-y-4 relative z-layer-header-dropdown shadow-2xl"
       [appClickOutside]
       [clickOutsideEnabled]="isMobileMenuOpen()"
       (appClickOutside)="closeMobileMenu()"
