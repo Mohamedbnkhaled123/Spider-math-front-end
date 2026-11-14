@@ -74,7 +74,9 @@
               "browser-image-compression",
               "katex",
               "cropperjs",
-              "pdfjs-dist"
+              "pdfjs-dist",
+              "lottie-web",
+              "canvas-confetti"
             ],
             "externalDependencies": [
               "canvas"

@@ -478,6 +478,28 @@
   }
 }
 
+/* Lottie Fireworks Layer (Success celebration by Farhan Razak) */
+.lottie-fireworks-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+  }
+}
+
 /* Falling Vertical Ribbons */
 .ribbon {
   position: absolute;

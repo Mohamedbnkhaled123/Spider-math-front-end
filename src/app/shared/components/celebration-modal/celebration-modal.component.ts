@@ -8,9 +8,14 @@ import {
   effect,
   inject,
   PLATFORM_ID,
-  OnDestroy
+  OnDestroy,
+  ElementRef,
+  viewChild
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import confetti from 'canvas-confetti';
+import lottie, { AnimationItem } from 'lottie-web';
+import { CELEBRATION_FIREWORKS_DATA } from './success-celebration.data';
 
 export interface RibbonItem {
   id: number;
@@ -69,6 +74,10 @@ export class CelebrationModalComponent implements OnDestroy {
   readonly returned = output<void>();
   readonly reviewAnswers = output<void>();
 
+  // Template Element References
+  readonly lottieFireworksContainer = viewChild<ElementRef<HTMLElement>>('lottieFireworksContainer');
+  private lottieAnim: AnimationItem | null = null;
+
   // State Signals
   readonly isAnimationActive = signal<boolean>(false);
   readonly displayedScore = signal<string>('0/20');
@@ -86,6 +95,7 @@ export class CelebrationModalComponent implements OnDestroy {
   readonly ribbons = signal<RibbonItem[]>([]);
 
   private activeTimers: any[] = [];
+  private activeIntervals: any[] = [];
   private activeAnimFrames: number[] = [];
 
   // Computed Values
@@ -96,6 +106,10 @@ export class CelebrationModalComponent implements OnDestroy {
     }
     const tot = Math.max(1, this.totalScore());
     return Math.min(100, Math.max(0, Math.round((this.score() / tot) * 100)));
+  });
+
+  readonly isAboveAverage = computed<boolean>(() => {
+    return this.computedPercentage() >= 50;
   });
 
   readonly computedRank = computed<1 | 2 | 3 | null>(() => {
@@ -119,26 +133,26 @@ export class CelebrationModalComponent implements OnDestroy {
     const custom = this.rankTitle();
     if (custom) return custom;
     const r = this.computedRank();
-    if (r === 1) return '🥇 المركز الأول';
-    if (r === 2) return '🥈 المركز الثاني';
-    if (r === 3) return '🥉 المركز الثالث';
+    if (r === 1) return 'المركز الأول • العلامة الكاملة';
+    if (r === 2) return 'المركز الثاني • أداء متميز';
+    if (r === 3) return 'المركز الثالث • نتيجة رائعة';
     const pct = this.computedPercentage();
-    if (pct >= 85) return '🌟 أداء متفوق';
-    if (pct >= 50) return '✨ نتيجة معتمدة';
-    return '🎯 محاولة تدريبية';
+    if (pct >= 85) return 'أداء متفوق';
+    if (pct >= 50) return 'نتيجة معتمدة';
+    return 'محاولة تدريبية';
   });
 
   readonly computedMessage = computed<string>(() => {
     const custom = this.message();
     if (custom) return custom;
     const r = this.computedRank();
-    if (r === 1) return 'أداء رائع! كمّل بنفس الحماس 🔥';
-    if (r === 2) return 'شغل ممتاز! خطوة وتوصل للقمة 💪';
-    if (r === 3) return 'برافو! استمر وهتتفوق أكتر ✨';
+    if (r === 1) return 'أداء استثنائي! كمّل بنفس الحماس والتميز';
+    if (r === 2) return 'شغل ممتاز! خطوة واحدة وتصل للقمة';
+    if (r === 3) return 'أحسنت صنعاً! استمر في التقدم والتفوق';
     const pct = this.computedPercentage();
-    if (pct >= 85) return 'مستوى مبهر، استمر في التقدم 🚀';
-    if (pct >= 50) return 'جهد رائع، راجع الإجابات لتثبيت الفهم 💡';
-    return 'استمر في الممارسة وستصل لأعلى المراتب 🌱';
+    if (pct >= 85) return 'مستوى مبهر، استمر في الصعود والتألق';
+    if (pct >= 50) return 'جهد رائع، راجع الإجابات لتعزيز الفهم';
+    return 'استمر في الممارسة والتدريب للوصول لأعلى المراتب';
   });
 
   constructor() {
@@ -162,10 +176,24 @@ export class CelebrationModalComponent implements OnDestroy {
   private clearAnimationState(): void {
     this.activeTimers.forEach(t => clearTimeout(t));
     this.activeTimers = [];
+    this.activeIntervals.forEach(i => clearInterval(i));
+    this.activeIntervals = [];
+
     if (this.isBrowser) {
       this.activeAnimFrames.forEach(f => cancelAnimationFrame(f));
+      this.activeAnimFrames = [];
+      try {
+        confetti.reset();
+      } catch {}
     }
-    this.activeAnimFrames = [];
+
+    if (this.lottieAnim) {
+      try {
+        this.lottieAnim.destroy();
+      } catch {}
+      this.lottieAnim = null;
+    }
+
     this.isAnimationActive.set(false);
   }
 
@@ -211,40 +239,44 @@ export class CelebrationModalComponent implements OnDestroy {
     }
 
     // Generate ribbons density scaled by score & rank:
-    // "مع اضافة شاريط ملونة بتنزل بالطول لو الطالب جايب نتيجة عالية و تقل تدريجيا مع تدني المركز"
-    let ribbonCount = 20;
-    if (rank === 1 || pct >= 90) {
-      ribbonCount = 58; // High density for top achievers
-    } else if (rank === 2 || pct >= 75) {
-      ribbonCount = 38; // Medium-high density
-    } else if (rank === 3 || pct >= 60) {
-      ribbonCount = 22; // Medium density
+    // Strictly ZERO ribbons if below average (< 50%)
+    if (pct < 50) {
+      this.ribbons.set([]);
     } else {
-      ribbonCount = 12; // Diminished density for lower scores
-    }
+      let ribbonCount = 20;
+      if (rank === 1 || pct >= 90) {
+        ribbonCount = 58; // High density for top achievers
+      } else if (rank === 2 || pct >= 75) {
+        ribbonCount = 38; // Medium-high density
+      } else if (rank === 3 || pct >= 60) {
+        ribbonCount = 22; // Medium density
+      } else {
+        ribbonCount = 12; // Diminished density for average scores
+      }
 
-    const generatedRibbons: RibbonItem[] = [];
-    for (let i = 0; i < ribbonCount; i++) {
-      const colorGrad = RIBBON_GRADIENTS[i % RIBBON_GRADIENTS.length];
-      const left = `${Math.random() * 96 + 2}%`;
-      const width = `${(1.6 + Math.random() * 1.0).toFixed(2)}cqw`;
-      const height = `${(4.8 + Math.random() * 3.8).toFixed(2)}cqw`;
-      const duration = `${(3.2 + Math.random() * 3.2).toFixed(2)}s`;
-      const delay = `${(Math.random() * 4.2).toFixed(2)}s`;
-      const transform = `rotate(${Math.round(Math.random() * 180)}deg)`;
+      const generatedRibbons: RibbonItem[] = [];
+      for (let i = 0; i < ribbonCount; i++) {
+        const colorGrad = RIBBON_GRADIENTS[i % RIBBON_GRADIENTS.length];
+        const left = `${Math.random() * 96 + 2}%`;
+        const width = `${(1.6 + Math.random() * 1.0).toFixed(2)}cqw`;
+        const height = `${(4.8 + Math.random() * 3.8).toFixed(2)}cqw`;
+        const duration = `${(3.2 + Math.random() * 3.2).toFixed(2)}s`;
+        const delay = `${(Math.random() * 4.2).toFixed(2)}s`;
+        const transform = `rotate(${Math.round(Math.random() * 180)}deg)`;
 
-      generatedRibbons.push({
-        id: i,
-        left,
-        width,
-        height,
-        background: colorGrad,
-        duration,
-        delay,
-        transform
-      });
+        generatedRibbons.push({
+          id: i,
+          left,
+          width,
+          height,
+          background: colorGrad,
+          duration,
+          delay,
+          transform
+        });
+      }
+      this.ribbons.set(generatedRibbons);
     }
-    this.ribbons.set(generatedRibbons);
 
     // Trigger stage animation
     setTimeout(() => {
@@ -266,6 +298,119 @@ export class CelebrationModalComponent implements OnDestroy {
       const currXp = Math.round(xp * p);
       this.displayedXp.set(`+${currXp} XP`);
     });
+
+    // Trigger canvas-confetti showers strictly for students >= 50%
+    this.triggerConfetti(pct, rank);
+
+    // Initialize Lottie fireworks animation (Farhan Razak)
+    if (this.isAboveAverage()) {
+      this.initLottieFireworks();
+    }
+  }
+
+  private initLottieFireworks(): void {
+    if (!this.isBrowser) return;
+
+    if (this.lottieAnim) {
+      try {
+        this.lottieAnim.destroy();
+      } catch {}
+      this.lottieAnim = null;
+    }
+
+    // Attempt to mount Lottie into container
+    const tryMount = () => {
+      const containerRef = this.lottieFireworksContainer();
+      if (!containerRef?.nativeElement) return false;
+
+      try {
+        this.lottieAnim = lottie.loadAnimation({
+          container: containerRef.nativeElement,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          animationData: CELEBRATION_FIREWORKS_DATA as any
+        });
+        return true;
+      } catch (err) {
+        console.warn('Lottie fireworks init error:', err);
+        return false;
+      }
+    };
+
+    if (!tryMount()) {
+      const timer = setTimeout(() => {
+        tryMount();
+      }, 60);
+      this.activeTimers.push(timer);
+    }
+  }
+
+  private triggerConfetti(pct: number, rank: 1 | 2 | 3 | null): void {
+    if (!this.isBrowser) return;
+
+    // "و القصاصات متظهرش للي جايبين اقل من المتوسط"
+    // Average threshold is 50%. Below 50%: STRICTLY NO CONFETTI!
+    if (pct < 50) return;
+
+    try {
+      if (pct >= 85 || rank === 1 || rank === 2) {
+        // High Achievers / Rank 1 & 2: Massive celebration burst + dual side cannons!
+        confetti({
+          particleCount: 120,
+          spread: 90,
+          origin: { y: 0.55 },
+          colors: ['#ffe27a', '#ffd23f', '#e11d48', '#38bdf8', '#c084fc', '#34d399', '#ffffff'],
+          zIndex: 2100
+        });
+
+        // Continuous celebratory cannons
+        const end = Date.now() + 2600;
+        const interval = setInterval(() => {
+          if (Date.now() > end) {
+            clearInterval(interval);
+            return;
+          }
+          confetti({
+            particleCount: 35,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0.05, y: 0.7 },
+            colors: ['#ffe27a', '#ffd23f', '#c084fc', '#38bdf8'],
+            zIndex: 2100
+          });
+          confetti({
+            particleCount: 35,
+            angle: 120,
+            spread: 55,
+            origin: { x: 0.95, y: 0.7 },
+            colors: ['#ffe27a', '#ffd23f', '#fb7185', '#34d399'],
+            zIndex: 2100
+          });
+        }, 350);
+        this.activeIntervals.push(interval);
+      } else if (pct >= 70 || rank === 3) {
+        // Very Good / Rank 3: Medium-high density shower
+        confetti({
+          particleCount: 80,
+          spread: 75,
+          origin: { y: 0.6 },
+          colors: ['#ffe27a', '#d89a00', '#34d399', '#38bdf8', '#c084fc'],
+          zIndex: 2100
+        });
+      } else {
+        // Average (50% - 69%): Gentle celebratory burst
+        confetti({
+          particleCount: 45,
+          spread: 60,
+          origin: { y: 0.65 },
+          colors: ['#ffe27a', '#34d399', '#38bdf8'],
+          zIndex: 2100
+        });
+      }
+    } catch (err) {
+      console.warn('Canvas confetti error:', err);
+    }
   }
 
   private animateCounter(delayMs: number, durationMs: number, onTick: (progress: number) => void): void {
