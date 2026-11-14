@@ -1,6 +1,6 @@
 @if (isOpen()) {
   <div
-    class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md modal-backdrop"
+    class="fixed inset-0 z-[1200] z-layer-submodal flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md modal-backdrop overscroll-contain"
     (click)="close()"
   >
     <div
@@ -15,7 +15,7 @@
           </div>
           <div>
             <h3 class="text-xs sm:text-base font-bold text-text-primary flex items-center gap-2">
-              <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالـ AI' : 'AI Question Extraction' }}</span>
+              <span>{{ langService.isArabic() ? (extractionMode() === 'MANUAL_CROP' ? 'القص اليدوي للأسئلة' : 'استخراج الأسئلة') : (extractionMode() === 'MANUAL_CROP' ? 'Manual Question Cropping' : 'Question Extraction') }}</span>
             </h3>
           </div>
         </div>
@@ -111,7 +111,7 @@
       }
 
       <!-- MODAL BODY -->
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar overscroll-contain">
 
         <!-- ============================================== -->
         <!-- STEP 1: UPLOAD & MODE SELECTION -->
@@ -161,10 +161,10 @@
             <!-- Extraction Modes Grid -->
             <div>
               <label class="block font-bold text-text-secondary mb-2">
-                {{ langService.isArabic() ? 'نمط الاستخراج بالذكاء الاصطناعي:' : 'AI Extraction Mode:' }}
+                {{ langService.isArabic() ? 'نمط استخراج الأسئلة:' : 'Question Extraction Mode:' }}
               </label>
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <!-- Mode 1: Smart Hybrid -->
                 <button
                   type="button"
@@ -247,62 +247,95 @@
                     <span>{{ langService.isArabic() ? 'صور مقصوصة بالكامل' : 'Full Image Cards' }}</span>
                   </div>
                 </button>
-              </div>
-            </div>
 
-            <!-- Optional Custom Gemini API Key -->
-            <div class="p-3.5 bg-surface-card border border-surface-border rounded-2xl">
-              <div
-                class="flex items-center justify-between cursor-pointer select-none"
-                (click)="isApiKeyCollapsed.set(!isApiKeyCollapsed())"
-              >
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
-                    <app-icon name="lock" [size]="14" />
-                  </div>
-                  <div>
-                    <span class="text-xs font-bold text-text-primary block">
-                      {{ langService.isArabic() ? 'مفتاح Gemini API (اختياري)' : 'Custom Gemini API Key (Optional)' }}
-                    </span>
-                    <span class="text-[10px] text-text-muted">
-                      {{ langService.isArabic() ? 'مفتاح افتراضي مفعّل.' : 'Default key active.' }}
-                    </span>
-                  </div>
-                </div>
+                <!-- Mode 4: Manual Crop (No AI) -->
                 <button
                   type="button"
-                  class="px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-text-secondary hover:text-text-primary text-[10px] font-bold"
+                  (click)="extractionMode.set('MANUAL_CROP')"
+                  class="p-4 rounded-2xl border text-right transition-all cursor-pointer flex flex-col justify-between gap-3"
+                  [class.border-emerald-500]="extractionMode() === 'MANUAL_CROP'"
+                  [class.bg-emerald-500/10]="extractionMode() === 'MANUAL_CROP'"
+                  [class.ring-2]="extractionMode() === 'MANUAL_CROP'"
+                  [class.ring-emerald-500/20]="extractionMode() === 'MANUAL_CROP'"
+                  [class.border-surface-border]="extractionMode() !== 'MANUAL_CROP'"
+                  [class.bg-surface-card]="extractionMode() !== 'MANUAL_CROP'"
                 >
-                  {{ isApiKeyCollapsed() ? (langService.isArabic() ? 'تعديل' : 'Edit') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="font-black text-text-primary text-xs">
+                        {{ langService.isArabic() ? 'القص اليدوي' : 'Manual Crop' }}
+                      </span>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-500">
+                        {{ langService.isArabic() ? 'بدون AI' : 'No AI' }}
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'رفع ملف وقص الأسئلة والمسائل يدوياً بدقة تامة.' : 'Upload file and manually crop questions with precision.' }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold">
+                    <app-icon name="image" [size]="12" />
+                    <span>{{ langService.isArabic() ? 'قص يدوي مباشر' : 'Direct Manual Crop' }}</span>
+                  </div>
                 </button>
               </div>
-
-              @if (!isApiKeyCollapsed()) {
-                <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
-                  <div class="flex items-center gap-2">
-                    <input
-                      type="password"
-                      [ngModel]="customApiKey()"
-                      (ngModelChange)="onCustomApiKeyChanged($event)"
-                      placeholder="AQ.Ab... or AIzaSy..."
-                      class="flex-1 px-3 py-1.5 text-xs bg-surface-bg border border-surface-border rounded-xl text-text-primary focus:border-amber-500 focus:outline-none font-mono"
-                    />
-                    @if (customApiKey()) {
-                      <button
-                        type="button"
-                        (click)="onCustomApiKeyChanged('')"
-                        class="px-3 py-1.5 text-[11px] rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20 font-bold transition-all cursor-pointer"
-                      >
-                        {{ langService.isArabic() ? 'مسح' : 'Clear' }}
-                      </button>
-                    }
-                  </div>
-                  <p class="text-[10px] text-text-muted">
-                    {{ langService.isArabic() ? 'يُحفظ محلياً بمتصفحك.' : 'Saved locally.' }}
-                  </p>
-                </div>
-              }
             </div>
+
+            <!-- Optional Custom Gemini API Key (Only needed for AI Extraction modes) -->
+            @if (extractionMode() !== 'MANUAL_CROP') {
+              <div class="p-3.5 bg-surface-card border border-surface-border rounded-2xl">
+                <div
+                  class="flex items-center justify-between cursor-pointer select-none"
+                  (click)="isApiKeyCollapsed.set(!isApiKeyCollapsed())"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                      <app-icon name="lock" [size]="14" />
+                    </div>
+                    <div>
+                      <span class="text-xs font-bold text-text-primary block">
+                        {{ langService.isArabic() ? 'مفتاح Gemini API (اختياري)' : 'Custom Gemini API Key (Optional)' }}
+                      </span>
+                      <span class="text-[10px] text-text-muted">
+                        {{ langService.isArabic() ? 'مفتاح افتراضي مفعّل.' : 'Default key active.' }}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 rounded-lg bg-surface-bg border border-surface-border text-text-secondary hover:text-text-primary text-[10px] font-bold"
+                  >
+                    {{ isApiKeyCollapsed() ? (langService.isArabic() ? 'تعديل' : 'Edit') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
+                  </button>
+                </div>
+
+                @if (!isApiKeyCollapsed()) {
+                  <div class="mt-3 pt-3 border-t border-surface-border space-y-2 animate-fade-in">
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="password"
+                        [ngModel]="customApiKey()"
+                        (ngModelChange)="onCustomApiKeyChanged($event)"
+                        placeholder="AQ.Ab... or AIzaSy..."
+                        class="flex-1 px-3 py-1.5 text-xs bg-surface-bg border border-surface-border rounded-xl text-text-primary focus:border-amber-500 focus:outline-none font-mono"
+                      />
+                      @if (customApiKey()) {
+                        <button
+                          type="button"
+                          (click)="onCustomApiKeyChanged('')"
+                          class="px-3 py-1.5 text-[11px] rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20 font-bold transition-all cursor-pointer"
+                        >
+                          {{ langService.isArabic() ? 'مسح' : 'Clear' }}
+                        </button>
+                      }
+                    </div>
+                    <p class="text-[10px] text-text-muted">
+                      {{ langService.isArabic() ? 'يُحفظ محلياً بمتصفحك.' : 'Saved locally.' }}
+                    </p>
+                  </div>
+                }
+              </div>
+            }
 
             <!-- Continue Button -->
             @if (uploadedFile() || currentCanvas) {
@@ -312,7 +345,7 @@
                   (click)="goToStep('PREVIEW_AND_PAGE')"
                   class="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white font-bold transition-all cursor-pointer flex items-center gap-2 shadow-sm text-xs"
                 >
-                  <span>{{ langService.isArabic() ? 'معاينة الصفحة' : 'Continue to Preview' }}</span>
+                  <span>{{ langService.isArabic() ? (extractionMode() === 'MANUAL_CROP' ? 'متابعة للقص اليدوي' : 'معاينة الصفحة') : (extractionMode() === 'MANUAL_CROP' ? 'Continue to Manual Crop' : 'Continue to Preview') }}</span>
                   <app-icon [name]="langService.isRtl() ? 'chevron-left' : 'chevron-right'" [size]="14" />
                 </button>
               </div>
@@ -345,30 +378,44 @@
                   <span>{{ langService.isArabic() ? 'تغيير الملف' : 'Change File' }}</span>
                 </button>
 
-                <button
-                  type="button"
-                  (click)="useFileForManualSlicing()"
-                  [disabled]="isProcessing() || !currentDataUrl()"
-                  class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
-                  [title]="langService.isArabic() ? 'نقل الصفحة للقص اليدوي للمسائل' : 'Transfer page for manual cropping'"
-                >
-                  <app-icon name="image" [size]="14" />
-                  <span>
-                    {{ langService.isArabic() ? 'قص يدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
-                  </span>
-                </button>
+                @if (extractionMode() === 'MANUAL_CROP') {
+                  <button
+                    type="button"
+                    (click)="useFileForManualSlicing()"
+                    [disabled]="isProcessing() || !currentDataUrl()"
+                    class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 text-xs"
+                  >
+                    <app-icon name="image" [size]="14" />
+                    <span>
+                      {{ langService.isArabic() ? ('قص يدوي لصفحة ' + currentPageNumber()) : ('Crop from Page ' + currentPageNumber()) }}
+                    </span>
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="useFileForManualSlicing()"
+                    [disabled]="isProcessing() || !currentDataUrl()"
+                    class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
+                    [title]="langService.isArabic() ? 'نقل الصفحة للقص اليدوي للمسائل' : 'Transfer page for manual cropping'"
+                  >
+                    <app-icon name="image" [size]="14" />
+                    <span>
+                      {{ langService.isArabic() ? 'قص يدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
+                    </span>
+                  </button>
 
-                <button
-                  type="button"
-                  (click)="startAiExtraction()"
-                  [disabled]="isProcessing() || !currentDataUrl()"
-                  class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
-                >
-                  <app-icon name="sparkles" [size]="14" />
-                  <span>
-                    {{ langService.isArabic() ? ('استخراج صفحة ' + currentPageNumber()) : ('Extract Page ' + currentPageNumber()) }}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    (click)="startAiExtraction()"
+                    [disabled]="isProcessing() || !currentDataUrl()"
+                    class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 text-xs"
+                  >
+                    <app-icon name="sparkles" [size]="14" />
+                    <span>
+                      {{ langService.isArabic() ? ('استخراج صفحة ' + currentPageNumber()) : ('Extract Page ' + currentPageNumber()) }}
+                    </span>
+                  </button>
+                }
               </div>
             </div>
 
@@ -419,7 +466,10 @@
                 </label>
 
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                  {{ extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات' : 'قص كامل') }}
+                  {{ langService.isArabic()
+                    ? (extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات' : (extractionMode() === 'MANUAL_CROP' ? 'القص اليدوي' : 'قص كامل')))
+                    : (extractionMode() === 'SMART_HYBRID' ? 'Smart Hybrid' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'Text & Formulas' : (extractionMode() === 'MANUAL_CROP' ? 'Manual Crop' : 'Full Image')))
+                  }}
                 </span>
               </div>
 
@@ -759,7 +809,7 @@
   <!-- DELETE / REMOVE CONFIRMATION DIALOG MODAL -->
   @if (confirmationDialog(); as dialog) {
     <div
-      class="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-black/35 backdrop-blur-md animate-fade-in"
+      class="fixed inset-0 z-[1400] flex items-center justify-center p-4 bg-black/35 backdrop-blur-md animate-fade-in"
       (click)="closeConfirmation()"
     >
       <div

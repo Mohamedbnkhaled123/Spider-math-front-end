@@ -47,6 +47,9 @@ describe('AiQuestionExtractionModalComponent', () => {
     component.extractionMode.set('FULL_IMAGE_CROP');
     expect(component.extractionMode()).toBe('FULL_IMAGE_CROP');
 
+    component.extractionMode.set('MANUAL_CROP');
+    expect(component.extractionMode()).toBe('MANUAL_CROP');
+
     component.extractionMode.set('SMART_HYBRID');
     expect(component.extractionMode()).toBe('SMART_HYBRID');
   });
@@ -472,5 +475,56 @@ describe('AiQuestionExtractionModalComponent', () => {
     expect(updated.has_geometry_diagram).toBeTrue();
     expect(updated.localCropPreviewUrl).toBe('data:image/webp;base64,newcrop');
     expect(updated.box_2d).toEqual([150, 150, 450, 550]);
+  });
+
+  it('should emit fileSessionCached and manualSlicingRequested when useFileForManualSlicing is called', () => {
+    let sessionEmitted: any = undefined;
+    let manualReqEmitted: any = undefined;
+
+    component.fileSessionCached.subscribe((sess) => {
+      sessionEmitted = sess;
+    });
+    component.manualSlicingRequested.subscribe((sess) => {
+      manualReqEmitted = sess;
+    });
+
+    component.isOpen.set(true);
+    component.fileName.set('sample_exam.pdf');
+    component.fileType.set('pdf');
+    component.currentPageNumber.set(4);
+    component.currentDataUrl.set('data:image/webp;base64,page4data');
+
+    component.useFileForManualSlicing();
+
+    expect(sessionEmitted).toBeTruthy();
+    expect(sessionEmitted.pageNumber).toBe(4);
+    expect(manualReqEmitted).toBeTruthy();
+    expect(manualReqEmitted.pageNumber).toBe(4);
+    expect(component.isOpen()).toBe(false);
+  });
+
+  it('should redirect startAiExtraction to useFileForManualSlicing when extractionMode is MANUAL_CROP', async () => {
+    spyOn(component, 'useFileForManualSlicing');
+    component.extractionMode.set('MANUAL_CROP');
+    await component.startAiExtraction();
+    expect(component.useFileForManualSlicing).toHaveBeenCalled();
+  });
+
+  it('should restore cached session and keep step on UPLOAD_AND_SELECT so modes are visible', () => {
+    const mockSession = {
+      fileName: 'geometry_final.pdf',
+      fileType: 'pdf' as const,
+      file: null,
+      pageNumber: 2,
+      canvas: null,
+      dataUrl: 'data:image/webp;base64,mockdata'
+    };
+
+    (component as any).restoreCachedSession(mockSession);
+
+    expect(component.fileName()).toBe('geometry_final.pdf');
+    expect(component.fileType()).toBe('pdf');
+    expect(component.currentPageNumber()).toBe(2);
+    expect(component.currentStep()).toBe('UPLOAD_AND_SELECT');
   });
 });

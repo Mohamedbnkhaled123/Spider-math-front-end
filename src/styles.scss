@@ -148,6 +148,12 @@
 .z-layer-player-controls { z-index: 30; } // Custom video player controls
 .z-layer-modal { z-index: 1000; }         // Desmos Calculator, Lead Gate & Modals
 .z-layer-header { z-index: 1100; }        // Sticky Navbar & Sync Banner (Always visible above modals)
+.z-layer-submodal { z-index: 1200; }      // Secondary Modals (AI extraction modal)
+.z-layer-preview { z-index: 1250; }       // Student Assessment Simulation Preview Modal
+.z-layer-slicer { z-index: 1300; }        // Manual Image Slicer Modal
+.z-layer-keyboard { z-index: 1350; }      // Math Virtual Keyboard (Above modals & slicers)
+.z-layer-preview-submodal { z-index: 1400; } // Preview Submodals (Formula sheet, video solution)
+.z-layer-dialog { z-index: 1500; }        // Confirmation Dialogs (Topmost)
 .z-layer-header-dropdown { z-index: 1200; } // Mobile Navigation Menu & Notifications Dropdowns
 // ==============================================================================
 // Global Typography & Direction Resets

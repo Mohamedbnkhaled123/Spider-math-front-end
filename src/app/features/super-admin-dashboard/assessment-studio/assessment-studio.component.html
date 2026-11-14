@@ -482,7 +482,7 @@
 
   <!-- Modal 1: Create Assessment Modal -->
   @if (isCreateModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
       <div class="w-full max-w-lg max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
         
         <div class="p-4 sm:p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between shrink-0">
@@ -958,7 +958,7 @@
 
   <!-- Modal 2: Question & Settings Safe Visual Editor Modal -->
   @if (isEditorOpen() && activeAssessment(); as asm) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain">
       <div class="w-full max-w-4xl max-h-[90dvh] sm:max-h-[88vh] min-h-0 flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
         
         <!-- Header -->
@@ -1081,7 +1081,7 @@
           </div>
         }
 
-        <div class="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 space-y-6 overflow-y-auto flex-1 min-h-0 text-xs" (input)="triggerDraftAutoSave(false)">
+        <div class="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 space-y-6 overflow-y-auto flex-1 min-h-0 text-xs overscroll-contain" (input)="triggerDraftAutoSave(false)">
           
           <!-- TAB 1: EXAM SETTINGS & SCHEDULING -->
           @if (editorActiveTab() === 'SETTINGS') {
@@ -1696,13 +1696,13 @@
                     <app-icon name="sparkles" [size]="16" />
                   </div>
                   <h4 class="font-bold text-text-primary text-xs sm:text-sm truncate">
-                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة بالـ AI' : 'AI Question Extraction' }}</span>
+                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة' : 'Question Extraction' }}</span>
                   </h4>
                 </div>
 
-                <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                   @if (cachedFileSession()) {
-                    <div class="col-span-2 sm:col-span-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-[11px] text-text-primary">
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-card border border-amber-500/30 text-[11px] text-text-primary">
                       <app-icon [name]="cachedFileSession()?.fileType === 'pdf' ? 'file-text' : 'image'" [size]="12" className="text-amber-500" />
                       <span class="truncate max-w-[120px] font-bold">{{ cachedFileSession()?.fileName }}</span>
                       <span class="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 font-mono font-bold text-[10px]">
@@ -1714,19 +1714,10 @@
                   <button
                     type="button"
                     (click)="openAiExtractionModal()"
-                    class="px-3 py-2 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-primary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
+                    class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
                   >
-                    <app-icon name="image" [size]="13" className="text-amber-500" />
-                    <span>{{ cachedFileSession() ? (langService.isArabic() ? 'تغيير الملف' : 'Change File') : (langService.isArabic() ? 'قص يدوي' : 'Manual Crop') }}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="openAiExtractionModal()"
-                    class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs"
-                  >
-                    <app-icon name="sparkles" [size]="13" />
-                    <span>{{ langService.isArabic() ? 'استخراج بالـ AI' : 'AI Extract' }}</span>
+                    <app-icon name="sparkles" [size]="14" />
+                    <span>{{ langService.isArabic() ? 'استخراج الأسئلة' : 'Extract Questions' }}</span>
                   </button>
                 </div>
               </div>
@@ -2336,7 +2327,7 @@
   <!-- Modal 2.5: Quiz Items Navigation Drawer (Milestone 4 - R6 Zero-Emoji) -->
   @if (isQuestionDrawerOpen() && activeAssessment(); as currentAsm) {
     <div
-      class="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex justify-end animate-fade-in"
+      class="fixed inset-0 z-[1050] bg-black/40 backdrop-blur-sm flex justify-end animate-fade-in"
       role="dialog"
       aria-modal="true"
       (click)="closeQuestionDrawer()"
@@ -2429,7 +2420,7 @@
   <!-- 3. In-App Decision Confirmation Dialog (Strictly Zero window.confirm) -->
   @if (confirmDialog().isOpen) {
     <div
-      class="fixed inset-0 z-[100] bg-black/35 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-[1500] z-layer-dialog bg-black/35 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in overscroll-contain"
       role="dialog"
       aria-modal="true"
     >
@@ -2495,6 +2486,7 @@
     [existingSession]="cachedFileSession()"
     (questionsExtracted)="onQuestionsExtracted($event)"
     (fileSessionCached)="onFileSessionCached($event)"
+    (manualSlicingRequested)="onManualSlicingRequestedFromExtraction($event)"
     (cancelled)="isAiExtractionModalOpen.set(false)"
   />
 
@@ -2504,7 +2496,7 @@
       [(isOpen)]="isManualSlicerOpen"
       [imageSource]="cachedFileSession()?.canvas || cachedFileSession()?.dataUrl || null"
       [uploadToCloudinary]="true"
-      modalTitle="قص يدوي للمسألة"
+      [modalTitle]="langService.isArabic() ? 'قص يدوي للمسألة' : 'Manual Question Crop'"
       (sliceSaved)="onManualSliceSaved($event)"
       (cancelled)="isManualSlicerOpen.set(false)"
     />

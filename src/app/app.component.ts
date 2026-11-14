@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import {
   RouterOutlet,
   Router,
@@ -18,6 +18,7 @@ import { BrandFooterComponent } from './shared/components/brand-footer/brand-foo
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 import { RouteSkeletonLoaderComponent } from './shared/components/route-skeleton-loader/route-skeleton-loader.component';
 import { ConfirmDialogService } from './core/services/confirm-dialog.service';
+import { UiLayoutService } from './core/services/ui-layout.service';
 import { LangService } from './core/seo-theme-i18n/lang.service';
 import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 
@@ -39,12 +40,17 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 export class AppComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly confirmDialogService = inject(ConfirmDialogService);
+  readonly uiLayoutService = inject(UiLayoutService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);
 
   readonly isExamOrQuizPage = signal<boolean>(false);
   readonly isRouteNavigating = signal<boolean>(false);
   readonly navigatingUrl = signal<string>('');
+
+  readonly shouldRenderFooter = computed<boolean>(() => {
+    return !this.isExamOrQuizPage() && !this.uiLayoutService.isFooterSuppressed();
+  });
 
   ngOnInit(): void {
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
@@ -87,7 +93,8 @@ export class AppComponent implements OnInit {
       url.includes('/attempt') ||
       url.includes('/exam') ||
       url.includes('/quiz') ||
-      url.includes('/homework')
+      url.includes('/homework') ||
+      url.includes('/admin')
     );
     this.isExamOrQuizPage.set(isExam);
   }

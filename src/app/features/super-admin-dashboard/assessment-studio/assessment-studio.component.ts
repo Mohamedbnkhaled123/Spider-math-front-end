@@ -33,6 +33,7 @@ import {
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
+import { UiLayoutService } from '../../../core/services/ui-layout.service';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -96,6 +97,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   readonly draftService = inject(AssessmentDraftService);
   private readonly swrCache = inject(SwrCacheService);
+  private readonly uiLayoutService = inject(UiLayoutService);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
@@ -407,6 +409,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       const modalOpen = this.isAnyModalOpen();
       if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
         document.body.style.overflow = modalOpen ? 'hidden' : '';
+        document.documentElement.style.overflow = modalOpen ? 'hidden' : '';
       }
     });
   }
@@ -514,6 +517,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     });
   }
 
+  onManualSlicingRequestedFromExtraction(session: ICachedFileSession): void {
+    this.cachedFileSession.set(session);
+    this.openManualSlicerForComposer();
+  }
+
   openManualSlicerForExistingQuestion(q: AssessmentQuestionItem): void {
     this.activeQuestionForSlicing.set(q);
     this.isManualSlicerOpen.set(true);
@@ -534,6 +542,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       }
     } else {
       this.newQuestionImageUrl.set(result.imageUrl);
+      setTimeout(() => this.scrollToComposer(), 50);
     }
     this.isManualSlicerOpen.set(false);
     this.activeQuestionForSlicing.set(null);
@@ -851,6 +860,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.uiLayoutService.suppressFooter(true);
     this.checkForPendingDrafts();
     if (isPlatformBrowser(this.platformId)) {
       try {
@@ -877,13 +887,14 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.isQuestionDrawerOpen.set(false);
+    this.uiLayoutService.restoreFooter();
     this.isQuestionDrawerOpen.set(false);
     this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
   }
 

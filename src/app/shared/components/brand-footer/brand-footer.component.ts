@@ -6,6 +6,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
+import { UiLayoutService } from '../../../core/services/ui-layout.service';
 
 @Component({
   selector: 'app-brand-footer',
@@ -18,6 +19,7 @@ import { PublicDiscoveryService } from '../../../core/services/public-discovery.
 export class BrandFooterComponent {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
+  readonly uiLayoutService = inject(UiLayoutService);
   private readonly router = inject(Router);
   private readonly discoveryService = inject(PublicDiscoveryService);
 

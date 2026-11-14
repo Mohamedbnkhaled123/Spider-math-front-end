@@ -65,6 +65,7 @@ export class AiQuestionExtractionModalComponent {
   // Outputs
   readonly questionsExtracted = output<AssessmentQuestionItem[]>();
   readonly fileSessionCached = output<ICachedFileSession>();
+  readonly manualSlicingRequested = output<ICachedFileSession>();
   readonly cancelled = output<void>();
 
   // Wizard Step State
@@ -151,10 +152,6 @@ export class AiQuestionExtractionModalComponent {
 
     if (session.file instanceof File) {
       this.uploadedFile.set(session.file);
-    }
-
-    if (session.canvas || session.dataUrl) {
-      this.currentStep.set('PREVIEW_AND_PAGE');
     }
   }
 
@@ -291,13 +288,27 @@ export class AiQuestionExtractionModalComponent {
       );
       return;
     }
-    this.emitFileSession();
+    const session: ICachedFileSession = {
+      fileName: this.fileName(),
+      fileType: this.fileType() || 'pdf',
+      file: this.uploadedFile(),
+      pageNumber: this.currentPageNumber(),
+      canvas: this.currentCanvas,
+      dataUrl: this.currentDataUrl()
+    };
+    this.fileSessionCached.emit(session);
+    this.manualSlicingRequested.emit(session);
     this.close();
   }
 
   // --- AI Extraction Trigger ---
 
   async startAiExtraction(): Promise<void> {
+    if (this.extractionMode() === 'MANUAL_CROP') {
+      this.useFileForManualSlicing();
+      return;
+    }
+
     const dataUrl = this.currentDataUrl();
     if (!dataUrl) {
       this.errorMessage.set(

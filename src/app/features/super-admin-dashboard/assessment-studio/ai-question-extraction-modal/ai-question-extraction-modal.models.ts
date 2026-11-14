@@ -5,7 +5,7 @@
 
 import { AssessmentQuestionItem } from '../assessment-studio.models';
 
-export type AiExtractionMode = 'TEXT_LATEX_ONLY' | 'FULL_IMAGE_CROP' | 'SMART_HYBRID';
+export type AiExtractionMode = 'TEXT_LATEX_ONLY' | 'FULL_IMAGE_CROP' | 'SMART_HYBRID' | 'MANUAL_CROP';
 
 export interface IStagedQuestion {
   id: string;

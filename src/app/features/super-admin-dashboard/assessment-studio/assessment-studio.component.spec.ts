@@ -469,6 +469,32 @@ describe('AssessmentStudioComponent', () => {
       expect(component.isManualSlicerOpen()).toBe(false);
       expect(component.activeQuestionForSlicing()).toBeNull();
     });
+
+    it('should open manual slicer for composer when manual slicing is requested from extraction modal', () => {
+      component.openEditor(sampleAssessment);
+
+      const mockSession: any = {
+        fileName: 'exam_page2.pdf',
+        fileType: 'pdf',
+        file: null,
+        pageNumber: 2,
+        canvas: document.createElement('canvas'),
+        dataUrl: 'data:image/webp;base64,mockPage2'
+      };
+
+      component.onManualSlicingRequestedFromExtraction(mockSession);
+      expect(component.cachedFileSession()).toBe(mockSession);
+      expect(component.isManualSlicerOpen()).toBe(true);
+      expect(component.activeQuestionForSlicing()).toBeNull();
+    });
+
+    it('should suppress footer on init and restore on destroy', () => {
+      const uiLayout = (component as any).uiLayoutService;
+      expect(uiLayout.isFooterSuppressed()).toBe(true);
+
+      component.ngOnDestroy();
+      expect(uiLayout.isFooterSuppressed()).toBe(false);
+    });
   });
 
   describe('Teacher Assessment Auto-Save in Dexie & 1-Click Restoration (Milestone 2 - R2 & R4)', () => {

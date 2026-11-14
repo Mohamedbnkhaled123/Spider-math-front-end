@@ -31,11 +31,13 @@
     </div>
   </main>
 
-  <!-- Unified Global Brand Footer (Deferred on Viewport) -->
-  @defer (on viewport) {
-    <app-brand-footer class="relative z-10"></app-brand-footer>
-  } @placeholder {
-    <div class="min-h-[140px] pt-10"></div>
+  <!-- Unified Global Brand Footer (Deferred on Viewport, suppressed in exams & studios) -->
+  @if (shouldRenderFooter()) {
+    @defer (on viewport) {
+      <app-brand-footer class="relative z-10"></app-brand-footer>
+    } @placeholder {
+      <div class="min-h-[140px] pt-10"></div>
+    }
   }
 
   <!-- Global Confirmation Dialog (Deferred until opened) -->
