@@ -88,30 +88,36 @@
             [class.hover:border-gold-accent/40]="selectedChildId() !== child.studentId"
           >
             <div class="flex items-center gap-3.5 min-w-0">
-              <!-- Student Avatar Image or Initial -->
-              @if (child.avatarUrl || child.avatar_url) {
-                <img
-                  [src]="child.avatarUrl || child.avatar_url"
-                  [alt]="child.fullName"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-12 h-12 rounded-2xl object-cover shrink-0 border border-surface-border shadow-sm"
-                />
-              } @else {
-                <div
-                  class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shrink-0 transition-colors"
-                  [class.bg-brand-primary]="selectedChildId() === child.studentId"
-                  [class.text-white]="selectedChildId() === child.studentId"
-                  [class.bg-surface-bg]="selectedChildId() !== child.studentId"
-                  [class.text-text-primary]="selectedChildId() !== child.studentId"
-                  [class.border]="selectedChildId() !== child.studentId"
-                  [class.border-surface-border]="selectedChildId() !== child.studentId"
-                >
-                  {{ child.fullName.charAt(0) }}
-                </div>
-              }
+              <!-- Student Avatar Image or Initial with Presence Dot -->
+              <div class="relative shrink-0">
+                @if (child.avatarUrl || child.avatar_url) {
+                  <img
+                    [src]="child.avatarUrl || child.avatar_url"
+                    [alt]="child.fullName"
+                    width="48"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-12 h-12 rounded-2xl object-cover shrink-0 border border-surface-border shadow-sm"
+                  />
+                } @else {
+                  <div
+                    class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shrink-0 transition-colors"
+                    [class.bg-brand-primary]="selectedChildId() === child.studentId"
+                    [class.text-white]="selectedChildId() === child.studentId"
+                    [class.bg-surface-bg]="selectedChildId() !== child.studentId"
+                    [class.text-text-primary]="selectedChildId() !== child.studentId"
+                    [class.border]="selectedChildId() !== child.studentId"
+                    [class.border-surface-border]="selectedChildId() !== child.studentId"
+                  >
+                    {{ child.fullName.charAt(0) }}
+                  </div>
+                }
+
+                @if (child.isOnline) {
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface-card shadow-sm shadow-emerald-500/50" [title]="langService.isArabic() ? 'متصل الآن' : 'Online now'"></span>
+                }
+              </div>
 
               <!-- Details -->
               <div class="truncate">
@@ -123,8 +129,12 @@
                     {{ child.haCode }}
                   </span>
                 </div>
-                <div class="text-xs text-text-secondary truncate">
-                  {{ child.gradeLevel }}
+                <div class="flex items-center gap-1.5 text-xs text-text-secondary truncate">
+                  <span>{{ child.gradeLevel }}</span>
+                  <span class="text-text-muted">•</span>
+                  <span class="text-[11px] font-mono" [class.text-emerald-500]="child.isOnline" [class.font-bold]="child.isOnline">
+                    {{ formatChildLastSeen(child) }}
+                  </span>
                 </div>
               </div>
             </div>

@@ -17,6 +17,7 @@ import {
   PendingDeviceRequest,
   StudentAdminSummary
 } from './students-subscriptions-devices.models';
+import { formatLastSeen } from '../../../core/utils/last-seen.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -180,6 +181,10 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS'): void {
     this.activeCategory.set(cat);
     this.currentPage.set(1);
+  }
+
+  formatStudentLastSeen(student: StudentAdminSummary): string {
+    return formatLastSeen(student.lastSeenAt, !!student.isOnline, this.langService.isArabic());
   }
 
   // Unit Activation Modal

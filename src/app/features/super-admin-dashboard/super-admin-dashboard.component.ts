@@ -270,6 +270,8 @@ export class SuperAdminDashboardComponent implements OnInit {
               isLocked: u.account_lock_status === 'LOCKED',
               isLeaderboardHidden: !!u.is_leaderboard_hidden,
               isProfileCompleted: u.is_profile_completed ?? (!!u.student_code),
+              lastSeenAt: u.last_seen_at || u.lastSeenAt || null,
+              isOnline: !!(u.is_online ?? u.isOnline),
               createdAt: u.createdAt
             };
           });

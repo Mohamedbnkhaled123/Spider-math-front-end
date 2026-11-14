@@ -73,13 +73,15 @@
           </div>
 
           <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-xs font-black tracking-wide uppercase" [class.text-emerald-500]="rep.presence.isOnline" [class.text-text-muted]="!rep.presence.isOnline">
-                {{ rep.presence.isOnline ? (langService.isArabic() ? 'متصل الآن' : 'Online') : (langService.isArabic() ? 'غير متصل' : 'Offline') }}
-              </span>
-              <span class="text-text-muted text-xs">•</span>
-              <span class="text-xs font-mono font-bold text-text-secondary">
-                {{ rep.presence.isOnline ? (langService.isArabic() ? rep.presence.lastActiveTextAr : (rep.presence.lastActiveTextEn || rep.presence.lastActiveTextAr)) : (langService.isArabic() ? ('آخر ظهور: ' + rep.presence.lastActiveTextAr) : ('Last seen: ' + (rep.presence.lastActiveTextEn || rep.presence.lastActiveTextAr))) }}
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="text-xs font-black tracking-wide uppercase inline-flex items-center gap-1.5" [class.text-emerald-500]="rep.presence.isOnline" [class.text-text-muted]="!rep.presence.isOnline">
+                @if (rep.presence.isOnline) {
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>{{ langService.isArabic() ? 'متصل الآن' : 'Online now' }}</span>
+                } @else {
+                  <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                  <span>{{ langService.isArabic() ? rep.presence.lastActiveTextAr : rep.presence.lastActiveTextEn }}</span>
+                }
               </span>
             </div>
 

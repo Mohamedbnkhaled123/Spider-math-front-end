@@ -33,5 +33,7 @@ export interface StudentAdminSummary {
   isLocked: boolean;
   isLeaderboardHidden: boolean;
   isProfileCompleted?: boolean;
+  lastSeenAt?: string | Date | null;
+  isOnline?: boolean;
   createdAt?: string;
 }

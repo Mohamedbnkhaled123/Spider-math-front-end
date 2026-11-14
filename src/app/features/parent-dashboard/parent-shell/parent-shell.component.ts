@@ -8,6 +8,7 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { ChildAcademicMonitorComponent } from '../child-academic-monitor/child-academic-monitor.component';
 import { LinkedChildSummary, LinkChildRequestPayload } from './parent-shell.models';
+import { formatLastSeen } from '../../../core/utils/last-seen.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -68,8 +69,14 @@ export class ParentShellComponent implements OnInit {
 
     this.http.get<any>('/api/v1/parent/children-list').subscribe({
       next: (res) => {
-        const children = res?.data?.children || res?.children || (Array.isArray(res?.data) ? res.data : []);
-        if (Array.isArray(children) && children.length > 0) {
+        const rawChildren = res?.data?.children || res?.children || (Array.isArray(res?.data) ? res.data : []);
+        if (Array.isArray(rawChildren) && rawChildren.length > 0) {
+          const children: LinkedChildSummary[] = rawChildren.map((c: any) => ({
+            ...c,
+            haCode: c.haCode || c.studentCode || '',
+            isOnline: !!(c.isOnline ?? c.presence?.isOnline),
+            lastSeenAt: c.lastSeenAt || c.presence?.lastSeenAt || c.presence?.lastHeartbeatAt || null
+          }));
           this.linkedChildren.set(children);
           this.swrCache.set(cacheKey, children);
           if (!this.selectedChildId() || !children.some(c => c.studentId === this.selectedChildId())) {
@@ -92,6 +99,10 @@ export class ParentShellComponent implements OnInit {
         this.isLoadingChildren.set(false);
       }
     });
+  }
+
+  formatChildLastSeen(child: LinkedChildSummary): string {
+    return formatLastSeen(child.lastSeenAt, !!child.isOnline, this.langService.isArabic());
   }
 
   selectChild(studentId: string): void {

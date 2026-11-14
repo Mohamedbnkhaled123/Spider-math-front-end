@@ -6,6 +6,7 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { ChildAcademicReport, AssessmentCategoryType, ChildSubmissionSummary } from './child-academic-monitor.models';
+import { formatLastSeen } from '../../../core/utils/last-seen.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -274,16 +275,38 @@ export class ChildAcademicMonitorComponent {
           })) : []
         }));
 
+        const isOnline = !!data.presence?.isOnline;
+        const lastSeenAt = data.presence?.lastSeenAt || data.student?.lastSeenAt || null;
+
+        let activityTextAr = data.presence?.activityTextAr;
+        let activityTextEn = data.presence?.activityTextEn;
+        if (!activityTextAr) {
+          if (data.presence?.activityType === 'WATCHING_LECTURE') {
+            activityTextAr = data.presence.referenceTitle ? `يشاهد: ${data.presence.referenceTitle}` : 'يشاهد محاضرة';
+            activityTextEn = data.presence.referenceTitle ? `Watching: ${data.presence.referenceTitle}` : 'Watching a lecture';
+          } else if (data.presence?.activityType === 'SOLVING_ASSESSMENT') {
+            activityTextAr = data.presence.referenceTitle ? `يحل: ${data.presence.referenceTitle}` : 'يحل تقييم';
+            activityTextEn = data.presence.referenceTitle ? `Solving: ${data.presence.referenceTitle}` : 'Solving assessment';
+          } else if (isOnline) {
+            activityTextAr = 'متصل بالمنصة الآن';
+            activityTextEn = 'Online on platform now';
+          } else {
+            activityTextAr = 'غير متصل حالياً';
+            activityTextEn = 'Currently offline';
+          }
+        }
+
         const mappedReport: ChildAcademicReport = {
           studentId: data.student?.studentId || studentId,
           studentName: data.student?.fullName || data.studentName || 'الطالب',
           haCode: data.student?.studentCode || data.haCode || '',
           presence: {
-            isOnline: !!data.presence?.isOnline,
-            activityTextAr: data.presence?.activityTextAr || (data.presence?.isOnline ? 'متصل الآن' : 'غير متصل'),
-            activityTextEn: data.presence?.activityTextEn || (data.presence?.isOnline ? 'Online' : 'Offline'),
-            lastActiveTextAr: data.presence?.lastActiveTextAr || 'اليوم',
-            lastActiveTextEn: data.presence?.lastActiveTextEn || 'Today'
+            isOnline,
+            lastSeenAt,
+            activityTextAr,
+            activityTextEn,
+            lastActiveTextAr: formatLastSeen(lastSeenAt, isOnline, true),
+            lastActiveTextEn: formatLastSeen(lastSeenAt, isOnline, false)
           },
           overallWatchPercentage: data.attendanceMetrics?.overallWatchPercentage ?? data.overallWatchPercentage ?? 0,
           totalXp: data.student?.totalXp ?? data.totalXp ?? 0,

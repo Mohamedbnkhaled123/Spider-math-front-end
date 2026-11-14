@@ -9,6 +9,7 @@ export interface ChildPresenceStatus {
   activityTextEn: string;
   lastActiveTextAr: string;
   lastActiveTextEn: string;
+  lastSeenAt?: string | Date | null;
 }
 
 export interface ChildUnitWatchMetric {

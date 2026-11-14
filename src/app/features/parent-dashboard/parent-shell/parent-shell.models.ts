@@ -16,6 +16,14 @@ export interface LinkedChildSummary {
   avatar_url?: string;
   activeUnitsCount: number;
   totalXp: number;
+  lastSeenAt?: string | Date | null;
+  isOnline?: boolean;
+  presence?: {
+    isOnline: boolean;
+    lastSeenAt?: string | Date | null;
+    lastHeartbeatAt?: string | Date | null;
+    activityType?: string;
+  };
 }
 
 export interface LinkChildRequestPayload {
