@@ -355,9 +355,17 @@
             <!-- Score Summary Card -->
             <div class="p-6 rounded-3xl bg-surface-bg border border-surface-border flex flex-col sm:flex-row items-center justify-between gap-6">
               <div class="space-y-1 text-center sm:text-start">
-                <span class="text-xs font-bold text-text-muted">
-                  {{ langService.isArabic() ? 'نتيجة المحاكاة' : 'Simulation Result' }}
-                </span>
+                <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                  <span class="text-xs font-bold text-text-muted">
+                    {{ langService.isArabic() ? 'نتيجة المحاكاة' : 'Simulation Result' }}
+                  </span>
+                  @if (scoringSummary().percentage === 100) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center gap-1" data-testid="perfect-score-badge">
+                      <app-icon name="award" [size]="12" />
+                      <span>{{ langService.isArabic() ? 'الدرجة النهائية' : 'Perfect Score' }}</span>
+                    </span>
+                  }
+                </div>
                 <div class="flex items-baseline justify-center sm:justify-start gap-2">
                   <span class="text-3xl sm:text-4xl font-black font-mono text-brand-primary" data-testid="preview-percentage">
                     {{ scoringSummary().percentage }}%
@@ -381,7 +389,19 @@
                 </p>
               </div>
 
-              <div class="flex flex-col sm:flex-row items-center gap-3">
+              <div class="flex flex-col sm:flex-row items-center gap-2.5 flex-wrap">
+                <!-- Preview Celebration Button -->
+                <button
+                  type="button"
+                  (click)="openCelebrationPreview()"
+                  class="px-4 py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-500 flex items-center gap-2 cursor-pointer transition-all shadow-sm"
+                  data-testid="preview-celebration-btn"
+                  [title]="langService.isArabic() ? 'معاينة شاشة الاحتفال للطلاب المتفوقين' : 'Preview celebration modal'"
+                >
+                  <app-icon name="award" [size]="14" />
+                  <span>{{ langService.isArabic() ? 'معاينة شاشة الاحتفال' : 'Preview Celebration' }}</span>
+                </button>
+
                 <button
                   type="button"
                   (click)="resetSimulation()"
@@ -794,4 +814,25 @@
       </div>
     </div>
   }
+
+  <!-- ========================================================================= -->
+  <!-- Celebration Modal for 100% / Full-Score Simulation Preview                -->
+  <!-- ========================================================================= -->
+  <app-celebration-modal
+    [isOpen]="isCelebrationOpen()"
+    [studentName]="langService.isArabic() ? 'معاينة المعلمة (العلامة الكاملة)' : 'Teacher Simulation Preview'"
+    [score]="scoringSummary().hasEssayQuestions ? scoringSummary().autoEarnedPoints : (scoringSummary().totalPoints || 20)"
+    [totalScore]="scoringSummary().hasEssayQuestions ? scoringSummary().autoTotalPoints : (scoringSummary().totalPoints || 20)"
+    [percentage]="100"
+    [rank]="1"
+    [rankTitle]="langService.isArabic() ? 'المركز الأول • العلامة الكاملة' : 'Rank 1 • Perfect Score'"
+    [message]="langService.isArabic() ? 'أداء استثنائي! أحسنت صنعاً في اجتياز الاختبار بدرجة ممتازة' : 'Outstanding achievement! Perfect score in this assessment'"
+    [xpEarned]="(asm.totalPoints || 10) * 10"
+    [returnLabel]="langService.isArabic() ? 'العودة للمعاينة' : 'Return to Preview'"
+    [reviewLabel]="langService.isArabic() ? 'مراجعة نموذج الإجابات' : 'Review Model Answers'"
+    [showReviewButton]="true"
+    (closed)="closeCelebration()"
+    (returned)="closeCelebration()"
+    (reviewAnswers)="closeCelebration()"
+  />
 }

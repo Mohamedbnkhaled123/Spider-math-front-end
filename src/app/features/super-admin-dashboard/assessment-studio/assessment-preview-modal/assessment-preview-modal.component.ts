@@ -16,6 +16,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../../shared/components/math-formula/math-formula.component';
 import { GraphCalculatorModalComponent } from '../../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
+import { CelebrationModalComponent } from '../../../../shared/components/celebration-modal/celebration-modal.component';
 import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem, AssessmentQuestionItem } from '../assessment-studio.models';
 import {
@@ -47,7 +48,8 @@ import {
     FormsModule,
     AppIconComponent,
     MathFormulaComponent,
-    GraphCalculatorModalComponent
+    GraphCalculatorModalComponent,
+    CelebrationModalComponent
   ],
   templateUrl: './assessment-preview-modal.component.html',
   styleUrl: './assessment-preview-modal.component.scss',
@@ -70,6 +72,7 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   readonly essayAnswers = signal<Record<string, string>>({});
   readonly essayPhotoAttached = signal<Record<string, boolean>>({});
   readonly isResultsMode = signal<boolean>(false);
+  readonly isCelebrationOpen = signal<boolean>(false);
 
   // Simulated Timer & Tool States
   readonly simulatedSecondsRemaining = signal<number>(2700);
@@ -308,9 +311,24 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   finishPreview(): void {
     this.isResultsMode.set(true);
     this.stopTimer();
+
+    // Trigger celebration when the teacher achieves full score (100%) in the simulation
+    const summary = this.scoringSummary();
+    if (summary.percentage === 100) {
+      this.isCelebrationOpen.set(true);
+    }
+  }
+
+  openCelebrationPreview(): void {
+    this.isCelebrationOpen.set(true);
+  }
+
+  closeCelebration(): void {
+    this.isCelebrationOpen.set(false);
   }
 
   resetSimulation(): void {
+    this.isCelebrationOpen.set(false);
     this.selectedMcqAnswers.set({});
     this.textAnswers.set({});
     this.essayAnswers.set({});
@@ -326,6 +344,7 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   }
 
   closeModal(): void {
+    this.isCelebrationOpen.set(false);
     this.stopTimer();
     this.close.emit();
   }

@@ -447,6 +447,81 @@ describe('AssessmentPreviewModalComponent', () => {
     });
   });
 
+  describe('Celebration Modal Full-Score Preview Integration', () => {
+    beforeEach(() => {
+      componentRef.setInput('isOpen', true);
+      componentRef.setInput('assessment', pureMcqAssessment);
+      fixture.detectChanges();
+    });
+
+    it('should have isCelebrationOpen initialized to false', () => {
+      expect(component.isCelebrationOpen()).toBeFalse();
+    });
+
+    it('should automatically open celebration modal when teacher achieves 100% full score', () => {
+      // Answer pureMcqAssessment questions correctly (q1 -> 1, q2 -> 0)
+      component.selectOption('q1', 1);
+      component.selectOption('q2', 0);
+
+      expect(component.scoringSummary().percentage).toBe(100);
+
+      component.finishPreview();
+      fixture.detectChanges();
+
+      expect(component.isResultsMode()).toBeTrue();
+      expect(component.isCelebrationOpen()).toBeTrue();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const celebrationElem = hostEl.querySelector('app-celebration-modal');
+      expect(celebrationElem).toBeTruthy();
+
+      const perfectBadge = hostEl.querySelector('[data-testid="perfect-score-badge"]');
+      expect(perfectBadge).toBeTruthy();
+    });
+
+    it('should NOT automatically open celebration modal when score is less than 100%', () => {
+      // Answer q1 correctly, leave q2 unanswered
+      component.selectOption('q1', 1);
+
+      expect(component.scoringSummary().percentage).toBe(50);
+
+      component.finishPreview();
+      fixture.detectChanges();
+
+      expect(component.isResultsMode()).toBeTrue();
+      expect(component.isCelebrationOpen()).toBeFalse();
+    });
+
+    it('should allow the teacher to manually open and preview celebration anytime in results mode', () => {
+      component.finishPreview();
+      fixture.detectChanges();
+
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      component.openCelebrationPreview();
+      fixture.detectChanges();
+      expect(component.isCelebrationOpen()).toBeTrue();
+
+      component.closeCelebration();
+      fixture.detectChanges();
+      expect(component.isCelebrationOpen()).toBeFalse();
+    });
+
+    it('should reset isCelebrationOpen when simulation is restarted or modal is closed', () => {
+      component.openCelebrationPreview();
+      expect(component.isCelebrationOpen()).toBeTrue();
+
+      component.resetSimulation();
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      component.openCelebrationPreview();
+      expect(component.isCelebrationOpen()).toBeTrue();
+
+      component.closeModal();
+      expect(component.isCelebrationOpen()).toBeFalse();
+    });
+  });
+
   describe('R4 Strict Zero-Emoji Compliance', () => {
     it('should strictly contain zero Unicode emojis across both simulation and results views', () => {
       componentRef.setInput('isOpen', true);
