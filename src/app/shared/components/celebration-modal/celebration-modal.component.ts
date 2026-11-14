@@ -16,6 +16,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import confetti from 'canvas-confetti';
 import lottie, { AnimationItem } from 'lottie-web';
 import { CELEBRATION_FIREWORKS_DATA } from './success-celebration.data';
+import { getRandomCelebrationPhrase } from './celebration-messages.data';
+import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 
 export interface RibbonItem {
   id: number;
@@ -52,6 +54,7 @@ const RIBBON_GRADIENTS = [
 export class CelebrationModalComponent implements OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  readonly langService = inject(LangService, { optional: true });
 
   // Inputs
   readonly isOpen = input<boolean>(false);
@@ -77,6 +80,8 @@ export class CelebrationModalComponent implements OnDestroy {
   // Template Element References
   readonly lottieFireworksContainer = viewChild<ElementRef<HTMLElement>>('lottieFireworksContainer');
   private lottieAnim: AnimationItem | null = null;
+  private audioElem: HTMLAudioElement | null = null;
+  private audioCtx: AudioContext | null = null;
 
   // State Signals
   readonly isAnimationActive = signal<boolean>(false);
@@ -85,6 +90,9 @@ export class CelebrationModalComponent implements OnDestroy {
   readonly displayedXp = signal<string>('+0 XP');
   readonly xpProgressPercent = signal<string>('0%');
   readonly isLevelUpVisible = signal<boolean>(false);
+  readonly selectedCelebrationPhrase = signal<string>(
+    getRandomCelebrationPhrase(100, true)
+  );
 
   readonly starStates = signal<Array<{ on: boolean; lit: boolean }>>([
     { on: false, lit: false },
@@ -108,8 +116,14 @@ export class CelebrationModalComponent implements OnDestroy {
     return Math.min(100, Math.max(0, Math.round((this.score() / tot) * 100)));
   });
 
+  // User Requirement: "من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة"
+  // Celebration effects (confetti, ribbons, fireworks, and fanfare sound) appear ONLY for scores >= 70%.
+  readonly isCelebrationEligible = computed<boolean>(() => {
+    return this.computedPercentage() >= 70;
+  });
+
   readonly isAboveAverage = computed<boolean>(() => {
-    return this.computedPercentage() >= 50;
+    return this.isCelebrationEligible();
   });
 
   readonly computedRank = computed<1 | 2 | 3 | null>(() => {
@@ -138,21 +152,15 @@ export class CelebrationModalComponent implements OnDestroy {
     if (r === 3) return 'المركز الثالث • نتيجة رائعة';
     const pct = this.computedPercentage();
     if (pct >= 85) return 'أداء متفوق';
-    if (pct >= 50) return 'نتيجة معتمدة';
+    if (pct >= 70) return 'نتيجة متميزة';
+    if (pct >= 50) return 'مستوى الانطلاق';
     return 'محاولة تدريبية';
   });
 
   readonly computedMessage = computed<string>(() => {
     const custom = this.message();
     if (custom) return custom;
-    const r = this.computedRank();
-    if (r === 1) return 'أداء استثنائي! كمّل بنفس الحماس والتميز';
-    if (r === 2) return 'شغل ممتاز! خطوة واحدة وتصل للقمة';
-    if (r === 3) return 'أحسنت صنعاً! استمر في التقدم والتفوق';
-    const pct = this.computedPercentage();
-    if (pct >= 85) return 'مستوى مبهر، استمر في الصعود والتألق';
-    if (pct >= 50) return 'جهد رائع، راجع الإجابات لتعزيز الفهم';
-    return 'استمر في الممارسة والتدريب للوصول لأعلى المراتب';
+    return this.selectedCelebrationPhrase();
   });
 
   constructor() {
@@ -174,6 +182,8 @@ export class CelebrationModalComponent implements OnDestroy {
   }
 
   private clearAnimationState(): void {
+    this.stopCelebrationSound();
+
     this.activeTimers.forEach(t => clearTimeout(t));
     this.activeTimers = [];
     this.activeIntervals.forEach(i => clearInterval(i));
@@ -207,6 +217,10 @@ export class CelebrationModalComponent implements OnDestroy {
     const starsCount = this.computedStarsCount();
     const rank = this.computedRank();
 
+    // Pick a random encouraging/celebratory phrase appropriate for the student's score
+    const isAr = this.langService ? this.langService.isArabic() : true;
+    this.selectedCelebrationPhrase.set(getRandomCelebrationPhrase(pct, isAr));
+
     // Reset initial counter texts
     this.displayedScore.set(`0/${tot}`);
     this.displayedPercentage.set('0%');
@@ -239,19 +253,15 @@ export class CelebrationModalComponent implements OnDestroy {
     }
 
     // Generate ribbons density scaled by score & rank:
-    // Strictly ZERO ribbons if below average (< 50%)
-    if (pct < 50) {
+    // Strictly ZERO ribbons if below 70% ("من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة")
+    if (pct < 70) {
       this.ribbons.set([]);
     } else {
-      let ribbonCount = 20;
+      let ribbonCount = 25;
       if (rank === 1 || pct >= 90) {
         ribbonCount = 58; // High density for top achievers
-      } else if (rank === 2 || pct >= 75) {
-        ribbonCount = 38; // Medium-high density
-      } else if (rank === 3 || pct >= 60) {
-        ribbonCount = 22; // Medium density
-      } else {
-        ribbonCount = 12; // Diminished density for average scores
+      } else if (rank === 2 || pct >= 80) {
+        ribbonCount = 40; // Medium-high density
       }
 
       const generatedRibbons: RibbonItem[] = [];
@@ -299,12 +309,17 @@ export class CelebrationModalComponent implements OnDestroy {
       this.displayedXp.set(`+${currXp} XP`);
     });
 
-    // Trigger canvas-confetti showers strictly for students >= 50%
+    // Trigger canvas-confetti showers strictly for students >= 70%
     this.triggerConfetti(pct, rank);
 
-    // Initialize Lottie fireworks animation (Farhan Razak)
+    // Initialize Lottie fireworks animation strictly for students >= 70%
     if (this.isAboveAverage()) {
       this.initLottieFireworks();
+    }
+
+    // Play celebration sound strictly for students >= 70%
+    if (pct >= 70) {
+      this.playCelebrationSound();
     }
   }
 
@@ -349,9 +364,9 @@ export class CelebrationModalComponent implements OnDestroy {
   private triggerConfetti(pct: number, rank: 1 | 2 | 3 | null): void {
     if (!this.isBrowser) return;
 
-    // "و القصاصات متظهرش للي جايبين اقل من المتوسط"
-    // Average threshold is 50%. Below 50%: STRICTLY NO CONFETTI!
-    if (pct < 50) return;
+    // "من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة"
+    // Strictly NO confetti for scores < 70%
+    if (pct < 70) return;
 
     try {
       if (pct >= 85 || rank === 1 || rank === 2) {
@@ -389,8 +404,8 @@ export class CelebrationModalComponent implements OnDestroy {
           });
         }, 350);
         this.activeIntervals.push(interval);
-      } else if (pct >= 70 || rank === 3) {
-        // Very Good / Rank 3: Medium-high density shower
+      } else {
+        // Very Good (70% - 84%) / Rank 3: Medium-high density celebratory shower
         confetti({
           particleCount: 80,
           spread: 75,
@@ -398,18 +413,107 @@ export class CelebrationModalComponent implements OnDestroy {
           colors: ['#ffe27a', '#d89a00', '#34d399', '#38bdf8', '#c084fc'],
           zIndex: 2100
         });
-      } else {
-        // Average (50% - 69%): Gentle celebratory burst
-        confetti({
-          particleCount: 45,
-          spread: 60,
-          origin: { y: 0.65 },
-          colors: ['#ffe27a', '#34d399', '#38bdf8'],
-          zIndex: 2100
-        });
       }
     } catch (err) {
       console.warn('Canvas confetti error:', err);
+    }
+  }
+
+  private playCelebrationSound(): void {
+    if (!this.isBrowser) return;
+
+    try {
+      // 1. Attempt HTML5 Audio element playback
+      const audio = new Audio('assets/sounds/celebration.wav');
+      audio.volume = 0.75;
+      this.audioElem = audio;
+      audio.play().catch(() => {
+        // Autoplay or asset loading restricted: seamlessly use Web Audio API synthesizer
+        this.synthesizeCelebrationFanfare();
+      });
+    } catch {
+      this.synthesizeCelebrationFanfare();
+    }
+  }
+
+  private synthesizeCelebrationFanfare(): void {
+    if (!this.isBrowser) return;
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const ctx = new AudioContextClass();
+      this.audioCtx = ctx;
+
+      const now = ctx.currentTime;
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.28, now);
+      masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+      masterGain.connect(ctx.destination);
+
+      // C Major Triumph Fanfare Arpeggio
+      // G4 -> C5 -> E5 -> G5 -> High C6 Chord
+      const notes = [
+        { t: 0.00, f: 392.00, d: 0.22 }, // G4
+        { t: 0.22, f: 523.25, d: 0.22 }, // C5
+        { t: 0.44, f: 659.25, d: 0.24 }, // E5
+        { t: 0.68, f: 783.99, d: 1.80 }, // G5
+        { t: 0.68, f: 1046.50, d: 1.80 } // High C6
+      ];
+
+      notes.forEach(n => {
+        const osc = ctx.createOscillator();
+        const noteGain = ctx.createGain();
+
+        osc.type = 'triangle'; // Rich, brass-like tone without harshness
+        osc.frequency.setValueAtTime(n.f, now + n.t);
+
+        noteGain.gain.setValueAtTime(0.001, now + n.t);
+        noteGain.gain.linearRampToValueAtTime(0.35, now + n.t + 0.04);
+        noteGain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+
+        osc.connect(noteGain);
+        noteGain.connect(masterGain);
+
+        osc.start(now + n.t);
+        osc.stop(now + n.t + n.d + 0.05);
+      });
+
+      // Celebratory Shimmer Bells (High frequency sparkling chimes)
+      const chimes = [1318.5, 1567.98, 2093.0, 2637.0];
+      chimes.forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const chimeGain = ctx.createGain();
+        const startTime = now + 0.75 + idx * 0.14;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, startTime);
+
+        chimeGain.gain.setValueAtTime(0.12, startTime);
+        chimeGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.7);
+
+        osc.connect(chimeGain);
+        chimeGain.connect(masterGain);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.75);
+      });
+    } catch {}
+  }
+
+  private stopCelebrationSound(): void {
+    if (this.audioElem) {
+      try {
+        this.audioElem.pause();
+        this.audioElem.currentTime = 0;
+      } catch {}
+      this.audioElem = null;
+    }
+    if (this.audioCtx) {
+      try {
+        this.audioCtx.close().catch(() => {});
+      } catch {}
+      this.audioCtx = null;
     }
   }
 
@@ -441,7 +545,7 @@ export class CelebrationModalComponent implements OnDestroy {
     this.closed.emit();
   }
 
-  onBackdropClick(event: MouseEvent): void {
+  onBackdropClick(_event: MouseEvent): void {
     // Backdrop click dismisses
     this.onClose();
   }
