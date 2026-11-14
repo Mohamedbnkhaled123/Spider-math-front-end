@@ -114,8 +114,8 @@ export class StudentProfileCompletionComponent implements OnInit {
     if (!name || name.length < 3) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح'
-          : 'Please enter valid student full name'
+          ? 'الاسم لا يقل عن 3 أحرف'
+          : 'Name must be at least 3 characters'
       );
       return;
     }
@@ -146,8 +146,8 @@ export class StudentProfileCompletionComponent implements OnInit {
     if (arePhoneNumbersIdentical(stPhone, prPhone, selectedCountry)) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم هاتف مختلف لولي الأمر لاستلام تقارير المتابعة.'
-          : 'Parent phone number cannot be identical to student phone number. Please provide a different parent phone number.'
+          ? 'يجب اختلاف رقم ولي الأمر عن الطالب.'
+          : 'Parent phone must differ from student phone.'
       );
       return;
     }
@@ -156,8 +156,8 @@ export class StudentProfileCompletionComponent implements OnInit {
     if (this.isEgypt() && !this.governorate()) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى اختيار المحافظة للطلاب المقيمين في مصر'
-          : 'Please select governorate for students in Egypt'
+          ? 'اختر المحافظة'
+          : 'Select governorate'
       );
       return;
     }
@@ -208,7 +208,7 @@ export class StudentProfileCompletionComponent implements OnInit {
         this.errorMessage.set(
           err?.error?.error?.message ||
           err?.error?.message ||
-          (this.langService.isArabic() ? 'تعذر حفظ البيانات. يرجى التحقق من الأرقام والمدخلات والمحاولة مجدداً.' : 'Failed to save student profile.')
+          (this.langService.isArabic() ? 'تعذر الحفظ. تحقق من البيانات.' : 'Failed to save. Check data.')
         );
       }
     });

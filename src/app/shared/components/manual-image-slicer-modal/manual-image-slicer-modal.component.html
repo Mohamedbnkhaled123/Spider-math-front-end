@@ -16,7 +16,7 @@
           </div>
           <div>
             <h3 class="text-sm sm:text-base font-bold text-amber-300">{{ modalTitle() }}</h3>
-            <p class="text-[11px] text-slate-400">حدد السؤال أو الرسم الهندسي بدقة.</p>
+            <p class="text-[11px] text-slate-400">حدد منطقة السؤال بدقة.</p>
           </div>
         </div>
 
@@ -41,7 +41,7 @@
             title="تدوير لليسار"
           >
             <app-icon name="rotate-ccw" [size]="14" />
-            <span class="hidden sm:inline">تدوير 90°</span>
+            <span class="hidden sm:inline">90°</span>
           </button>
 
           <button
@@ -142,7 +142,7 @@
         @if (!isCropperReady()) {
           <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0F0717]/85 backdrop-blur-sm">
             <div class="w-8 h-8 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mb-2"></div>
-            <p class="text-xs text-amber-200">جاري التجهيز...</p>
+            <p class="text-xs text-amber-200">تجهيز...</p>
           </div>
         }
 
@@ -170,7 +170,7 @@
       <!-- Modal Footer -->
       <footer class="flex items-center justify-between px-5 py-3.5 bg-[#160D20]/95 border-t border-amber-500/25">
         <div class="text-[11px] text-slate-400 hidden sm:block">
-          * ضغط تلقائي بصيغة WebP (أقل من 150KB) لسرعة التحميل.
+          * ضغط تلقائي (<150KB).
         </div>
 
         <div class="flex items-center gap-2.5 mr-auto">
@@ -191,10 +191,10 @@
           >
             @if (isSaving()) {
               <div class="w-3.5 h-3.5 border-2 border-slate-950/40 border-t-slate-950 rounded-full animate-spin"></div>
-              <span>جاري الحفظ...</span>
+              <span>حفظ...</span>
             } @else {
               <app-icon name="check" [size]="16" />
-              <span>حفظ وتأكيد</span>
+              <span>حفظ</span>
             }
           </button>
         </div>

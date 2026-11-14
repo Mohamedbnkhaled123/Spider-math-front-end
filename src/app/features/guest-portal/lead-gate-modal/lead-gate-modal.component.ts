@@ -60,8 +60,8 @@ export class LeadGateModalComponent {
     if (!name || name.length < 3) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى كتابة اسم الطالب ثلاثياً (٣ أحرف على الأقل)'
-          : 'Please enter student full name (minimum 3 characters)'
+          ? 'الاسم لا يقل عن 3 أحرف'
+          : 'Name must be at least 3 characters'
       );
       return;
     }
@@ -70,8 +70,8 @@ export class LeadGateModalComponent {
     if (!cleanPhone || cleanPhone.length < 8) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'يرجى إدخال رقم هاتف واتساب صالح لتسليم تقرير التقييم'
-          : 'Please enter a valid WhatsApp phone number'
+          ? 'أدخل رقم واتساب صالح'
+          : 'Enter a valid WhatsApp number'
       );
       return;
     }
@@ -92,7 +92,7 @@ export class LeadGateModalComponent {
         this.isSubmitting.set(false);
         this.errorMessage.set(
           err?.error?.message ||
-          (this.langService.isArabic() ? 'حدث خطأ أثناء فتح التقرير. يرجى المحاولة ثانية.' : 'Failed to unlock score report. Please retry.')
+          (this.langService.isArabic() ? 'فشل فتح التقرير. أعد المحاولة.' : 'Failed to unlock report. Retry.')
         );
       }
     });

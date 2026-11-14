@@ -52,7 +52,7 @@
           {{ workspaceData().titleAr }}
         </h1>
         <p class="text-xs text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'محاضرات تفاعلية وحلول ديسموس.' : 'Interactive lectures and Desmos solutions.' }}
+          {{ langService.isArabic() ? 'محاضرات وتمارين تفاعلية.' : 'Interactive lectures and practice.' }}
         </p>
       </div>
     </div>
@@ -115,18 +115,20 @@
         <!-- Video vs PDF Tab Switcher -->
         <div class="flex items-center justify-between p-1 rounded-2xl border border-surface-border bg-surface-card shadow-sm">
           <div class="flex items-center gap-1">
-            <button
-              type="button"
-              (click)="setTab('video')"
-              class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-              [class.bg-brand-primary]="activeTab() === 'video'"
-              [class.text-white]="activeTab() === 'video'"
-              [class.shadow-sm]="activeTab() === 'video'"
-              [class.text-text-secondary]="activeTab() !== 'video'"
-            >
-              <app-icon name="play" [size]="14" />
-              <span>{{ langService.isArabic() ? 'فيديو المحاضرة' : 'Lecture Video' }}</span>
-            </button>
+            @if (lec.encryptedVideoId || playbackToken()) {
+              <button
+                type="button"
+                (click)="setTab('video')"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                [class.bg-brand-primary]="activeTab() === 'video'"
+                [class.text-white]="activeTab() === 'video'"
+                [class.shadow-sm]="activeTab() === 'video'"
+                [class.text-text-secondary]="activeTab() !== 'video'"
+              >
+                <app-icon name="play" [size]="14" />
+                <span>{{ langService.isArabic() ? 'فيديو المحاضرة' : 'Lecture Video' }}</span>
+              </button>
+            }
 
             <button
               type="button"
@@ -161,7 +163,7 @@
               @if (isAssessmentsOnly()) {
                 <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30 mb-3 flex items-center gap-1.5">
                   <app-icon name="shield" [size]="14" />
-                  {{ langService.isArabic() ? 'اشتراكك لاختبارات الوحدة فقط' : 'Unit quizzes subscription only' }}
+                  {{ langService.isArabic() ? 'اختبارات الوحدة فقط' : 'Unit quizzes only' }}
                 </span>
 
                 <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
@@ -169,7 +171,7 @@
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
-                  {{ langService.isArabic() ? 'اشتراكك للاختبارات فقط. لفتح المحاضرات، تواصل لترقية باقتك للوحدة كاملة.' : 'Quizzes only subscription. Contact support to upgrade to full unit.' }}
+                  {{ langService.isArabic() ? 'للاختبارات فقط. تواصل للترقية.' : 'Quizzes only. Contact to upgrade.' }}
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -191,7 +193,7 @@
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
-                  {{ langService.isArabic() ? 'هذا المحتوى لطلاب الوحدة المشتركين فقط. اشترك الآن للفتح.' : 'This content is for subscribed students only. Subscribe now to unlock.' }}
+                  {{ langService.isArabic() ? 'محتوى للمشتركين فقط.' : 'Subscribers only.' }}
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -222,7 +224,7 @@
                   <app-icon name="video" [size]="28" />
                 </div>
                 <p class="text-sm font-bold text-text-secondary">
-                  {{ langService.isArabic() ? 'لا يتوفر فيديو شرح لهذه المحاضرة' : 'No video lecture available for this lesson' }}
+                  {{ langService.isArabic() ? 'لا يتوفر فيديو لهذه المحاضرة' : 'No video available' }}
                 </p>
                 @if (lec.googleDrivePdfFileId) {
                   <button
@@ -253,7 +255,7 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <p class="text-sm font-bold text-text-secondary">
-                  {{ langService.isArabic() ? 'لا تتوفر ملزمة PDF مرفقة لهذه المحاضرة' : 'No PDF handout available for this lesson' }}
+                  {{ langService.isArabic() ? 'لا تتوفر ملزمة PDF لهذه المحاضرة' : 'No PDF handout available' }}
                 </p>
                 @if (lec.encryptedVideoId || playbackToken()) {
                   <button
@@ -333,10 +335,10 @@
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-4">
           <div>
             <h3 class="text-sm font-black text-text-primary">
-              {{ langService.isArabic() ? 'فهرس محاضرات الوحدة' : 'Unit Lectures Index' }}
+              {{ langService.isArabic() ? 'محاضرات الوحدة' : 'Unit Lectures' }}
             </h3>
             <p class="text-[11px] text-text-muted mt-0.5">
-              {{ langService.isArabic() ? (workspaceData().lectures.length + ' محاضرات متسلسلة') : (workspaceData().lectures.length + ' Sequential Lectures') }}
+              {{ langService.isArabic() ? (workspaceData().lectures.length + ' محاضرات') : (workspaceData().lectures.length + ' Lectures') }}
             </p>
           </div>
 
@@ -372,9 +374,16 @@
                       <span>{{ isAssessmentsOnly() ? (langService.isArabic() ? 'للوحدة الكاملة' : 'Full Unit') : (langService.isArabic() ? 'مشتركين' : 'Subscribers') }}</span>
                     </span>
                   }
-                  <span class="text-[10px] font-bold text-text-muted font-numeric">
-                    {{ formatDuration(item.videoDurationSec) }}
-                  </span>
+                  @if (item.videoDurationSec && item.videoDurationSec > 0) {
+                    <span class="text-[10px] font-bold text-text-muted font-numeric">
+                      {{ formatDuration(item.videoDurationSec) }}
+                    </span>
+                  } @else if (item.googleDrivePdfFileId) {
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center gap-1">
+                      <app-icon name="file-text" [size]="9" />
+                      <span>{{ langService.isArabic() ? 'ملف' : 'PDF' }}</span>
+                    </span>
+                  }
                   @if (item.isCompleted) {
                     <app-icon name="check-circle" [size]="14" className="text-emerald-500" />
                   }
@@ -440,7 +449,7 @@
             </div>
             <div>
               <h2 class="text-base sm:text-lg font-black text-text-primary">
-                {{ langService.isArabic() ? 'اختبارات وواجبات الوحدة' : 'Unit Quizzes & Homework' }}
+                {{ langService.isArabic() ? 'الاختبارات والواجبات' : 'Quizzes & Homework' }}
               </h2>
               <p class="text-xs text-text-muted">
                 {{ langService.isArabic() ? (workspaceData().assessments.length + ' تقييمات') : (workspaceData().assessments.length + ' assessments') }}
@@ -465,7 +474,7 @@
                     </span>
                   } @else if (asm.studentAttemptStatus?.timeWindowState === 'EXPIRED') {
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20">
-                      {{ langService.isArabic() ? 'انتهت فترة الاختبار' : 'Exam Period Ended' }}
+                      {{ langService.isArabic() ? 'انتهت الفترة' : 'Expired' }}
                     </span>
                   } @else {
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
@@ -551,10 +560,10 @@
         <app-icon name="play" [size]="32" />
       </div>
       <h3 class="text-lg font-black text-text-primary mb-2">
-        {{ langService.isArabic() ? 'لا توجد محاضرات منشورة بعد' : 'No lectures published yet' }}
+        {{ langService.isArabic() ? 'لا توجد محاضرات بعد' : 'No lectures yet' }}
       </h3>
       <p class="text-xs text-text-secondary leading-relaxed mb-6">
-        {{ langService.isArabic() ? 'يجري إعداد المحاضرات وملفات الشرح وستتاح قريباً.' : 'Lectures and handouts are being prepared.' }}
+        {{ langService.isArabic() ? 'المحاضرات قيد الإعداد.' : 'Lectures coming soon.' }}
       </p>
       <a routerLink="/student" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all">
         {{ langService.isArabic() ? 'لوحة الوحدات' : 'Units Dashboard' }}

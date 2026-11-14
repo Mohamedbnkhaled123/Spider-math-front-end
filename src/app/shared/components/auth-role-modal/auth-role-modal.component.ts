@@ -44,10 +44,10 @@ export class AuthRoleModalComponent {
     {
       id: 'student-subscribed-01',
       role: 'STUDENT',
-      titleAr: 'طالب مشترك نشط (أحمد محمد — HA4920)',
-      titleEn: 'Active Subscribed Student (Ahmed — HA4920)',
-      subtitleAr: 'دخول كامل: مشاهدة المحاضرات المحمية، عارض الـ PDF، حل الامتحانات ولوحة الشرف',
-      subtitleEn: 'Full access: Protected lectures, PDF stream, assessment runner & leaderboard',
+      titleAr: 'طالب مشترك (أحمد — HA4920)',
+      titleEn: 'Active Student (Ahmed — HA4920)',
+      subtitleAr: 'محاضرات، امتحانات، لوحة الشرف',
+      subtitleEn: 'Lectures, exams, leaderboard',
       badgeText: 'كامل الصلاحيات',
       icon: 'graduation-cap',
       targetRoute: '/student',
@@ -58,10 +58,10 @@ export class AuthRoleModalComponent {
     {
       id: 'parent-01',
       role: 'PARENT',
-      titleAr: 'ولي أمر (محمد علي — والد أحمد وسارة)',
-      titleEn: 'Parent Portal (Mohamed Ali)',
-      subtitleAr: 'دخول كامل: رادار السونار الحي الأخضر، تبديل الأبناء، والاطلاع على الأخطاء وفيديوهات يوتيوب',
-      subtitleEn: 'Full access: Live RAM-presence sonar radar, multi-child switcher & error video reviews',
+      titleAr: 'ولي أمر (محمد علي)',
+      titleEn: 'Parent (Mohamed Ali)',
+      subtitleAr: 'متابعة الأبناء والحضور',
+      subtitleEn: 'Child monitoring & attendance',
       badgeText: 'متابعة الأبناء',
       icon: 'shield',
       targetRoute: '/parent',
@@ -70,10 +70,10 @@ export class AuthRoleModalComponent {
     {
       id: 'student-inactive-01',
       role: 'STUDENT',
-      titleAr: 'طالب غير مشترك (سارة أحمد)',
-      titleEn: 'Inactive Student (Sara Ahmed)',
-      subtitleAr: 'بوابة الطالب غير المشترك: جدول المواعيد وتفاصيل الباقات والاشتراك عبر فودافون كاش',
-      subtitleEn: 'Inactive portal: Lecture schedule, subscription tiers & Vodafone Cash instructions',
+      titleAr: 'طالب غير مشترك (سارة)',
+      titleEn: 'Inactive Student (Sara)',
+      subtitleAr: 'المواعيد، الباقات والاشتراك',
+      subtitleEn: 'Schedule, plans & subscription',
       badgeText: 'بانتظار الاشتراك',
       icon: 'clock',
       targetRoute: '/inactive-student-portal',
@@ -83,10 +83,10 @@ export class AuthRoleModalComponent {
     {
       id: 'device-pending-01',
       role: 'STUDENT',
-      titleAr: 'طالب جهازه معلق (HTTP 423 Pending Device)',
-      titleEn: 'Pending Device Approval (HTTP 423)',
-      subtitleAr: 'محاكاة محاولة الدخول من جهاز ثانٍ غير معتمد حتى موافقة المعلمة في لوحة الإدارة',
-      subtitleEn: 'Simulates additive device lockdown pending admin approval',
+      titleAr: 'جهاز معلق (HTTP 423)',
+      titleEn: 'Pending Device (HTTP 423)',
+      subtitleAr: 'جهاز جديد بانتظار الاعتماد',
+      subtitleEn: 'New device pending approval',
       badgeText: 'حظر أمني مؤقت',
       icon: 'sparkles',
       targetRoute: '/pending-device-approval',
@@ -96,10 +96,10 @@ export class AuthRoleModalComponent {
     {
       id: 'super-admin-01',
       role: 'SUPER_ADMIN',
-      titleAr: 'مدير النظام / م. هبة عبدالوهاب (Super Admin)',
-      titleEn: 'Super Admin / Eng. Heba Abdel-Wahab',
-      subtitleAr: 'لوحة الإدارة: اعتماد الأجهزة، تصحيح الأسئلة المقالية وإدخال درجات وملاحظات المعلمة',
-      subtitleEn: 'Admin studio: Device approvals, essay grading & student management',
+      titleAr: 'مدير النظام (م. هبة عبدالوهاب)',
+      titleEn: 'Super Admin (Eng. Heba)',
+      subtitleAr: 'اعتماد الأجهزة وإدارة الطلاب',
+      subtitleEn: 'Device approvals & students',
       badgeText: 'إشراف كامل',
       icon: 'user',
       targetRoute: '/admin',
@@ -201,7 +201,7 @@ export class AuthRoleModalComponent {
   submitStudentLogin(): void {
     const code = this.studentHaCode().toUpperCase().trim();
     if (!code) {
-      this.errorMessage.set('يرجى إدخال كود الطالب (HAxxxx)');
+      this.errorMessage.set('أدخل كود الطالب (HAxxxx)');
       return;
     }
 
@@ -241,7 +241,7 @@ export class AuthRoleModalComponent {
     const code = this.parentChildCode().toUpperCase().trim();
 
     if (!phone || !code) {
-      this.errorMessage.set('يرجى إدخال رقم الهاتف وكود الطالب معاً');
+      this.errorMessage.set('أدخل الهاتف وكود الطالب');
       return;
     }
 

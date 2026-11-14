@@ -21,7 +21,7 @@
     <div class="rounded-xl border border-surface-border bg-surface-bg p-4 text-left rtl:text-right mb-6 text-xs">
       <div class="flex items-center justify-between mb-2 pb-2 border-b border-surface-border/50">
         <span class="text-text-muted">
-          {{ langService.isArabic() ? 'معرّف الجهاز (UUID):' : 'Device UUID:' }}
+          {{ langService.isArabic() ? 'معرّف الجهاز:' : 'UUID:' }}
         </span>
         <code class="font-mono text-xs font-bold text-brand-primary dark:text-blue-400">
           {{ deviceUuid() }}
@@ -29,7 +29,7 @@
       </div>
       <div class="flex items-center justify-between">
         <span class="text-text-muted">
-          {{ langService.isArabic() ? 'حالة الطلب:' : 'Request Status:' }}
+          {{ langService.isArabic() ? 'الحالة:' : 'Status:' }}
         </span>
         <span class="inline-flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>

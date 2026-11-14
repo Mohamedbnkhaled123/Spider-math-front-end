@@ -106,7 +106,7 @@ export class LoginPageComponent implements OnInit {
         this.activeTab.set('admin');
         if (qp['roleMismatch'] === 'true') {
           this.errorMessage.set(
-            'أنت مسجل حالياً بحساب ولي أمر أو طالب ولا تملك صلاحيات المشرف. يرجى تسجيل الدخول كـ مدير نظام للوصول إلى لوحة التحكم.'
+            'غير مصرح كمدير.'
           );
         }
         return;
@@ -186,7 +186,7 @@ export class LoginPageComponent implements OnInit {
 
     // 1. Full name validation
     if (!name || name.length < 3) {
-      this.errorMessage.set('يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح');
+      this.errorMessage.set('اكتب الاسم ثلاثياً');
       return;
     }
 
@@ -207,14 +207,14 @@ export class LoginPageComponent implements OnInit {
     // 4. Strict constraint: Parent phone !== Student phone
     if (arePhoneNumbersIdentical(stPhone, prPhone, country)) {
       this.errorMessage.set(
-        'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم مختلف لولي الأمر.'
+        'يجب اختلاف رقم ولي الأمر عن الطالب.'
       );
       return;
     }
 
     // 5. Governorate check for Egypt
     if (this.isRegEgypt() && !this.regGovernorate()) {
-      this.errorMessage.set('يرجى اختيار المحافظة للطلاب المقيمين في مصر');
+      this.errorMessage.set('اختر المحافظة');
       return;
     }
 
@@ -275,7 +275,7 @@ export class LoginPageComponent implements OnInit {
         this.errorMessage.set(
           this.extractErrorMessage(
             err,
-            'حدث خطأ أثناء تسجيل حساب الطالب. يرجى مراجعة البيانات والمحاولة مجدداً.'
+            'تعذر التسجيل. تحقق من البيانات.'
           )
         );
       }
@@ -341,7 +341,7 @@ export class LoginPageComponent implements OnInit {
             if (response.error !== 'popup_closed_by_user') {
               if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
                 this.googleAuthErrorMessage.set(
-                  'تعذر الدخول عبر Google. استخدم كود الطالب أو أعد المحاولة.'
+                  'تعذر الدخول عبر Google. استخدم كود الطالب.'
                 );
               } else {
                 this.googleAuthErrorMessage.set('تعذر الاتصال بـ Google. أعد المحاولة.');
@@ -359,7 +359,7 @@ export class LoginPageComponent implements OnInit {
       client.requestAccessToken({ prompt: 'select_account' });
     } catch (err: any) {
       console.error('Failed to trigger Google OAuth popup:', err);
-      this.googleAuthErrorMessage.set('حدث خطأ أثناء فتح نافذة اختيار حساب Google: ' + (err?.message || ''));
+      this.googleAuthErrorMessage.set('تعذر فتح Google: ' + (err?.message || ''));
     }
   }
 
@@ -437,7 +437,7 @@ export class LoginPageComponent implements OnInit {
         if (err.status === 404 && intent === 'login') {
           this.unregisteredGoogleEmail.set('unregistered');
           this.googleAuthErrorMessage.set(
-            'الحساب غير مسجل. أنشئ حساب طالب أولاً.'
+            'الحساب غير مسجل. أنشئ حساباً.'
           );
         } else {
           this.googleAuthErrorMessage.set(
@@ -511,7 +511,7 @@ export class LoginPageComponent implements OnInit {
           this.authService.setSession(res.data.token, userPayload);
           this.navigateStudentAfterAuth();
         } else {
-          this.errorMessage.set('كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.');
+          this.errorMessage.set('كود الطالب غير صحيح.');
         }
       },
       error: (err) => {
@@ -519,7 +519,7 @@ export class LoginPageComponent implements OnInit {
         this.errorMessage.set(
           this.extractErrorMessage(
             err,
-            'كود الطالب غير صحيح أو غير مسجل في المنصة. يرجى التأكد من الكود أو إنشاء حساب جديد.'
+            'كود الطالب غير صحيح.'
           )
         );
       }
@@ -534,7 +534,7 @@ export class LoginPageComponent implements OnInit {
     const code = this.parentStudentCode().trim().toUpperCase();
 
     if (!phone || !code) {
-      this.errorMessage.set('أدخل هاتف ولي الأمر وكود الطالب.');
+      this.errorMessage.set('أدخل الهاتف وكود الطالب.');
       return;
     }
 
@@ -562,7 +562,7 @@ export class LoginPageComponent implements OnInit {
           });
           this.router.navigateByUrl('/parent');
         } else {
-          this.errorMessage.set('البيانات غير مطابقة. تحقق وأعد المحاولة.');
+          this.errorMessage.set('البيانات غير مطابقة.');
         }
       },
       error: (err) => {
@@ -570,7 +570,7 @@ export class LoginPageComponent implements OnInit {
         this.errorMessage.set(
           this.extractErrorMessage(
             err,
-            'البيانات غير مطابقة. تحقق وأعد المحاولة.'
+            'البيانات غير مطابقة.'
           )
         );
       }
@@ -633,15 +633,15 @@ export class LoginPageComponent implements OnInit {
         rawMsg.includes('المنفذ') ||
         rawMsg.includes('خادم المنصة')
       ) {
-        return 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.';
+        return 'تعذر الاتصال. أعد المحاولة.';
       }
       return rawMsg;
     }
     if (err?.status === 0) {
-      return 'تعذر الاتصال بالخدمة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.';
+      return 'تعذر الاتصال. تحقق من الإنترنت وأعد المحاولة.';
     }
     if (err?.status === 502 || err?.status === 503 || err?.status === 504) {
-      return 'نعتذر، حدث تعذر مؤقت في الاتصال بالخدمة. يرجى المحاولة بعد قليل أو التواصل مع الدعم الفني.';
+      return 'تعذر الاتصال. أعد المحاولة.';
     }
     return fallback;
   }

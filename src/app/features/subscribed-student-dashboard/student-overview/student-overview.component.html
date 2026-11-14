@@ -56,7 +56,7 @@
           {{ langService.isArabic() ? 'مرحباً بك، ' : 'Welcome, ' }}<span class="text-gold-accent">{{ authService.currentUser()?.full_name ?? (langService.isArabic() ? 'طالب سبايدر ماث' : 'Spider Math Student') }}</span>
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'تابع دروسك وإنجاز المحاضرات ودرجات الامتحانات.' : 'Track lectures, progress, and certified grades.' }}
+          {{ langService.isArabic() ? 'تابع المحاضرات والدرجات.' : 'Track lectures & grades.' }}
         </p>
       </div>
     </div>
@@ -67,7 +67,7 @@
       @if (hasAcademicTerms()) {
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold backdrop-blur-md text-brand-gold shadow-sm select-none">
           <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>{{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)') : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}</span>
+          <span>{{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول (نشط)' : 'Term 1 (Active)') : (langService.isArabic() ? 'الترم الثاني (نشط)' : 'Term 2 (Active)') }}</span>
         </div>
       }
 
@@ -98,7 +98,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-surface-border mb-3">
               <h4 class="text-xs font-black text-text-primary flex items-center gap-1.5">
                 <app-icon name="message-circle" [size]="14" className="text-brand-accent" />
-                <span>{{ langService.isArabic() ? 'الإشعارات الأكاديمية والتصحيح' : 'Academic & Grading Notifications' }}</span>
+                <span>{{ langService.isArabic() ? 'الإشعارات' : 'Notifications' }}</span>
               </h4>
               <button
                 type="button"
@@ -229,7 +229,7 @@
           @if (isLoadingUnits() && completedGrades().length === 0) {
             <span class="inline-block skeleton-shimmer h-3 w-32 rounded"></span>
           } @else {
-            {{ langService.isArabic() ? (completedGrades().length + ' اختبارات معتمدة ومصححة') : (completedGrades().length + ' Certified Tests') }}
+            {{ langService.isArabic() ? (completedGrades().length + ' اختبارات مصححة') : (completedGrades().length + ' Graded Tests') }}
           }
         </p>
       </div>
@@ -258,7 +258,7 @@
           @if (isLoadingUnits() && dueQuizzes().length === 0) {
             <span class="inline-block skeleton-gold h-3 w-28 rounded align-middle"></span>
           } @else {
-            {{ langService.isArabic() ? (dueQuizzes().length + ' كويزات مستحقة عليك الآن') : (dueQuizzes().length + ' Due Quizzes') }}
+            {{ langService.isArabic() ? (dueQuizzes().length + ' كويزات مستحقة') : (dueQuizzes().length + ' Due Quizzes') }}
           }
         </p>
       </div>
@@ -282,11 +282,11 @@
         {{ langService.isArabic() ? 'محتوى الصف قيد الإعداد' : 'Curriculum Coming Soon' }}
       </h2>
       <p class="text-sm text-text-secondary leading-relaxed max-w-xl mx-auto mb-6">
-        {{ langService.isArabic() ? 'يجري تجهيز المحاضرات التفاعلية والكويزات لهذا الصف.' : 'Interactive lectures and quizzes are being prepared.' }}
+        {{ langService.isArabic() ? 'المحتوى قيد التجهيز.' : 'Content in preparation.' }}
       </p>
       <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-surface-card border border-surface-border text-xs text-text-muted font-bold">
         <app-icon name="shield" [size]="14" className="text-brand-accent" />
-        <span>{{ langService.isArabic() ? 'سيصلك إشعار فور إتاحة المحتوى.' : 'You will be notified once content is ready.' }}</span>
+        <span>{{ langService.isArabic() ? 'سيصلك إشعار عند النشر.' : 'You will be notified.' }}</span>
       </div>
     </div>
   } @else {
@@ -321,7 +321,7 @@
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-black text-text-primary flex items-center gap-2">
             <app-icon name="book-open" [size]="20" className="text-brand-primary dark:text-brand-accent" />
-            <span>{{ hasAcademicTerms() ? (langService.isArabic() ? 'إنجاز الوحدات واشتراكات الفصل' : 'Unit Progress & Subscriptions') : (langService.isArabic() ? 'إنجاز الوحدات والاشتراكات' : 'Unit Progress & Subscriptions') }}</span>
+            <span>{{ langService.isArabic() ? 'الوحدات والاشتراكات' : 'Units & Subscriptions' }}</span>
           </h3>
           <span class="text-xs font-bold text-text-muted font-numeric">
             {{ langService.isArabic() ? (units().length + ' وحدات مفعلة') : (units().length + ' Active Units') }}
@@ -382,7 +382,7 @@
               <!-- Watch Percentage Bar -->
               <div class="space-y-1.5 mb-4">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="text-text-secondary font-medium">{{ langService.isArabic() ? 'نسبة المشاهدة والإتقان' : 'Watch & Mastery Rate' }}</span>
+                  <span class="text-text-secondary font-medium">{{ langService.isArabic() ? 'نسبة المشاهدة' : 'Watch Rate' }}</span>
                   <span class="font-numeric font-black text-brand-primary dark:text-brand-accent">
                     {{ unit.completionPercentage }}%
                   </span>
@@ -399,7 +399,7 @@
               <div class="flex items-center justify-between pt-3 border-t border-surface-border text-xs text-text-secondary">
                 <span class="flex items-center gap-1.5">
                   <app-icon name="video" [size]="14" className="text-brand-secondary" />
-                  <span>{{ langService.isArabic() ? 'المحاضرات المكتملة' : 'Completed Lectures' }}</span>
+                  <span>{{ langService.isArabic() ? 'المكتملة' : 'Completed' }}</span>
                 </span>
                 <span class="font-numeric font-bold text-text-primary">
                   {{ langService.isArabic() ? (unit.completedLectures + ' / ' + unit.totalLectures + ' محاضرة') : (unit.completedLectures + ' / ' + unit.totalLectures + ' Lectures') }}
@@ -415,7 +415,7 @@
                   >
                     <span class="flex items-center gap-1.5">
                       <app-icon [name]="expandedUnitId() === unit._id ? 'chevron-up' : 'chevron-down'" [size]="14" />
-                      <span>{{ expandedUnitId() === unit._id ? (langService.isArabic() ? 'إخفاء محاضرات الوحدة' : 'Hide Unit Lectures') : (langService.isArabic() ? ('عرض المحاضرات والدروس (' + unit.lectures.length + ')') : ('View Lectures & Lessons (' + unit.lectures.length + ')')) }}</span>
+                      <span>{{ expandedUnitId() === unit._id ? (langService.isArabic() ? 'إخفاء المحاضرات' : 'Hide Lectures') : (langService.isArabic() ? ('المحاضرات (' + unit.lectures.length + ')') : ('Lectures (' + unit.lectures.length + ')')) }}</span>
                     </span>
                     <span class="text-[10px] font-numeric px-2 py-0.5 rounded-full bg-surface-bg border border-surface-border">
                       {{ expandedUnitId() === unit._id ? (langService.isArabic() ? 'طي' : 'Collapse') : (langService.isArabic() ? 'تفاصيل' : 'Details') }}
@@ -477,13 +477,13 @@
         <div>
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-bold mb-2">
             <app-icon name="play" [size]="14" />
-            <span>{{ langService.isArabic() ? 'سجل المحاضرات والدروس الهندسية' : 'Lectures & Lessons Log' }}</span>
+            <span>{{ langService.isArabic() ? 'سجل المحاضرات' : 'Lectures Log' }}</span>
           </div>
           <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-            {{ hasAcademicTerms() ? (langService.isArabic() ? 'المحاضرات المكتملة والمتبقية في الفصل الدراسي' : 'Completed and Remaining Lectures in Term') : (langService.isArabic() ? 'المحاضرات المكتملة والمتبقية' : 'Completed and Remaining Lectures') }}
+            {{ langService.isArabic() ? 'المحاضرات' : 'Lectures' }}
           </h2>
           <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'مشاهدة 85% من المحاضرة تمنحك XP وتفتح الكويز المرتبط.' : 'Watching 85% awards XP and unlocks the quiz.' }}
+            {{ langService.isArabic() ? 'مشاهدة 85% تمنحك XP وتفتح الكويز.' : 'Watching 85% unlocks quiz & XP.' }}
           </p>
         </div>
 
@@ -593,7 +593,7 @@
           <div class="col-span-full p-8 rounded-2xl border border-surface-border bg-surface-bg text-center">
             <app-icon name="play" [size]="32" className="text-text-muted mx-auto mb-2" />
             <h4 class="text-xs sm:text-sm font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لا توجد محاضرات متاحة حالياً' : 'No lectures available currently' }}</h4>
-            <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'سيتم إتاحة المحاضرات فور نشرها من قبل المعلمة في استوديو المناهج.' : 'Lectures will appear once published by the teacher.' }}</p>
+            <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'ستتاح المحاضرات فور نشرها.' : 'Lectures appear once published.' }}</p>
           </div>
         }
       </div>
@@ -617,7 +617,7 @@
                   {{ langService.isArabic() ? 'الكويزات المستحقة' : 'Due Quizzes' }}
                 </h3>
                 <p class="text-[11px] text-text-secondary">
-                  {{ langService.isArabic() ? 'امتحانات لقياس الفهم وتثبيت الأفكار' : 'Assessments to evaluate understanding' }}
+                  {{ langService.isArabic() ? 'تقييمات الفهم والتمارين.' : 'Assessments and practice.' }}
                 </p>
               </div>
             </div>
@@ -797,8 +797,8 @@
             } @empty {
               <div class="p-6 rounded-2xl border border-surface-border bg-surface-bg text-center">
                 <app-icon name="check-circle" [size]="28" className="text-emerald-500 mx-auto mb-2" />
-                <h4 class="text-xs font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لا توجد كويزات في هذا التصنيف حالياً' : 'No quizzes in this category currently' }}</h4>
-                <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'يمكنك متابعة باقي التقييمات من التبويبات الأخرى بالأعلى.' : 'You can follow other assessments from the tabs above.' }}</p>
+                <h4 class="text-xs font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لا توجد كويزات هنا' : 'No quizzes here' }}</h4>
+                <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'راجع باقي التبويبات.' : 'Check other tabs.' }}</p>
               </div>
             }
           </div>
@@ -815,10 +815,10 @@
               </div>
               <div>
                 <h3 class="text-sm sm:text-base font-extrabold text-text-primary">
-                  {{ langService.isArabic() ? 'سجل الدرجات وتصحيح المعلمة' : 'Grade Log & Feedback' }}
+                  {{ langService.isArabic() ? 'سجل الدرجات والتصحيح' : 'Grade Log & Feedback' }}
                 </h3>
                 <p class="text-[11px] text-text-secondary">
-                  {{ langService.isArabic() ? 'الامتحانات المصححة وملاحظات الحل' : 'Graded exams with feedback' }}
+                  {{ langService.isArabic() ? 'الامتحانات المصححة والملاحظات.' : 'Graded exams with feedback' }}
                 </p>
               </div>
             </div>
@@ -870,7 +870,7 @@
               <div class="p-6 rounded-2xl border border-surface-border bg-surface-bg text-center">
                 <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto mb-2" />
                 <h4 class="text-xs font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لا توجد اختبارات مصححة بعد' : 'No graded tests yet' }}</h4>
-                <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'ستظهر هنا تفاصيل درجاتك فور تصحيح المهندسة هبة لحلولك.' : 'Your grades will appear here once graded by Eng. Heba.' }}</p>
+                <p class="text-[11px] text-text-secondary">{{ langService.isArabic() ? 'ستظهر الدرجات بعد التصحيح.' : 'Grades appear after review.' }}</p>
               </div>
             }
           </div>
@@ -891,7 +891,7 @@
               : (langService.isArabic() ? 'الوحدات الدراسية المتاحة' : 'Available Study Units') }}
           </h2>
           <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'اختر الوحدة لمتابعة المحاضرات والتقييمات.' : 'Select a unit for lectures and assessments.' }}
+            {{ langService.isArabic() ? 'اختر الوحدة للمذاكرة.' : 'Select a unit.' }}
           </p>
         </div>
 
@@ -932,7 +932,7 @@
                     [class.bg-brand-magenta/15]="unit.type === 'FINAL_REVISION'"
                     [class.text-brand-magenta]="unit.type === 'FINAL_REVISION'"
                   >
-                    {{ unit.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية مكثفة' : 'Intensive Final Revision') : (langService.isArabic() ? 'وحدة دراسية أساسية' : 'Core Study Unit') }}
+                    {{ unit.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
                   </span>
 
                   <!-- Mathematical Theme Tag -->
@@ -983,8 +983,8 @@
         } @empty {
           <div class="col-span-full p-8 rounded-3xl border border-surface-border bg-surface-card text-center">
             <app-icon name="book-open" [size]="36" className="text-text-muted mx-auto mb-2" />
-            <h4 class="text-sm font-bold text-text-primary mb-1">{{ hasAcademicTerms() ? (langService.isArabic() ? 'لا توجد وحدات في هذا الفصل' : 'No units in this term') : (langService.isArabic() ? 'لا توجد وحدات حالياً' : 'No units currently') }}</h4>
-            <p class="text-xs text-text-secondary">{{ langService.isArabic() ? 'ستُضاف الوحدات والمحاضرات قريباً.' : 'Units and lectures will be added soon.' }}</p>
+            <h4 class="text-sm font-bold text-text-primary mb-1">{{ hasAcademicTerms() ? (langService.isArabic() ? 'لا وحدات لهذا الترم' : 'No units this term') : (langService.isArabic() ? 'لا وحدات حالياً' : 'No units yet') }}</h4>
+            <p class="text-xs text-text-secondary">{{ langService.isArabic() ? 'ستُضاف قريباً.' : 'Added soon.' }}</p>
           </div>
         }
       </div>
@@ -1002,10 +1002,10 @@
         <span>{{ langService.isArabic() ? 'لوحة الشرف' : 'Hall of Fame' }}</span>
       </div>
       <h2 class="text-xl sm:text-3xl font-black text-text-primary font-academic-serif">
-        @if (langService.isArabic()) { أوائل دفعة سبايدر ماث • <span class="text-gold-accent">لوحة الشرف</span> } @else { Spider Math Top Scorers • <span class="text-gold-accent">Hall of Fame</span> } <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
+        @if (langService.isArabic()) { أوائل الدفعة • <span class="text-gold-accent">لوحة الشرف</span> } @else { Top Scorers • <span class="text-gold-accent">Hall of Fame</span> } <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
       </h2>
       <p class="text-xs sm:text-sm text-text-secondary mt-1">
-        {{ langService.isArabic() ? 'الترتيب حسب نقاط التميز (XP).' : 'Rankings based on XP earned.' }}
+        {{ langService.isArabic() ? 'الترتيب بنقاط XP.' : 'Rankings by XP.' }}
       </p>
     </div>
 
@@ -1107,7 +1107,7 @@
       <div class="p-8 rounded-2xl border border-surface-border bg-surface-bg text-center max-w-lg mx-auto">
         <app-icon name="award" [size]="32" className="text-amber-500 mx-auto mb-2" />
         <h4 class="text-sm font-bold text-text-primary mb-1">{{ langService.isArabic() ? 'لوحة الشرف قيد التحديث' : 'Leaderboard Updating' }}</h4>
-        <p class="text-xs text-text-secondary">{{ langService.isArabic() ? 'ستظهر المراكز فور تقدم الطلاب في الاختبارات والمحاضرات.' : 'Rankings will appear as students complete tests and lectures.' }}</p>
+        <p class="text-xs text-text-secondary">{{ langService.isArabic() ? 'ستظهر المراكز قريباً.' : 'Rankings will appear soon.' }}</p>
       </div>
     }
   </section>
@@ -1139,7 +1139,7 @@
                 {{ langService.isArabic() ? 'تعديل الملف الشخصي' : 'Edit Profile' }}
               </h3>
               <p class="text-xs text-text-secondary mt-0.5 truncate">
-                {{ langService.isArabic() ? 'تحديث الاسم وأرقام التواصل والصورة الشخصية' : 'Update name, contact numbers, and photo' }}
+                {{ langService.isArabic() ? 'تحديث البيانات والصورة.' : 'Update info and photo.' }}
               </p>
             </div>
           </div>
@@ -1175,7 +1175,7 @@
           <!-- Avatar Selection -->
           <div>
             <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-              {{ langService.isArabic() ? 'الصورة الشخصية (اختر أفتار أو ارفع صورتك):' : 'Profile Picture (Choose avatar or upload photo):' }}
+              {{ langService.isArabic() ? 'الصورة الشخصية:' : 'Profile Picture:' }}
             </label>
             <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-3 max-h-36 sm:max-h-44 overflow-y-auto overscroll-contain p-1.5 rounded-2xl border border-surface-border bg-surface-bg/40 custom-scrollbar">
               @for (av of presetAvatars; track av.id) {
@@ -1231,7 +1231,7 @@
                   </button>
                 </div>
               } @else {
-                <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يدعم JPG و PNG و WebP بحجم خفيف' : 'Supports JPG, PNG, and WebP' }}</span>
+                <span class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يدعم JPG, PNG, WebP' : 'Supports JPG, PNG, WebP' }}</span>
               }
             </div>
           </div>
@@ -1305,7 +1305,7 @@
                 </label>
                 <span class="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
                   <app-icon name="lock" [size]="10" />
-                  <span>{{ langService.isArabic() ? 'مقفول (بموافقة المعلمة)' : 'Locked (Requires Approval)' }}</span>
+                  <span>{{ langService.isArabic() ? 'يتطلب موافقة' : 'Requires Approval' }}</span>
                 </span>
               </div>
               <div class="relative">
@@ -1333,7 +1333,7 @@
               <div class="leading-relaxed">
                 <span class="font-extrabold block mb-0.5">{{ langService.isArabic() ? 'تعديل رقم ولي الأمر:' : 'Parent Phone:' }}</span>
                 <span>
-                  {{ langService.isArabic() ? 'لحماية الحساب والتنبيهات، يتطلب التعديل التواصل مع المعلمة هبة عياد عبر واتساب.' : 'To protect security and alerts, modifying parent phone requires contacting Eng. Heba via WhatsApp.' }}
+                  {{ langService.isArabic() ? 'للتعديل، تواصل عبر واتساب.' : 'Contact via WhatsApp to change.' }}
                 </span>
               </div>
             </div>
@@ -1434,7 +1434,7 @@
             {{ comingSoonUnitTitle() }}
           </h3>
           <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-sm mx-auto">
-            {{ langService.isArabic() ? 'جاري تجهيز محاضرات وتمارين هذه الوحدة وستتاح قريباً.' : 'Lectures and assignments for this unit are being prepared and will be available soon.' }}
+            {{ langService.isArabic() ? 'المحتوى قيد التجهيز.' : 'Content in preparation.' }}
           </p>
         </div>
 
@@ -1446,7 +1446,7 @@
             class="w-full py-3 px-6 rounded-2xl btn-gold-metallic text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
           >
             <app-icon name="check-circle" [size]="16" />
-            <span>{{ langService.isArabic() ? 'حسناً، فهمت' : 'Got It' }}</span>
+            <span>{{ langService.isArabic() ? 'حسناً' : 'Got it' }}</span>
           </button>
         </div>
       </div>

@@ -12,13 +12,13 @@
 
       <h1 class="font-academic-serif text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
         @if (langService.isArabic()) {
-          تسجيل الدخول إلى منصة <span class="text-gold-accent">سبايدر ماث</span>
+          تسجيل الدخول — <span class="text-gold-accent">سبايدر ماث</span>
         } @else {
-          Sign In to <span class="text-gold-accent">Spider Math</span> Platform
+          Sign In — <span class="text-gold-accent">Spider Math</span>
         }
       </h1>
       <p class="text-xs sm:text-base text-text-secondary mt-2">
-        {{ langService.isArabic() ? 'المنظومة الهندسية للرياضيات — إشراف م/ هبة عبد الوهاب' : 'Engineering Math System — Eng. Heba Abdelwahab' }}
+        {{ langService.isArabic() ? 'الرياضيات مع م/ هبة عبدالوهاب' : 'Math with Eng. Heba' }}
       </p>
     </div>
 
@@ -101,7 +101,6 @@
             >
               <app-icon name="log-in" [size]="14" />
               <span class="truncate">{{ langService.isArabic() ? 'تسجيل الدخول' : 'Sign In' }}</span>
-              <span class="hidden sm:inline">{{ langService.isArabic() ? ' (للمسجلين)' : ' (Registered)' }}</span>
             </button>
 
             <button
@@ -116,7 +115,6 @@
             >
               <app-icon name="user-plus" [size]="14" />
               <span class="truncate">{{ langService.isArabic() ? 'حساب جديد' : 'Sign Up' }}</span>
-              <span class="hidden sm:inline">{{ langService.isArabic() ? ' (طالب جديد)' : ' (New Student)' }}</span>
             </button>
           </div>
 
@@ -135,7 +133,7 @@
                   @if (unregisteredGoogleEmail()) {
                     <div class="pt-2 border-t border-rose-500/20 flex flex-col gap-2">
                       <p class="text-[11px] text-text-secondary leading-tight">
-                        {{ langService.isArabic() ? 'لا يوجد حساب بهذا البريد. إنشاء حساب جديد؟' : 'No account found. Create new account?' }}
+                        {{ langService.isArabic() ? 'لا يوجد حساب بهذا البريد. إنشاء حساب؟' : 'No account found. Sign up?' }}
                       </p>
                       <button
                         type="button"
@@ -153,7 +151,7 @@
               <!-- HA Code Input -->
               <div>
                 <label for="studentCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                  {{ langService.isArabic() ? 'كود الطالب الفريد (HA Code)' : 'Unique Student Code (HA Code)' }}
+                  {{ langService.isArabic() ? 'كود الطالب (HA Code)' : 'Student Code (HA Code)' }}
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -171,7 +169,7 @@
                   />
                 </div>
                 <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                  {{ langService.isArabic() ? 'كود الطالب يبدأ بـ HA متبوعاً بالأرقام (مثال: HA1001).' : 'Starts with HA followed by digits (e.g. HA1001).' }}
+                  {{ langService.isArabic() ? 'يبدأ بـ HA (مثل HA1001)' : 'Starts with HA (e.g. HA1001)' }}
                 </p>
               </div>
 
@@ -183,7 +181,7 @@
               >
                 @if (isSubmitting()) {
                   <app-icon name="loader" [size]="18" className="animate-spin" />
-                  <span>{{ langService.isArabic() ? 'جاري التحقق من الكود...' : 'Verifying code...' }}</span>
+                  <span>{{ langService.isArabic() ? 'تحقق من الكود...' : 'Verifying...' }}</span>
                 } @else {
                   <app-icon name="log-in" [size]="18" />
                   <span>{{ langService.isArabic() ? 'دخول بالكود' : 'Sign In with Code' }}</span>
@@ -206,7 +204,7 @@
                 >
                   @if (isGoogleAuthenticating()) {
                     <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
-                    <span>{{ langService.isArabic() ? 'جاري التحقق عبر حساب Google...' : 'Authenticating with Google...' }}</span>
+                    <span>{{ langService.isArabic() ? 'تحقق عبر Google...' : 'Checking Google...' }}</span>
                   } @else {
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
@@ -218,20 +216,20 @@
                   }
                 </button>
                 <p class="text-[10px] text-text-muted text-center mt-1.5">
-                  {{ langService.isArabic() ? 'اختر حساب Google المسجل بالمنصة.' : 'Select registered Google account.' }}
+                  {{ langService.isArabic() ? 'اختر حساب Google المسجل.' : 'Select registered account.' }}
                 </p>
               </div>
 
               <!-- Switch to Sign Up Prompt -->
               <div class="pt-4 border-t border-surface-border text-center">
                 <p class="text-xs text-text-secondary">
-                  {{ langService.isArabic() ? 'طالب جديد وترغب في التسجيل لأول مرة؟' : 'New student looking to register for the first time?' }}
+                  {{ langService.isArabic() ? 'طالب جديد؟' : 'New student?' }}
                   <button
                     type="button"
                     (click)="setStudentAuthMode('signup')"
                     class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 rtl:mr-1 rtl:ml-0 ltr:ml-1 ltr:mr-0 cursor-pointer"
                   >
-                    {{ langService.isArabic() ? 'إنشاء حساب جديد كطالب' : 'Create a new student account' }}
+                    {{ langService.isArabic() ? 'حساب جديد' : 'Sign up' }}
                   </button>
                 </p>
               </div>
@@ -247,14 +245,14 @@
                 <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center gap-1.5 text-xs font-extrabold text-text-primary">
                     <app-icon name="check-circle" [size]="14" className="text-brand-primary dark:text-brand-accent" />
-                    <span>{{ langService.isArabic() ? 'التسجيل السريع بحساب Google (اختياري)' : 'Quick Registration with Google (Optional)' }}</span>
+                    <span>{{ langService.isArabic() ? 'تسجيل سريع بـ Google' : 'Quick with Google' }}</span>
                   </div>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20">
                     {{ langService.isArabic() ? 'ضغطة واحدة' : 'One Click' }}
                   </span>
                 </div>
                 <p class="text-[11px] text-text-muted mb-3 leading-relaxed">
-                  {{ langService.isArabic() ? 'تسجيل مباشر بحساب Google للدخول السريع دون كلمات مرور.' : 'Direct Google registration for quick passwordless login.' }}
+                  {{ langService.isArabic() ? 'تسجيل سريع بدون كلمة مرور.' : 'Quick passwordless signup.' }}
                 </p>
 
                 @if (googleAuthErrorMessage()) {
@@ -272,7 +270,7 @@
                 >
                   @if (isGoogleAuthenticating()) {
                     <app-icon name="loader" [size]="16" className="animate-spin text-brand-primary" />
-                    <span>{{ langService.isArabic() ? 'جاري فتح نافذة حسابات Google...' : 'Opening Google accounts window...' }}</span>
+                    <span>{{ langService.isArabic() ? 'فتح Google...' : 'Opening Google...' }}</span>
                   } @else {
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
@@ -289,7 +287,7 @@
               <div class="relative my-2 flex items-center justify-center">
                 <div class="border-t border-surface-border w-full"></div>
                 <span class="bg-surface-card px-3 text-xs text-text-muted font-bold absolute">
-                  {{ langService.isArabic() ? 'أو التسجيل المباشر' : 'OR Direct Registration' }}
+                  {{ langService.isArabic() ? 'أو تسجيل مباشر' : 'OR Direct' }}
                 </span>
               </div>
 
@@ -299,7 +297,7 @@
                 <!-- 1. Full Name -->
                 <div>
                   <label for="regFullName" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                    {{ langService.isArabic() ? 'اسم الطالب ثلاثياً' : 'Student Full Name' }}
+                    {{ langService.isArabic() ? 'الاسم ثلاثياً' : 'Full Name' }}
                   </label>
                   <div class="relative">
                     <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -370,7 +368,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label for="regPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      {{ langService.isArabic() ? 'رقم هاتف الطالب (واتساب)' : 'Student Phone (WhatsApp)' }}
+                      {{ langService.isArabic() ? 'هاتف الطالب (واتساب)' : 'Student Phone (WhatsApp)' }}
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-primary dark:text-brand-accent">
@@ -391,7 +389,7 @@
 
                   <div>
                     <label for="regParentPhone" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      {{ langService.isArabic() ? 'رقم هاتف ولي الأمر' : 'Parent Phone Number' }}
+                      {{ langService.isArabic() ? 'هاتف ولي الأمر' : 'Parent Phone' }}
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -415,14 +413,14 @@
                 <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300">
                   <app-icon name="alert-circle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
                   <span class="leading-relaxed font-bold">
-                    {{ langService.isArabic() ? 'تنبيه: يجب أن يختلف رقم ولي الأمر عن رقم الطالب لتفعيل المتابعة.' : 'Notice: Parent phone must differ from student phone for alerts.' }}
+                    {{ langService.isArabic() ? 'يجب اختلاف رقم ولي الأمر عن الطالب.' : 'Parent phone must differ from student phone.' }}
                   </span>
                 </div>
 
                 <!-- 5. Curriculum Selection -->
                 <div>
                   <label class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                    {{ langService.isArabic() ? 'المسار والمنهج الدراسي' : 'Curriculum Track' }}
+                    {{ langService.isArabic() ? 'المنهج الدراسي' : 'Curriculum' }}
                   </label>
                   <div class="grid grid-cols-2 gap-2">
                     @for (curr of curriculumTree; track curr.code) {
@@ -464,7 +462,7 @@
                 @if (isRegEgypt()) {
                   <div>
                     <label for="regGovernorate" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">
-                      {{ langService.isArabic() ? 'المحافظة (داخل مصر)' : 'Governorate (Inside Egypt)' }}
+                      {{ langService.isArabic() ? 'المحافظة' : 'Governorate' }}
                     </label>
                     <select
                       id="regGovernorate"
@@ -488,7 +486,7 @@
                 >
                   @if (isSubmitting()) {
                     <app-icon name="loader" [size]="18" className="animate-spin" />
-                    <span>{{ langService.isArabic() ? 'جاري إنشاء الحساب وإصدار كود HA...' : 'Creating account & generating HA Code...' }}</span>
+                    <span>{{ langService.isArabic() ? 'إنشاء الحساب...' : 'Creating account...' }}</span>
                   } @else {
                     <app-icon name="check" [size]="18" />
                     <span>{{ langService.isArabic() ? 'إنشاء الحساب' : 'Create Account' }}</span>
@@ -499,13 +497,13 @@
               <!-- Switch to Login Prompt -->
               <div class="pt-4 border-t border-surface-border text-center">
                 <p class="text-xs text-text-secondary">
-                  {{ langService.isArabic() ? 'لديك حساب بالفعل أو كود طالب سابق؟' : 'Already registered or have an existing HA code?' }}
+                  {{ langService.isArabic() ? 'لديك حساب؟' : 'Already registered?' }}
                   <button
                     type="button"
                     (click)="setStudentAuthMode('login')"
                     class="font-extrabold text-brand-primary dark:text-brand-accent hover:underline mr-1 rtl:mr-1 rtl:ml-0 ltr:ml-1 ltr:mr-0 cursor-pointer"
                   >
-                    {{ langService.isArabic() ? 'تسجيل الدخول إلى حسابك' : 'Sign in to your account' }}
+                    {{ langService.isArabic() ? 'تسجيل الدخول' : 'Sign In' }}
                   </button>
                 </p>
               </div>
@@ -520,7 +518,7 @@
           <form (ngSubmit)="submitParentLogin()" class="space-y-4">
             <div>
               <label for="parentPhoneInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                {{ langService.isArabic() ? 'رقم هاتف ولي الأمر (المسجل لدى المنصة)' : 'Parent Phone Number (Registered with Platform)' }}
+                {{ langService.isArabic() ? 'رقم ولي الأمر المسجل' : 'Registered Parent Phone' }}
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -541,7 +539,7 @@
 
             <div>
               <label for="parentChildCodeInput" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-2">
-                {{ langService.isArabic() ? 'كود الطالب المرتبط (HA Code)' : 'Linked Student HA Code' }}
+                {{ langService.isArabic() ? 'كود الطالب (HA Code)' : 'Student Code (HA Code)' }}
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 right-0 rtl:right-0 rtl:left-auto pr-3.5 flex items-center pointer-events-none text-brand-secondary">
@@ -559,7 +557,7 @@
                 />
               </div>
               <p class="text-[11px] sm:text-xs text-text-muted mt-1.5">
-                {{ langService.isArabic() ? 'كود الطالب لمطابقة الحساب وتفعيل المتابعة.' : 'Student code to sync account and alerts.' }}
+                {{ langService.isArabic() ? 'كود الطالب للمتابعة.' : 'Student code for sync.' }}
               </p>
             </div>
 
@@ -571,7 +569,7 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="18" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري ربط حساب ولي الأمر...' : 'Linking parent account...' }}</span>
+                <span>{{ langService.isArabic() ? 'ربط الحساب...' : 'Linking...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="18" />
                 <span>{{ langService.isArabic() ? 'دخول ولي الأمر' : 'Parent Login' }}</span>
@@ -582,11 +580,10 @@
             <div class="p-3.5 rounded-2xl bg-brand-secondary/5 border border-brand-secondary/20 flex items-start gap-3 mt-4">
               <app-icon name="activity" [size]="20" className="text-brand-secondary shrink-0 mt-0.5" />
               <p class="text-xs text-text-secondary leading-relaxed">
-                @if (langService.isArabic()) {
-                  تتيح لك بوابة ولي الأمر الاطلاع الحي على <strong class="text-text-primary">رادار السونار الحي</strong>، ونسب حضور المحاضرات، وسجل الأخطاء المقالية بالفيديوهات التوضيحية الخاصة بالمهندسة هبة.
-                } @else {
-                  The Parent Portal provides live access to <strong class="text-text-primary">Live Academic Sonar</strong>, lecture attendance rates, and written exam correction logs with video explanations by Eng. Heba.
-                }
+                {{ langService.isArabic()
+                  ? 'متابعة الحضور والمشاهدة والواجبات.'
+                  : 'Track attendance, watch time & homework.'
+                }}
               </p>
             </div>
           </form>
@@ -603,10 +600,10 @@
               </div>
               <div>
                 <h3 class="text-sm font-extrabold text-text-primary">
-                  {{ langService.isArabic() ? 'إدارة المنصة المركزية — م. هبة عبد الوهاب' : 'Central Platform Administration — Eng. Heba Abdelwahab' }}
+                  {{ langService.isArabic() ? 'لوحة الإدارة' : 'Admin Portal' }}
                 </h3>
                 <p class="text-xs text-text-secondary mt-0.5">
-                  {{ langService.isArabic() ? 'اعتماد الأجهزة، تصحيح المقالي، وبنك الأسئلة والاشتراكات.' : 'Device approvals, grading, question bank, and subscriptions.' }}
+                  {{ langService.isArabic() ? 'الأجهزة والتصحيح والاشتراكات.' : 'Devices, grading & subscriptions.' }}
                 </p>
               </div>
             </div>
@@ -619,10 +616,10 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="18" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري فتح لوحة الإدارة...' : 'Opening Admin Studio...' }}</span>
+                <span>{{ langService.isArabic() ? 'فتح الإدارة...' : 'Opening Studio...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="18" />
-                <span>{{ langService.isArabic() ? 'فتح استوديو الإدارة' : 'Open Admin Studio' }}</span>
+                <span>{{ langService.isArabic() ? 'استوديو الإدارة' : 'Admin Studio' }}</span>
               }
             </button>
           </div>
@@ -630,7 +627,7 @@
 
         <!-- Guest Mode Link -->
         <div class="pt-4 mt-6 border-t border-surface-border flex items-center justify-between">
-          <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'تريد الاطلاع على المنصة كزائر؟' : 'Explore platform as a guest?' }}</span>
+          <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'تصفح كزائر؟' : 'Explore as guest?' }}</span>
           <button
             type="button"
             (click)="switchToGuest()"

@@ -221,14 +221,14 @@ export class AssessmentAttemptViewComponent implements OnInit {
           }
 
           if (errorCode === 'FORBIDDEN_403') {
-            const msg = err?.error?.error?.message || (this.langService.isArabic() ? 'هذا الاختبار غير متاح لصفك الدراسي.' : 'Assessment not available for your grade.');
+            const msg = err?.error?.error?.message || (this.langService.isArabic() ? 'هذا الاختبار غير متاح لصفك.' : 'Not available for your grade.');
             alert(msg);
             this.router.navigate(['/student']);
             return;
           }
 
           if (errorCode === 'ASSESSMENT_NOT_STARTED_YET') {
-            alert(this.langService.isArabic() ? 'لم يحن موعد بدء الاختبار بعد.' : 'This assessment is not open yet.');
+            alert(this.langService.isArabic() ? 'لم يحن موعد الاختبار.' : 'Not open yet.');
             this.router.navigate(['/student']);
             return;
           }
@@ -354,8 +354,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
         const numbersList = unanswered.map((u) => u.order).join('، ');
         this.submissionWarning.set(
           this.langService.isArabic()
-            ? `يرجى إجابة الأسئلة أولاً: (${numbersList})`
-            : `Please answer remaining questions: (${numbersList})`
+            ? `أجب عن الأسئلة: (${numbersList})`
+            : `Answer remaining: (${numbersList})`
         );
         this.activeQuestionIdx.set(unanswered[0].index);
         return;
@@ -364,8 +364,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
       const confirmed = await this.confirmDialogService.confirm({
         title: this.langService.isArabic() ? 'تسليم الموديول الأول' : 'Submit Module 1',
         message: this.langService.isArabic()
-          ? 'لن تتمكن من تعديل إجابات الموديول الأول بعد تسليمه. متابعة؟'
-          : 'You cannot edit Module 1 after submitting. Proceed?',
+          ? 'تسليم الموديول الأول؟'
+          : 'Submit Module 1?',
         confirmLabel: this.langService.isArabic() ? 'الانتقال للموديول الثاني' : 'Proceed to Module 2',
         cancelLabel: this.langService.isArabic() ? 'مراجعة الموديول الأول' : 'Review Module 1',
         icon: 'alert-triangle',
@@ -402,8 +402,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
         const numbersList = unanswered.map((u) => u.order).join('، ');
         this.submissionWarning.set(
           this.langService.isArabic()
-            ? `يرجى إجابة الأسئلة أولاً: (${numbersList})`
-            : `Please answer remaining questions: (${numbersList})`
+            ? `أجب عن الأسئلة: (${numbersList})`
+            : `Answer remaining: (${numbersList})`
         );
         // Automatically jump to the first unanswered question!
         this.activeQuestionIdx.set(unanswered[0].index);
@@ -413,8 +413,8 @@ export class AssessmentAttemptViewComponent implements OnInit {
       const confirmed = await this.confirmDialogService.confirm({
         title: this.langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment',
         message: this.langService.isArabic()
-          ? 'تسليم التقييم نهائياً؟ لا يمكن التعديل بعد التسليم.'
-          : 'Submit assessment? You cannot edit answers after submission.',
+          ? 'تسليم التقييم نهائياً؟'
+          : 'Submit assessment?',
         confirmLabel: this.langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment',
         cancelLabel: this.langService.isArabic() ? 'مراجعة الإجابات' : 'Review Answers',
         icon: 'check-circle',

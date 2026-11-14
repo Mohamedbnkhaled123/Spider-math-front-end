@@ -498,8 +498,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     this.toastTriggered.emit({
       text: this.langService.isArabic()
-        ? `تم إدراج وحفظ ${extractedQuestions.length} أسئلة بنجاح بالامتحان!`
-        : `Successfully inserted and saved ${extractedQuestions.length} questions into assessment!`,
+        ? `تم حفظ ${extractedQuestions.length} أسئلة`
+        : `Saved ${extractedQuestions.length} questions`,
       type: 'success'
     });
   }
@@ -508,8 +508,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.cachedFileSession.set(session);
     this.toastTriggered.emit({
       text: this.langService.isArabic()
-        ? `تم تجهيز ملف "${session.fileName}" (صفحة ${session.pageNumber}) للقص اليدوي.`
-        : `File "${session.fileName}" (page ${session.pageNumber}) ready for cropping.`,
+        ? `تم تجهيز صفحة ${session.pageNumber} للقص.`
+        : `Page ${session.pageNumber} ready for cropping.`,
       type: 'success'
     });
   }
@@ -539,7 +539,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.activeQuestionForSlicing.set(null);
     this.triggerDraftAutoSave(true);
     this.toastTriggered.emit({
-      text: this.langService.isArabic() ? 'تم قص الصورة وحفظها بنجاح!' : 'Image cropped successfully!',
+      text: this.langService.isArabic() ? 'تم قص الصورة' : 'Image cropped',
       type: 'success'
     });
   }
@@ -835,8 +835,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     this.toastTriggered.emit({
       text: this.langService.isArabic()
-        ? 'تمت استعادة المسودة بنجاح!'
-        : 'Draft restored successfully!',
+        ? 'تمت استعادة المسودة'
+        : 'Draft restored',
       type: 'success'
     });
   }
@@ -1168,18 +1168,18 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     const form = this.createForm();
     const rawTitle = (form.titleAr || form.titleEn || '').trim();
     if (!rawTitle) {
-      this.showCreateError(this.langService.isArabic() ? 'يرجى إدخال عنوان الامتحان!' : 'Please enter assessment title!');
+      this.showCreateError(this.langService.isArabic() ? 'أدخل عنوان الامتحان' : 'Enter assessment title');
       return;
     }
 
     if (form.isScheduled) {
       if (!form.availableFrom && !form.availableUntil) {
-        this.showCreateError('تنبيه: قمتِ بتفعيل الجدولة، يرجى ضبط موعد التنزيل أو الإغلاق من التقويم، أو إلغاء تفعيل الجدولة.');
+        this.showCreateError('اضبط موعد الجدولة.');
         return;
       }
       if (form.availableFrom && form.availableUntil) {
         if (new Date(form.availableUntil) <= new Date(form.availableFrom)) {
-          this.showCreateError('تنبيه: موعد إغلاق الامتحان يجب أن يكون بعد موعد بدء وتنزيل الامتحان!');
+          this.showCreateError('يجب أن يلي الإغلاق البدء.');
           return;
         }
       }
@@ -1230,7 +1230,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         this.closeCreateModal();
         this.loadAssessments(true);
         this.toastTriggered.emit({
-          text: `تم إنشاء الامتحان وتخصيصه لـ (${form.gradeLevel}) بنجاح!`,
+          text: `تم إنشاء الامتحان (${form.gradeLevel})`,
           type: 'success'
         });
       },
@@ -1242,7 +1242,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           if (first?.message) errorMsg = first.message;
         }
         if (!errorMsg) {
-          errorMsg = 'تعذر إنشاء الامتحان. يرجى مراجعة البيانات المدخلة.';
+          errorMsg = 'تعذر الإنشاء. راجع البيانات.';
         }
         this.showCreateError(errorMsg);
       }
@@ -1258,7 +1258,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     if (nextState && (!item.questions || item.questions.length === 0)) {
       this.toastTriggered.emit({
-        text: 'لا يمكن نشر كويز فارغ. أضف أسئلة أولاً.',
+        text: 'لا يمكن نشر كويز فارغ.',
         type: 'error'
       });
       return;
@@ -1275,7 +1275,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
               list.map((a) => (a.id === item.id ? { ...a, isPublished: nextState } : a))
             );
             this.toastTriggered.emit({
-              text: `تم ${actionText} الامتحان بنجاح!`,
+              text: `تم ${actionText} الامتحان`,
               type: 'success'
             });
           },
@@ -1288,7 +1288,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         });
       },
       !nextState,
-      nextState ? 'نعم، انشر الامتحان' : 'نعم، قم بإلغاء النشر',
+      nextState ? 'نعم، انشر الامتحان' : 'نعم، ألغِ النشر',
       'تراجع'
     );
   }
@@ -1303,8 +1303,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (item.assessmentType === 'HOMEWORK') {
       this.toastTriggered.emit({
         text: this.langService.isArabic()
-          ? 'الواجب المنزلي خاص دائماً بالطلاب المشتركين ولا يمكن جعله مجانياً'
-          : 'Homework is strictly private for subscribed students',
+          ? 'الواجب للمشتركين فقط'
+          : 'Homework is private for subscribed students',
         type: 'warning'
       });
       return;
@@ -1324,8 +1324,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (res) => {
         const text = res?.message || (newStatus
-          ? (this.langService.isArabic() ? 'تم تفعيل إتاحة الكويز مجاناً لجميع الطلاب' : 'Quiz is now free for all students')
-          : (this.langService.isArabic() ? 'تم قفل الكويز ليكون خاصاً بالطلاب المشتركين' : 'Quiz is now private for subscribed students'));
+          ? (this.langService.isArabic() ? 'الكويز متاح مجاناً' : 'Quiz is now free')
+          : (this.langService.isArabic() ? 'الكويز للمشتركين فقط' : 'Quiz is private for subscribers'));
         this.toastTriggered.emit({ text, type: 'success' });
         ASSESSMENTS_MEMORY_CACHE.delete(`${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`);
       },
@@ -1352,18 +1352,18 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             }
             ASSESSMENTS_MEMORY_CACHE.clear();
             this.assessmentsList.update((list) => list.filter((a) => a.id !== item.id));
-            this.toastTriggered.emit({ text: 'تم حذف الامتحان بنجاح!', type: 'warning' });
+            this.toastTriggered.emit({ text: 'تم حذف الامتحان', type: 'warning' });
           },
           error: (err) => {
             this.toastTriggered.emit({
-              text: err?.error?.message || 'تعذر حذف الامتحان من قاعدة البيانات.',
+              text: err?.error?.message || 'تعذر حذف الامتحان',
               type: 'error'
             });
           }
         });
       },
       true,
-      'نعم، احذف الامتحان',
+      'نعم، احذف',
       'إلغاء'
     );
   }
@@ -1390,7 +1390,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (url) {
       this.createForm.update((f) => ({ ...f, referenceSheetUrl: url }));
       this.isRefSheetActiveInCreate.set(true);
-      this.toastTriggered.emit({ text: 'تم رفع صورة ورقة القوانين بنجاح!', type: 'success' });
+      this.toastTriggered.emit({ text: 'تم رفع ورقة القوانين', type: 'success' });
     }
   }
 
@@ -1404,7 +1404,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
       this.isRefSheetActiveInEditor.set(true);
       this.triggerDraftAutoSave(true);
-      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بالامتحان بنجاح!', type: 'success' });
+      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين', type: 'success' });
     }
   }
 
@@ -1497,7 +1497,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   onQuestionImageUploaded(url: string): void {
     this.newQuestionImageUrl.set(url);
     this.triggerDraftAutoSave(true);
-    this.toastTriggered.emit({ text: 'تم ضغط ورفع صورة المسألة بنجاح!', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم رفع صورة المسألة', type: 'success' });
   }
 
   updateOption(index: number, value: string): void {
@@ -1586,8 +1586,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (!text && !this.newQuestionImageUrl()) {
       this.toastTriggered.emit({
         text: this.langService.isArabic()
-          ? 'يرجى كتابة نص السؤال أو رفع صورة المسألة الرياضية!'
-          : 'Please enter question text or upload a problem image!',
+          ? 'أدخل نص السؤال أو صورته'
+          : 'Enter question text or image',
         type: 'error'
       });
       return;
@@ -1601,8 +1601,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (trimmedOpts.some((o) => !o)) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.'
-            : 'Warning: Cannot leave any answer option empty! Please fill all 4 options.',
+            ? 'املأ جميع الخيارات الأربعة'
+            : 'Fill all 4 options',
           type: 'error'
         });
         return;
@@ -1613,8 +1613,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (uniqueOpts.size < trimmedOpts.length) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.'
-            : 'Warning: Answer options cannot be identical! Please provide distinct options.',
+            ? 'الخيارات يجب أن تكون مختلفة'
+            : 'Options must be unique',
           type: 'error'
         });
         return;
@@ -1624,8 +1624,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (validAccepted.length === 0) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: يجب إضافة إجابة صحيحة واحدة على الأقل للسؤال النصي (الإجابات المحتملة المقبولة)!'
-            : 'Warning: Please add at least one accepted answer for the text question!',
+            ? 'أضف إجابة مقبولة'
+            : 'Add accepted answer',
           type: 'error'
         });
         return;
@@ -1676,7 +1676,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     }
 
     this.toastTriggered.emit({
-      text: this.langService.isArabic() ? 'تم حفظ تعديلات السؤال بنجاح!' : 'Question changes saved successfully!',
+      text: this.langService.isArabic() ? 'تم حفظ السؤال' : 'Question saved',
       type: 'success'
     });
   }
@@ -1694,8 +1694,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (!text && !this.newQuestionImageUrl()) {
       this.toastTriggered.emit({
         text: this.langService.isArabic()
-          ? 'يرجى كتابة نص السؤال أو رفع صورة المسألة الرياضية!'
-          : 'Please enter question text or upload a problem image!',
+          ? 'أدخل نص السؤال أو صورته'
+          : 'Enter question text or image',
         type: 'error'
       });
       return;
@@ -1709,8 +1709,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (trimmedOpts.some((o) => !o)) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.'
-            : 'Warning: Cannot leave any answer option empty! Please fill all 4 options.',
+            ? 'املأ جميع الخيارات الأربعة'
+            : 'Fill all 4 options',
           type: 'error'
         });
         return;
@@ -1721,8 +1721,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (uniqueOpts.size < trimmedOpts.length) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.'
-            : 'Warning: Answer options cannot be identical! Please provide distinct options.',
+            ? 'الخيارات يجب أن تكون مختلفة'
+            : 'Options must be unique',
           type: 'error'
         });
         return;
@@ -1732,8 +1732,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (validAccepted.length === 0) {
         this.toastTriggered.emit({
           text: this.langService.isArabic()
-            ? 'تنبيه: يجب إضافة إجابة صحيحة واحدة على الأقل للسؤال النصي (الإجابات المحتملة المقبولة)!'
-            : 'Warning: Please add at least one accepted answer for the text question!',
+            ? 'أضف إجابة مقبولة'
+            : 'Add accepted answer',
           type: 'error'
         });
         return;
@@ -1772,7 +1772,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.autoPersistAssessmentToBackend(updatedAsm);
 
     this.toastTriggered.emit({
-      text: this.langService.isArabic() ? 'تمت إضافة وحفظ السؤال بنجاح!' : 'Question added and saved successfully!',
+      text: this.langService.isArabic() ? 'تمت إضافة السؤال' : 'Question added',
       type: 'success'
     });
   }
@@ -1783,7 +1783,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     if (asm.submissionsCount > 0) {
       this.toastTriggered.emit({
-        text: 'لا يمكن حذف الأسئلة بعد بدء التسليمات.',
+        text: 'لا يمكن الحذف بعد بدء التسليمات.',
         type: 'error'
       });
       return;
@@ -1811,10 +1811,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         this.syncAssessmentInMemoryList(updatedAsm);
         this.triggerDraftAutoSave(true);
         this.autoPersistAssessmentToBackend(updatedAsm);
-        this.toastTriggered.emit({ text: 'تم حذف السؤال من الامتحان!', type: 'warning' });
+        this.toastTriggered.emit({ text: 'تم حذف السؤال', type: 'warning' });
       },
       true,
-      'نعم، احذف السؤال',
+      'نعم، احذف',
       'إلغاء'
     );
   }
@@ -1838,25 +1838,25 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     const rawTitle = (asm.titleAr || asm.titleEn || '').trim();
     if (!rawTitle) {
-      this.showEditorError(this.langService.isArabic() ? 'يرجى إدخال عنوان الامتحان!' : 'Please enter assessment title!', 'SETTINGS');
+      this.showEditorError(this.langService.isArabic() ? 'أدخل عنوان الامتحان' : 'Enter assessment title', 'SETTINGS');
       return;
     }
 
     if (asm.isScheduled) {
       if (!asm.availableFrom && !asm.availableUntil) {
-        this.showEditorError('تنبيه: قمتِ بتفعيل الجدولة، يرجى ضبط موعد التنزيل أو الإغلاق من التقويم، أو إلغاء تفعيل الجدولة.', 'SETTINGS');
+        this.showEditorError('اضبط موعد الجدولة.', 'SETTINGS');
         return;
       }
       if (asm.availableFrom && asm.availableUntil) {
         if (new Date(asm.availableUntil) <= new Date(asm.availableFrom)) {
-          this.showEditorError('تنبيه: موعد إغلاق الامتحان يجب أن يكون بعد موعد بدء وتنزيل الامتحان!', 'SETTINGS');
+          this.showEditorError('يجب أن يلي الإغلاق البدء.', 'SETTINGS');
           return;
         }
       }
     }
 
     if (!asm.questions || asm.questions.length === 0) {
-      this.showEditorError('تنبيه: يجب إضافة سؤال واحد على الأقل قبل حفظ الكويز! يرجى إضافة الأسئلة من تبويب الأسئلة.', 'QUESTIONS');
+      this.showEditorError('أضف سؤالاً واحداً على الأقل', 'QUESTIONS');
       return;
     }
 
@@ -1866,32 +1866,32 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       if (q.type === 'MCQ') {
         const opts = (q.options || []).map((o) => (o || '').trim());
         if (opts.length < 2) {
-          this.showEditorError(`السؤال رقم ${q.order}: يجب أن يحتوي على خيارين على الأقل.`, 'QUESTIONS');
+          this.showEditorError(`س${q.order}: أضف خيارين على الأقل`, 'QUESTIONS');
           return;
         }
 
         // Empty check
         if (opts.some((o) => !o)) {
-          this.showEditorError(`السؤال رقم ${q.order}: يحتوي على خيار إجابة فارغ! يرجى ملء جميع الخيارات.`, 'QUESTIONS');
+          this.showEditorError(`س${q.order}: املأ جميع الخيارات`, 'QUESTIONS');
           return;
         }
 
         // Duplicate check (CRITICAL REQUIREMENT)
         const unique = new Set(opts);
         if (unique.size < opts.length) {
-          this.showEditorError(`السؤال رقم ${q.order}: يحتوي على خيارات إجابة متطابقة! لا يمكن أن تتكرر نفس الإجابة في أكثر من خيار.`, 'QUESTIONS');
+          this.showEditorError(`س${q.order}: الخيارات متطابقة`, 'QUESTIONS');
           return;
         }
 
         // Correct option bounds check
         if (q.correctOptionIndex === undefined || q.correctOptionIndex === null || q.correctOptionIndex < 0 || q.correctOptionIndex >= opts.length) {
-          this.showEditorError(`السؤال رقم ${q.order}: يرجى تحديد الإجابة الصحيحة من بين الخيارات المتاحة.`, 'QUESTIONS');
+          this.showEditorError(`س${q.order}: حدد الإجابة الصحيحة`, 'QUESTIONS');
           return;
         }
       } else if (q.type === 'INPUT_TEXT') {
         const answers = (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean);
         if (answers.length === 0) {
-          this.showEditorError(`السؤال رقم ${q.order}: يجب إضافة إجابة صحيحة مقبولة واحدة على الأقل.`, 'QUESTIONS');
+          this.showEditorError(`س${q.order}: أضف إجابة مقبولة`, 'QUESTIONS');
           return;
         }
       }
@@ -1956,8 +1956,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         this.loadAssessments(true);
         this.toastTriggered.emit({
           text: this.autoRegradeWarning()
-            ? 'تم حفظ الامتحان وتفعيل إعادة التصحيح التلقائي للطلاب المسلمين بنجاح!'
-            : 'تم حفظ وتحديث إعدادات وبنك أسئلة الامتحان بنجاح!',
+            ? 'تم الحفظ وتفعيل إعادة التصحيح'
+            : 'تم حفظ الامتحان',
           type: 'success'
         });
       },
@@ -1969,7 +1969,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           if (first?.message) errorMsg = first.message;
         }
         if (!errorMsg) {
-          errorMsg = 'تعذر حفظ وتحديث إعدادات الامتحان. يرجى مراجعة البيانات المدخلة.';
+          errorMsg = 'تعذر الحفظ. راجع البيانات.';
         }
         this.showEditorError(errorMsg);
       }

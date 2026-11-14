@@ -23,7 +23,7 @@
       <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-surface-border glass-panel mb-8 shadow-sm">
         <span class="flex h-2.5 w-2.5 rounded-full bg-feedback-success animate-pulse"></span>
         <span class="text-xs sm:text-sm font-bold text-text-secondary">
-          {{ langService.isArabic() ? 'العام الأكاديمي 2026 / 2027 — م/ هبة عبدالوهاب' : 'Academic Year 2026/2027 — Eng. Heba Abdel-Wahab' }}
+          {{ langService.isArabic() ? '2026 / 2027 — م/ هبة عبدالوهاب' : '2026/2027 — Eng. Heba' }}
         </span>
       </div>
 
@@ -33,7 +33,7 @@
           منصة <span class="brand-spider">سبايدر</span> <span class="brand-math">ماث<span class="spark-star inline-block text-brand-accent animate-spark-twinkle">✦</span></span> التعليمية
           <br>
           <span class="text-gradient-spider">
-            من الأساسيات الهندسية حتى أعلى مراتب التميز
+            من الأساسيات حتى التفوق
           </span>
         } @else {
           Master Mathematics with
@@ -41,7 +41,7 @@
           <span class="brand-math">Math<span class="spark-star inline-block text-brand-accent animate-spark-twinkle">✦</span></span>
           <br>
           <span class="text-gradient-spider">
-            World-Class Excellence in Every Curriculum
+            From Basics to Mastery
           </span>
         }
       </h1>
@@ -49,9 +49,9 @@
       <!-- Subtitle -->
       <p class="mt-6 text-base sm:text-xl text-text-secondary max-w-2xl mx-auto font-medium leading-relaxed">
         @if (langService.isArabic()) {
-          تدريس تفاعلي للمناهج المصرية والخليجية والدولية والأمريكية وبنوك أسئلة وشروحات ديسموس.
+          شروحات تفاعلية وتدريبات ذكية.
         } @else {
-          Interactive lectures, smart question banks, and Desmos calculator mastery with Eng. Heba.
+          Interactive lessons and smart practice.
         }
       </p>
 
@@ -61,7 +61,7 @@
           href="#curriculum-section"
           class="px-8 py-3.5 rounded-xl font-extrabold text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
         >
-          {{ langService.isArabic() ? 'اختر منهجك وابدأ' : 'Choose Curriculum & Start' }}
+          {{ langService.isArabic() ? 'اختر المنهج' : 'Choose Curriculum' }}
         </a>
         <a
           routerLink="/"
@@ -161,7 +161,7 @@
             <!-- Card Bottom Selection Status -->
             <div class="mt-6 pt-4 border-t border-surface-border/60 flex items-center justify-between relative z-10">
               <span class="text-xs font-medium text-text-muted font-numeric">
-                {{ curriculum.grades.length }} {{ langService.isArabic() ? 'صفوف دراسية' : 'Grades' }}
+                {{ curriculum.grades.length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
               </span>
               <span
                 class="text-xs font-bold flex items-center gap-1"
@@ -169,7 +169,7 @@
               >
                 @if (selectedCurriculumCode() === curriculum.code) {
                   <span>●</span>
-                  <span>{{ langService.isArabic() ? 'المسار المحدد' : 'Selected' }}</span>
+                  <span>{{ langService.isArabic() ? 'محدد' : 'Selected' }}</span>
                 } @else {
                   <span>{{ langService.isArabic() ? 'استعراض' : 'Explore' }}</span>
                 }
@@ -212,7 +212,7 @@
           <div class="mt-8">
             <h4 class="text-xs font-extrabold uppercase tracking-wider text-text-muted mb-4 flex items-center gap-2">
               <span class="text-brand-accent">✦</span>
-              <span>{{ langService.isArabic() ? 'الصفوف والمقررات المتاحة' : 'Available Grades & Courses' }}</span>
+              <span>{{ langService.isArabic() ? 'الصفوف المتاحة' : 'Available Grades' }}</span>
             </h4>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">

@@ -236,4 +236,240 @@ describe('CurriculumStudioComponent', () => {
       expect(component.modalGulfCountry()).toBe('KW');
     });
   });
+
+  describe('International Curriculum 2-Division Hierarchy & Dynamic Title Editing', () => {
+    it('should initialize modalIntlDivision to AMERICAN_CURRICULUM and allow switching', () => {
+      expect(component.modalIntlDivision()).toBe('AMERICAN_CURRICULUM');
+      component.selectModalIntlDivision('BRITISH_CURRICULUM');
+      expect(component.modalIntlDivision()).toBe('BRITISH_CURRICULUM');
+    });
+
+    it('should return 2 divisions for INTERNATIONAL track', () => {
+      const intlTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+      expect(intlTrack).toBeDefined();
+
+      const divs = component.getIntlDivisionsForModal(intlTrack!);
+      expect(divs.length).toBe(2);
+      expect(divs[0].code).toBe('AMERICAN_CURRICULUM');
+      expect(divs[1].code).toBe('BRITISH_CURRICULUM');
+    });
+
+    it('should return correct stages for American and British divisions', () => {
+      const intlTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+
+      component.selectModalIntlDivision('AMERICAN_CURRICULUM');
+      const americanStages = component.getStagesForModalIntlDivision(intlTrack);
+      expect(americanStages.length).toBe(3);
+      expect(americanStages.map((s) => s.code)).toEqual([
+        'ELEMENTARY_SCHOOL',
+        'MIDDLE_SCHOOL',
+        'HIGH_SCHOOL'
+      ]);
+
+      component.selectModalIntlDivision('BRITISH_CURRICULUM');
+      const britishStages = component.getStagesForModalIntlDivision(intlTrack);
+      expect(britishStages.length).toBe(5);
+      expect(britishStages.map((s) => s.code)).toEqual([
+        'PRIMARY_KS1',
+        'PRIMARY_KS2',
+        'SECONDARY_KS3',
+        'KS4_IGCSE',
+        'SIXTH_FORM_ALEVEL'
+      ]);
+    });
+
+    it('should return correct grades for each stage in American curriculum', () => {
+      const intlTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+      component.selectModalIntlDivision('AMERICAN_CURRICULUM');
+
+      const stages = component.getStagesForModalIntlDivision(intlTrack);
+      const elementary = stages.find((s) => s.code === 'ELEMENTARY_SCHOOL')!;
+      const elemGrades = component.getGradesForIntlStage(elementary, intlTrack);
+      expect(elemGrades.map((g) => g.code)).toEqual([
+        'US_GRADE_1', 'US_GRADE_2', 'US_GRADE_3', 'US_GRADE_4', 'US_GRADE_5'
+      ]);
+
+      const middle = stages.find((s) => s.code === 'MIDDLE_SCHOOL')!;
+      const midGrades = component.getGradesForIntlStage(middle, intlTrack);
+      expect(midGrades.map((g) => g.code)).toEqual([
+        'US_GRADE_6', 'US_GRADE_7', 'US_GRADE_8'
+      ]);
+
+      const high = stages.find((s) => s.code === 'HIGH_SCHOOL')!;
+      const highGrades = component.getGradesForIntlStage(high, intlTrack);
+      expect(highGrades.map((g) => g.code)).toEqual([
+        'US_GRADE_9', 'US_GRADE_10', 'US_GRADE_11', 'US_GRADE_12'
+      ]);
+    });
+
+    it('should return correct grades for each stage in British curriculum', () => {
+      const intlTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+      component.selectModalIntlDivision('BRITISH_CURRICULUM');
+
+      const stages = component.getStagesForModalIntlDivision(intlTrack);
+      const ks1 = stages.find((s) => s.code === 'PRIMARY_KS1')!;
+      const ks1Grades = component.getGradesForIntlStage(ks1, intlTrack);
+      expect(ks1Grades.map((g) => g.code)).toEqual(['IGCSE_YEAR_1', 'IGCSE_YEAR_2']);
+
+      const ks2 = stages.find((s) => s.code === 'PRIMARY_KS2')!;
+      const ks2Grades = component.getGradesForIntlStage(ks2, intlTrack);
+      expect(ks2Grades.map((g) => g.code)).toEqual([
+        'IGCSE_YEAR_3', 'IGCSE_YEAR_4', 'IGCSE_YEAR_5', 'IGCSE_YEAR_6'
+      ]);
+
+      const ks3 = stages.find((s) => s.code === 'SECONDARY_KS3')!;
+      const ks3Grades = component.getGradesForIntlStage(ks3, intlTrack);
+      expect(ks3Grades.map((g) => g.code)).toEqual([
+        'IGCSE_YEAR_7', 'IGCSE_YEAR_8', 'IGCSE_YEAR_9'
+      ]);
+
+      const ks4 = stages.find((s) => s.code === 'KS4_IGCSE')!;
+      const ks4Grades = component.getGradesForIntlStage(ks4, intlTrack);
+      expect(ks4Grades.map((g) => g.code)).toEqual([
+        'IGCSE_YEAR_10', 'IGCSE_YEAR_11', 'IGCSE_OL'
+      ]);
+
+      const sixth = stages.find((s) => s.code === 'SIXTH_FORM_ALEVEL')!;
+      const sixthGrades = component.getGradesForIntlStage(sixth, intlTrack);
+      expect(sixthGrades.map((g) => g.code)).toEqual([
+        'IGCSE_YEAR_12', 'IGCSE_YEAR_13', 'IGCSE_AS', 'IGCSE_AL'
+      ]);
+    });
+
+    it('should handle custom grades in getOtherIntlGrades', () => {
+      const intlTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+      expect(component.getOtherIntlGrades(intlTrack).length).toBe(0);
+
+      // Add a custom grade
+      const updatedTrack = {
+        ...intlTrack,
+        grades: [...intlTrack.grades, { code: 'CUSTOM_INTL_AP', titleAr: 'AP كيمياء', titleEn: 'AP Chemistry', isCustom: true }]
+      };
+      const other = component.getOtherIntlGrades(updatedTrack);
+      expect(other.length).toBe(1);
+      expect(other[0].code).toBe('CUSTOM_INTL_AP');
+    });
+
+    it('should support dynamic title editing for Track name', () => {
+      component.openEditTrackName('INTERNATIONAL');
+      expect(component.titleEditModal().isOpen).toBeTrue();
+      expect(component.titleEditModal().type).toBe('track');
+      expect(component.titleEditModal().trackCode).toBe('INTERNATIONAL');
+
+      component.titleEditModal.update((s) => ({
+        ...s,
+        titleAr: 'المناهج الدولية واللغات',
+        titleEn: 'International & Language Curricula'
+      }));
+
+      component.saveTitleEditModal();
+      const track = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+      expect(track?.nameAr).toBe('المناهج الدولية واللغات');
+      expect(track?.nameEn).toBe('International & Language Curricula');
+      expect(component.titleEditModal().isOpen).toBeFalse();
+    });
+
+    it('should support dynamic title editing for Division name', () => {
+      component.openEditDivisionName('INTERNATIONAL', 'AMERICAN_CURRICULUM');
+      expect(component.titleEditModal().isOpen).toBeTrue();
+      expect(component.titleEditModal().type).toBe('division');
+      expect(component.titleEditModal().divisionCode).toBe('AMERICAN_CURRICULUM');
+
+      component.titleEditModal.update((s) => ({
+        ...s,
+        titleAr: 'النظام الأمريكي المعتمد',
+        titleEn: 'Accredited American System'
+      }));
+
+      component.saveTitleEditModal();
+      const track = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+      const divs = component.getIntlDivisionsForModal(track);
+      const americanDiv = divs.find((d) => d.code === 'AMERICAN_CURRICULUM');
+      expect(americanDiv?.nameAr).toBe('النظام الأمريكي المعتمد');
+      expect(americanDiv?.nameEn).toBe('Accredited American System');
+    });
+
+    it('should support dynamic title editing for Stage name', () => {
+      component.openEditStageName('INTERNATIONAL', 'AMERICAN_CURRICULUM', 'ELEMENTARY_SCHOOL');
+      expect(component.titleEditModal().isOpen).toBeTrue();
+      expect(component.titleEditModal().type).toBe('stage');
+      expect(component.titleEditModal().stageCode).toBe('ELEMENTARY_SCHOOL');
+
+      component.titleEditModal.update((s) => ({
+        ...s,
+        titleAr: 'المرحلة الابتدائية التأسيسية',
+        titleEn: 'Foundational Elementary Stage'
+      }));
+
+      component.saveTitleEditModal();
+      const track = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL')!;
+      const divs = component.getIntlDivisionsForModal(track);
+      const americanDiv = divs.find((d) => d.code === 'AMERICAN_CURRICULUM');
+      const stage = americanDiv?.stages?.find((s) => s.code === 'ELEMENTARY_SCHOOL');
+      expect(stage?.nameAr).toBe('المرحلة الابتدائية التأسيسية');
+      expect(stage?.nameEn).toBe('Foundational Elementary Stage');
+    });
+
+    it('should reject empty titleAr in saveTitleEditModal', () => {
+      spyOn(component.toastTriggered, 'emit');
+      component.openEditTrackName('INTERNATIONAL');
+      component.titleEditModal.update((s) => ({ ...s, titleAr: '   ' }));
+      component.saveTitleEditModal();
+
+      expect(component.toastTriggered.emit).toHaveBeenCalledWith({
+        text: 'يرجى إدخال الاسم بالعربية',
+        type: 'error'
+      });
+      expect(component.titleEditModal().isOpen).toBeTrue();
+    });
+
+    it('should return dynamic track name and handle graduation-cap and division icon fallbacks', () => {
+      expect(component.getCurriculumTrackName('INTERNATIONAL')).toBe('المناهج الدولية');
+      expect(component.getDivisionIcon('graduation-cap')).toBe('graduation-cap');
+      expect(component.getDivisionIcon(undefined, 'BRITISH_CURRICULUM')).toBe('graduation-cap');
+      expect(component.getDivisionIcon(undefined, 'AMERICAN_CURRICULUM')).toBe('award');
+    });
+
+    it('should return filter divisions and stage grades for curriculum studio grade dropdown', () => {
+      const divs = component.getIntlDivisionsForFilter();
+      expect(divs.length).toBe(2);
+
+      const grades = component.getGradesForIntlStageInFilter('AMERICAN_CURRICULUM', 'ELEMENTARY_SCHOOL');
+      expect(grades.map((g) => g.code)).toEqual([
+        'US_GRADE_1', 'US_GRADE_2', 'US_GRADE_3', 'US_GRADE_4', 'US_GRADE_5'
+      ]);
+    });
+
+    it('should warn if neither video nor file is provided when saving lecture', () => {
+      spyOn(component.toastTriggered, 'emit');
+      const unit = {
+        id: '6735e5d32b5f63901b0f1a91',
+        titleAr: 'الوحدة 1',
+        titleEn: 'Unit 1',
+        curriculum: 'EGYPTIAN' as any,
+        gradeLevel: 'SEC_3',
+        term: 'TERM_1' as any,
+        type: 'STUDY_UNIT' as any,
+        isPublished: true,
+        priceEgp: 300,
+        lectures: [],
+        assessments: []
+      };
+      component.openLectureModal(unit);
+      component.lectureForm.update((f) => ({
+        ...f,
+        titleAr: 'درس بدون فيديو أو ملف',
+        youtubeUrl: '',
+        googleDrivePdfFileId: '',
+        xpReward: 10
+      }));
+
+      component.saveLecture();
+
+      expect(component.toastTriggered.emit).toHaveBeenCalledWith({
+        text: 'أدخل رابط فيديو أو ملف PDF على الأقل',
+        type: 'warning'
+      });
+    });
+  });
 });

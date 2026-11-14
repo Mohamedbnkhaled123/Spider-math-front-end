@@ -21,7 +21,7 @@
           class="px-4 py-1.5 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary hover:text-text-primary font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
         >
           <app-icon name="x" [size]="12" />
-          <span>{{ langService.isArabic() ? 'عدم السماح' : 'Disallow' }}</span>
+          <span>{{ langService.isArabic() ? 'رفض' : 'Don\'t allow' }}</span>
         </button>
       </div>
     </div>
@@ -59,21 +59,21 @@
           (click)="navigateToSection('curriculum-section')"
           class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
+          {{ langService.isArabic() ? 'المناهج' : 'Curricula' }}
         </button>
 
         <a
           routerLink="/topics"
           class="hover:text-brand-gold transition-colors flex items-center gap-1.5"
         >
-          <span>{{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Index' }}</span>
+          <span>{{ langService.isArabic() ? 'الموضوعات' : 'Topics' }}</span>
         </a>
 
         <a
           routerLink="/placement-test"
           class="hover:text-brand-gold transition-colors flex items-center gap-1.5"
         >
-          <span>{{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}</span>
+          <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
         </a>
 
         <button
@@ -81,7 +81,7 @@
           (click)="navigateToSection('hall-of-fame-section')"
           class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'لوحة الشرف والنتائج' : 'Performance Analytics' }}
+          {{ langService.isArabic() ? 'لوحة الشرف' : 'Leaderboard' }}
         </button>
 
         <button
@@ -89,7 +89,7 @@
           (click)="navigateToSection('about-section')"
           class="hover:text-brand-gold transition-colors cursor-pointer"
         >
-          {{ langService.isArabic() ? 'عن المنصة والحصص' : 'Live Sessions' }}
+          {{ langService.isArabic() ? 'عن المنصة' : 'About' }}
         </button>
       </nav>
     } @else {
@@ -99,20 +99,20 @@
           [routerLink]="['/']"
           [queryParams]="{ view: 'public' }"
           class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
-          [title]="langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home'"
+          [title]="langService.isArabic() ? 'الرئيسية' : 'Home'"
         >
           <app-icon name="home" [size]="14" />
-          <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home' }}</span>
+          <span>{{ langService.isArabic() ? 'الرئيسية' : 'Home' }}</span>
         </a>
 
         @if (authService.isStudent()) {
           <a
             routerLink="/student"
             class="px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card/60 hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center gap-1.5 shadow-sm"
-            [title]="langService.isArabic() ? 'لوحة المذاكرة' : 'Study Dashboard'"
+            [title]="langService.isArabic() ? 'المذاكرة' : 'Dashboard'"
           >
             <app-icon name="book-open" [size]="14" />
-            <span>{{ langService.isArabic() ? 'لوحة المذاكرة' : 'Study Dashboard' }}</span>
+            <span>{{ langService.isArabic() ? 'المذاكرة' : 'Dashboard' }}</span>
           </a>
         }
       </nav>
@@ -137,7 +137,7 @@
         (click)="toggleLanguage()"
         class="hidden xl:flex px-2.5 py-1.5 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-xs font-semibold text-text-primary transition-all items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
         [attr.aria-label]="'COMMON.LANGUAGE' | transloco"
-        [title]="langService.isArabic() ? 'التحويل إلى الإنجليزية' : 'Switch to Arabic'"
+        [title]="langService.isArabic() ? 'الإنجليزية' : 'Arabic'"
       >
         <app-icon name="globe" [size]="14" className="text-brand-gold" />
         <span>{{ langService.isArabic() ? 'EN' : 'عربي' }}</span>
@@ -149,7 +149,7 @@
         (click)="toggleTheme()"
         class="hidden xl:flex p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-sm text-text-primary transition-all shadow-sm active:scale-95 items-center justify-center w-8 h-8 cursor-pointer"
         [attr.aria-label]="themeService.isDark() ? ('COMMON.LIGHT_MODE' | transloco) : ('COMMON.DARK_MODE' | transloco)"
-        [title]="themeService.isDark() ? (langService.isArabic() ? 'الوضع الفاتح' : 'Switch to Light Mode') : (langService.isArabic() ? 'الوضع الليلي' : 'Switch to Dark Mode')"
+        [title]="themeService.isDark() ? (langService.isArabic() ? 'فاتح' : 'Light') : (langService.isArabic() ? 'ليلي' : 'Dark')"
       >
         @if (themeService.isDark()) {
           <app-icon name="sun" [size]="16" className="text-brand-gold hover:rotate-45 transition-transform duration-300" />
@@ -169,7 +169,7 @@
           type="button"
           (click)="toggleNotifications()"
           class="p-2 rounded-lg border border-surface-border/60 bg-surface-card/60 hover:border-brand-gold/50 text-text-primary transition-all shadow-sm active:scale-95 flex items-center justify-center w-8 h-8 relative cursor-pointer"
-          [attr.aria-label]="langService.isArabic() ? 'الإشعارات والتنبيهات' : 'Notifications'"
+          [attr.aria-label]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
           [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
         >
           <app-icon name="bell" [size]="16" [className]="notificationsService.unreadCount() > 0 ? 'text-brand-gold animate-spark-twinkle' : 'text-text-secondary'" />
@@ -202,7 +202,7 @@
                   (click)="markAllRead()"
                   class="text-[11px] font-bold text-brand-gold hover:underline cursor-pointer"
                 >
-                  {{ langService.isArabic() ? 'تحديد الكل كمقروء' : 'Mark all read' }}
+                  {{ langService.isArabic() ? 'قراءة الكل' : 'Mark all read' }}
                 </button>
               }
             </div>
@@ -212,7 +212,7 @@
               @if (notificationsService.notifications().length === 0) {
                 <div class="p-6 text-center text-xs text-slate-600 dark:text-slate-400">
                   <app-icon name="check-circle" [size]="24" className="mx-auto mb-2 text-slate-400" />
-                  <p>{{ langService.isArabic() ? 'لا توجد إشعارات حالياً' : 'No notifications found' }}</p>
+                  <p>{{ langService.isArabic() ? 'لا توجد إشعارات' : 'No notifications' }}</p>
                 </div>
               } @else {
                 @for (notif of notificationsService.notifications(); track notif._id) {
@@ -256,7 +256,7 @@
               type="button"
               (click)="copyHaCode(haCode, $event)"
               class="ha-code-badge hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/40 text-xs font-bold text-brand-gold font-numeric shadow-sm hover:border-brand-gold transition-all cursor-pointer group"
-              [title]="langService.isArabic() ? 'نسخ كود الطالب' : 'Copy Student Code'"
+              [title]="langService.isArabic() ? 'نسخ الكود' : 'Copy Code'"
             >
               <span>{{ haCode }}</span>
               <app-icon name="copy" [size]="12" className="text-brand-gold group-hover:scale-110 transition-transform" />
@@ -369,7 +369,7 @@
             (click)="navigateToSection('curriculum-section')"
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
-            {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
+            {{ langService.isArabic() ? 'المناهج' : 'Curricula' }}
           </button>
 
           <a
@@ -377,7 +377,7 @@
             (click)="closeMobileMenu()"
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
-            {{ langService.isArabic() ? 'فهرس الموضوعات' : 'Topics Index' }}
+            {{ langService.isArabic() ? 'الموضوعات' : 'Topics' }}
           </a>
 
           <a
@@ -385,7 +385,7 @@
             (click)="closeMobileMenu()"
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-center"
           >
-            {{ langService.isArabic() ? 'بنك الامتحانات' : 'Exam Bank' }}
+            {{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}
           </a>
 
           <button
@@ -432,7 +432,7 @@
             class="p-2.5 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-gold/40 text-text-secondary hover:text-brand-gold transition-all flex items-center justify-center gap-2 text-xs font-bold cursor-pointer"
           >
             <app-icon name="home" [size]="14" />
-            <span>{{ langService.isArabic() ? 'الصفحة الرئيسية' : 'Public Home' }}</span>
+            <span>{{ langService.isArabic() ? 'الرئيسية' : 'Home' }}</span>
           </a>
           <button
             type="button"
@@ -451,7 +451,7 @@
   @if (isCopiedToastVisible()) {
     <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-layer-modal px-4 py-2 rounded-xl bg-slate-950/95 text-white border border-brand-gold/40 shadow-2xl text-xs font-bold flex items-center gap-2 animate-bounce-subtle">
       <app-icon name="check" [size]="14" className="text-brand-gold" />
-      <span>{{ langService.isArabic() ? 'تم نسخ كود الطالب بنجاح' : 'Student HA code copied to clipboard!' }}</span>
+      <span>{{ langService.isArabic() ? 'تم نسخ الكود' : 'Code copied!' }}</span>
     </div>
   }
 

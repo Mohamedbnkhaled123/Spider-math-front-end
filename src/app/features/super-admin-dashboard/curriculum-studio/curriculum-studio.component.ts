@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
-import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
+import { AppIconComponent, AppIconName } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import {
   CANONICAL_CURRICULUM_TREE,
@@ -22,7 +22,11 @@ import {
   GULF_COUNTRIES_DATA,
   IGradeLevelMeta,
   IGulfCountryData,
-  IGulfStageDefinition
+  IGulfStageDefinition,
+  INTERNATIONAL_DIVISIONS_DATA,
+  IInternationalDivisionData,
+  IInternationalStageDefinition,
+  findInternationalDivision
 } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
@@ -31,6 +35,8 @@ import {
   AssessmentAdminItem,
   CurriculumCode,
   CurriculumTrackItem,
+  CurriculumDivisionItem,
+  CurriculumStageItem,
   GradeOption,
   LectureAdminItem,
   QuestionAdminItem,
@@ -72,7 +78,11 @@ const GRADE_DESCENDING_ORDER: Record<string, number> = {
   // International
   IGCSE_AL: 10,
   IGCSE_AS: 11,
-  IGCSE_OL: 12,
+  IGCSE_YEAR_13: 12,
+  IGCSE_YEAR_12: 13,
+  IGCSE_OL: 14,
+  IGCSE_YEAR_11: 15,
+  IGCSE_YEAR_10: 16,
   IGCSE_YEAR_9: 20,
   IGCSE_YEAR_8: 21,
   IGCSE_YEAR_7: 22,
@@ -290,6 +300,293 @@ export class CurriculumStudioComponent implements OnInit {
     return country.grades.filter((g) => stage.gradeCodes.includes(g.code));
   }
 
+  // International Curriculum 2-Division Management
+  readonly modalIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+
+  selectModalIntlDivision(code: string): void {
+    if (code === 'AMERICAN_CURRICULUM' || code === 'BRITISH_CURRICULUM') {
+      this.modalIntlDivision.set(code);
+    }
+  }
+
+  getDivisionIcon(name?: string, code?: string): AppIconName {
+    if (name === 'award' || name === 'graduation-cap' || name === 'book-open' || name === 'globe') {
+      return name;
+    }
+    if (code === 'AMERICAN_CURRICULUM') return 'award';
+    if (code === 'BRITISH_CURRICULUM') return 'graduation-cap';
+    return 'book-open';
+  }
+
+  getCurriculumTrackName(code: CurriculumCode): string {
+    const track = this.allCurriculaTracks().find((t) => t.code === code);
+    if (code === 'INTERNATIONAL') {
+      const isLegacy = !track?.nameAr || track.nameAr.includes('البريطانية');
+      if (this.langService.isArabic()) {
+        return !isLegacy ? track!.nameAr : 'المناهج الدولية';
+      }
+      return (!isLegacy && track?.nameEn) ? track.nameEn : 'International Curriculum';
+    }
+    if (this.langService.isArabic()) {
+      return track?.nameAr || code;
+    }
+    return track?.nameEn || track?.nameAr || code;
+  }
+
+  readonly selectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+
+  selectIntlDivision(code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.selectedIntlDivision.set(code);
+    const stages = this.getIntlStagesForSelectedDivision();
+    if (stages.length > 0) {
+      const grades = this.getGradesForIntlStageInDivision(stages[0]);
+      if (grades.length > 0) {
+        this.gradeChange.emit(grades[0].code);
+      }
+    }
+  }
+
+  getIntlDivisions(): { code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'; nameAr: string; nameEn: string; iconName?: string; flag: string }[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    const configuredDivs = track?.divisions || [];
+    return [
+      {
+        code: 'AMERICAN_CURRICULUM',
+        nameAr: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameAr || 'المنهج الأمريكي',
+        nameEn: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameEn || 'American Curriculum',
+        iconName: 'award',
+        flag: '🇺🇸'
+      },
+      {
+        code: 'BRITISH_CURRICULUM',
+        nameAr: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameAr || 'المنهج البريطاني',
+        nameEn: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameEn || 'British Curriculum',
+        iconName: 'graduation-cap',
+        flag: '🇬🇧'
+      }
+    ];
+  }
+
+  getIntlStagesForSelectedDivision(): { code: string; nameAr: string; nameEn: string; gradeCodes: readonly string[] }[] {
+    const selectedDivCode = this.selectedIntlDivision();
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    const configuredDiv = track?.divisions?.find((d) => d.code === selectedDivCode);
+    const canonDiv = INTERNATIONAL_DIVISIONS_DATA.find((d) => d.code === selectedDivCode);
+
+    if (canonDiv) {
+      return canonDiv.stages.map((s) => {
+        const configuredStage = configuredDiv?.stages?.find((cs) => cs.code === s.code);
+        return {
+          code: s.code,
+          nameAr: configuredStage?.nameAr || s.nameAr,
+          nameEn: configuredStage?.nameEn || s.nameEn,
+          gradeCodes: s.gradeCodes
+        };
+      });
+    }
+    return [];
+  }
+
+  getGradesForIntlStageInDivision(stage: { gradeCodes: readonly string[] }): GradeOption[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    if (!track) return [];
+    return stage.gradeCodes
+      .map((code) => track.grades.find((g) => g.code === code))
+      .filter((g): g is GradeOption => Boolean(g));
+  }
+
+  getIntlDivisionsForFilter(): CurriculumDivisionItem[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    return track ? this.getIntlDivisionsForModal(track) : [];
+  }
+
+  getGradesForIntlStageInFilter(divCode: string, stageCode: string): GradeOption[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    if (!track) return [];
+    const canonDiv = INTERNATIONAL_DIVISIONS_DATA.find((d) => d.code === divCode);
+    const canonStage = canonDiv?.stages.find((s) => s.code === stageCode);
+    const targetCodes = canonStage ? canonStage.gradeCodes : [];
+    return targetCodes
+      .map((code) => track.grades.find((g) => g.code === code))
+      .filter((g): g is GradeOption => Boolean(g));
+  }
+
+  getOtherIntlGradesForFilter(): GradeOption[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    return track ? this.getOtherIntlGrades(track) : [];
+  }
+
+  getIntlDivisionsForAddModal(): CurriculumDivisionItem[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    return track ? this.getIntlDivisionsForModal(track) : [];
+  }
+
+  getGradeCodesForIntlStage(divCode: string, stageCode: string): readonly string[] {
+    const canonDiv = INTERNATIONAL_DIVISIONS_DATA.find((d) => d.code === divCode);
+    const canonStage = canonDiv?.stages.find((s) => s.code === stageCode);
+    return canonStage ? canonStage.gradeCodes : [];
+  }
+
+  getIntlDivisionsForModal(track: CurriculumTrackItem): CurriculumDivisionItem[] {
+    if (track.divisions && track.divisions.length > 0) {
+      return track.divisions;
+    }
+    return INTERNATIONAL_DIVISIONS_DATA.map((d) => ({
+      code: d.code,
+      nameAr: d.nameAr,
+      nameEn: d.nameEn,
+      iconName: d.iconName,
+      stages: d.stages.map((s) => ({
+        code: s.code,
+        nameAr: s.nameAr,
+        nameEn: s.nameEn
+      }))
+    }));
+  }
+
+  getStagesForModalIntlDivision(track: CurriculumTrackItem): CurriculumStageItem[] {
+    const divs = this.getIntlDivisionsForModal(track);
+    const div = divs.find((d) => d.code === this.modalIntlDivision()) || divs[0];
+    return div?.stages || [];
+  }
+
+  getGradesForIntlStage(stage: CurriculumStageItem, track: CurriculumTrackItem): GradeOption[] {
+    if (!stage) return [];
+    const canonicalDiv = INTERNATIONAL_DIVISIONS_DATA.find((d) => d.code === this.modalIntlDivision());
+    const canonicalStage = canonicalDiv?.stages.find((s) => s.code === stage.code);
+    const targetCodes = canonicalStage ? canonicalStage.gradeCodes : [];
+    return targetCodes
+      .map((code) => track.grades.find((g) => g.code === code))
+      .filter((g): g is GradeOption => Boolean(g));
+  }
+
+  getOtherIntlGrades(track: CurriculumTrackItem): GradeOption[] {
+    const allStageCodes = new Set(
+      INTERNATIONAL_DIVISIONS_DATA.flatMap((d) => d.stages.flatMap((s) => s.gradeCodes))
+    );
+    return track.grades.filter((g) => !allStageCodes.has(g.code));
+  }
+
+  readonly intlDivisionsData = INTERNATIONAL_DIVISIONS_DATA;
+
+  getCanonicalGradeMeta(code: string): IGradeLevelMeta | undefined {
+    return CANONICAL_CURRICULUM_TREE.find((c) => c.code === 'INTERNATIONAL')?.grades.find((g) => g.code === code);
+  }
+
+  // Dynamic Title Editing for Tracks, Divisions, and Stages
+  readonly titleEditModal = signal<{
+    isOpen: boolean;
+    type: 'track' | 'division' | 'stage';
+    trackCode: CurriculumCode;
+    divisionCode?: string;
+    stageCode?: string;
+    titleAr: string;
+    titleEn: string;
+    labelAr: string;
+    labelEn: string;
+  }>({
+    isOpen: false,
+    type: 'division',
+    trackCode: 'INTERNATIONAL',
+    divisionCode: '',
+    stageCode: '',
+    titleAr: '',
+    titleEn: '',
+    labelAr: '',
+    labelEn: ''
+  });
+
+  openEditTrackName(trackCode: CurriculumCode): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    this.titleEditModal.set({
+      isOpen: true,
+      type: 'track',
+      trackCode,
+      titleAr: track?.nameAr || '',
+      titleEn: track?.nameEn || '',
+      labelAr: 'تعديل اسم القسم الدراسي',
+      labelEn: 'Edit Curriculum Track Title'
+    });
+  }
+
+  openEditDivisionName(trackCode: CurriculumCode, divisionCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    const divs = this.getIntlDivisionsForModal(track!);
+    const div = divs.find((d) => d.code === divisionCode);
+    this.titleEditModal.set({
+      isOpen: true,
+      type: 'division',
+      trackCode,
+      divisionCode,
+      titleAr: div?.nameAr || '',
+      titleEn: div?.nameEn || '',
+      labelAr: 'تعديل اسم المسار الدولي',
+      labelEn: 'Edit International Division Title'
+    });
+  }
+
+  openEditStageName(trackCode: CurriculumCode, divisionCode: string, stageCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    const divs = this.getIntlDivisionsForModal(track!);
+    const div = divs.find((d) => d.code === divisionCode);
+    const stage = div?.stages?.find((s) => s.code === stageCode);
+    this.titleEditModal.set({
+      isOpen: true,
+      type: 'stage',
+      trackCode,
+      divisionCode,
+      stageCode,
+      titleAr: stage?.nameAr || '',
+      titleEn: stage?.nameEn || '',
+      labelAr: 'تعديل اسم المرحلة الدراسية',
+      labelEn: 'Edit Academic Stage Title'
+    });
+  }
+
+  saveTitleEditModal(): void {
+    const modal = this.titleEditModal();
+    const cleanAr = modal.titleAr.trim();
+    const cleanEn = modal.titleEn.trim();
+    if (!cleanAr) {
+      this.toastTriggered.emit({ text: 'يرجى إدخال الاسم بالعربية', type: 'error' });
+      return;
+    }
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((track) => {
+        if (track.code !== modal.trackCode) return track;
+
+        if (modal.type === 'track') {
+          return { ...track, nameAr: cleanAr, nameEn: cleanEn || cleanAr };
+        }
+
+        const currentDivs = this.getIntlDivisionsForModal(track);
+        const updatedDivs = currentDivs.map((div) => {
+          if (div.code !== modal.divisionCode) return div;
+
+          if (modal.type === 'division') {
+            return { ...div, nameAr: cleanAr, nameEn: cleanEn || cleanAr };
+          }
+
+          const updatedStages = (div.stages || []).map((st) => {
+            if (st.code !== modal.stageCode) return st;
+            return { ...st, nameAr: cleanAr, nameEn: cleanEn || cleanAr };
+          });
+          return { ...div, stages: updatedStages };
+        });
+
+        return { ...track, divisions: updatedDivs };
+      })
+    );
+
+    this.closeTitleEditModal();
+    this.executeSaveActiveGrades('تم حفظ الاسم بنجاح', false);
+  }
+
+  closeTitleEditModal(): void {
+    this.titleEditModal.update((s) => ({ ...s, isOpen: false }));
+  }
+
   isGradeInCurrentTrack(gradeCode: string): boolean {
     const trackCode = this.gradeModal().trackCode;
     const track = this.allCurriculaTracks().find(t => t.code === trackCode);
@@ -334,6 +631,19 @@ export class CurriculumStudioComponent implements OnInit {
       code: c.code as CurriculumCode,
       nameAr: c.titleAr,
       nameEn: c.titleEn,
+      divisions: c.code === 'INTERNATIONAL'
+        ? INTERNATIONAL_DIVISIONS_DATA.map(d => ({
+            code: d.code,
+            nameAr: d.nameAr,
+            nameEn: d.nameEn,
+            iconName: d.iconName,
+            stages: d.stages.map(s => ({
+              code: s.code,
+              nameAr: s.nameAr,
+              nameEn: s.nameEn
+            }))
+          }))
+        : undefined,
       grades: sortGradesDescending(c.grades.map(g => ({
         code: g.code,
         titleAr: g.titleAr,
@@ -417,7 +727,7 @@ export class CurriculumStudioComponent implements OnInit {
     youtubeUrl: '',
     googleDrivePdfFileId: '',
     isPrintAllowed: true,
-    durationMinutes: 45,
+    durationMinutes: 0,
     isFreeTrial: false,
     xpReward: null
   });
@@ -435,7 +745,7 @@ export class CurriculumStudioComponent implements OnInit {
     youtubeUrl: '',
     googleDrivePdfFileId: '',
     isPrintAllowed: true,
-    durationMinutes: 45,
+    durationMinutes: 0,
     isFreeTrial: false,
     xpReward: null
   });
@@ -492,11 +802,41 @@ export class CurriculumStudioComponent implements OnInit {
           const canonical = this.canonicalCurriculumTree;
           const formattedTracks: CurriculumTrackItem[] = res.data.curriculaTracks.map((t: any) => {
             const node = canonical.find((c) => c.code === t.code);
+            let divisions = t.divisions;
+            let nameAr = t.nameAr || node?.titleAr || t.code;
+            let nameEn = t.nameEn || node?.titleEn || t.nameAr;
+            let grades = t.grades || [];
+
+            if (t.code === 'INTERNATIONAL') {
+              const isLegacy = !t.nameAr || t.nameAr.includes('البريطانية');
+              if (isLegacy) {
+                nameAr = 'المناهج الدولية';
+                nameEn = 'International Curriculum';
+              }
+              if (!divisions || divisions.length === 0) {
+                divisions = INTERNATIONAL_DIVISIONS_DATA.map((d) => ({
+                  code: d.code,
+                  nameAr: d.nameAr,
+                  nameEn: d.nameEn,
+                  iconName: d.iconName,
+                  stages: d.stages.map((s) => ({
+                    code: s.code,
+                    nameAr: s.nameAr,
+                    nameEn: s.nameEn
+                  }))
+                }));
+              }
+              if (!grades || grades.length <= 4) {
+                const intlNode = canonical.find((c) => c.code === 'INTERNATIONAL');
+                grades = intlNode?.grades ? intlNode.grades.map(g => ({ code: g.code, titleAr: g.titleAr, titleEn: g.titleEn })) : grades;
+              }
+            }
             return {
               code: t.code,
-              nameAr: t.nameAr || node?.titleAr || t.code,
-              nameEn: t.nameEn || node?.titleEn || t.nameAr,
-              grades: sortGradesDescending(t.grades || [])
+              nameAr,
+              nameEn,
+              divisions,
+              grades: sortGradesDescending(grades)
             };
           });
           this.allCurriculaTracks.set(formattedTracks);
@@ -691,7 +1031,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (!cleanCode || !cleanTitleAr) {
       this.toastTriggered.emit({
-        text: 'يرجى كتابة كود الصف واسم الصف باللغة العربية أولاً!',
+        text: 'أدخل كود الصف واسمه بالعربية',
         type: 'error'
       });
       return;
@@ -740,9 +1080,9 @@ export class CurriculumStudioComponent implements OnInit {
     this.executeSaveActiveGrades(
       gm.mode === 'add'
         ? (updatedExisting
-            ? 'تم تحديث اسم وبيانات الصف الدراسي بنجاح!'
-            : 'تمت إضافة الصف الدراسي إلى القسم وحفظ التعديل بنجاح!')
-        : 'تم تعديل بيانات الصف الدراسي وحفظ التعديل بنجاح!',
+            ? 'تم تحديث الصف'
+            : 'تمت إضافة الصف')
+        : 'تم تعديل الصف',
       false
     );
   }
@@ -764,7 +1104,7 @@ export class CurriculumStudioComponent implements OnInit {
           )
         );
         this.activeGrades.update((cur) => cur.filter((c) => c !== gradeCode));
-        this.executeSaveActiveGrades(`تم حذف "${gradeTitle}" واعتماد التعديلات بنجاح!`, false);
+        this.executeSaveActiveGrades(`تم حذف "${gradeTitle}"`, false);
       },
       true,
       'حذف',
@@ -778,7 +1118,7 @@ export class CurriculumStudioComponent implements OnInit {
       'حفظ تعديلات القسم',
       `حفظ وتطبيق تعديلات "${track?.nameAr}"؟`,
       () => {
-        this.executeSaveActiveGrades(`تم حفظ واعتماد تعديلات قسم "${track?.nameAr}" بنجاح!`, true);
+        this.executeSaveActiveGrades(`تم حفظ قسم "${track?.nameAr}"`, true);
       },
       false,
       'حفظ',
@@ -791,7 +1131,7 @@ export class CurriculumStudioComponent implements OnInit {
       'حفظ الصفوف والمناهج',
       'حفظ كافة الصفوف والمناهج المفعلة؟',
       () => {
-        this.executeSaveActiveGrades('تم حفظ واعتماد تفعيل كافة الصفوف والأقسام بنجاح!', true);
+        this.executeSaveActiveGrades('تم حفظ الصفوف والمناهج', true);
       },
       false,
       'حفظ',
@@ -820,7 +1160,7 @@ export class CurriculumStudioComponent implements OnInit {
       error: (err) => {
         this.isSavingActiveGrades.set(false);
         this.toastTriggered.emit({
-          text: err?.error?.message || 'تعذر حفظ تعديلات الصفوف والمناهج المفعلة.',
+          text: err?.error?.message || 'تعذر الحفظ.',
           type: 'error'
         });
       }
@@ -836,6 +1176,14 @@ export class CurriculumStudioComponent implements OnInit {
       const countryData = findGulfCountry(this.selectedGulfCountry());
       if (countryData && countryData.grades.length > 0) {
         this.gradeChange.emit(countryData.grades[0].code);
+      }
+    } else if (curr === 'INTERNATIONAL') {
+      const stages = this.getIntlStagesForSelectedDivision();
+      if (stages.length > 0) {
+        const grades = this.getGradesForIntlStageInDivision(stages[0]);
+        if (grades.length > 0) {
+          this.gradeChange.emit(grades[0].code);
+        }
       }
     } else {
       const track = this.allCurriculaTracks().find((t) => t.code === curr);
@@ -863,7 +1211,7 @@ export class CurriculumStudioComponent implements OnInit {
         const updated = { ...unit, isPublished: nextState };
         this.unitUpdated.emit(updated);
         this.toastTriggered.emit({
-          text: `تم ${nextState ? 'نشر' : 'إلغاء نشر'} الوحدة فورياً للطلاب والزوار!`,
+          text: `تم ${nextState ? 'نشر' : 'إلغاء نشر'} الوحدة`,
           type: 'success'
         });
       },
@@ -887,16 +1235,16 @@ export class CurriculumStudioComponent implements OnInit {
         this.http.delete(`/api/v1/admin/units/${unit.id}`).subscribe({
           next: () => {
             this.unitDeleted.emit(unit.id);
-            this.toastTriggered.emit({ text: 'تم حذف الوحدة الدراسية بنجاح!', type: 'warning' });
+            this.toastTriggered.emit({ text: 'تم حذف الوحدة', type: 'warning' });
           },
           error: () => {
             this.unitDeleted.emit(unit.id);
-            this.toastTriggered.emit({ text: 'تم حذف الوحدة الدراسية بنجاح!', type: 'warning' });
+            this.toastTriggered.emit({ text: 'تم حذف الوحدة', type: 'warning' });
           }
         });
       },
       true,
-      'نعم، احذف الوحدة',
+      'نعم، احذف',
       'إلغاء'
     );
   }
@@ -1007,7 +1355,7 @@ export class CurriculumStudioComponent implements OnInit {
   saveUnitPackage(): void {
     const form = this.unitForm();
     if (!form.titleAr.trim()) {
-      this.toastTriggered.emit({ text: 'أدخلي عنوان الوحدة بالعربية', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخل عنوان الوحدة', type: 'error' });
       return;
     }
 
@@ -1060,10 +1408,10 @@ export class CurriculumStudioComponent implements OnInit {
         };
         this.unitCreated.emit(newUnit);
         this.isUnitModalOpen.set(false);
-        this.toastTriggered.emit({ text: 'تم إنشاء الوحدة الدراسية ونشرها بنجاح!', type: 'success' });
+        this.toastTriggered.emit({ text: 'تم إنشاء الوحدة', type: 'success' });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إنشاء الوحدة الدراسية، يرجى مراجعة البيانات المدخلة.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر الإنشاء. راجع البيانات.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1094,7 +1442,7 @@ export class CurriculumStudioComponent implements OnInit {
     const unitId = this.editingUnitId();
     const form = this.editUnitForm();
     if (!unitId || !form.titleAr.trim()) {
-      this.toastTriggered.emit({ text: 'أدخلي عنوان الوحدة بالعربية', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخل عنوان الوحدة', type: 'error' });
       return;
     }
 
@@ -1132,10 +1480,10 @@ export class CurriculumStudioComponent implements OnInit {
           this.unitUpdated.emit(updatedUnit);
         }
         this.isEditUnitModalOpen.set(false);
-        this.toastTriggered.emit({ text: 'تم تعديل بيانات الوحدة الدراسية وحفظها بنجاح!', type: 'success' });
+        this.toastTriggered.emit({ text: 'تم تحديث الوحدة', type: 'success' });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ تعديل الوحدة الدراسية.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر تحديث الوحدة.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1147,7 +1495,7 @@ export class CurriculumStudioComponent implements OnInit {
   openLectureModal(unit: UnitPackageAdminItem): void {
     if (!unit.id || unit.id.startsWith('unit_')) {
       this.toastTriggered.emit({
-        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات بشكل سليم. يرجى إنشاء وحدة جديدة أولاً لإضافة محاضرات إليها.',
+        text: 'أنشئ وحدة صالحة أولاً',
         type: 'error'
       });
       return;
@@ -1158,7 +1506,7 @@ export class CurriculumStudioComponent implements OnInit {
       youtubeUrl: '',
       googleDrivePdfFileId: '',
       isPrintAllowed: true,
-      durationMinutes: 45,
+      durationMinutes: 0,
       isFreeTrial: false,
       xpReward: null
     });
@@ -1172,7 +1520,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
       this.toastTriggered.emit({
-        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب لهذه المحاضرة.',
+        text: 'أدخل نقاط XP للمحاضرة',
         type: 'warning'
       });
       return;
@@ -1180,7 +1528,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (!unit.id || unit.id.startsWith('unit_')) {
       this.toastTriggered.emit({
-        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة محاضرات إليها.',
+        text: 'أنشئ وحدة صالحة أولاً',
         type: 'error'
       });
       return;
@@ -1199,13 +1547,22 @@ export class CurriculumStudioComponent implements OnInit {
       // Strict validation: Reject non-PDF file extensions
       if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
         this.toastTriggered.emit({
-          text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+          text: 'مسموح بملفات PDF فقط',
           type: 'error'
         });
         return;
       }
     }
 
+    if (!form.youtubeUrl?.trim() && !sanitizedDriveId) {
+      this.toastTriggered.emit({
+        text: 'أدخل رابط فيديو أو ملف PDF على الأقل',
+        type: 'warning'
+      });
+      return;
+    }
+
+    const hasVideo = !!(form.youtubeUrl && form.youtubeUrl.trim());
     const payload = {
       unitId: unit.id,
       titleAr: form.titleAr.trim(),
@@ -1213,7 +1570,7 @@ export class CurriculumStudioComponent implements OnInit {
       youtubeUrl: (form.youtubeUrl || '').trim(),
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
-      durationMinutes: form.durationMinutes,
+      durationMinutes: hasVideo ? (form.durationMinutes || 45) : 0,
       isFreeTrial: !!form.isFreeTrial,
       xpReward: form.xpReward
     };
@@ -1229,7 +1586,7 @@ export class CurriculumStudioComponent implements OnInit {
           encryptedVideoId: createdLec?.youtube_encrypted_id || '',
           googleDrivePdfFileId: sanitizedDriveId,
           isPrintAllowed: form.isPrintAllowed,
-          durationMinutes: form.durationMinutes,
+          durationMinutes: hasVideo ? (form.durationMinutes || 45) : 0,
           isFreeTrial: !!form.isFreeTrial,
           xpReward: form.xpReward
         };
@@ -1241,12 +1598,12 @@ export class CurriculumStudioComponent implements OnInit {
         this.unitUpdated.emit(updatedUnit);
         this.isLectureModalOpen.set(false);
         this.toastTriggered.emit({
-          text: 'تمت إضافة المحاضرة وحفظها بنجاح!',
+          text: 'تمت إضافة المحاضرة',
           type: 'success'
         });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة المحاضرة للوحدة الدراسية.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة المحاضرة.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1260,7 +1617,7 @@ export class CurriculumStudioComponent implements OnInit {
       youtubeUrl: lec.youtubeUrl || '',
       googleDrivePdfFileId: lec.googleDrivePdfFileId || '',
       isPrintAllowed: lec.isPrintAllowed ?? true,
-      durationMinutes: lec.durationMinutes || 45,
+      durationMinutes: lec.durationMinutes || 0,
       isFreeTrial: !!lec.isFreeTrial,
       xpReward: lec.xpReward !== undefined ? lec.xpReward : null
     });
@@ -1275,7 +1632,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
       this.toastTriggered.emit({
-        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب لهذه المحاضرة.',
+        text: 'أدخل نقاط XP للمحاضرة',
         type: 'warning'
       });
       return;
@@ -1293,20 +1650,29 @@ export class CurriculumStudioComponent implements OnInit {
       // Strict validation: Reject non-PDF file extensions
       if (sanitizedDriveId.match(/\.(exe|zip|rar|mp4|avi|docx|xlsx|pptx|png|jpg|jpeg)$/i)) {
         this.toastTriggered.emit({
-          text: 'تنبيه أمني: مسموح فقط بملفات ومذكرات الـ PDF لدراسة المحاضرة!',
+          text: 'مسموح بملفات PDF فقط',
           type: 'error'
         });
         return;
       }
     }
 
+    if (!form.youtubeUrl?.trim() && !sanitizedDriveId) {
+      this.toastTriggered.emit({
+        text: 'أدخل رابط فيديو أو ملف PDF على الأقل',
+        type: 'warning'
+      });
+      return;
+    }
+
+    const hasVideo = !!(form.youtubeUrl && form.youtubeUrl.trim());
     const payload = {
       titleAr: form.titleAr.trim(),
       titleEn: form.titleAr.trim(),
       youtubeUrl: (form.youtubeUrl || '').trim(),
       googleDrivePdfFileId: sanitizedDriveId,
       isPrintAllowed: form.isPrintAllowed,
-      durationMinutes: form.durationMinutes,
+      durationMinutes: hasVideo ? (form.durationMinutes || 45) : 0,
       isFreeTrial: !!form.isFreeTrial,
       xpReward: form.xpReward
     };
@@ -1322,7 +1688,7 @@ export class CurriculumStudioComponent implements OnInit {
               youtubeUrl: (form.youtubeUrl || '').trim(),
               googleDrivePdfFileId: sanitizedDriveId,
               isPrintAllowed: form.isPrintAllowed,
-              durationMinutes: form.durationMinutes,
+              durationMinutes: hasVideo ? (form.durationMinutes || 45) : 0,
               isFreeTrial: !!form.isFreeTrial,
               xpReward: form.xpReward,
               encryptedVideoId: updatedLecData?.youtube_encrypted_id || (form.youtubeUrl?.trim() ? l.encryptedVideoId : '')
@@ -1338,12 +1704,12 @@ export class CurriculumStudioComponent implements OnInit {
         this.unitUpdated.emit(updatedUnit);
         this.isEditLectureModalOpen.set(false);
         this.toastTriggered.emit({
-          text: 'تم تعديل بيانات المحاضرة وحفظها في قاعدة البيانات بنجاح!',
+          text: 'تم تحديث المحاضرة',
           type: 'success'
         });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ تعديلات المحاضرة.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر تحديث المحاضرة.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1357,7 +1723,7 @@ export class CurriculumStudioComponent implements OnInit {
           lectures: unit.lectures.filter((l) => l.id !== lectureId)
         };
         this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف المحاضرة بنجاح!', type: 'warning' });
+        this.toastTriggered.emit({ text: 'تم حذف المحاضرة', type: 'warning' });
       },
       error: () => {
         const updatedUnit: UnitPackageAdminItem = {
@@ -1387,14 +1753,14 @@ export class CurriculumStudioComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         const text = res?.message || (newStatus
-          ? (this.langService.isArabic() ? 'تم تفعيل إتاحة المحاضرة مجاناً لجميع الطلاب' : 'Lecture is now free for all students')
-          : (this.langService.isArabic() ? 'تم قفل المحاضرة لتكون خاصة بالطلاب المشتركين' : 'Lecture is now private for subscribed students'));
+          ? (this.langService.isArabic() ? 'المحاضرة متاحة مجاناً' : 'Lecture is free')
+          : (this.langService.isArabic() ? 'المحاضرة للمشتركين فقط' : 'Lecture is private'));
         this.toastTriggered.emit({ text, type: 'success' });
       },
       error: (err) => {
         lec.isFree = previousStatus;
         lec.isFreeTrial = previousStatus;
-        const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر تعديل حالة إتاحة المحاضرة' : 'Failed to update lecture status');
+        const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر تعديل الحالة' : 'Failed to update');
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1452,7 +1818,7 @@ export class CurriculumStudioComponent implements OnInit {
     const form = this.newAssessmentForm();
     if (!form.titleAr.trim()) {
       this.toastTriggered.emit({
-        text: this.langService.isArabic() ? 'يرجى كتابة عنوان التقييم أو الكويز!' : 'Please enter assessment title!',
+        text: this.langService.isArabic() ? 'أدخل عنوان التقييم' : 'Enter assessment title',
         type: 'error'
       });
       return;
@@ -1460,7 +1826,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (form.xpReward === null || form.xpReward === undefined || form.xpReward < 0) {
       this.toastTriggered.emit({
-        text: 'يرجى إدخال وتحديد نقاط الـ XP الممنوحة للطالب عند إكمال التقييم/الواجب.',
+        text: 'أدخل نقاط XP للتقييم',
         type: 'warning'
       });
       return;
@@ -1508,10 +1874,10 @@ export class CurriculumStudioComponent implements OnInit {
           };
           this.assessmentSaved.emit(newAsm);
           this.isCreateAssessmentModalOpen.set(false);
-          this.toastTriggered.emit({ text: 'تم إنشاء الكويز العام للمرحلة بنجاح!', type: 'success' });
+          this.toastTriggered.emit({ text: 'تم إنشاء الكويز', type: 'success' });
         },
         error: (err) => {
-          const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة الكويز العام للمرحلة.';
+          const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إنشاء الكويز.';
           this.toastTriggered.emit({ text: errMsg, type: 'error' });
         }
       });
@@ -1520,7 +1886,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     if (!unit.id || unit.id.startsWith('unit_')) {
       this.toastTriggered.emit({
-        text: 'تنبيه: هذه الوحدة غير مسجلة في قاعدة البيانات. يرجى إنشاء وحدة صالحة أولاً لإضافة امتحانات أو واجبات إليها.',
+        text: 'أنشئ وحدة صالحة أولاً',
         type: 'error'
       });
       return;
@@ -1576,11 +1942,11 @@ export class CurriculumStudioComponent implements OnInit {
         };
         this.unitUpdated.emit(updatedUnit);
         this.isCreateAssessmentModalOpen.set(false);
-        const successLabel = isHw ? 'تم إنشاء ونشر الواجب المنزلي بنجاح!' : 'تم إنشاء التقييم ونشره بنجاح!';
+        const successLabel = isHw ? 'تم إنشاء الواجب' : 'تم إنشاء التقييم';
         this.toastTriggered.emit({ text: successLabel, type: 'success' });
       },
       error: (err) => {
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة التقييم أو الواجب للوحدة.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة التقييم.';
         this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
@@ -1594,7 +1960,7 @@ export class CurriculumStudioComponent implements OnInit {
           assessments: unit.assessments.filter((a) => a.id !== assessmentId)
         };
         this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف الامتحان بنجاح!', type: 'warning' });
+        this.toastTriggered.emit({ text: 'تم حذف الامتحان', type: 'warning' });
       },
       error: () => {
         const updatedUnit: UnitPackageAdminItem = {
@@ -1621,7 +1987,7 @@ export class CurriculumStudioComponent implements OnInit {
     if (url) {
       this.activeAssessment.update((a) => (a ? { ...a, referenceSheetUrl: url } : null));
       this.isRefSheetActiveInCurriculum.set(true);
-      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين بنجاح!', type: 'success' });
+      this.toastTriggered.emit({ text: 'تم إرفاق ورقة القوانين', type: 'success' });
     }
   }
 
@@ -1641,7 +2007,7 @@ export class CurriculumStudioComponent implements OnInit {
     if (url) {
       this.newAssessmentForm.update((f) => ({ ...f, referenceSheetUrl: url }));
       this.isRefSheetActiveInCreateAssessment.set(true);
-      this.toastTriggered.emit({ text: 'تم رفع صورة ورقة القوانين بنجاح!', type: 'success' });
+      this.toastTriggered.emit({ text: 'تم رفع ورقة القوانين', type: 'success' });
     }
   }
 
@@ -1665,7 +2031,7 @@ export class CurriculumStudioComponent implements OnInit {
   onQuestionPromptUploaded(imageUrl: string): void {
     this.newQuestionImageUrl.set(imageUrl);
     this.toastTriggered.emit({
-      text: 'تم رفع صورة السؤال مباشرة إلى سيرفرات الأسئلة الدائمة (spider-math-questions/)!',
+      text: 'تم رفع صورة السؤال',
       type: 'success'
     });
   }
@@ -1676,7 +2042,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
-      this.toastTriggered.emit({ text: 'أدخلي نص السؤال أو ارفعي صورته أولاً', type: 'error' });
+      this.toastTriggered.emit({ text: 'أدخل نص السؤال أو صورته', type: 'error' });
       return;
     }
 
@@ -1687,7 +2053,7 @@ export class CurriculumStudioComponent implements OnInit {
       // 1. Check for empty options
       if (trimmedOpts.some((o) => !o)) {
         this.toastTriggered.emit({
-          text: 'تنبيه: لا يمكن ترك أحد خيارات الإجابة فارغاً! يرجى ملء كافة خيارات الإجابة الأربعة.',
+          text: 'املأ جميع الخيارات الأربعة',
           type: 'error'
         });
         return;
@@ -1697,7 +2063,7 @@ export class CurriculumStudioComponent implements OnInit {
       const uniqueOpts = new Set(trimmedOpts);
       if (uniqueOpts.size < trimmedOpts.length) {
         this.toastTriggered.emit({
-          text: 'تنبيه: لا يمكن أن يتطابق خياران بنفس الإجابة! يرجى التأكد من كتابة إجابات مختلفة لكل خيار.',
+          text: 'الخيارات يجب أن تكون مختلفة',
           type: 'error'
         });
         return;
@@ -1728,7 +2094,7 @@ export class CurriculumStudioComponent implements OnInit {
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
     this.newQuestionCorrectIndex.set(0);
-    this.toastTriggered.emit({ text: 'تمت إضافة السؤال بنجاح!', type: 'success' });
+    this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
   }
 
   deleteQuestion(order: number): void {
@@ -1741,7 +2107,7 @@ export class CurriculumStudioComponent implements OnInit {
       () => {
         const filtered = asm.questions.filter((q) => q.order !== order);
         this.activeAssessment.set({ ...asm, questions: filtered });
-        this.toastTriggered.emit({ text: 'تم حذف السؤال من الامتحان!', type: 'warning' });
+        this.toastTriggered.emit({ text: 'تم حذف السؤال', type: 'warning' });
       },
       true,
       'حذف',
@@ -1763,7 +2129,7 @@ export class CurriculumStudioComponent implements OnInit {
     // 1. Critical Requirement: Cannot save/publish an empty assessment without questions!
     if (!asm.questions || asm.questions.length === 0) {
       this.toastTriggered.emit({
-        text: 'تنبيه: لا يمكن حفظ أو نشر التقييم بدون أي أسئلة! يرجى إضافة مسألة واحدة على الأقل قبل الحفظ.',
+        text: 'أضف سؤالاً واحداً على الأقل',
         type: 'warning'
       });
       return;
@@ -1776,7 +2142,7 @@ export class CurriculumStudioComponent implements OnInit {
         const opts = (q.options || []).map((o) => (o || '').trim());
         if (opts.length < 2) {
           this.toastTriggered.emit({
-            text: `السؤال رقم ${q.order}: يجب أن يحتوي على خيارين على الأقل.`,
+            text: `س${q.order}: أضف خيارين على الأقل`,
             type: 'error'
           });
           return;
@@ -1785,7 +2151,7 @@ export class CurriculumStudioComponent implements OnInit {
         // Empty check
         if (opts.some((o) => !o)) {
           this.toastTriggered.emit({
-            text: `السؤال رقم ${q.order}: يحتوي على خيار إجابة فارغ! يرجى ملء جميع الخيارات.`,
+            text: `س${q.order}: املأ جميع الخيارات`,
             type: 'error'
           });
           return;
@@ -1795,7 +2161,7 @@ export class CurriculumStudioComponent implements OnInit {
         const unique = new Set(opts);
         if (unique.size < opts.length) {
           this.toastTriggered.emit({
-            text: `السؤال رقم ${q.order}: يحتوي على خيارات إجابة متطابقة! لا يمكن أن تتكرر نفس الإجابة في أكثر من خيار.`,
+            text: `س${q.order}: الخيارات متطابقة`,
             type: 'error'
           });
           return;
@@ -1804,7 +2170,7 @@ export class CurriculumStudioComponent implements OnInit {
         // Correct option bounds check
         if (q.correctOptionIndex === undefined || q.correctOptionIndex === null || q.correctOptionIndex < 0 || q.correctOptionIndex >= opts.length) {
           this.toastTriggered.emit({
-            text: `السؤال رقم ${q.order}: يرجى تحديد الإجابة الصحيحة من بين الخيارات المتاحة.`,
+            text: `س${q.order}: حدد الإجابة الصحيحة`,
             type: 'error'
           });
           return;
@@ -1829,7 +2195,7 @@ export class CurriculumStudioComponent implements OnInit {
         return {
           order: q.order || idx + 1,
           question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
-          question_text: q.textAr || (isEssay ? 'مسألة مقالية / حل يدوي' : 'مسألة رياضية'),
+          question_text: q.textAr || (isEssay ? 'مسألة مقالية' : 'مسألة رياضية'),
           question_image_url: q.questionImageUrl || null,
           options: isEssay ? [] : (q.options || []).map((o) => (o || '').trim()),
           correct_option_index: isEssay ? undefined : Math.max(0, q.correctOptionIndex ?? 0),
@@ -1845,13 +2211,13 @@ export class CurriculumStudioComponent implements OnInit {
         this.isAssessmentEditorOpen.set(false);
         this.toastTriggered.emit({
           text: this.autoRegradeWarning()
-            ? 'تم حفظ الامتحان وتفعيل إعادة التصحيح التلقائي للطلاب المسلمين بنجاح!'
-            : 'تم حفظ وتحديث إعدادات الامتحان الآمن بنجاح!',
+            ? 'تم الحفظ وتفعيل إعادة التصحيح'
+            : 'تم حفظ الامتحان',
           type: 'success'
         });
       },
       error: (err) => {
-        const errorMsg = err?.error?.message || err?.error?.error?.message || 'تعذر حفظ وتحديث إعدادات الامتحان. يرجى مراجعة البيانات.';
+        const errorMsg = err?.error?.message || err?.error?.error?.message || 'تعذر الحفظ. راجع البيانات.';
         this.toastTriggered.emit({
           text: errorMsg,
           type: 'error'

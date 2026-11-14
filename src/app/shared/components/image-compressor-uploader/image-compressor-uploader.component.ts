@@ -189,7 +189,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   capturePhotoFromStream(): void {
     const videoEl = document.getElementById('liveCameraVideo') as HTMLVideoElement | null;
     if (!videoEl || videoEl.videoWidth === 0) {
-      this.errorMessage.set('الكاميرا غير جاهزة بعد، يرجى الانتظار ثانية.');
+      this.errorMessage.set('الكاميرا غير جاهزة، انتظر ثانية.');
       return;
     }
 
@@ -206,7 +206,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
         this.closeLiveCamera();
         this.processFiles([file]);
       } else {
-        this.errorMessage.set('تعذر التقاط لقطة من الكاميرا، يرجى المحاولة ثانية.');
+        this.errorMessage.set('تعذر التقاط الصورة، أعد المحاولة.');
       }
     }, 'image/jpeg', 0.92);
   }
@@ -233,8 +233,8 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
     if (files.length > maxAllowed) {
       this.errorMessage.set(
         this.uploadTarget() === 'question'
-          ? 'مسموح برفع صورة واحدة فقط لنص السؤال.'
-          : 'الحد الأقصى المسموح به هو صورتان فقط لحل الواجب لحماية سرعة المعالجة.'
+          ? 'مسموح بصورة واحدة فقط.'
+          : 'الحد الأقصى صورتان فقط.'
       );
       return;
     }
@@ -278,7 +278,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
       }
     } catch (err: any) {
       console.error('Image processing/compression failed:', err);
-      this.errorMessage.set('فشل ضغط الصورة، يرجى اختيار ملف صورة صالح.');
+      this.errorMessage.set('فشل ضغط الصورة.');
     } finally {
       this.isProcessing.set(false);
     }
@@ -472,7 +472,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
     } catch (err: any) {
       console.error('Direct Cloudinary upload failed:', err);
       this.errorMessage.set(
-        'تعذر رفع الصور إلى سيرفر التخزين السحابي، يرجى التحقق من الاتصال وإعادة المحاولة.'
+        'تعذر رفع الصور. تحقق من الاتصال.'
       );
       for (const item of list) {
         if (item.uploadStatus === 'UPLOADING') item.uploadStatus = 'ERROR';

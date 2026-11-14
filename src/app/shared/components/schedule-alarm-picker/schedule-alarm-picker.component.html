@@ -39,14 +39,14 @@
             </span>
           </div>
           <span class="text-[10px] text-text-muted block mt-0.5 font-mono">
-            {{ langService.isArabic() ? 'انقر لتعديل الموعد' : 'Click to edit schedule' }}
+            {{ langService.isArabic() ? 'تعديل' : 'Edit' }}
           </span>
         } @else {
           <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors block">
             {{ placeholder() }}
           </span>
           <span class="text-[10px] text-text-muted block mt-0.5">
-            {{ langService.isArabic() ? 'اختر التاريخ والوقت بدقة' : 'Pick date and time' }}
+            {{ langService.isArabic() ? 'اختر التاريخ والوقت' : 'Pick date & time' }}
           </span>
         }
       </div>
@@ -58,7 +58,7 @@
           type="button"
           (click)="clear($event)"
           class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-          [title]="langService.isArabic() ? 'مسح الموعد' : 'Clear'"
+          [title]="langService.isArabic() ? 'مسح' : 'Clear'"
         >
           <app-icon name="x" [size]="14" />
         </button>
@@ -88,10 +88,10 @@
           </div>
           <div>
             <h3 class="text-sm font-black text-text-primary">
-              {{ langService.isArabic() ? 'ضبط موعد الامتحان' : 'Set Exam Schedule' }}
+              {{ langService.isArabic() ? 'موعد الامتحان' : 'Schedule' }}
             </h3>
             <p class="text-[11px] text-text-secondary mt-0.5">
-              {{ langService.isArabic() ? 'اختر اليوم ووقت الإتاحة.' : 'Select day and unlock time.' }}
+              {{ langService.isArabic() ? 'اختر اليوم والوقت.' : 'Select day and time.' }}
             </p>
           </div>
         </div>
@@ -107,28 +107,28 @@
 
       <!-- Presets Quick Bar -->
       <div class="px-5 py-2.5 bg-surface-bg/60 border-b border-surface-border flex flex-wrap items-center justify-between gap-2">
-        <span class="text-[11px] font-bold text-text-muted">{{ langService.isArabic() ? 'خيارات سريعة:' : 'Quick Options:' }}</span>
+        <span class="text-[11px] font-bold text-text-muted">{{ langService.isArabic() ? 'سريع:' : 'Quick:' }}</span>
         <div class="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             (click)="setPresetNow()"
             class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-surface-border bg-surface-card hover:border-brand-primary hover:text-brand-primary transition-all cursor-pointer"
           >
-            {{ langService.isArabic() ? 'الآن فوراً' : 'Immediately' }}
+            {{ langService.isArabic() ? 'الآن' : 'Now' }}
           </button>
           <button
             type="button"
             (click)="setPresetTomorrow()"
             class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-surface-border bg-surface-card hover:border-brand-primary hover:text-brand-primary transition-all cursor-pointer"
           >
-            {{ langService.isArabic() ? 'غداً 10:00 ص' : 'Tomorrow 10:00 AM' }}
+            {{ langService.isArabic() ? 'غداً' : 'Tomorrow' }}
           </button>
           <button
             type="button"
             (click)="setPresetNextWeek()"
             class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-surface-border bg-surface-card hover:border-brand-primary hover:text-brand-primary transition-all cursor-pointer"
           >
-            {{ langService.isArabic() ? 'بعد أسبوع 10:00 ص' : 'In 1 Week 10:00 AM' }}
+            {{ langService.isArabic() ? 'أسبوع' : '1 Week' }}
           </button>
         </div>
       </div>
@@ -141,7 +141,7 @@
           <div class="flex items-center justify-between">
             <span class="font-black text-text-primary flex items-center gap-1.5">
               <app-icon name="calendar" [size]="14" className="text-brand-primary" />
-              <span>{{ langService.isArabic() ? '1. اختيار اليوم من التقويم' : '1. Select Day from Calendar' }}</span>
+              <span>{{ langService.isArabic() ? '1. اليوم' : '1. Day' }}</span>
             </span>
 
             <!-- Month Navigator -->
@@ -211,13 +211,13 @@
 
           <!-- Selected Date Pill -->
           <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-bg border border-surface-border text-[11px]">
-            <span class="text-text-muted">{{ langService.isArabic() ? 'اليوم المحدد:' : 'Selected Day:' }}</span>
+            <span class="text-text-muted">{{ langService.isArabic() ? 'اليوم:' : 'Day:' }}</span>
             @if (selectedDay()) {
               <span class="font-bold text-brand-primary">
                 {{ selectedDay() }} {{ monthNamesAr[selectedMonth()! - 1] }} {{ selectedYear() }}
               </span>
             } @else {
-              <span class="text-text-muted italic">{{ langService.isArabic() ? 'لم يتم الاختيار بعد' : 'Not selected yet' }}</span>
+              <span class="text-text-muted italic">{{ langService.isArabic() ? 'لم يتم الاختيار' : 'Not selected' }}</span>
             }
           </div>
         </div>
@@ -226,7 +226,7 @@
         <div class="md:col-span-5 space-y-3">
           <span class="font-black text-text-primary flex items-center gap-1.5">
             <app-icon name="clock" [size]="14" className="text-cyan-500" />
-            <span>{{ langService.isArabic() ? '2. ضبط المنبه (الساعة والدقيقة)' : '2. Set Alarm (Hour & Minute)' }}</span>
+            <span>{{ langService.isArabic() ? '2. الوقت' : '2. Time' }}</span>
           </span>
 
           <!-- Alarm Clock Digital Box -->
@@ -253,7 +253,7 @@
                   [ngModel]="selectedHour12()"
                   (ngModelChange)="onHourInputChange($event)"
                   (wheel)="onHourWheel($event)"
-                  [title]="langService.isArabic() ? 'اكتب الساعة أو استخدم عجلة الماوس' : 'Type hour or scroll mouse'"
+                  [title]="langService.isArabic() ? 'الساعة' : 'Hour'"
                   class="w-14 h-14 rounded-2xl border-2 border-brand-primary/40 bg-surface-bg flex items-center justify-center font-mono font-black text-2xl text-brand-primary shadow-inner text-center outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all cursor-ns-resize"
                 />
 
@@ -265,7 +265,7 @@
                 >
                   <app-icon name="chevron-down" [size]="18" />
                 </button>
-                <span class="text-[9px] font-bold text-text-muted mt-0.5">{{ langService.isArabic() ? 'الساعة (1-12)' : 'Hour (1-12)' }}</span>
+                <span class="text-[9px] font-bold text-text-muted mt-0.5">{{ langService.isArabic() ? 'الساعة' : 'Hour' }}</span>
               </div>
 
               <!-- Blinking Colon -->
@@ -291,7 +291,7 @@
                   [ngModel]="selectedMinute()"
                   (ngModelChange)="onMinuteInputChange($event)"
                   (wheel)="onMinuteWheel($event)"
-                  [title]="langService.isArabic() ? 'اكتب الدقيقة أو استخدم عجلة الماوس' : 'Type minute or scroll mouse'"
+                  [title]="langService.isArabic() ? 'الدقيقة' : 'Minute'"
                   class="w-14 h-14 rounded-2xl border-2 border-cyan-500/40 bg-surface-bg flex items-center justify-center font-mono font-black text-2xl text-cyan-600 dark:text-cyan-400 shadow-inner text-center outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-ns-resize"
                 />
 
@@ -303,7 +303,7 @@
                 >
                   <app-icon name="chevron-down" [size]="18" />
                 </button>
-                <span class="text-[9px] font-bold text-text-muted mt-0.5">{{ langService.isArabic() ? 'الدقيقة (0-59)' : 'Minute (0-59)' }}</span>
+                <span class="text-[9px] font-bold text-text-muted mt-0.5">{{ langService.isArabic() ? 'الدقيقة' : 'Minute' }}</span>
               </div>
 
               <!-- AM / PM Toggle Column -->
@@ -345,7 +345,7 @@
 
             <!-- Quick Minute Shortcuts -->
             <div class="pt-2 border-t border-surface-border/60">
-              <span class="text-[10px] font-bold text-text-muted block mb-1.5">{{ langService.isArabic() ? 'دقائق سريعة:' : 'Quick Minutes:' }}</span>
+              <span class="text-[10px] font-bold text-text-muted block mb-1.5">{{ langService.isArabic() ? 'دقائق:' : 'Minutes:' }}</span>
               <div class="grid grid-cols-4 gap-1">
                 @for (m of [0, 15, 30, 45]; track m) {
                   <button
@@ -374,7 +374,7 @@
       <div class="p-4 bg-surface-bg border-t border-surface-border flex flex-col sm:flex-row items-center justify-between gap-3">
         <!-- Live Selected Summary -->
         <div class="flex items-center gap-2 text-xs font-bold text-text-primary text-center sm:text-right">
-          <span class="text-text-muted">{{ langService.isArabic() ? 'الموعد النهائي:' : 'Final Schedule:' }}</span>
+          <span class="text-text-muted">{{ langService.isArabic() ? 'الموعد:' : 'Schedule:' }}</span>
           @if (formattedSummary()) {
             <span class="font-black text-brand-primary">
               {{ formattedSummary() }}
@@ -400,7 +400,7 @@
             class="flex-1 sm:flex-none px-5 py-2 rounded-xl text-xs font-black text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <app-icon name="check-circle" [size]="14" />
-            <span>{{ langService.isArabic() ? 'تأكيد الموعد' : 'Confirm Schedule' }}</span>
+            <span>{{ langService.isArabic() ? 'تأكيد' : 'Confirm' }}</span>
           </button>
         </div>
       </div>

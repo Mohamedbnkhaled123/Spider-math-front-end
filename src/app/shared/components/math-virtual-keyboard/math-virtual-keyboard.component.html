@@ -20,7 +20,7 @@
       class="drag-pill-container py-1.5 -my-1 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
       (pointerdown)="onDragStart($event)"
       (dblclick)="resetDragPosition()"
-      [title]="langService.isArabic() ? 'اسحب للتحريك (نقر مزدوج لإعادة الضبط)' : 'Drag to move (double click to reset)'"
+      [title]="langService.isArabic() ? 'اسحب للتحريك (نقر مزدوج للضبط)' : 'Drag to move (double click to reset)'"
     >
       <div class="drag-handle-pill w-14 h-1.5 bg-surface-border hover:bg-brand-primary/70 rounded-full transition-colors pointer-events-none"></div>
     </div>
@@ -45,7 +45,7 @@
       <div class="flex items-center gap-1.5 flex-1 justify-center pointer-events-none">
         <app-icon name="grid" [size]="12" className="text-text-muted" />
         <span class="text-xs font-bold text-text-primary">
-          {{ langService.isArabic() ? 'لوحة مفاتيح الرياضيات' : 'Math Keyboard' }}
+          {{ langService.isArabic() ? 'لوحة الرموز' : 'Math Keyboard' }}
         </span>
       </div>
 
@@ -56,7 +56,7 @@
             type="button"
             (click)="resetDragPosition()"
             class="p-1 rounded-lg text-text-muted hover:text-brand-primary hover:bg-surface-elevated border border-transparent hover:border-surface-border transition-colors cursor-pointer"
-            [title]="langService.isArabic() ? 'إعادة ضبط الموضع' : 'Reset position'"
+            [title]="langService.isArabic() ? 'إعادة ضبط' : 'Reset'"
           >
             <app-icon name="refresh" [size]="12" />
           </button>
@@ -76,7 +76,7 @@
           [title]="langService.isArabic() ? 'تبديل الكيبورد' : 'Toggle keyboard'"
         >
           <app-icon name="phone" [size]="11" />
-          <span>{{ langService.isArabic() ? 'كيبورد نص' : 'Prose' }}</span>
+          <span>{{ langService.isArabic() ? 'نص' : 'Text' }}</span>
         </button>
       </div>
 
@@ -97,7 +97,7 @@
                 (click)="deleteEditingSymbol()"
                 class="px-2 py-0.5 rounded text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30"
               >
-                {{ langService.isArabic() ? 'حذف الرمز' : 'Delete' }}
+                {{ langService.isArabic() ? 'حذف' : 'Delete' }}
               </button>
             }
             <button
@@ -169,7 +169,7 @@
             (click)="nextSlot()"
             class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-surface-bg border border-surface-border text-text-primary"
           >
-            {{ langService.isArabic() ? 'التالي ⇥' : 'Next ⇥' }}
+            {{ langService.isArabic() ? 'التالي' : 'Next' }}
           </button>
           <button
             type="button"
@@ -177,7 +177,7 @@
             (click)="applyVisualTemplate()"
             class="px-3 py-0.5 rounded-lg text-[10px] font-bold bg-brand-primary hover:bg-brand-secondary text-white"
           >
-            {{ langService.isArabic() ? 'إدراج الرمز ✓' : 'Insert ✓' }}
+            {{ langService.isArabic() ? 'إدراج' : 'Insert' }}
           </button>
         </div>
       </div>
@@ -235,7 +235,7 @@
     <!-- Interactive Math Symbol Chips Strip (Quick visual jump when editing composite math symbols) -->
     @if (parsedMathSymbols().length > 0) {
       <div class="flex items-center gap-1 overflow-x-auto py-0.5 px-0.5 text-[10px]">
-        <span class="text-text-muted font-bold shrink-0">{{ langService.isArabic() ? 'الرموز الرياضية بالمسألة:' : 'Symbols:' }}</span>
+        <span class="text-text-muted font-bold shrink-0">{{ langService.isArabic() ? 'الرموز:' : 'Symbols:' }}</span>
         @for (sym of parsedMathSymbols(); track sym.id) {
           <button
             type="button"

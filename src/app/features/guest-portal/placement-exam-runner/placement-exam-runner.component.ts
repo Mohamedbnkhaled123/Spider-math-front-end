@@ -303,7 +303,7 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
         message: this.langService.isArabic()
           ? 'إنهاء وتسليم إجاباتك؟'
           : 'Finish and submit your answers?',
-        confirmLabel: this.langService.isArabic() ? 'تسليم الامتحان' : 'Submit Exam',
+        confirmLabel: this.langService.isArabic() ? 'تسليم' : 'Submit',
         cancelLabel: this.langService.isArabic() ? 'مراجعة' : 'Review',
         icon: 'check-circle',
         isDestructive: false

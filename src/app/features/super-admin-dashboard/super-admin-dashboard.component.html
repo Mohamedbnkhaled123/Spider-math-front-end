@@ -56,9 +56,9 @@
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
           <h1 class="text-sm font-bold text-text-primary font-academic-serif truncate">
             @if (langService.isArabic()) {
-              غرفة عمليات <span class="text-gold-accent">م/ هبة عبدالوهاب</span>
+              <span class="text-gold-accent">لوحة تحكم الإدارة</span>
             } @else {
-              Operations Studio of <span class="text-gold-accent">Eng. Heba Abdel-Wahab</span>
+              <span class="text-gold-accent">Admin Dashboard</span>
             }
           </h1>
         </div>
@@ -75,7 +75,7 @@
             [class.hover:text-text-primary]="activeTab() !== 'assessments'"
           >
             <app-icon name="award" [size]="14" />
-            <span>{{ langService.isArabic() ? 'قسم الامتحانات' : 'Exams' }}</span>
+            <span>{{ langService.isArabic() ? 'الامتحانات' : 'Exams' }}</span>
           </button>
           <button
             type="button"
@@ -157,7 +157,7 @@
                   <span>@if (langService.isArabic()) { لوحة الإحصائيات المركزية } @else { Central Analytics }</span>
                 </h2>
                 <p class="text-xs text-text-secondary mt-0.5">
-                  {{ langService.isArabic() ? 'متابعة حركة الطلاب، طلبات الأجهزة، والامتحانات بانتظار التصحيح.' : 'Student activity, pending devices, and pending grading.' }}
+                  {{ langService.isArabic() ? 'متابعة الطلاب، طلبات الأجهزة، والتصحيح المعلق.' : 'Student activity, pending devices, and grading.' }}
                 </p>
               </div>
 
@@ -328,7 +328,7 @@
                   </div>
                 } @empty {
                   <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center text-xs text-text-muted">
-                    {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة حالياً.' : 'No pending device requests.' }}
+                    {{ langService.isArabic() ? 'لا توجد طلبات أجهزة معلقة.' : 'No pending device requests.' }}
                   </div>
                 }
               </div>
@@ -419,13 +419,13 @@
             {{ langService.isArabic() ? 'تفريغ صور واجبات الترم' : 'Purge Homework Images' }}
           </h3>
           <p class="text-text-muted leading-relaxed">
-            {{ langService.isArabic() ? 'سيتم حذف ملفات صور الواجبات المؤقتة لتوفير المساحة. (درجات وسجلات الطلاب محفوظة دائماً).' : 'Temporary homework images will be purged to save space. Scores and records remain saved.' }}
+            {{ langService.isArabic() ? 'حذف الصور المؤقتة فقط (الدرجات محفوظة).' : 'Purge temp images only (scores remain saved).' }}
           </p>
         </div>
 
         <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 font-bold flex items-center gap-2">
           <app-icon name="alert-triangle" [size]="16" />
-          <span>{{ langService.isArabic() ? 'هذا الإجراء لا يمكن التراجع عنه. متابعة؟' : 'This cannot be undone. Proceed?' }}</span>
+          <span>{{ langService.isArabic() ? 'حذف الصور نهائياً؟' : 'Purge images permanently?' }}</span>
         </div>
 
         <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">

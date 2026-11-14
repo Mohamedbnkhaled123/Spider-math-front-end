@@ -67,7 +67,7 @@ export class BrandHeaderComponent implements OnInit {
       if (this.authService.isPendingDeviceApproval()) {
         return {
           route: '/device-pending',
-          label: this.langService.isArabic() ? 'لوحة التحكم (اعتماد الجهاز)' : 'Device Pending'
+          label: this.langService.isArabic() ? 'اعتماد الجهاز' : 'Device Pending'
         };
       }
       return {
@@ -169,11 +169,11 @@ export class BrandHeaderComponent implements OnInit {
     this.notificationsService.closeDropdown();
 
     const confirmed = await this.confirmDialogService.confirm({
-      title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
+      title: this.langService.isArabic() ? 'تسجيل الخروج' : 'Logout',
       message: this.langService.isArabic()
-        ? 'تسجيل الخروج من حسابك؟'
-        : 'Log out of your account?',
-      confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
+        ? 'تسجيل الخروج؟'
+        : 'Log out?',
+      confirmLabel: this.langService.isArabic() ? 'خروج' : 'Log Out',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       isDestructive: true,
       icon: 'log-out'

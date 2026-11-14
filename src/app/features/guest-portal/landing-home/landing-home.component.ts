@@ -123,8 +123,8 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
-      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد!`
+      : `⏳ Coming Soon — "${title}" is being prepared!`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {
@@ -400,23 +400,23 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   });
   readonly studentBannerNotice = computed<string>(() => {
     return this.langService.isArabic()
-      ? 'أنت تتصفح الصفحة الرئيسية للمنصة'
-      : 'You are browsing the platform main page';
+      ? 'أنت في الصفحة الرئيسية'
+      : 'You are on the main page';
   });
   readonly studentBannerCta = computed<string>(() => {
     return this.langService.isArabic()
-      ? 'العودة إلى لوحة دراستك'
-      : 'Back to Study Dashboard';
+      ? 'لوحة المذاكرة'
+      : 'Dashboard';
   });
   readonly studentContinueLearningCta = computed<string>(() => {
     return this.langService.isArabic()
-      ? 'متابعة المذاكرة (لوحة تحكم الطالب)'
-      : 'Continue Learning (Student Dashboard)';
+      ? 'لوحة المذاكرة'
+      : 'Student Dashboard';
   });
   readonly studentPlacementTestCta = computed<string>(() => {
     return this.langService.isArabic()
-      ? 'امتحان تحديد المستوى لصفك'
-      : 'Your Placement Test';
+      ? 'اختبار تحديد المستوى'
+      : 'Placement Test';
   });
   readonly scheduleSection = computed(() => {
     const data = this.landingData();
@@ -438,7 +438,7 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return Array.isArray(data?.schedules) ? data.schedules : [];
   });
   readonly whatsappButtonLabel = computed<string>(() => {
-    return this.langService.isArabic() ? 'تواصل معنا عبر واتساب' : 'WhatsApp Support';
+    return this.langService.isArabic() ? 'واتساب' : 'WhatsApp';
   });
   readonly pricingSection = computed(() => {
     const data = this.landingData();
@@ -980,8 +980,8 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!text || text.length < 5) {
       this.testimonialSubmitError.set(
         this.langService.isArabic()
-          ? 'يرجى كتابة رأيك بشكل واضح (5 أحرف على الأقل).'
-          : 'Please write a meaningful review (at least 5 characters).'
+          ? 'اكتب 5 أحرف على الأقل.'
+          : 'Enter at least 5 characters.'
       );
       return;
     }
@@ -1001,7 +1001,7 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.testimonialSubmitError.set(
           err?.error?.error?.message ||
           err?.error?.message ||
-          (this.langService.isArabic() ? 'تعذر إرسال الرأي، يرجى المحاولة لاحقاً.' : 'Failed to submit review.')
+          (this.langService.isArabic() ? 'تعذر الإرسال. أعد المحاولة.' : 'Failed to submit review.')
         );
       }
     });
@@ -1025,7 +1025,7 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       'SAT_MATH': 'SAT Math',
       'EGYPTIAN': 'المنهج المصري',
       'GULF': 'المنهج الخليجي',
-      'INTERNATIONAL': 'البريطانية (IGCSE)',
+      'INTERNATIONAL': 'المناهج الدولية',
       'AMERICAN': 'الأمريكية (SAT)'
     };
     let formatted = rawStage;

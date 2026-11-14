@@ -72,7 +72,7 @@ export class PendingDeviceApprovalComponent implements OnInit, OnDestroy {
           this.router.navigate(['/student']);
         } else if (isManual) {
           const msg = this.langService.isArabic()
-            ? 'طلبك قيد المراجعة. سيتم التفعيل فور الاعتماد.'
+            ? 'قيد المراجعة. التفعيل فور الاعتماد.'
             : 'Request pending approval.';
           this.statusMessage.set(msg);
         }
@@ -81,7 +81,7 @@ export class PendingDeviceApprovalComponent implements OnInit, OnDestroy {
         if (isManual) {
           this.isCheckingStatus.set(false);
           const msg = this.langService.isArabic()
-            ? 'تعذر التحقق من حالة الجهاز. حاول بعد قليل.'
+            ? 'تعذر التحقق. حاول لاحقاً.'
             : 'Unable to check status. Try again shortly.';
           this.statusMessage.set(msg);
         }

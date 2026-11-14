@@ -529,7 +529,7 @@ describe('MathVirtualKeyboardComponent', () => {
       expect(component.parsedMathSymbols().length).toBe(2);
 
       const hostEl: HTMLElement = fixture.nativeElement;
-      expect(hostEl.textContent).toContain('الرموز الرياضية بالمسألة');
+      expect(hostEl.textContent).toContain('الرموز:');
 
       // Symbol chips should be rendered
       const chips = hostEl.querySelectorAll('.visual-template-card, button');

@@ -23,7 +23,7 @@
           }
         </h1>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'متابعة مباشرة للحضور، إكمال المحاضرات، ونتائج التقييمات.' : 'Live tracking for attendance, lecture progress, and exam results.' }}
+          {{ langService.isArabic() ? 'متابعة الحضور والمحاضرات والنتائج.' : 'Track attendance, lectures, and results.' }}
         </p>
       </div>
 
@@ -57,7 +57,7 @@
           }
         </span>
       </h2>
-      <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'اختر طالباً لعرض تقريره' : 'Select a student to view report' }}</span>
+      <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'اختر طالباً للعرض' : 'Select a student' }}</span>
     </div>
 
     <!-- Children Cards Carousel / Horizontal Grid -->
@@ -152,7 +152,7 @@
         class="border-2 border-dashed border-gold-accent/30 hover:border-gold-accent p-4 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold text-text-secondary hover:text-gold-accent bg-surface-card/40 transition-all duration-200 cursor-pointer min-h-[72px]"
       >
         <app-icon name="plus" [size]="16" />
-        <span>{{ langService.isArabic() ? 'ربط طالب آخر' : 'Link Another Student' }}</span>
+        <span>{{ langService.isArabic() ? 'ربط طالب' : 'Link Student' }}</span>
       </button>
     </div>
   </section>
@@ -188,10 +188,10 @@
         <app-icon name="user-plus" [size]="32" />
       </div>
       <h3 class="text-base font-bold text-text-primary mb-1">
-        {{ langService.isArabic() ? 'لا يوجد طلاب مرتبطون بحسابك بعد' : 'No students linked yet' }}
+        {{ langService.isArabic() ? 'لا يوجد طلاب بعد' : 'No students linked' }}
       </h3>
       <p class="text-xs text-text-secondary leading-relaxed mb-4">
-        {{ langService.isArabic() ? 'اربط كود الطالب لمتابعة الحضور والدرجات.' : 'Link student code to track attendance and grades.' }}
+        {{ langService.isArabic() ? 'اربط كود الطالب للمتابعة.' : 'Link student code to track.' }}
       </p>
       <button
         type="button"
@@ -223,10 +223,10 @@
             <app-icon name="user-plus" [size]="22" />
           </div>
           <h3 class="text-lg font-black text-text-primary">
-            {{ langService.isArabic() ? 'ربط طالب جديد' : 'Link New Student' }}
+            {{ langService.isArabic() ? 'ربط طالب' : 'Link Student' }}
           </h3>
           <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'أدخل كود الطالب (HAxxxx) لربطه بحسابك.' : 'Enter student code (HAxxxx) to link.' }}
+            {{ langService.isArabic() ? 'أدخل كود الطالب:' : 'Enter student code:' }}
           </p>
         </div>
 
@@ -249,7 +249,7 @@
         <div class="space-y-4">
           <div>
             <label for="haCodeInput" class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'كود الطالب (HA Code)' : 'Student Code (HA Code)' }}
+              {{ langService.isArabic() ? 'كود الطالب:' : 'HA Code:' }}
             </label>
             <div class="relative">
               <input
@@ -263,7 +263,7 @@
               />
             </div>
             <p class="text-[11px] text-text-muted mt-1.5">
-              {{ langService.isArabic() ? 'تجد الكود في لوحة تحكم الطالب أو في رسالة الواتساب.' : 'Find code on student dashboard or WhatsApp confirmation.' }}
+              {{ langService.isArabic() ? 'الكود من حساب الطالب.' : 'From student account.' }}
             </p>
           </div>
 
@@ -284,10 +284,10 @@
             >
               @if (isLinking()) {
                 <app-icon name="loader" [size]="14" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري الربط...' : 'Linking...' }}</span>
+                <span>{{ langService.isArabic() ? 'ربط...' : 'Linking...' }}</span>
               } @else {
                 <app-icon name="check" [size]="14" />
-                <span>{{ langService.isArabic() ? 'تأكيد الربط' : 'Confirm Link' }}</span>
+                <span>{{ langService.isArabic() ? 'تأكيد' : 'Confirm' }}</span>
               }
             </button>
           </div>

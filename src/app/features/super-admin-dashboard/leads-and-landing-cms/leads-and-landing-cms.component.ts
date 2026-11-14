@@ -206,7 +206,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly curriculumTabs = [
     { code: 'EGYPTIAN', label: 'المنهج المصري' },
     { code: 'GULF', label: 'المنهج الخليجي' },
-    { code: 'INTERNATIONAL', label: 'المنهج الدولي البريطاني' },
+    { code: 'INTERNATIONAL', label: 'المناهج الدولية' },
     { code: 'AMERICAN', label: 'الدبلومة الأمريكية' }
   ];
 
@@ -274,7 +274,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
         landingUnitIds: Array.from(current)
       };
     });
-    this.toastTriggered.emit({ text: 'تم تحديد جميع وحدات المنهج للعرض للزوار!', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم تحديد كل وحدات المنهج.', type: 'success' });
   }
 
   deselectAllUnitsForCurriculum(): void {
@@ -283,7 +283,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
       ...cfg,
       landingUnitIds: (cfg.landingUnitIds || []).filter(id => !idsToRemove.has(id))
     }));
-    this.toastTriggered.emit({ text: 'تم إلغاء تحديد وحدات هذا المنهج من صفحة الهبوط!', type: 'warning' });
+    this.toastTriggered.emit({ text: 'تم إلغاء تحديد وحدات المنهج.', type: 'warning' });
   }
 
   getCurriculumSelectedCount(curriculumCode: string): number {
@@ -335,13 +335,13 @@ export class LeadsAndLandingCmsComponent implements OnInit {
       next: () => {
         this.cmsConfigSaved.emit(payload);
         this.toastTriggered.emit({
-          text: 'تم حفظ ونشر تعديلات محتوى الصفحة الرئيسية بنجاح على المنصة!',
+          text: 'تم حفظ ونشر التعديلات',
           type: 'success'
         });
       },
       error: (err) => {
         this.toastTriggered.emit({
-          text: err?.error?.message || 'تعذر حفظ تعديلات الصفحة الرئيسية. يرجى التأكد من صحة البيانات.',
+          text: err?.error?.message || 'تعذر الحفظ. تحقق من البيانات.',
           type: 'error'
         });
       }
@@ -380,7 +380,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
           )
         );
         this.toastTriggered.emit({
-          text: nextApproved ? 'تم اعتماد ونشر رأي الطالب بنجاح على الصفحة الرئيسية!' : 'تم إلغاء نشر الرأي بنجاح.',
+          text: nextApproved ? 'تم نشر الرأي' : 'تم إلغاء النشر',
           type: 'success'
         });
       },
@@ -398,7 +398,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.editingTestimonialId.set(null);
-        this.toastTriggered.emit({ text: 'تم حفظ وتحديث رأي الطالب ودرجته بنجاح!', type: 'success' });
+        this.toastTriggered.emit({ text: 'تم تحديث الرأي', type: 'success' });
       },
       error: () => {
         this.toastTriggered.emit({ text: 'تعذر حفظ التعديلات.', type: 'error' });
@@ -411,7 +411,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     this.testimonialsService.deleteAdminTestimonial(item.id).subscribe({
       next: () => {
         this.adminTestimonials.update((list) => list.filter((t) => t.id !== item.id));
-        this.toastTriggered.emit({ text: 'تم حذف الرأي بنجاح.', type: 'success' });
+        this.toastTriggered.emit({ text: 'تم الحذف', type: 'success' });
       },
       error: () => {
         this.toastTriggered.emit({ text: 'تعذر حذف الرأي.', type: 'error' });
@@ -437,7 +437,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
       'SAT_MATH': 'SAT Math',
       'EGYPTIAN': 'المنهج المصري',
       'GULF': 'المنهج الخليجي',
-      'INTERNATIONAL': 'البريطانية (IGCSE)',
+      'INTERNATIONAL': 'المناهج الدولية',
       'AMERICAN': 'الأمريكية (SAT)'
     };
     let formatted = rawStage;
@@ -608,11 +608,11 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
     if (!file.type.startsWith('image/')) {
-      this.toastTriggered.emit({ text: 'يرجى اختيار ملف صورة صالح (PNG, JPEG, WebP)', type: 'warning' });
+      this.toastTriggered.emit({ text: 'اختر صورة (PNG, JPEG, WebP)', type: 'warning' });
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
-      this.toastTriggered.emit({ text: 'حجم الصورة كبير جداً (الحد الأقصى 8 ميجابايت)', type: 'warning' });
+      this.toastTriggered.emit({ text: 'الحد الأقصى 8MB', type: 'warning' });
       return;
     }
     const reader = new FileReader();
@@ -631,7 +631,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
           ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
           const compressed = canvas.toDataURL('image/jpeg', 0.85);
           this.honoreeForm.update(f => ({ ...f, avatarUrl: compressed }));
-          this.toastTriggered.emit({ text: 'تم تجهيز وحفظ صورة الطالب بنجاح!', type: 'success' });
+          this.toastTriggered.emit({ text: 'تم حفظ الصورة', type: 'success' });
         }
       };
       img.src = e.target?.result as string;
@@ -647,7 +647,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   saveHonoreeModal(): void {
     const item = { ...this.honoreeForm() };
     if (!item.nameAr || !item.nameAr.trim()) {
-      this.toastTriggered.emit({ text: 'يرجى كتابة اسم الطالب بالعربية على الأقل.', type: 'warning' });
+      this.toastTriggered.emit({ text: 'اكتب اسم الطالب بالعربية', type: 'warning' });
       return;
     }
     item.nameAr = item.nameAr.trim();
@@ -682,11 +682,11 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     });
 
     this.closeHonoreeModal();
-    this.toastTriggered.emit({ text: 'تم الحفظ في القائمة. اضغطي "حفظ التعديلات" لنشرها.', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم الحفظ. اضغطي "حفظ التعديلات" لنشرها.', type: 'success' });
   }
 
   deleteHonoree(index: number): void {
-    if (!confirm('حذف هذا الطالب من لوحة الشرف؟')) return;
+    if (!confirm('حذف هذا الطالب؟')) return;
     this.editableCms.update(cfg => {
       const currentList = (cfg.honorBoardList || []).filter((_, i) => i !== index);
       const reindexed = currentList.map((h, i) => ({ ...h, rank: i + 1 }));
@@ -695,7 +695,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
         honorBoardList: reindexed
       };
     });
-    this.toastTriggered.emit({ text: 'تم حذف الطالب من لوحة الشرف.', type: 'warning' });
+    this.toastTriggered.emit({ text: 'تم حذف الطالب.', type: 'warning' });
   }
 
   toggleHonoreeStatus(index: number): void {
@@ -747,12 +747,12 @@ export class LeadsAndLandingCmsComponent implements OnInit {
 
   populateDefaultHonorees(): void {
     if ((this.editableCms().honorBoardList || []).length > 0) {
-      if (!confirm('استبدال لوحة الشرف الحالية بالنموذج الافتراضي؟')) return;
+      if (!confirm('استبدال لوحة الشرف بالنموذج الافتراضي؟')) return;
     }
     this.editableCms.update(cfg => ({
       ...cfg,
       honorBoardList: JSON.parse(JSON.stringify(this.defaultHonorBoardTemplate))
     }));
-    this.toastTriggered.emit({ text: 'تم تحميل نموذج لوحة الشرف بنجاح.', type: 'success' });
+    this.toastTriggered.emit({ text: 'تم تحميل النموذج', type: 'success' });
   }
 }

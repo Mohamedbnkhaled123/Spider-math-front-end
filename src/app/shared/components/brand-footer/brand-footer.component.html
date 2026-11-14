@@ -24,11 +24,11 @@
         @if (!isPortalRoute()) {
           <nav class="flex flex-wrap items-center justify-center gap-5 sm:gap-8 text-xs sm:text-sm font-medium text-text-secondary">
             <button type="button" (click)="scrollToSection('curriculum-section')" class="hover:text-brand-gold transition-colors cursor-pointer">
-              {{ langService.isArabic() ? 'المناهج الدراسية' : 'Curricula' }}
+              {{ langService.isArabic() ? 'المناهج' : 'Curricula' }}
             </button>
 
             <button type="button" (click)="scrollToPlacementTest()" class="hover:text-brand-gold transition-colors cursor-pointer">
-              {{ langService.isArabic() ? 'اختبار تحديد المستوى' : 'Placement Test' }}
+              {{ langService.isArabic() ? 'تحديد المستوى' : 'Placement Test' }}
             </button>
           </nav>
         }

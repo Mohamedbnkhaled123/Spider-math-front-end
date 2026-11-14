@@ -253,8 +253,8 @@ export class AiQuestionExtractionModalComponent {
     } catch (err: any) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'تعذر قراءة ملف الصورة. تحقق من الملف وأعد المحاولة.'
-          : 'Unable to read image. Verify file and try again.'
+          ? 'تعذر قراءة ملف الصورة.'
+          : 'Unable to read image.'
       );
     } finally {
       this.isProcessing.set(false);
@@ -312,8 +312,8 @@ export class AiQuestionExtractionModalComponent {
     this.errorMessage.set(null);
     this.processingMessage.set(
       this.langService.isArabic()
-        ? 'جاري تحليل الصفحة بالذكاء الاصطناعي واستخراج المعادلات والرسومات...'
-        : 'AI Vision is analyzing the page and extracting LaTeX questions...'
+        ? 'جاري التحليل بالذكاء الاصطناعي...'
+        : 'AI is analyzing the page...'
     );
 
     try {
@@ -345,8 +345,8 @@ export class AiQuestionExtractionModalComponent {
       if (rawQuestions.length === 0) {
         this.errorMessage.set(
           this.langService.isArabic()
-            ? 'لم يتم العثور على أسئلة واضحة في هذه الصفحة، يمكنك تجربة صفحة أخرى أو تعديل نمط الاستخراج.'
-            : 'No clear math questions found on this page. Try another page or change extraction mode.'
+            ? 'لا توجد أسئلة واضحة.'
+            : 'No questions found.'
         );
         this.isProcessing.set(false);
         return;
@@ -459,10 +459,10 @@ export class AiQuestionExtractionModalComponent {
 
   promptRemoveCroppedImage(q: IStagedQuestion): void {
     this.confirmationDialog.set({
-      title: this.langService.isArabic() ? 'تأكيد إزالة الرسم الهندسي' : 'Confirm Diagram Removal',
+      title: this.langService.isArabic() ? 'إزالة الرسم الهندسي' : 'Remove Diagram',
       message: this.langService.isArabic()
-        ? 'إزالة هذا الرسم المقصوص من السؤال؟'
-        : 'Remove cropped image from question?',
+        ? 'إزالة هذا الرسم؟'
+        : 'Remove cropped image?',
       confirmText: this.langService.isArabic() ? 'إزالة' : 'Remove',
       cancelText: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       onConfirm: () => {
@@ -622,8 +622,8 @@ export class AiQuestionExtractionModalComponent {
     if (checked.length === 0) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'حددي سؤالاً واحداً على الأقل لإدراجه.'
-          : 'Select at least one question to insert.'
+          ? 'حددي سؤالاً واحداً على الأقل.'
+          : 'Select at least one question.'
       );
       return;
     }

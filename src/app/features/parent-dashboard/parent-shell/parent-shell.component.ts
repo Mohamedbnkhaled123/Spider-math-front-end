@@ -127,7 +127,7 @@ export class ParentShellComponent implements OnInit {
 
     const haRegex = /^HA\d{4,}$/i;
     if (!haRegex.test(code)) {
-      this.linkError.set(this.langService.isArabic() ? 'صيغة الكود غير صالحة (مثال: HA4920)' : 'Invalid code format (e.g. HA4920)');
+      this.linkError.set(this.langService.isArabic() ? 'صيغة الكود غير صحيحة (HAxxxx)' : 'Invalid format (HAxxxx)');
       return;
     }
 
@@ -143,13 +143,13 @@ export class ParentShellComponent implements OnInit {
     this.http.post<{ success: boolean; message: string; child?: LinkedChildSummary }>('/api/v1/auth/parent/link-additional-child', payload).subscribe({
       next: (res) => {
         this.isLinking.set(false);
-        this.linkSuccess.set(res?.message || (this.langService.isArabic() ? 'تم ربط الحساب بنجاح!' : 'Student account linked!'));
+        this.linkSuccess.set(res?.message || (this.langService.isArabic() ? 'تم ربط الحساب!' : 'Linked!'));
         this.fetchLinkedChildren();
         setTimeout(() => this.closeLinkModal(), 1500);
       },
       error: (err) => {
         this.isLinking.set(false);
-        const serverMsg = err?.error?.message || err?.error?.error?.message || (this.langService.isArabic() ? 'تعذر ربط الحساب. تحقق من الكود ورقم الهاتف.' : 'Unable to link account. Verify code and phone.');
+        const serverMsg = err?.error?.message || err?.error?.error?.message || (this.langService.isArabic() ? 'تعذر الربط. تحقق من الكود.' : 'Unable to link. Check code.');
         this.linkError.set(serverMsg);
       }
     });

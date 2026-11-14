@@ -28,10 +28,25 @@ export interface IGradeItemData {
   isCustom?: boolean;
 }
 
+export interface ICurriculumStageItemData {
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+}
+
+export interface ICurriculumDivisionItemData {
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+  iconName?: string;
+  stages?: ICurriculumStageItemData[];
+}
+
 export interface ICurriculumTrackItemData {
   code: CurriculumCode;
   nameAr: string;
   nameEn?: string;
+  divisions?: ICurriculumDivisionItemData[];
   grades: IGradeItemData[];
 }
 

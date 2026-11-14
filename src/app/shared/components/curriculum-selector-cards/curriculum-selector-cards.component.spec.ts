@@ -260,4 +260,65 @@ describe('CurriculumSelectorCardsComponent', () => {
       );
     });
   });
+
+  describe('International 2-Division Hierarchy', () => {
+    it('should initialize selectedIntlDivision to AMERICAN_CURRICULUM', () => {
+      expect(component.selectedIntlDivision()).toBe('AMERICAN_CURRICULUM');
+    });
+
+    it('should switch selectedIntlDivision to BRITISH_CURRICULUM', () => {
+      component.selectIntlDivision('BRITISH_CURRICULUM');
+      expect(component.selectedIntlDivision()).toBe('BRITISH_CURRICULUM');
+      expect(component.activeIntlDivision().code).toBe('BRITISH_CURRICULUM');
+    });
+
+    it('should expose both American and British divisions in intlDivisions', () => {
+      const divisions = component.intlDivisions();
+      expect(divisions.length).toBe(2);
+      expect(divisions[0].code).toBe('AMERICAN_CURRICULUM');
+      expect(divisions[1].code).toBe('BRITISH_CURRICULUM');
+    });
+
+    it('should return correct division icon with fallback including graduation-cap and division codes', () => {
+      expect(component.getDivisionIcon('award')).toBe('award');
+      expect(component.getDivisionIcon('graduation-cap')).toBe('graduation-cap');
+      expect(component.getDivisionIcon('book-open')).toBe('book-open');
+      expect(component.getDivisionIcon('globe')).toBe('globe');
+      expect(component.getDivisionIcon('unknown-icon')).toBe('book-open');
+      expect(component.getDivisionIcon(undefined, 'AMERICAN_CURRICULUM')).toBe('award');
+      expect(component.getDivisionIcon(undefined, 'BRITISH_CURRICULUM')).toBe('graduation-cap');
+    });
+
+    it('should assign calculus math icon to senior grades Year 13, AL, AS and triangle to OL', () => {
+      expect(component.getGradeMathIcon('IGCSE_YEAR_13')).toBe('calculus');
+      expect(component.getGradeMathIcon('IGCSE_AL')).toBe('calculus');
+      expect(component.getGradeMathIcon('IGCSE_AS')).toBe('calculus');
+      expect(component.getGradeMathIcon('IGCSE_OL')).toBe('triangle');
+      expect(component.getGradeMathIcon('IGCSE_YEAR_7')).toBe('division');
+      expect(component.getGradeMathIcon('US_GRADE_1')).toBe('operators');
+    });
+
+    it('should filter stage grades correctly for American and British stages', () => {
+      const discoveryService = TestBed.inject(PublicDiscoveryService);
+      discoveryService.activeGrades.set([
+        'US_GRADE_1', 'US_GRADE_2', 'US_GRADE_3', 'US_GRADE_4', 'US_GRADE_5',
+        'IGCSE_YEAR_1', 'IGCSE_YEAR_2'
+      ]);
+      component.openTrackModal('INTERNATIONAL');
+      const americanDiv = component.intlDivisions().find((d) => d.code === 'AMERICAN_CURRICULUM')!;
+      expect(americanDiv.stages.length).toBe(3);
+
+      const elementaryStage = americanDiv.stages.find((s) => s.code === 'ELEMENTARY_SCHOOL')!;
+      const elemGrades = component.getIntlStageGrades(elementaryStage);
+      expect(elemGrades.map((g) => g.code)).toEqual([
+        'US_GRADE_1', 'US_GRADE_2', 'US_GRADE_3', 'US_GRADE_4', 'US_GRADE_5'
+      ]);
+
+      const britishDiv = component.intlDivisions().find((d) => d.code === 'BRITISH_CURRICULUM')!;
+      expect(britishDiv.stages.length).toBe(5);
+      const ks1Stage = britishDiv.stages.find((s) => s.code === 'PRIMARY_KS1')!;
+      const ks1Grades = component.getIntlStageGrades(ks1Stage);
+      expect(ks1Grades.map((g) => g.code)).toEqual(['IGCSE_YEAR_1', 'IGCSE_YEAR_2']);
+    });
+  });
 });

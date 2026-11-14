@@ -14,13 +14,13 @@
           <img src="/assets/branding/spider-math-logo-v3.webp?v=4" alt="Spider Math" width="64" height="64" decoding="async" class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 object-contain drop-shadow-md">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-2">
             <app-icon name="user" [size]="14" />
-            <span>{{ langService.isArabic() ? 'بيانات الطالب الموحدة' : 'Unified Student Profile' }}</span>
+            <span>{{ langService.isArabic() ? 'بيانات الطالب' : 'Student Profile' }}</span>
           </div>
           <h2 class="font-academic-serif text-2xl sm:text-3xl font-black text-text-primary mb-2">
-            {{ langService.isArabic() ? 'استكمال البيانات وإصدار كود HA' : 'Complete Profile & Issue HA Code' }}
+            {{ langService.isArabic() ? 'استكمال البيانات' : 'Complete Profile' }}
           </h2>
           <p class="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto">
-            {{ langService.isArabic() ? 'أدخل بياناتك لربط حسابك بالمنهج وتفعيل المتابعة.' : 'Provide details to link your curriculum and alerts.' }}
+            {{ langService.isArabic() ? 'أدخل بياناتك لإكمال التسجيل.' : 'Enter details to complete.' }}
           </p>
         </div>
 
@@ -29,14 +29,14 @@
           <!-- Full Name -->
           <div>
             <label class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'اسم الطالب بالكامل:' : 'Student Full Name:' }}
+              {{ langService.isArabic() ? 'اسم الطالب:' : 'Name:' }}
             </label>
             <input
               type="text"
               [ngModel]="fullName()"
               (ngModelChange)="fullName.set($event)"
               name="fullName"
-              [placeholder]="langService.isArabic() ? 'محمد أحمد إبراهيم' : 'Mohamed Ahmed Ibrahim'"
+              [placeholder]="langService.isArabic() ? 'محمد أحمد' : 'Mohamed Ahmed'"
               required
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
             />
@@ -46,7 +46,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'رقم هاتف الطالب (واتساب):' : 'Student Phone (WhatsApp):' }}
+                {{ langService.isArabic() ? 'واتساب الطالب:' : 'Student WhatsApp:' }}
               </label>
               <input
                 type="tel"
@@ -62,7 +62,7 @@
 
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'رقم هاتف ولي الأمر (للمتابعة):' : 'Parent Phone (For Reports):' }}
+                {{ langService.isArabic() ? 'هاتف ولي الأمر:' : 'Parent Phone:' }}
               </label>
               <input
                 type="tel"
@@ -76,7 +76,7 @@
               />
               <p class="text-[10px] text-amber-500 font-semibold mt-1 flex items-center gap-1">
                 <app-icon name="alert-triangle" [size]="12" />
-                <span>{{ langService.isArabic() ? 'يجب أن يختلف رقم ولي الأمر عن رقم الطالب.' : 'Parent phone must differ from student phone.' }}</span>
+                <span>{{ langService.isArabic() ? 'يجب اختلاف رقم ولي الأمر.' : 'Must differ from student phone.' }}</span>
               </p>
             </div>
           </div>
@@ -84,7 +84,7 @@
           <!-- 4 Curriculums Selector -->
           <div>
             <label class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'المنهج والمسار الدراسي:' : 'Academic Curriculum Track:' }}
+              {{ langService.isArabic() ? 'المنهج:' : 'Curriculum:' }}
             </label>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               @for (c of curriculumTree; track c.code) {
@@ -110,7 +110,7 @@
           <!-- Grade Level -->
           <div>
             <label class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'الصف الدراسي:' : 'Grade Level:' }}
+              {{ langService.isArabic() ? 'الصف:' : 'Grade:' }}
             </label>
             <select
               [ngModel]="gradeLevel()"
@@ -130,7 +130,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'دولة الإقامة:' : 'Country of Residence:' }}
+                {{ langService.isArabic() ? 'الدولة:' : 'Country:' }}
               </label>
               <select
                 [ngModel]="country()"
@@ -157,7 +157,7 @@
             @if (isEgypt()) {
               <div class="animate-fade-in">
                 <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                  {{ langService.isArabic() ? 'المحافظة (مطلوبة داخل مصر):' : 'Egyptian Governorate:' }}
+                  {{ langService.isArabic() ? 'المحافظة:' : 'Governorate:' }}
                 </label>
                 <select
                   [ngModel]="governorate()"
@@ -193,10 +193,10 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="refresh" [size]="16" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري حفظ البيانات وإصدار الكود...' : 'Issuing Student Code...' }}</span>
+                <span>{{ langService.isArabic() ? 'حفظ...' : 'Saving...' }}</span>
               } @else {
                 <app-icon name="check" [size]="16" />
-                <span>{{ langService.isArabic() ? 'حفظ وإصدار كود HA' : 'Save & Issue HA Code' }}</span>
+                <span>{{ langService.isArabic() ? 'حفظ البيانات' : 'Save' }}</span>
               }
             </button>
           </div>
@@ -215,16 +215,16 @@
         </div>
 
         <h3 class="text-2xl sm:text-3xl font-black text-text-primary mb-2">
-          {{ langService.isArabic() ? 'تم إصدار كود الطالب بنجاح' : 'Student Code Issued' }}
+          {{ langService.isArabic() ? 'تم إصدار الكود' : 'Code Issued' }}
         </h3>
         <p class="text-sm text-text-secondary max-w-md mx-auto mb-6">
-          {{ langService.isArabic() ? 'احتفظ بهذا الكود الدائم لتسجيل الدخول وتفعيل الاشتراكات.' : 'Keep this permanent code for logins and subscriptions.' }}
+          {{ langService.isArabic() ? 'احتفظ بالكود لتسجيل الدخول.' : 'Save code for login.' }}
         </p>
 
         <!-- HA Code Badge (Glowing Card) -->
         <div class="spider-rim-glass-card max-w-xs mx-auto p-6 rounded-2xl border-2 border-brand-gold/70 bg-brand-gold/10 shadow-gold-glow mb-8">
           <span class="block text-xs font-bold text-text-muted mb-1">
-            {{ langService.isArabic() ? 'كود الطالب الأكاديمي الدائم:' : 'Permanent Student HA Code:' }}
+            {{ langService.isArabic() ? 'كود الطالب الدائم:' : 'Permanent HA Code:' }}
           </span>
           <span class="block text-3xl sm:text-4xl font-black font-numeric text-brand-gold tracking-widest">
             {{ code }}
@@ -239,7 +239,7 @@
             class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-md flex items-center justify-center gap-2"
           >
             <app-icon name="phone" [size]="16" />
-            <span>{{ langService.isArabic() ? 'تفعيل الاشتراك عبر واتساب' : 'Activate via WhatsApp' }}</span>
+            <span>{{ langService.isArabic() ? 'تفعيل عبر واتساب' : 'WhatsApp Activation' }}</span>
           </button>
 
           <button

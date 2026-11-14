@@ -66,7 +66,7 @@
       <div class="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-4">
         <app-icon name="alert-triangle" [size]="32" />
       </div>
-      <h2 class="text-lg font-black text-text-primary mb-2">{{ langService.isArabic() ? 'لا يوجد تسليم سابق لهذا الامتحان' : 'No previous submission found for this exam' }}</h2>
+      <h2 class="text-lg font-black text-text-primary mb-2">{{ langService.isArabic() ? 'لا يوجد تسليم لهذا الامتحان' : 'No submission found' }}</h2>
       <p class="text-xs text-text-secondary max-w-md mx-auto mb-6 leading-relaxed">{{ loadError() }}</p>
       <a [routerLink]="returnToHome() ? '/' : '/student'" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-spider text-white text-xs font-bold shadow-md hover:opacity-95 transition-all">
         <app-icon name="arrow-right" [size]="14" />
@@ -89,12 +89,12 @@
             {{ langService.isArabic() ? 'قيد التصحيح والاعتماد' : 'Under Review' }}
           </h2>
           <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-            {{ langService.isArabic() ? 'تم استلام إجاباتك، وتجري مراجعة وتصحيح الحل اليدوي وإضافة الملاحظات.' : 'Your answers were received and are being graded.' }}
+            {{ langService.isArabic() ? 'تم الاستلام وجاري التصحيح.' : 'Answers received. Grading in progress.' }}
           </p>
 
           <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-bg border border-surface-border text-xs font-bold text-text-muted">
             <app-icon name="shield" [size]="14" className="text-brand-accent" />
-            <span>{{ langService.isArabic() ? 'ستتلقى إشعاراً فور اعتماد النتيجة ورصد الدرجة.' : 'You will be notified once grades are published.' }}</span>
+            <span>{{ langService.isArabic() ? 'سيصلك إشعار فور الاعتماد.' : 'You will be notified once graded.' }}</span>
           </span>
         </div>
 
@@ -230,10 +230,10 @@
               <app-icon name="check-circle" [size]="36" />
             </div>
             <h3 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
-              {{ langService.isArabic() ? 'الدرجة النهائية كاملة — أحسنت!' : 'Perfect score — Well done!' }}
+              {{ langService.isArabic() ? 'الدرجة النهائية كاملة!' : 'Perfect score!' }}
             </h3>
             <p class="text-xs sm:text-sm text-text-secondary">
-              {{ langService.isArabic() ? 'أحسنت! حصلت على الدرجة النهائية كاملة.' : 'Congratulations! Perfect score.' }}
+              {{ langService.isArabic() ? 'ممتاز! الدرجة كاملة.' : 'Congratulations! Perfect score.' }}
             </p>
           </div>
         }
@@ -249,7 +249,7 @@
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-black text-brand-primary dark:text-brand-accent">
-                    {{ langService.isArabic() ? 'ملاحظات م/ هبة عبدالوهاب' : 'Feedback from Eng. Heba' }}
+                    {{ langService.isArabic() ? 'ملاحظات المعلمة' : 'Teacher Feedback' }}
                   </span>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-secondary">
                     {{ langService.isArabic() ? 'توجيه مباشر' : 'Direct Guidance' }}
@@ -272,10 +272,10 @@
               <app-icon name="clock" [size]="32" />
             </div>
             <h3 class="text-lg font-black text-text-primary">
-              {{ langService.isArabic() ? 'انتهت مهلة مراجعة الأسئلة المقالية (3 أيام)' : 'Essay review period has expired (3 days)' }}
+              {{ langService.isArabic() ? 'انتهت مهلة المراجعة (3 أيام)' : 'Review period expired (3 days)' }}
             </h3>
             <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
-              {{ langService.isArabic() ? 'تتاح مراجعة الأسئلة المقالية لمدة 3 أيام فقط من الاعتماد. درجاتك محفوظة في حسابك.' : 'Essay review is available for 3 days from grading. Scores remain saved.' }}
+              {{ langService.isArabic() ? 'المراجعة متاحة 3 أيام فقط. درجاتك محفوظة.' : 'Review available for 3 days. Scores are saved.' }}
             </p>
             <div class="pt-2">
               <a
@@ -294,7 +294,7 @@
               <div class="flex items-center gap-2.5">
                 <app-icon name="clock" [size]="18" className="text-amber-600 dark:text-amber-400 shrink-0" />
                 <span class="text-xs font-black">
-                  {{ langService.isArabic() ? ('مراجعة التقييم متاحة لمدة 3 أيام من الاعتماد (' + remaining + ').') : ('Review available for 3 days from grading (' + remaining + ').') }}
+                  {{ langService.isArabic() ? ('متاح للمراجعة خلال ' + remaining) : ('Review available for ' + remaining) }}
                 </span>
               </div>
               <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 shrink-0">
@@ -334,7 +334,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-surface-border">
               <h3 class="text-base font-black text-text-primary flex items-center gap-2">
                 <app-icon name="check-circle" [size]="18" className="text-emerald-500" />
-                <span>{{ langService.isArabic() ? 'تحليل الأسئلة والحلول النموذجية' : 'Questions & Model Solutions' }}</span>
+                <span>{{ langService.isArabic() ? 'الأسئلة والحل النموذجي' : 'Questions & Model Solutions' }}</span>
               </h3>
               <span class="text-xs font-bold text-text-muted font-numeric">
                 {{ feedback().questionsReview.length }} {{ langService.isArabic() ? 'أسئلة' : 'Questions' }}
@@ -563,7 +563,7 @@
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-base font-black text-text-primary flex items-center gap-2">
                     <app-icon name="alert-circle" [size]="18" className="text-feedback-danger" />
-                    <span>{{ langService.isArabic() ? 'تحليل الأخطاء والحل النموذجي' : 'Mistakes & Model Solutions' }}</span>
+                    <span>{{ langService.isArabic() ? 'الأخطاء والحل النموذجي' : 'Mistakes & Model Solutions' }}</span>
                   </h3>
                   <span class="text-xs font-bold text-text-muted font-numeric">
                     {{ feedback().customMistakeCases.length }} {{ langService.isArabic() ? 'ملاحظات' : 'Notes' }}
@@ -592,7 +592,7 @@
                           class="rounded-2xl overflow-hidden border border-surface-border max-w-md bg-surface-bg p-2 cursor-pointer group"
                         >
                           <img [src]="mImg" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question Image'" loading="lazy" decoding="async" class="w-full h-auto object-contain rounded-xl group-hover:scale-[1.02] transition-transform" />
-                          <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'اضغط لتكبير صورة المسألة' : 'Click to zoom question image' }}</span>
+                          <span class="text-[10px] text-text-muted mt-1 block text-center">{{ langService.isArabic() ? 'تكبير الصورة' : 'Zoom' }}</span>
                         </div>
                       }
 
@@ -658,10 +658,10 @@
               <div class="p-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 text-center space-y-2">
                 <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
                 <h4 class="text-sm font-black text-emerald-600 dark:text-emerald-400">
-                  {{ langService.isArabic() ? 'لا توجد أخطاء — جميع حلولك صحيحة!' : 'No mistakes — All correct!' }}
+                  {{ langService.isArabic() ? 'لا توجد أخطاء — ممتاز!' : 'No mistakes — Excellent!' }}
                 </h4>
                 <p class="text-xs text-text-secondary">
-                  {{ langService.isArabic() ? 'يمكنك مراجعة الأسئلة من تبويب "كل الأسئلة".' : 'Review questions from "All Questions" tab.' }}
+                  {{ langService.isArabic() ? 'راجع من تبويب "كل الأسئلة".' : 'Review from "All Questions" tab.' }}
                 </p>
               </div>
             }
@@ -756,10 +756,10 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <h4 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
-                  {{ langService.isArabic() ? 'منشور الحل التوضيحي المعتمد' : 'Verified Community Post Solution' }}
+                  {{ langService.isArabic() ? 'منشور الحل' : 'Solution Post' }}
                 </h4>
                 <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
-                  {{ langService.isArabic() ? 'أرفقت المعلمة هذا المنشور على يوتيوب كشرح إضافي توضيحي لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
+                  {{ langService.isArabic() ? 'شرح إضافي من المعلمة.' : 'Explanation by teacher.' }}
                 </p>
               </div>
 
@@ -779,7 +779,7 @@
         <div class="flex items-center justify-between pt-2">
           <span class="text-[10px] text-text-muted flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>{{ langService.isArabic() ? 'مشاهدة آمنة ومحمية داخل المنصة' : 'Protected in-platform viewing' }}</span>
+            <span>{{ langService.isArabic() ? 'عرض محمي' : 'Protected in-platform viewing' }}</span>
           </span>
 
           <button

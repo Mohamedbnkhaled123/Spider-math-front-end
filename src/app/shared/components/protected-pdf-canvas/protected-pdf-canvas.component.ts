@@ -122,7 +122,7 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
     });
 
     if (!this.isPrintAllowed()) {
-      alert('الطباعة غير مصرح بها لهذا المستند التعليمي.');
+      alert('الطباعة غير مصرح بها.');
       return;
     }
 
@@ -294,7 +294,7 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
           };
           jsdelivrScript.onerror = () => {
             this.isLoading.set(false);
-            this.errorMessage.set('تعذر تحميل مكتبة معالجة الـ PDF. يرجى التحقق من اتصالك بالإنترنت.');
+            this.errorMessage.set('تعذر تحميل PDF. تحقق من الإنترنت.');
           };
           document.head.appendChild(jsdelivrScript);
         };
@@ -323,13 +323,13 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
           },
           (err: any) => {
             this.isLoading.set(false);
-            this.errorMessage.set('تعذر معالجة وعرض صفحات الـ PDF. قد يكون الملف غير صالح.');
+            this.errorMessage.set('تعذر عرض الـ PDF. الملف غير صالح.');
           }
         );
       },
       error: (err) => {
         this.isLoading.set(false);
-        let msg = 'تعذر جلب ملف الـ PDF من Google Drive. يرجى التأكد من معرّف الملف وصلاحيات الوصول.';
+        let msg = 'تعذر جلب الـ PDF.';
         if (err?.error instanceof ArrayBuffer) {
           try {
             const text = new TextDecoder('utf-8').decode(err.error);

@@ -61,10 +61,10 @@
         [class.border-brand-accent]="isDesmosOpen()"
         [class.bg-brand-primary/10]="isDesmosOpen()"
         [class.text-brand-primary]="isDesmosOpen()"
-        [title]="langService.isArabic() ? 'آلة ديسموس البيانية' : 'Desmos Graphing Calculator'"
+        [title]="langService.isArabic() ? 'ديسموس' : 'Desmos'"
       >
         <app-icon name="calculator" [size]="16" />
-        <span class="hidden sm:inline">{{ langService.isArabic() ? 'آلة ديسموس البيانية' : 'Desmos Calculator' }}</span>
+        <span class="hidden sm:inline">{{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}</span>
         <span class="inline sm:hidden text-[11px]">{{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}</span>
       </button>
 
@@ -77,11 +77,11 @@
           [class.border-brand-accent]="isReferenceOpen()"
           [class.bg-brand-primary/10]="isReferenceOpen()"
           [class.text-brand-primary]="isReferenceOpen()"
-          [title]="langService.isArabic() ? 'ورقة القوانين' : 'Reference Sheet'"
+          [title]="langService.isArabic() ? 'القوانين' : 'Reference'"
         >
           <app-icon name="file-text" [size]="16" />
-          <span class="hidden sm:inline">{{ langService.isArabic() ? 'ورقة القوانين' : 'Reference Sheet' }}</span>
-          <span class="inline sm:hidden text-[11px]">{{ langService.isArabic() ? 'المرجع' : 'Reference' }}</span>
+          <span class="hidden sm:inline">{{ langService.isArabic() ? 'القوانين' : 'Reference' }}</span>
+          <span class="inline sm:hidden text-[11px]">{{ langService.isArabic() ? 'القوانين' : 'Reference' }}</span>
         </button>
       }
 
@@ -91,7 +91,7 @@
           type="button"
           (click)="toggleTimerVisibility()"
           class="p-2 rounded-xl border border-surface-border bg-surface-card hover:bg-surface-secondary text-text-muted hover:text-text-primary transition-all shadow-sm cursor-pointer"
-          [title]="isTimerVisible() ? (langService.isArabic() ? 'إخفاء مؤقت الوقت' : 'Hide timer') : (langService.isArabic() ? 'إظهار مؤقت الوقت' : 'Show timer')"
+          [title]="isTimerVisible() ? (langService.isArabic() ? 'إخفاء المؤقت' : 'Hide timer') : (langService.isArabic() ? 'إظهار المؤقت' : 'Show timer')"
         >
           <app-icon [name]="isTimerVisible() ? 'eye-off' : 'eye'" [size]="14" />
         </button>
@@ -121,10 +121,10 @@
           <div
             (click)="toggleTimerVisibility()"
             class="px-2.5 py-2 rounded-xl border border-surface-border bg-surface-card/60 hover:bg-surface-card text-text-muted text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1.5"
-            [title]="langService.isArabic() ? 'انقر لإظهار مؤقت الوقت' : 'Click to show timer'"
+            [title]="langService.isArabic() ? 'إظهار المؤقت' : 'Show timer'"
           >
             <app-icon name="clock" [size]="12" />
-            <span>{{ langService.isArabic() ? 'الوقت مخفي' : 'Timer Hidden' }}</span>
+            <span>{{ langService.isArabic() ? 'مخفي' : 'Hidden' }}</span>
           </div>
         }
       </div>
@@ -143,7 +143,7 @@
         </div>
         <h3 class="text-lg font-black text-text-primary mb-2">{{ langService.isArabic() ? 'لا توجد أسئلة بعد' : 'No questions yet' }}</h3>
         <p class="text-xs text-text-secondary leading-relaxed mb-6">
-          {{ langService.isArabic() ? 'جاري إعداد أسئلة هذا التقييم.' : 'Assessment questions are being prepared.' }}
+          {{ langService.isArabic() ? 'الأسئلة قيد الإعداد.' : 'Preparing questions.' }}
         </p>
         <a [routerLink]="returnToHome() ? '/' : (bundle().unitId ? ['/student/units', bundle().unitId] : '/student')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover transition-all">
           {{ returnToHome() ? (langService.isArabic() ? 'الرئيسية' : 'Home') : (langService.isArabic() ? 'محاضرات الوحدة' : 'Unit Lectures') }}
@@ -174,7 +174,7 @@
             @if (isQuestionAnswered(item._id)) {
               <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-surface-card" [title]="langService.isArabic() ? 'تمت الإجابة' : 'Answered'"></span>
             } @else {
-              <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500/80 border-2 border-surface-card" [title]="langService.isArabic() ? 'لم تقم بالحل بعد' : 'Not answered yet'"></span>
+              <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500/80 border-2 border-surface-card" [title]="langService.isArabic() ? 'لم يُحل' : 'Unanswered'"></span>
             }
           </button>
         }
@@ -254,7 +254,7 @@
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-text-secondary flex items-center gap-1.5">
                 <app-icon name="camera" [size]="15" className="text-brand-primary" />
-                <span>{{ langService.isArabic() ? 'أو التقاط / رفع صورة الحل بالكاميرا كإجابة بديلة بدل الاختيارات:' : 'Or take / upload photo of solution as alternative answer:' }}</span>
+                <span>{{ langService.isArabic() ? 'أو رفع صورة للحل:' : 'Or upload solution photo:' }}</span>
               </span>
 
               @if (quizCache.activeQuiz()?.selectedAnswers?.[q._id] !== undefined) {
@@ -262,9 +262,9 @@
                   type="button"
                   (click)="clearOption()"
                   class="text-[11px] font-bold text-text-muted hover:text-feedback-danger transition-colors cursor-pointer"
-                  [title]="langService.isArabic() ? 'إلغاء تحديد الاختيار والاكتفاء بصورة الحل فقط' : 'Deselect choice and use photo solution only'"
+                  [title]="langService.isArabic() ? 'إلغاء التحديد' : 'Deselect'"
                 >
-                  {{ langService.isArabic() ? 'إلغاء تحديد الاختيار والاكتفاء بالصورة' : 'Deselect choice and use photo only' }}
+                  {{ langService.isArabic() ? 'إلغاء التحديد' : 'Deselect' }}
                 </button>
               }
             </div>
@@ -281,7 +281,7 @@
                           type="button"
                           (click)="removeQuestionImage(q._id, img.imageUrl)"
                           class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
-                          [title]="langService.isArabic() ? 'حذف هذه الصورة' : 'Delete this photo'"
+                          [title]="langService.isArabic() ? 'حذف' : 'Delete'"
                         >
                           <app-icon name="x" [size]="16" />
                         </button>
@@ -290,10 +290,10 @@
                     <div>
                       <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                         <app-icon name="check" [size]="16" />
-                        <span>{{ langService.isArabic() ? 'تم إرفاق صورة الحل كإجابة لهذا السؤال بنجاح' : 'Solution photo attached successfully' }}</span>
+                        <span>{{ langService.isArabic() ? 'تم إرفاق صورة الحل' : 'Photo attached' }}</span>
                       </span>
                       <span class="text-[10px] text-text-muted">
-                        {{ langService.isArabic() ? 'سيتم تسليمها للمهندسة هبة عبدالوهاب لمراجعة خطوات الحل وتصحيحها.' : 'It will be submitted to Eng. Heba Abdel-Wahab to review and grade solution steps.' }}
+                        {{ langService.isArabic() ? 'ستُراجع خطوات الحل.' : 'Solution steps will be reviewed.' }}
                       </span>
                     </div>
                   </div>
@@ -314,7 +314,7 @@
           <div class="mt-6 p-6 sm:p-8 rounded-2xl border border-surface-border bg-surface-card shadow-sm space-y-4">
             <div class="flex items-center justify-between">
               <label class="block font-bold text-xs sm:text-sm text-text-primary">
-                {{ langService.isArabic() ? 'اكتب إجابتك هنا:' : 'Type your answer here:' }}
+                {{ langService.isArabic() ? 'إجابتك:' : 'Your answer:' }}
               </label>
               @if (getTextAnswer(q._id).trim()) {
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -328,14 +328,14 @@
               type="text"
               [value]="getTextAnswer(q._id)"
               (input)="recordTextAnswer(q._id, $event)"
-              [placeholder]="langService.isArabic() ? 'أدخل الإجابة هنا (أرقام أو نصوص)...' : 'Enter your answer here...'"
+              [placeholder]="langService.isArabic() ? 'أدخل الإجابة...' : 'Enter answer...'"
               class="w-full px-4 py-3.5 rounded-xl border-2 border-surface-border bg-surface-bg text-text-primary text-base font-bold focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all shadow-sm"
               autocomplete="off"
               spellcheck="false"
             />
 
             <p class="text-[11px] text-text-muted leading-relaxed">
-              {{ langService.isArabic() ? 'ملاحظة: اكتب إجابتك النهائية بدقة. لا تقلق بشأن المسافات الزائدة أو حالة الأحرف حيث يتم احتسابها تلقائياً.' : 'Note: Write your final answer carefully. Extra spaces and letter casing are handled automatically.' }}
+              {{ langService.isArabic() ? 'اكتب الإجابة النهائية فقط.' : 'Final answer only.' }}
             </p>
           </div>
         }
@@ -346,7 +346,7 @@
             <div class="mb-4">
               <span class="text-xs font-bold text-text-primary flex items-center gap-2">
                 <app-icon name="edit" [size]="16" className="text-brand-primary" />
-                <span>{{ langService.isArabic() ? 'سؤال مقالي: التقط صورة كشكول الحل من الكاميرا أو ارفعها كإجابة معتمدة:' : 'Written question: Take a photo of your notebook solution or upload it:' }}</span>
+                <span>{{ langService.isArabic() ? 'ارفع صورة الحل:' : 'Upload solution photo:' }}</span>
               </span>
             </div>
 
@@ -361,7 +361,7 @@
                           type="button"
                           (click)="removeQuestionImage(q._id, img.imageUrl)"
                           class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
-                          [title]="langService.isArabic() ? 'حذف هذه الصورة' : 'Delete this photo'"
+                          [title]="langService.isArabic() ? 'حذف' : 'Delete'"
                         >
                           <app-icon name="x" [size]="16" />
                         </button>
@@ -370,10 +370,10 @@
                     <div>
                       <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                         <app-icon name="check" [size]="16" />
-                        <span>{{ langService.isArabic() ? 'تم حفظ صورة حل المسألة المقالية' : 'Written solution photo saved' }}</span>
+                        <span>{{ langService.isArabic() ? 'تم حفظ صورة الحل' : 'Photo saved' }}</span>
                       </span>
                       <span class="text-[10px] text-text-muted">
-                        {{ langService.isArabic() ? 'يمكنك إضافة صورة ثانية إذا كان الحل يتكون من صفحتين.' : 'You can add a second photo if your solution spans two pages.' }}
+                        {{ langService.isArabic() ? 'صفحة إضافية متاحة.' : '2nd page available.' }}
                       </span>
                     </div>
                   </div>
@@ -422,7 +422,7 @@
               @if (unansweredCount() > 0) {
                 <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                   <app-icon name="alert-circle" [size]="13" />
-                  <span>{{ langService.isArabic() ? (unansweredCount() + ' أسئلة متبقية') : (unansweredCount() + ' questions remaining') }}</span>
+                  <span>{{ langService.isArabic() ? (unansweredCount() + ' متبقية') : (unansweredCount() + ' remaining') }}</span>
                 </span>
               }
 
@@ -431,9 +431,9 @@
                 (click)="transitionToModule2()"
                 [disabled]="isSubmitting() || unansweredCount() > 0"
                 class="w-full sm:w-auto px-7 py-3 rounded-xl font-black text-sm text-white bg-brand-primary hover:bg-brand-primary-hover shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'أجب عن جميع الأسئلة أولاً' : 'Answer all questions first') : (langService.isArabic() ? 'الموديول الثاني' : 'Module 2')"
+                [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'أجب عن جميع الأسئلة' : 'Answer all questions') : (langService.isArabic() ? 'الموديول الثاني' : 'Module 2')"
               >
-                <span>{{ langService.isArabic() ? 'الانتقال للموديول الثاني' : 'Proceed to Module 2' }}</span>
+                <span>{{ langService.isArabic() ? 'الموديول الثاني' : 'Module 2' }}</span>
                 <app-icon name="arrow-left" [size]="16" />
               </button>
             </div>
@@ -442,7 +442,7 @@
               @if (unansweredCount() > 0) {
                 <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                   <app-icon name="alert-circle" [size]="13" />
-                  <span>{{ langService.isArabic() ? (unansweredCount() + ' أسئلة متبقية') : (unansweredCount() + ' questions remaining') }}</span>
+                  <span>{{ langService.isArabic() ? (unansweredCount() + ' متبقية') : (unansweredCount() + ' remaining') }}</span>
                 </span>
               }
 
@@ -451,7 +451,7 @@
                 (click)="submitAssessment()"
                 [disabled]="isSubmitting() || unansweredCount() > 0"
                 class="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-sm btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'أجب عن جميع الأسئلة أولاً' : 'Answer all questions first') : (langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment')"
+                [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'أجب عن جميع الأسئلة' : 'Answer all questions') : (langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment')"
               >
                 @if (isSubmitting()) {
                   <app-icon name="loader" [size]="16" className="animate-spin" />
@@ -477,10 +477,10 @@
       </div>
 
       <h2 class="text-2xl font-black text-text-primary mb-2 font-academic-serif">
-        @if (langService.isArabic()) { تم تسليم التقييم <span class="text-gold-accent">بنجاح</span> } @else { Assessment Submitted <span class="text-gold-accent">Successfully</span> } <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
+        @if (langService.isArabic()) { تم <span class="text-gold-accent">تسليم التقييم</span> } @else { Assessment <span class="text-gold-accent">Submitted</span> } <span class="inline-flex items-center text-brand-gold ml-2 align-middle"><svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-8 sm:h-8 stroke-current fill-none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 4h12v7a6 6 0 0 1-12 0V4z" fill="currentColor" fill-opacity="0.25"/></svg></span>
       </h2>
       <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-8">
-        {{ langService.isArabic() ? 'تم حفظ إجاباتك وإرسالها للتصحيح بنجاح.' : 'Your answers have been securely submitted for grading.' }}
+        {{ langService.isArabic() ? 'أُرسلت للتصحيح.' : 'Submitted for grading.' }}
       </p>
 
       <div class="flex flex-wrap items-center justify-center gap-4">
@@ -490,7 +490,7 @@
           class="px-6 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
         >
           <app-icon name="award" [size]="16" />
-          <span>{{ langService.isArabic() ? 'تقرير التقييم وملاحظات الحل' : 'View Report & Feedback' }}</span>
+          <span>{{ langService.isArabic() ? 'تقرير التقييم' : 'View Report' }}</span>
         </a>
         <a
           [routerLink]="returnToHome() ? '/' : (bundle().unitId ? ['/student/units', bundle().unitId] : '/student')"
@@ -525,7 +525,7 @@
         <div class="px-5 py-3.5 bg-surface-bg border-b border-surface-border flex items-center justify-between gap-3 shrink-0 select-none">
           <div class="flex items-center gap-2 text-xs font-black text-text-primary">
             <app-icon name="file-text" [size]="16" className="text-brand-primary" />
-            <span>{{ langService.isArabic() ? 'ورقة القوانين والمفاهيم' : 'Formulas & Concepts Sheet' }}</span>
+            <span>{{ langService.isArabic() ? 'ورقة القوانين' : 'Reference Sheet' }}</span>
           </div>
 
           <div class="flex items-center gap-1.5">
@@ -534,7 +534,7 @@
               target="_blank"
               rel="noopener noreferrer"
               class="p-1.5 rounded-lg text-text-muted hover:text-brand-primary hover:bg-surface-card transition-all cursor-pointer"
-              [title]="langService.isArabic() ? 'فتح بالحجم الكامل في نافذة جديدة' : 'Open full size in new tab'"
+              [title]="langService.isArabic() ? 'فتح بنافذة جديدة' : 'Open in new tab'"
             >
               <app-icon name="external-link" [size]="15" />
             </a>
@@ -543,7 +543,7 @@
               type="button"
               (click)="isReferenceOpen.set(false)"
               class="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-surface-card transition-all cursor-pointer"
-              [title]="langService.isArabic() ? 'إغلاق ورقة القوانين' : 'Close reference sheet'"
+              [title]="langService.isArabic() ? 'إغلاق' : 'Close'"
             >
               <app-icon name="x" [size]="16" />
             </button>

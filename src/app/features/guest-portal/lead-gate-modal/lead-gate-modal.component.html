@@ -35,13 +35,13 @@
           </div>
 
           <h3 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary mb-2">
-            {{ langService.isArabic() ? 'انتهى الاختبار بنجاح' : 'Assessment Completed!' }}
+            {{ langService.isArabic() ? 'انتهى الاختبار' : 'Completed' }}
           </h3>
 
           <div class="p-4 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 text-text-primary text-xs sm:text-sm font-semibold mb-5 leading-relaxed">
             {{ langService.isArabic() 
-              ? 'سجل الدخول لعرض النتيجة ونقاط القوة والضعف.'
-              : 'Sign in to view score and analysis.' }}
+              ? 'سجل الدخول لعرض النتيجة والتحليل.'
+              : 'Sign in to view result and analysis.' }}
           </div>
 
           <!-- Direct Login Button -->
@@ -58,7 +58,7 @@
           <div class="flex items-center gap-3 my-4">
             <div class="h-px bg-surface-border flex-1"></div>
             <span class="text-xs font-semibold text-text-muted">
-              {{ langService.isArabic() ? 'أو أدخل بياناتك للتواصل' : 'or enter details' }}
+              {{ langService.isArabic() ? 'أو أدخل بياناتك:' : 'or enter details:' }}
             </span>
             <div class="h-px bg-surface-border flex-1"></div>
           </div>
@@ -67,7 +67,7 @@
           <form (ngSubmit)="submitUnlock()" class="space-y-4 text-left rtl:text-right">
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'اسم الطالب ثلاثياً:' : 'Student Full Name:' }}
+                {{ langService.isArabic() ? 'اسم الطالب:' : 'Student name:' }}
               </label>
               <div class="relative">
                 <input
@@ -75,7 +75,7 @@
                   [ngModel]="fullName()"
                   (ngModelChange)="fullName.set($event)"
                   name="fullName"
-                  [placeholder]="langService.isArabic() ? 'محمد أحمد إبراهيم' : 'Mohamed Ahmed Ibrahim'"
+                  [placeholder]="langService.isArabic() ? 'محمد أحمد' : 'Mohamed Ahmed'"
                   required
                   class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-text-muted"
                 />
@@ -84,7 +84,7 @@
 
             <div>
               <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'رقم واتساب:' : 'WhatsApp Phone:' }}
+                {{ langService.isArabic() ? 'واتساب:' : 'WhatsApp:' }}
               </label>
               <input
                 type="tel"
@@ -112,7 +112,7 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="refresh" [size]="16" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري إرسال البيانات...' : 'Submitting...' }}</span>
+                <span>{{ langService.isArabic() ? 'إرسال...' : 'Submitting...' }}</span>
               } @else {
                 <app-icon name="award" [size]="16" />
                 <span>{{ langService.isArabic() ? 'عرض النتيجة' : 'View Report' }}</span>
@@ -139,18 +139,18 @@
           
           <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold my-3 flex items-center justify-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>{{ langService.isArabic() ? 'ستتواصل معك المعلمة لمناقشة خطة التطوير.' : 'Teacher will follow up with you directly.' }}</span>
+            <span>{{ langService.isArabic() ? 'ستتواصل معك المعلمة.' : 'Teacher will follow up.' }}</span>
           </div>
 
           <p class="text-xs text-text-secondary mb-4">
-            {{ langService.isArabic() ? 'تقرير تقييم مستوى الطالب: ' + report.fullName : 'Diagnostic Report for: ' + report.fullName }}
+            {{ langService.isArabic() ? 'تقرير: ' + report.fullName : 'Report: ' + report.fullName }}
           </p>
 
           <!-- Score Card -->
           <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg mb-6">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold text-text-muted">
-                {{ langService.isArabic() ? 'المستوى الأكاديمي المقدر:' : 'Academic Level Assessment:' }}
+                {{ langService.isArabic() ? 'المستوى:' : 'Level:' }}
               </span>
               <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 font-numeric">
                 {{ report.percentage }}%
@@ -173,7 +173,7 @@
             <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
               <h5 class="font-bold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
                 <app-icon name="check" [size]="14" />
-                <span>{{ langService.isArabic() ? 'نقاط القوة المتقنة:' : 'Mastered Strengths:' }}</span>
+                <span>{{ langService.isArabic() ? 'نقاط القوة:' : 'Strengths:' }}</span>
               </h5>
               <ul class="space-y-1.5 text-text-secondary">
                 @for (str of report.strengths; track str) {
@@ -189,7 +189,7 @@
             <div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
               <h5 class="font-bold text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
                 <app-icon name="alert-circle" [size]="14" />
-                <span>{{ langService.isArabic() ? 'نقاط تحتاج لتركيز إضافي:' : 'Areas for Improvement:' }}</span>
+                <span>{{ langService.isArabic() ? 'تحتاج تركيز:' : 'Focus areas:' }}</span>
               </h5>
               <ul class="space-y-1.5 text-text-secondary">
                 @for (weak of report.weaknesses; track weak) {
@@ -210,7 +210,7 @@
               class="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 active:scale-95"
             >
               <app-icon name="user" [size]="16" />
-              <span>{{ langService.isArabic() ? 'استكمال التسجيل (HA Code)' : 'Complete Registration' }}</span>
+              <span>{{ langService.isArabic() ? 'استكمال التسجيل' : 'Register' }}</span>
             </button>
 
             @if (report.whatsAppAlertUrl) {
@@ -220,7 +220,7 @@
                 class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-2"
               >
                 <app-icon name="message-circle" [size]="16" />
-                <span>{{ langService.isArabic() ? 'إرسال التقرير عبر واتساب' : 'Send via WhatsApp' }}</span>
+                <span>{{ langService.isArabic() ? 'إرسال عبر واتساب' : 'WhatsApp' }}</span>
               </a>
             }
           </div>

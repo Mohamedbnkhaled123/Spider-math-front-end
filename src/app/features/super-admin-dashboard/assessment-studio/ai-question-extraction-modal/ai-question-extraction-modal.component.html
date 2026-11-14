@@ -213,7 +213,7 @@
                       {{ langService.isArabic() ? 'نصوص ومعادلات فقط' : 'Text & LaTeX Only' }}
                     </span>
                     <p class="text-[11px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'مناسب للمسائل الجبرية والتحليلية دون رسومات هندسية.' : 'Ideal for algebra and calculus without diagrams.' }}
+                      {{ langService.isArabic() ? 'للجبر والمعادلات دون رسومات.' : 'For equations without diagrams.' }}
                     </p>
                   </div>
                   <div class="flex items-center gap-1.5 text-[10px] text-brand-primary font-bold">
@@ -265,7 +265,7 @@
                       {{ langService.isArabic() ? 'مفتاح Gemini API (اختياري)' : 'Custom Gemini API Key (Optional)' }}
                     </span>
                     <span class="text-[10px] text-text-muted">
-                      {{ langService.isArabic() ? 'مفتاح افتراضي يعمل تلقائياً، يمكنك استبداله هنا.' : 'Default key configured; override here if desired.' }}
+                      {{ langService.isArabic() ? 'مفتاح افتراضي مفعّل.' : 'Default key active.' }}
                     </span>
                   </div>
                 </div>
@@ -298,7 +298,7 @@
                     }
                   </div>
                   <p class="text-[10px] text-text-muted">
-                    {{ langService.isArabic() ? 'يُحفظ محلياً في متصفحك ويُستخدم تلقائياً.' : 'Saved locally in browser and used automatically.' }}
+                    {{ langService.isArabic() ? 'يُحفظ محلياً بمتصفحك.' : 'Saved locally.' }}
                   </p>
                 </div>
               }
@@ -657,7 +657,7 @@
                           {{ langService.isArabic() ? 'سؤال مقالي:' : 'Essay Question:' }}
                         </span>
                         <p class="text-text-secondary mt-0.5 leading-relaxed text-[11px]">
-                          {{ langService.isArabic() ? 'سؤال مقالي يتيح للطالب كتابة خطوات الحل أو رفع صورة كشكول الحل للتصحيح اليدوي.' : 'Essay question allows students to write steps or upload handwritten solution photos for manual grading.' }}
+                          {{ langService.isArabic() ? 'يرفع الطالب صورة الحل للتصحيح.' : 'Students upload solution for grading.' }}
                         </p>
                       </div>
                     </div>

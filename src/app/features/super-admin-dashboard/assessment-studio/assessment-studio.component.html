@@ -21,8 +21,8 @@
           </h4>
           <p class="text-[11px] text-text-secondary">
             {{ langService.isArabic()
-              ? ('تم حفظ الأسئلة والإعدادات محلياً تلقائياً. المنهج: ' + draft.curriculum + ' | الصف: ' + draft.gradeLevel + ' | عدد الأسئلة: ' + (draft.questions ? draft.questions.length : 0))
-              : ('Questions and settings saved automatically. ' + draft.curriculum + ' | ' + draft.gradeLevel + ' | ' + (draft.questions ? draft.questions.length : 0) + ' questions') }}
+              ? ('محفوظ محلياً. ' + draft.curriculum + ' | ' + draft.gradeLevel + ' | أسئلة: ' + (draft.questions ? draft.questions.length : 0))
+              : ('Saved locally. ' + draft.curriculum + ' | ' + draft.gradeLevel + ' | ' + (draft.questions ? draft.questions.length : 0) + ' questions') }}
           </p>
         </div>
       </div>
@@ -105,9 +105,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
-          [title]="langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)'"
+          [title]="langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum'"
         >
-          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British (IGCSE)' }}
+          {{ langService.isArabic() ? 'المناهج الدولية' : 'International' }}
         </button>
 
         <button
@@ -198,7 +198,7 @@
       </div>
 
       <span class="text-[11px] sm:text-xs text-text-secondary bg-surface-card px-2.5 sm:px-3 py-1 rounded-full border border-surface-border self-start sm:self-auto max-w-full leading-snug">
-        {{ langService.isArabic() ? 'عزل كامل: لا تظهر إلا لطلاب هذا الصف فقط' : 'Strict Isolation: Visible only to students of this grade' }}
+        {{ langService.isArabic() ? 'لهذا الصف فقط' : 'Grade Isolated' }}
       </span>
     </div>
 
@@ -240,14 +240,14 @@
                     </span>
                   }
                   @if (item.referenceSheetUrl) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" [title]="langService.isArabic() ? 'ورقة قوانين ومفاهيم مرفقة مع الامتحان' : 'Reference Sheet Attached'">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" [title]="langService.isArabic() ? 'ورقة قوانين مرفقة' : 'Reference Sheet Attached'">
                       <app-icon name="file-text" [size]="10" />
                       <span>{{ langService.isArabic() ? 'ورقة قوانين' : 'Reference Sheet' }}</span>
                     </span>
                   }
                   @if (item.isPlacementTest) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" [title]="langService.isArabic() ? 'امتحان تحديد مستوى للزوار والطلاب الجدد' : 'Placement Test for New Students'">
-                      {{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" [title]="langService.isArabic() ? 'اختبار تحديد مستوى' : 'Placement Test'">
+                      <span>{{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}</span>
                     </span>
                   }
                   @if (item.assessmentType !== 'HOMEWORK') {
@@ -361,7 +361,7 @@
                 type="button"
                 (click)="openPreviewModal(item)"
                 class="w-full py-2 px-3 rounded-xl border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-xs font-bold text-text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                [title]="langService.isArabic() ? 'خوض تجربة تفاعلية تحاكي تجربة الطالب تماماً' : 'Interactive student-simulation preview'"
+                [title]="langService.isArabic() ? 'معاينة تجربة الطالب' : 'Student-simulation preview'"
                 data-testid="card-preview-btn"
               >
                 <app-icon name="eye" [size]="16" className="text-brand-primary" />
@@ -420,11 +420,11 @@
             </div>
             <h4 class="text-sm font-bold text-text-primary">
               {{ currentCurriculumHasTerms()
-                ? (langService.isArabic() ? 'لا توجد امتحانات لهذا الصف في هذا الترم' : 'No assessments for this grade in this term.')
-                : (langService.isArabic() ? 'لا توجد امتحانات لهذا الصف حالياً' : 'No assessments for this grade currently.') }}
+                ? (langService.isArabic() ? 'لا توجد امتحانات لهذا الترم' : 'No assessments for this term.')
+                : (langService.isArabic() ? 'لا توجد امتحانات لهذا الصف' : 'No assessments for this grade.') }}
             </h4>
             <p class="text-xs text-text-muted max-w-sm mx-auto">
-              {{ langService.isArabic() ? ('اضغطي "إنشاء امتحان جديد" بالأعلى لإضافة كويز لـ (' + selectedGrade() + ').') : ('Click "Create New Assessment" above to add a quiz for (' + selectedGrade() + ').') }}
+              {{ langService.isArabic() ? ('اضغطي "إنشاء امتحان جديد" لإضافة كويز لـ (' + selectedGrade() + ').') : ('Click "Create New Assessment" to add a quiz.') }}
             </p>
           </div>
         }
@@ -491,7 +491,7 @@
               {{ langService.isArabic() ? '+ إنشاء امتحان أو كويز مخصص' : '+ Create Custom Assessment / Quiz' }}
             </h3>
             <p class="text-[11px] sm:text-xs text-text-secondary mt-0.5">
-              {{ langService.isArabic() ? ('مخصص حصرياً لـ (' + createForm().gradeLevel + ') لن يظهر لأي صف دراسي آخر') : ('Scoped exclusively to (' + createForm().gradeLevel + '), isolated from other grades') }}
+              {{ langService.isArabic() ? ('مخصص لـ (' + createForm().gradeLevel + ') فقط') : ('Scoped to (' + createForm().gradeLevel + ')') }}
             </p>
           </div>
 
@@ -526,7 +526,7 @@
                 >
                   <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
                   <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                  <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                  <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum' }}</option>
                   <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
                 </select>
                 <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -720,9 +720,9 @@
           <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card space-y-2">
             <div class="flex items-center justify-between">
               <div>
-                <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'مراجعة وتصحيح المعلمة:' : 'Teacher Review Requirement:' }}</span>
+                <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'تصحيح المعلمة:' : 'Teacher Review:' }}</span>
                 <span class="text-[11px] text-text-muted">
-                  {{ createForm().requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة تصحيح المعلمة واعتمادها قبل إعلانها للطالب' : 'Results await teacher review and approval') : (langService.isArabic() ? 'اعتماد النتيجة ونقاط الـ XP وإعلانها فورياً للطالب فور التسليم' : 'Instant auto-grading and immediate XP release') }}
+                  {{ createForm().requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة اعتماد المعلمة.' : 'Awaits teacher review.') : (langService.isArabic() ? 'إعلان فوري للنتيجة وXP.' : 'Instant results & XP.') }}
                 </span>
               </div>
               <button
@@ -761,19 +761,19 @@
             @if (createForm().isScheduled) {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
                 <app-schedule-alarm-picker
-                  [label]="langService.isArabic() ? 'موعد تنزيل / بدء الامتحان للطلاب:' : 'Assessment Start Date & Alarm:'"
-                  [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ البدء وساعة المنبه...' : 'Set start date and alarm time...'"
+                  [label]="langService.isArabic() ? 'موعد البدء:' : 'Start Date:'"
+                  [placeholder]="langService.isArabic() ? 'تاريخ وساعة البدء...' : 'Start date and time...'"
                   [(ngModel)]="createForm().availableFrom"
                 />
 
                 <app-schedule-alarm-picker
-                  [label]="langService.isArabic() ? 'موعد إغلاق الامتحان (الموعد النهائي):' : 'Assessment Deadline & Alarm:'"
-                  [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ الإغلاق وساعة المنبه...' : 'Set deadline and alarm time...'"
+                  [label]="langService.isArabic() ? 'موعد الإغلاق:' : 'Deadline:'"
+                  [placeholder]="langService.isArabic() ? 'تاريخ وساعة الإغلاق...' : 'Deadline date and time...'"
                   [(ngModel)]="createForm().availableUntil"
                 />
               </div>
               <p class="text-[10px] text-text-muted">
-                {{ langService.isArabic() ? '* في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.' : '* When scheduled, students cannot access the exam before start time, and it automatically closes at deadline.'  }}
+                {{ langService.isArabic() ? '* يُفتح الامتحان في موعد البدء ويُغلق تلقائياً عند الانتهاء.' : '* Opens at start time and closes at deadline.' }}
               </p>
             }
           </div>
@@ -839,7 +839,7 @@
             @if (isRefSheetActiveInCreate()) {
               <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                 <p class="text-[11px] text-text-secondary leading-relaxed">
-                  {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان بجوار الآلة الحاسبة.' : 'Upload reference sheet image to display to students alongside calculator.' }}
+                  {{ langService.isArabic() ? 'ورقة قوانين تظهر كزر عائم أثناء الحل.' : 'Reference sheet shown as floating button during exam.' }}
                 </p>
 
                 @if (createForm().referenceSheetUrl) {
@@ -854,7 +854,7 @@
                       class="w-16 h-16 object-contain rounded-lg border border-surface-border bg-black/20"
                     />
                     <div class="flex-1 min-w-0">
-                      <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'تم رفع ورقة القوانين بنجاح' : 'Reference sheet uploaded successfully' }}</span>
+                      <span class="text-xs font-bold text-emerald-500 block">{{ langService.isArabic() ? 'تم رفع ورقة القوانين' : 'Reference sheet uploaded' }}</span>
                       <a [href]="createForm().referenceSheetUrl" target="_blank" class="text-[11px] text-brand-primary hover:underline font-mono truncate block">
                         {{ langService.isArabic() ? 'عرض الصورة بالحجم الكامل' : 'View Full Image'  }}
                       </a>
@@ -908,7 +908,7 @@
             </div>
             @if (createForm().isPlacementTest) {
               <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
-                {{ langService.isArabic() ? '* سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار الرئيسية كاختبار تحديد مستوى معتمد لهذا الصف.' : '* This exam will automatically bind to the landing page as the placement test for this grade.' }}
+                {{ langService.isArabic() ? '* يُربط بالرئيسية كاختبار تحديد مستوى.' : '* Linked to landing as placement test.' }}
               </p>
             }
           </div>
@@ -1076,7 +1076,7 @@
           <div class="p-4 bg-amber-500/10 border-b border-amber-500/20 text-amber-600 text-xs flex items-center gap-2">
             <app-icon name="alert-triangle" [size]="16" />
             <span>
-              {{ langService.isArabic() ? 'تنبيه: توجد تسليمات سابقة. تعديل الإجابات النموذجية سيعيد تصحيح درجات الطلاب تلقائياً.' : 'Notice: Submissions exist. Modifying model answers will trigger automatic regrading.' }}
+              {{ langService.isArabic() ? 'توجد تسليمات. تعديل الإجابات سيعيد التصحيح تلقائياً.' : 'Submissions exist. Changes trigger automatic regrading.' }}
             </span>
           </div>
         }
@@ -1113,7 +1113,7 @@
                     >
                       <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
                       <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                      <option value="INTERNATIONAL">{{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)' }}</option>
+                      <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum' }}</option>
                       <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
                     </select>
                     <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -1199,8 +1199,8 @@
                     </span>
                     <span class="text-[11px] text-text-muted">
                       {{ asm.isMultiModule
-                        ? (langService.isArabic() ? 'نظام موديولين منفصلين (موديول 1 وموديول 2 بوقت وتسليم مستقل)' : 'Two separate modules with independent timers and lockout')
-                        : (langService.isArabic() ? 'امتحان بنظام وحدة واحدة بوقت كلي متصل' : 'Single continuous module assessment') }}
+                        ? (langService.isArabic() ? 'موديولان منفصلان بوقت مستقل' : 'Two separate modules')
+                        : (langService.isArabic() ? 'امتحان بوقت كلي متصل' : 'Single continuous module') }}
                     </span>
                   </div>
                   <button
@@ -1314,9 +1314,9 @@
                 <div class="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-2.5">
                   <app-icon name="alert-triangle" [size]="16" className="text-amber-500 shrink-0 mt-0.5" />
                   <div class="text-xs">
-                    <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'يتطلب تصحيح المعلمة إجبارياً' : 'Mandatory Teacher Grading' }}</span>
+                    <span class="font-bold text-text-primary block">{{ langService.isArabic() ? 'تصحيح يدوي إجباري' : 'Manual Grading Required' }}</span>
                     <p class="text-text-secondary mt-0.5 leading-relaxed">
-                      {{ langService.isArabic() ? 'يحتوي هذا الامتحان على أسئلة مقالية (حل يدوي)، لذا يجب أن تنتظر النتيجة تصحيح المعلمة واعتمادها في استوديو التصحيح ولا يمكن نشرها تلقائياً.' : 'This assessment contains essay questions requiring handwritten steps, so submissions must await teacher review and grading.' }}
+                      {{ langService.isArabic() ? 'يحتوي أسئلة مقالية؛ تنتظر النتيجة تصحيح المعلمة.' : 'Contains essay questions; awaits teacher grading.' }}
                     </p>
                   </div>
                 </div>
@@ -1324,9 +1324,9 @@
                 <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card space-y-2">
                   <div class="flex items-center justify-between">
                     <div>
-                      <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'اعتماد النتيجة ومراجعة المعلمة:' : 'Teacher Review & Approval:' }}</span>
+                      <span class="text-xs font-bold text-text-primary block">{{ langService.isArabic() ? 'تصحيح المعلمة:' : 'Teacher Review:' }}</span>
                       <span class="text-[11px] text-text-muted">
-                        {{ asm.requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة مراجعة واعتماد المعلمة قبل إعلانها للطالب' : 'Awaits teacher review before publishing') : (langService.isArabic() ? 'تصحيح تلقائي وإعلان فوري للنتيجة والـ XP للطالب بمجرد التسليم' : 'Instant auto-grading & immediate result release') }}
+                        {{ asm.requiresTeacherReview ? (langService.isArabic() ? 'تنتظر النتيجة اعتماد المعلمة.' : 'Awaits teacher review.') : (langService.isArabic() ? 'إعلان فوري للنتيجة وXP.' : 'Instant results & XP.') }}
                       </span>
                     </div>
                     <button
@@ -1366,19 +1366,19 @@
                 @if (asm.isScheduled) {
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
                     <app-schedule-alarm-picker
-                      [label]="langService.isArabic() ? 'موعد تنزيل / بدء الامتحان للطلاب:' : 'Assessment Start Date & Alarm:'"
-                      [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ البدء وساعة المنبه...' : 'Set start date and alarm time...'"
+                      [label]="langService.isArabic() ? 'موعد البدء:' : 'Start Date:'"
+                      [placeholder]="langService.isArabic() ? 'تاريخ وساعة البدء...' : 'Start date and time...'"
                       [(ngModel)]="asm.availableFrom"
                     />
 
                     <app-schedule-alarm-picker
-                      [label]="langService.isArabic() ? 'موعد إغلاق الامتحان (الموعد النهائي):' : 'Assessment Deadline & Alarm:'"
-                      [placeholder]="langService.isArabic() ? 'اضغطي لضبط تاريخ الإغلاق وساعة المنبه...' : 'Set deadline and alarm time...'"
+                      [label]="langService.isArabic() ? 'موعد الإغلاق:' : 'Deadline:'"
+                      [placeholder]="langService.isArabic() ? 'تاريخ وساعة الإغلاق...' : 'Deadline date and time...'"
                       [(ngModel)]="asm.availableUntil"
                     />
                   </div>
                   <p class="text-[10px] text-text-muted">
-                    {{ langService.isArabic() ? '* في حال تفعيل الجدولة، لن يتمكن الطلاب من بدء الامتحان إلا بعد حلول موعد التنزيل، وسيُغلق الامتحان تلقائياً عند انتهاء موعد الإغلاق.' : '* When scheduled, students cannot access the exam before start time, and it automatically closes at deadline.' }}
+                    {{ langService.isArabic() ? '* يُفتح الامتحان في موعد البدء ويُغلق تلقائياً عند الانتهاء.' : '* Opens at start time and closes at deadline.' }}
                   </p>
                 }
               </div>
@@ -1444,7 +1444,7 @@
                 @if (isRefSheetActiveInEditor()) {
                   <div class="mt-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3 animate-fade-in">
                     <p class="text-[11px] text-text-secondary leading-relaxed">
-                      {{ langService.isArabic() ? 'أرفقي صورة ورقة القوانين المعتمدة لتظهر للطالب أثناء حل الامتحان كزر عائم بجوار الآلة الحاسبة دون مغادرة صفحة الحل.' : 'Upload reference sheet image to display to students as a floating panel alongside calculator.' }}
+                      {{ langService.isArabic() ? 'ورقة قوانين تظهر كزر عائم أثناء الحل.' : 'Reference sheet shown as floating button during exam.' }}
                     </p>
 
                     @if (asm.referenceSheetUrl) {
@@ -1513,7 +1513,7 @@
                 </div>
                 @if (asm.isPlacementTest) {
                   <p class="text-[11px] text-purple-600 dark:text-purple-400 mt-1.5 font-bold">
-                    {{ langService.isArabic() ? '* سيتم ربط هذا الامتحان تلقائياً بصفحة الزوار كاختبار تحديد مستوى لهذا الصف.' : '* This exam will automatically bind to the landing page as the placement test for this grade.' }}
+                    {{ langService.isArabic() ? '* يُربط بالرئيسية كاختبار تحديد مستوى.' : '* Linked to landing as placement test.' }}
                   </p>
                 }
               </div>
@@ -1843,14 +1843,14 @@
                       [value]="stripLatexDelimiters(newQuestionTextAr())"
                       (input)="onQuestionTextInput($event)"
                       (focus)="mathKeyboardTarget.set(qTextArea)"
-                      [placeholder]="langService.isArabic() ? 'اكتبي نص المسألة أو رأس السؤال هنا...' : 'Type problem text or equation prompt here...'"
+                      [placeholder]="langService.isArabic() ? 'اكتب نص المسألة...' : 'Type problem text here...'"
                       class="w-full bg-transparent text-text-primary text-xs outline-none resize-y"
                     ></textarea>
 
                     <!-- Accessible formula announcement for screen readers -->
                     @if (newQuestionTextAr().trim()) {
                       <div class="sr-only active-question-display">
-                        <span class="sr-only">{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Live Math Formula Preview (Real-time):' }}</span>
+                        <span class="sr-only">{{ langService.isArabic() ? 'معاينة حية للمسألة الرياضية أثناء الكتابة:' : 'Formula Preview:' }}</span>
                         <app-math-formula [text]="newQuestionTextAr()" />
                       </div>
                     }
@@ -1867,7 +1867,7 @@
                           type="button"
                           (click)="openManualSlicerForComposer()"
                           class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all shadow-sm active:scale-95"
-                          [title]="langService.isArabic() ? 'قص صورة مباشرة من الصفحة الحالية للملف المرفوع' : 'Crop from cached file'"
+                          [title]="langService.isArabic() ? 'قص صورة المسألة' : 'Crop from cached file'"
                         >
                           <app-icon name="image" [size]="12" />
                           <span>{{ langService.isArabic() ? ('قص يدوي من الملف (صفحة ' + cachedFileSession()?.pageNumber + ')') : ('Crop from page ' + cachedFileSession()?.pageNumber) }}</span>
@@ -2010,9 +2010,9 @@
                   <div class="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-start gap-2.5">
                     <app-icon name="alert-circle" [size]="16" className="text-brand-primary mt-0.5 shrink-0" />
                     <div class="text-xs">
-                      <span class="font-bold text-text-primary">{{ langService.isArabic() ? 'مسألة مقالية أو بيانية (بدون اختيارات):' : 'Essay / Graphing Problem (No options):' }}</span>
+                      <span class="font-bold text-text-primary">{{ langService.isArabic() ? 'مسألة مقالية:' : 'Essay Problem:' }}</span>
                       <p class="text-text-secondary mt-0.5 leading-relaxed">
-                        {{ langService.isArabic() ? 'هذا السؤال مقالي، لا يشترط إضافة اختيارات. يستطيع الطالب رفع صورة الحل بخط يده من كاميرا الموبايل.' : 'Essay question allows students to upload handwritten solution photos for manual teacher grading.' }}
+                        {{ langService.isArabic() ? 'سؤال مقالي: يرفع الطالب صورة الحل يدوياً.' : 'Essay: Students upload solution photo.' }}
                       </p>
                     </div>
                   </div>
@@ -2268,7 +2268,7 @@
                   </div>
                 } @empty {
                   <div class="py-8 text-center text-text-muted">
-                    {{ langService.isArabic() ? 'لا توجد أسئلة بعد. أضيفي سؤالاً بالأعلى.' : 'No questions yet. Add a question above.' }}
+                    {{ langService.isArabic() ? 'لا توجد أسئلة بعد.' : 'No questions yet.' }}
                   </div>
                 }
 
@@ -2372,8 +2372,8 @@
           @if (currentAsm.questions.length === 0) {
             <div class="py-12 text-center text-text-muted space-y-2">
               <app-icon name="alert-circle" [size]="28" className="mx-auto text-text-muted/60" />
-              <p class="font-bold">{{ langService.isArabic() ? 'لا توجد أسئلة مضافة بعد' : 'No questions added yet' }}</p>
-              <p class="text-[11px]">{{ langService.isArabic() ? 'استخدمي زر الإضافة لبدء بناء الامتحان' : 'Use the add button to start creating questions' }}</p>
+              <p class="font-bold">{{ langService.isArabic() ? 'لا توجد أسئلة' : 'No questions' }}</p>
+              <p class="text-[11px]">{{ langService.isArabic() ? 'أضف أسئلة لبدء الامتحان.' : 'Add questions to begin.' }}</p>
             </div>
           } @else {
             @for (q of currentAsm.questions; track q.id; let idx = $index) {
@@ -2504,7 +2504,7 @@
       [(isOpen)]="isManualSlicerOpen"
       [imageSource]="cachedFileSession()?.canvas || cachedFileSession()?.dataUrl || null"
       [uploadToCloudinary]="true"
-      modalTitle="قص يدوي للمسألة من الملف المرفوع"
+      modalTitle="قص يدوي للمسألة"
       (sliceSaved)="onManualSliceSaved($event)"
       (cancelled)="isManualSlicerOpen.set(false)"
     />

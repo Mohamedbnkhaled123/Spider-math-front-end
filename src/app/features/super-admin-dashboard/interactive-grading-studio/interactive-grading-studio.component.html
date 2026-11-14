@@ -228,10 +228,10 @@
                   type="button"
                   (click)="approveSubmissionDirectly(sub)"
                   class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                  [title]="langService.isArabic() ? 'اعتماد النتيجة ونشرها فوراً للطالب وولي أمره' : 'Approve result and publish to student and parent'"
+                  [title]="langService.isArabic() ? 'اعتماد ونشر النتيجة فوراً' : 'Approve and publish result'"
                 >
                   <app-icon name="check-circle" [size]="14" />
-                  <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة فوراً' : 'Approve & Publish Result Now' }}</span>
+                  <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة' : 'Approve & Publish' }}</span>
                 </button>
               }
 
@@ -281,7 +281,7 @@
             <app-icon name="award" [size]="36" className="text-text-muted mx-auto" />
             <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد تسليمات مسجلة بعد' : 'No recorded submissions yet' }}</h4>
             <p class="text-xs text-text-secondary max-w-md mx-auto">
-              {{ langService.isArabic() ? 'ستظهر هنا فوراً كل تسليمات وإجابات الطلاب للكويزات والامتحانات والواجبات فور قيام الطالب بتسليم الامتحان.' : 'Student quiz and exam submissions will appear here in real-time once submitted.' }}
+              {{ langService.isArabic() ? 'تظهر تسليمات الطلاب هنا فور إرسالها.' : 'Submissions appear here once submitted.' }}
             </p>
           </div>
         }
@@ -393,9 +393,9 @@
         } @else {
           <div class="p-12 rounded-3xl border border-dashed border-surface-border text-center space-y-3 bg-surface-card/50">
             <app-icon name="check-circle" [size]="32" className="text-emerald-500 mx-auto" />
-            <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'رائع! لا توجد واجبات مقالية معلقة بانتظار التصحيح حالياً' : 'Great! No pending essay homework awaiting grading.' }}</h4>
+            <h4 class="text-sm font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد واجبات معلقة' : 'No pending essays' }}</h4>
             <p class="text-xs text-text-secondary max-w-md mx-auto">
-              {{ langService.isArabic() ? 'كافة إجابات وحلول الطلاب المقالية تم فحصها واعتماد درجاتها وإرسال إشعاراتها لأولياء الأمور بنجاح.' : 'All student essay submissions have been reviewed, graded, and notified to parents.' }}
+              {{ langService.isArabic() ? 'تم تصحيح كافة التسليمات وإشعار أولياء الأمور.' : 'All submissions graded and parents notified.' }}
             </p>
           </div>
         }
@@ -513,7 +513,7 @@
                 class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <app-icon name="check-circle" [size]="14" />
-                <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة للطالب وولي الأمر الآن' : 'Publish Result to Student & Parent' }}</span>
+                <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة الآن' : 'Publish Result Now' }}</span>
               </button>
             }
           </div>
@@ -619,7 +619,7 @@
                   [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px) scale(' + canvasZoom() + ') rotate(' + canvasRotation() + 'deg)'"
                 />
               } @else {
-                <div class="text-xs text-slate-400">{{ langService.isArabic() ? 'لا توجد صورة حل مرفوعة في هذا التسليم.' : 'No solution image uploaded in this submission.' }}</div>
+                <div class="text-xs text-slate-400">{{ langService.isArabic() ? 'لا توجد صورة حل مرفوعة.' : 'No solution image uploaded.' }}</div>
               }
             </div>
           </div>
@@ -723,7 +723,7 @@
                   <input
                     type="url"
                     [(ngModel)]="mistake.youtubeSolutionUrl"
-                    [placeholder]="mistake.solutionType === 'POST' ? (langService.isArabic() ? 'رابط منشور الحل على يوتيوب (https://www.youtube.com/post/...)' : 'YouTube community post link...') : (langService.isArabic() ? 'رابط فيديو الحل النموذجي على يوتيوب (https://www.youtube.com/watch?v=...)' : 'YouTube solution video link...')"
+                    [placeholder]="mistake.solutionType === 'POST' ? (langService.isArabic() ? 'رابط منشور الحل (https://www.youtube.com/post/...)' : 'Post URL (https://www.youtube.com/post/...)') : (langService.isArabic() ? 'رابط فيديو الحل (https://www.youtube.com/watch?v=...)' : 'Video URL (https://www.youtube.com/watch?v=...)')"
                     class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs font-mono text-text-primary"
                   />
                 </div>

@@ -214,7 +214,7 @@ describe('AssessmentPreviewModalComponent', () => {
       const banner = el.querySelector('[data-testid="essay-review-banner"]');
       expect(banner).toBeTruthy();
       expect(banner?.textContent).toContain(
-        'تنبيه: يتضمن هذا الامتحان أسئلة مقالية تتطلب تصحيحاً ومراجعة يدوية من المعلمة، ولا يتم رصد درجاتها تلقائياً. النتيجة المعروضة خاصة بأسئلة الاختيار من متعدد فقط.'
+        'يتضمن أسئلة مقالية للتصحيح اليدوي. النتيجة لأسئلة الاختيار فقط.'
       );
     });
 

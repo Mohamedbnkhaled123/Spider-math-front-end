@@ -659,6 +659,427 @@ export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
   }
 ] as const;
 
+export interface IInternationalStageDefinition {
+  readonly code: string;
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly badgeColorClass?: string;
+  readonly gradeCodes: readonly string[];
+}
+
+export interface IInternationalDivisionData {
+  readonly code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM';
+  readonly nameAr: string;
+  readonly nameEn: string;
+  readonly iconName: string;
+  readonly mathSymbol: string;
+  readonly accentColorHex: string;
+  readonly stages: readonly IInternationalStageDefinition[];
+  readonly grades: readonly IGradeLevelMeta[];
+}
+
+export const INTERNATIONAL_DIVISIONS_DATA: readonly IInternationalDivisionData[] = [
+  // 1. المنهج الأمريكي (American Curriculum)
+  {
+    code: 'AMERICAN_CURRICULUM',
+    nameAr: 'المنهج الأمريكي',
+    nameEn: 'American Curriculum',
+    iconName: 'award',
+    mathSymbol: '★',
+    accentColorHex: '#3B82F6',
+    stages: [
+      {
+        code: 'ELEMENTARY_SCHOOL',
+        nameAr: 'المرحلة الابتدائية (Elementary School)',
+        nameEn: 'Elementary School',
+        badgeColorClass: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+        gradeCodes: ['US_GRADE_1', 'US_GRADE_2', 'US_GRADE_3', 'US_GRADE_4', 'US_GRADE_5']
+      },
+      {
+        code: 'MIDDLE_SCHOOL',
+        nameAr: 'المرحلة المتوسطة (Middle School)',
+        nameEn: 'Middle School',
+        badgeColorClass: 'text-sky-500 bg-sky-500/10 border-sky-500/20',
+        gradeCodes: ['US_GRADE_6', 'US_GRADE_7', 'US_GRADE_8']
+      },
+      {
+        code: 'HIGH_SCHOOL',
+        nameAr: 'المرحلة الثانوية (High School)',
+        nameEn: 'High School',
+        badgeColorClass: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
+        gradeCodes: ['US_GRADE_9', 'US_GRADE_10', 'US_GRADE_11', 'US_GRADE_12']
+      }
+    ],
+    grades: [
+      // Elementary School
+      {
+        code: 'US_GRADE_1',
+        titleAr: 'المنهج الأمريكي - الصف الأول (Grade 1)',
+        titleEn: 'American Curriculum — Grade 1 (Elementary)',
+        shortLabelAr: 'Grade 1',
+        shortLabelEn: 'Gr 1',
+        stageAr: 'المرحلة الابتدائية (Elementary School)',
+        stageEn: 'Elementary School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_2',
+        titleAr: 'المنهج الأمريكي - الصف الثاني (Grade 2)',
+        titleEn: 'American Curriculum — Grade 2 (Elementary)',
+        shortLabelAr: 'Grade 2',
+        shortLabelEn: 'Gr 2',
+        stageAr: 'المرحلة الابتدائية (Elementary School)',
+        stageEn: 'Elementary School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_3',
+        titleAr: 'المنهج الأمريكي - الصف الثالث (Grade 3)',
+        titleEn: 'American Curriculum — Grade 3 (Elementary)',
+        shortLabelAr: 'Grade 3',
+        shortLabelEn: 'Gr 3',
+        stageAr: 'المرحلة الابتدائية (Elementary School)',
+        stageEn: 'Elementary School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_4',
+        titleAr: 'المنهج الأمريكي - الصف الرابع (Grade 4)',
+        titleEn: 'American Curriculum — Grade 4 (Elementary)',
+        shortLabelAr: 'Grade 4',
+        shortLabelEn: 'Gr 4',
+        stageAr: 'المرحلة الابتدائية (Elementary School)',
+        stageEn: 'Elementary School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_5',
+        titleAr: 'المنهج الأمريكي - الصف الخامس (Grade 5)',
+        titleEn: 'American Curriculum — Grade 5 (Elementary)',
+        shortLabelAr: 'Grade 5',
+        shortLabelEn: 'Gr 5',
+        stageAr: 'المرحلة الابتدائية (Elementary School)',
+        stageEn: 'Elementary School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      // Middle School
+      {
+        code: 'US_GRADE_6',
+        titleAr: 'المنهج الأمريكي - الصف السادس (Grade 6)',
+        titleEn: 'American Curriculum — Grade 6 (Middle School)',
+        shortLabelAr: 'Grade 6',
+        shortLabelEn: 'Gr 6',
+        stageAr: 'المرحلة المتوسطة (Middle School)',
+        stageEn: 'Middle School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_7',
+        titleAr: 'المنهج الأمريكي - الصف السابع (Grade 7)',
+        titleEn: 'American Curriculum — Grade 7 (Middle School)',
+        shortLabelAr: 'Grade 7',
+        shortLabelEn: 'Gr 7',
+        stageAr: 'المرحلة المتوسطة (Middle School)',
+        stageEn: 'Middle School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_8',
+        titleAr: 'المنهج الأمريكي - الصف الثامن (Grade 8)',
+        titleEn: 'American Curriculum — Grade 8 (Middle School)',
+        shortLabelAr: 'Grade 8',
+        shortLabelEn: 'Gr 8',
+        stageAr: 'المرحلة المتوسطة (Middle School)',
+        stageEn: 'Middle School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      // High School
+      {
+        code: 'US_GRADE_9',
+        titleAr: 'المنهج الأمريكي - الصف التاسع (Grade 9)',
+        titleEn: 'American Curriculum — Grade 9 (High School)',
+        shortLabelAr: 'Grade 9',
+        shortLabelEn: 'Gr 9',
+        stageAr: 'المرحلة الثانوية (High School)',
+        stageEn: 'High School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_10',
+        titleAr: 'المنهج الأمريكي - الصف العاشر (Grade 10)',
+        titleEn: 'American Curriculum — Grade 10 (High School)',
+        shortLabelAr: 'Grade 10',
+        shortLabelEn: 'Gr 10',
+        stageAr: 'المرحلة الثانوية (High School)',
+        stageEn: 'High School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_11',
+        titleAr: 'المنهج الأمريكي - الصف الحادي عشر (Grade 11)',
+        titleEn: 'American Curriculum — Grade 11 (High School)',
+        shortLabelAr: 'Grade 11',
+        shortLabelEn: 'Gr 11',
+        stageAr: 'المرحلة الثانوية (High School)',
+        stageEn: 'High School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      },
+      {
+        code: 'US_GRADE_12',
+        titleAr: 'المنهج الأمريكي - الصف الثاني عشر (Grade 12)',
+        titleEn: 'American Curriculum — Grade 12 (High School)',
+        shortLabelAr: 'Grade 12',
+        shortLabelEn: 'Gr 12',
+        stageAr: 'المرحلة الثانوية (High School)',
+        stageEn: 'High School',
+        branchAr: 'المنهج الأمريكي',
+        branchEn: 'American Curriculum'
+      }
+    ]
+  },
+
+  // 2. المنهج البريطاني (British Curriculum)
+  {
+    code: 'BRITISH_CURRICULUM',
+    nameAr: 'المنهج البريطاني',
+    nameEn: 'British Curriculum',
+    iconName: 'graduation-cap',
+    mathSymbol: '🎓',
+    accentColorHex: '#EC4899',
+    stages: [
+      {
+        code: 'PRIMARY_KS1',
+        nameAr: 'المرحلة الابتدائية (Primary Key Stage 1)',
+        nameEn: 'Primary Key Stage 1',
+        badgeColorClass: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+        gradeCodes: ['IGCSE_YEAR_1', 'IGCSE_YEAR_2']
+      },
+      {
+        code: 'PRIMARY_KS2',
+        nameAr: 'المرحلة الابتدائية (Primary Key Stage 2)',
+        nameEn: 'Primary Key Stage 2',
+        badgeColorClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
+        gradeCodes: ['IGCSE_YEAR_3', 'IGCSE_YEAR_4', 'IGCSE_YEAR_5', 'IGCSE_YEAR_6']
+      },
+      {
+        code: 'SECONDARY_KS3',
+        nameAr: 'المرحلة الثانوية الدنيا (Secondary Key Stage 3)',
+        nameEn: 'Secondary Key Stage 3',
+        badgeColorClass: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
+        gradeCodes: ['IGCSE_YEAR_7', 'IGCSE_YEAR_8', 'IGCSE_YEAR_9']
+      },
+      {
+        code: 'KS4_IGCSE',
+        nameAr: 'مرحلة IGCSE (Key Stage 4 IGCSE)',
+        nameEn: 'Key Stage 4 IGCSE',
+        badgeColorClass: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
+        gradeCodes: ['IGCSE_YEAR_10', 'IGCSE_YEAR_11', 'IGCSE_OL']
+      },
+      {
+        code: 'SIXTH_FORM_ALEVEL',
+        nameAr: 'المرحلة المتقدمة (Sixth Form A-Level)',
+        nameEn: 'Sixth Form A-Level',
+        badgeColorClass: 'text-fuchsia-500 bg-fuchsia-500/10 border-fuchsia-500/20',
+        gradeCodes: ['IGCSE_YEAR_12', 'IGCSE_YEAR_13', 'IGCSE_AS', 'IGCSE_AL']
+      }
+    ],
+    grades: [
+      // Primary Key Stage 1
+      {
+        code: 'IGCSE_YEAR_1',
+        titleAr: 'السنة الأولى البريطانية (Primary Key Stage 1 - Year 1)',
+        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 1)',
+        shortLabelAr: 'Year 1',
+        shortLabelEn: 'Yr 1',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 1)',
+        stageEn: 'Primary Key Stage 1',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_2',
+        titleAr: 'السنة الثانية البريطانية (Primary Key Stage 1 - Year 2)',
+        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 2)',
+        shortLabelAr: 'Year 2',
+        shortLabelEn: 'Yr 2',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 1)',
+        stageEn: 'Primary Key Stage 1',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      // Primary Key Stage 2
+      {
+        code: 'IGCSE_YEAR_3',
+        titleAr: 'السنة الثالثة البريطانية (Primary Key Stage 2 - Year 3)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 3)',
+        shortLabelAr: 'Year 3',
+        shortLabelEn: 'Yr 3',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 2)',
+        stageEn: 'Primary Key Stage 2',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_4',
+        titleAr: 'السنة الرابعة البريطانية (Primary Key Stage 2 - Year 4)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 4)',
+        shortLabelAr: 'Year 4',
+        shortLabelEn: 'Yr 4',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 2)',
+        stageEn: 'Primary Key Stage 2',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_5',
+        titleAr: 'السنة الخامسة البريطانية (Primary Key Stage 2 - Year 5)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 5)',
+        shortLabelAr: 'Year 5',
+        shortLabelEn: 'Yr 5',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 2)',
+        stageEn: 'Primary Key Stage 2',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_6',
+        titleAr: 'السنة السادسة البريطانية (Primary Key Stage 2 - Year 6)',
+        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 6)',
+        shortLabelAr: 'Year 6',
+        shortLabelEn: 'Yr 6',
+        stageAr: 'المرحلة الابتدائية (Primary Key Stage 2)',
+        stageEn: 'Primary Key Stage 2',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      // Secondary Key Stage 3
+      {
+        code: 'IGCSE_YEAR_7',
+        titleAr: 'السنة السابعة البريطانية (Secondary Key Stage 3 - Year 7)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 7)',
+        shortLabelAr: 'Year 7',
+        shortLabelEn: 'Yr 7',
+        stageAr: 'المرحلة الثانوية الدنيا (Secondary Key Stage 3)',
+        stageEn: 'Secondary Key Stage 3',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_8',
+        titleAr: 'السنة الثامنة البريطانية (Secondary Key Stage 3 - Year 8)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 8)',
+        shortLabelAr: 'Year 8',
+        shortLabelEn: 'Yr 8',
+        stageAr: 'المرحلة الثانوية الدنيا (Secondary Key Stage 3)',
+        stageEn: 'Secondary Key Stage 3',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_9',
+        titleAr: 'السنة التاسعة البريطانية (Secondary Key Stage 3 - Year 9 / Pre-IG)',
+        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 9 / Pre-IGCSE)',
+        shortLabelAr: 'Year 9',
+        shortLabelEn: 'Yr 9',
+        stageAr: 'المرحلة الثانوية الدنيا (Secondary Key Stage 3)',
+        stageEn: 'Secondary Key Stage 3',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      // Key Stage 4 IGCSE
+      {
+        code: 'IGCSE_YEAR_10',
+        titleAr: 'السنة العاشرة البريطانية (Key Stage 4 IGCSE - Year 10)',
+        titleEn: 'British Curriculum — Key Stage 4 IGCSE (Year 10)',
+        shortLabelAr: 'Year 10',
+        shortLabelEn: 'Yr 10',
+        stageAr: 'مرحلة IGCSE (Key Stage 4 IGCSE)',
+        stageEn: 'Key Stage 4 IGCSE',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_11',
+        titleAr: 'السنة الحادية عشرة البريطانية (Key Stage 4 IGCSE - Year 11)',
+        titleEn: 'British Curriculum — Key Stage 4 IGCSE (Year 11)',
+        shortLabelAr: 'Year 11',
+        shortLabelEn: 'Yr 11',
+        stageAr: 'مرحلة IGCSE (Key Stage 4 IGCSE)',
+        stageEn: 'Key Stage 4 IGCSE',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_OL',
+        titleAr: 'مستوى IGCSE Ordinary Level (Key Stage 4 — Year 10-11)',
+        titleEn: 'IGCSE O-Level Math (Key Stage 4 — Year 10-11)',
+        shortLabelAr: 'IGCSE OL',
+        shortLabelEn: 'IG OL',
+        stageAr: 'مرحلة IGCSE (Key Stage 4 IGCSE)',
+        stageEn: 'Key Stage 4 IGCSE',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      // Sixth Form A-Level
+      {
+        code: 'IGCSE_YEAR_12',
+        titleAr: 'السنة الثانية عشرة البريطانية (Sixth Form A-Level - Year 12)',
+        titleEn: 'British Curriculum — Sixth Form A-Level (Year 12)',
+        shortLabelAr: 'Year 12',
+        shortLabelEn: 'Yr 12',
+        stageAr: 'المرحلة المتقدمة (Sixth Form A-Level)',
+        stageEn: 'Sixth Form A-Level',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_YEAR_13',
+        titleAr: 'السنة الثالثة عشرة البريطانية (Sixth Form A-Level - Year 13)',
+        titleEn: 'British Curriculum — Sixth Form A-Level (Year 13)',
+        shortLabelAr: 'Year 13',
+        shortLabelEn: 'Yr 13',
+        stageAr: 'المرحلة المتقدمة (Sixth Form A-Level)',
+        stageEn: 'Sixth Form A-Level',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_AS',
+        titleAr: 'مستوى IGCSE AS-Level (Sixth Form — Year 12)',
+        titleEn: 'IGCSE AS-Level Math (Sixth Form — Year 12)',
+        shortLabelAr: 'IGCSE AS',
+        shortLabelEn: 'IG AS',
+        stageAr: 'المرحلة المتقدمة (Sixth Form A-Level)',
+        stageEn: 'Sixth Form A-Level',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      },
+      {
+        code: 'IGCSE_AL',
+        titleAr: 'مستوى IGCSE A-Level الكامل (Sixth Form — Year 13)',
+        titleEn: 'IGCSE Full A-Level Math (Sixth Form — Year 13)',
+        shortLabelAr: 'IGCSE AL',
+        shortLabelEn: 'IG AL',
+        stageAr: 'المرحلة المتقدمة (Sixth Form A-Level)',
+        stageEn: 'Sixth Form A-Level',
+        branchAr: 'المنهج البريطاني',
+        branchEn: 'British Curriculum'
+      }
+    ]
+  }
+] as const;
+
 export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
   // 1. المنهج المصري (الابتدائي، الإعدادي، الثانوي العام 2027، والبكالوريا)
   {
@@ -997,10 +1418,10 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
   // 3. المناهج الدولية (المنهج الأمريكي Gr 1-12 والمنهج البريطاني KS1-KS4 & A-Level — بدون ترم أول وثاني)
   {
     code: 'INTERNATIONAL',
-    titleAr: 'المناهج الدولية (American & British Curriculum)',
-    titleEn: 'International Curricula (American & British Curriculum)',
-    subtitleAr: 'رياضيات بمعايير عالمية',
-    subtitleEn: 'World-Class Global Mathematical Standards',
+    titleAr: 'المناهج الدولية',
+    titleEn: 'International Curriculum',
+    subtitleAr: 'American & British Curriculum',
+    subtitleEn: 'American & British Curriculum',
     taglineAr: 'رياضيات بمعايير عالمية',
     taglineEn: 'World-Class Global Standards',
     descriptionAr: 'برنامج دولي شامل يغطي المنهج الأمريكي (Grades 1-12) ومناهج كامبريدج وإديكسل البريطانية (KS1-KS4 IGCSE & Sixth Form A-Level) بنظام سنوي مستمر دون تقسيم ترم أول وثان.',
@@ -1013,277 +1434,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
     hasTerms: false,
     terms: [],
     grades: [
-      // المسار الأمريكي: المرحلة الابتدائية (Elementary Grades 1-5)
-      {
-        code: 'US_GRADE_1',
-        titleAr: 'المنهج الأمريكي - الصف الأول (Grade 1)',
-        titleEn: 'American Curriculum — Grade 1 (Elementary)',
-        shortLabelAr: 'Gr 1 US',
-        shortLabelEn: 'Gr 1',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School (Grades 1-5)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_2',
-        titleAr: 'المنهج الأمريكي - الصف الثاني (Grade 2)',
-        titleEn: 'American Curriculum — Grade 2 (Elementary)',
-        shortLabelAr: 'Gr 2 US',
-        shortLabelEn: 'Gr 2',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School (Grades 1-5)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_3',
-        titleAr: 'المنهج الأمريكي - الصف الثالث (Grade 3)',
-        titleEn: 'American Curriculum — Grade 3 (Elementary)',
-        shortLabelAr: 'Gr 3 US',
-        shortLabelEn: 'Gr 3',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School (Grades 1-5)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_4',
-        titleAr: 'المنهج الأمريكي - الصف الرابع (Grade 4)',
-        titleEn: 'American Curriculum — Grade 4 (Elementary)',
-        shortLabelAr: 'Gr 4 US',
-        shortLabelEn: 'Gr 4',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School (Grades 1-5)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_5',
-        titleAr: 'المنهج الأمريكي - الصف الخامس (Grade 5)',
-        titleEn: 'American Curriculum — Grade 5 (Elementary)',
-        shortLabelAr: 'Gr 5 US',
-        shortLabelEn: 'Gr 5',
-        stageAr: 'المرحلة الابتدائية الأمريكية',
-        stageEn: 'Elementary School (Grades 1-5)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-
-      // المسار الأمريكي: المرحلة المتوسطة (Middle School Grades 6-8)
-      {
-        code: 'US_GRADE_6',
-        titleAr: 'المنهج الأمريكي - الصف السادس (Grade 6)',
-        titleEn: 'American Curriculum — Grade 6 (Middle School)',
-        shortLabelAr: 'Gr 6 US',
-        shortLabelEn: 'Gr 6',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School (Grades 6-8)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_7',
-        titleAr: 'المنهج الأمريكي - الصف السابع (Pre-Algebra)',
-        titleEn: 'American Curriculum — Grade 7 (Pre-Algebra)',
-        shortLabelAr: 'Gr 7 US',
-        shortLabelEn: 'Gr 7',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School (Grades 6-8)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_8',
-        titleAr: 'المنهج الأمريكي - الصف الثامن (Algebra Foundations)',
-        titleEn: 'American Curriculum — Grade 8 (Algebra Foundations)',
-        shortLabelAr: 'Gr 8 US',
-        shortLabelEn: 'Gr 8',
-        stageAr: 'المرحلة المتوسطة الأمريكية',
-        stageEn: 'Middle School (Grades 6-8)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-
-      // المسار الأمريكي: المرحلة الثانوية (High School Grades 9-12)
-      {
-        code: 'US_GRADE_9',
-        titleAr: 'المنهج الأمريكي - الصف التاسع (Algebra I)',
-        titleEn: 'American Curriculum — Grade 9 (Algebra I)',
-        shortLabelAr: 'Gr 9 US',
-        shortLabelEn: 'Gr 9',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School (Grades 9-12)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_10',
-        titleAr: 'المنهج الأمريكي - الصف العاشر (Geometry)',
-        titleEn: 'American Curriculum — Grade 10 (Geometry)',
-        shortLabelAr: 'Gr 10 US',
-        shortLabelEn: 'Gr 10',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School (Grades 9-12)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_11',
-        titleAr: 'المنهج الأمريكي - الصف الحادي عشر (Algebra II / Pre-Calc)',
-        titleEn: 'American Curriculum — Grade 11 (Algebra II / Pre-Calc)',
-        shortLabelAr: 'Gr 11 US',
-        shortLabelEn: 'Gr 11',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School (Grades 9-12)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-      {
-        code: 'US_GRADE_12',
-        titleAr: 'المنهج الأمريكي - الصف الثاني عشر (AP Calculus / Statistics)',
-        titleEn: 'American Curriculum — Grade 12 (AP Calculus & Stats)',
-        shortLabelAr: 'Gr 12 US',
-        shortLabelEn: 'Gr 12',
-        stageAr: 'المرحلة الثانوية الأمريكية',
-        stageEn: 'High School (Grades 9-12)',
-        branchAr: 'المنهج الأمريكي',
-        branchEn: 'American Curriculum'
-      },
-
-      // المسار البريطاني (British Curriculum: KS1-KS4 IGCSE & Sixth Form A-Level)
-      {
-        code: 'IGCSE_YEAR_1',
-        titleAr: 'السنة الأولى البريطانية (Primary Key Stage 1 - Year 1)',
-        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 1)',
-        shortLabelAr: 'Year 1',
-        shortLabelEn: 'Yr 1',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 1)',
-        stageEn: 'British Primary (Key Stage 1)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_2',
-        titleAr: 'السنة الثانية البريطانية (Primary Key Stage 1 - Year 2)',
-        titleEn: 'British Curriculum — Primary Key Stage 1 (Year 2)',
-        shortLabelAr: 'Year 2',
-        shortLabelEn: 'Yr 2',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 1)',
-        stageEn: 'British Primary (Key Stage 1)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_3',
-        titleAr: 'السنة الثالثة البريطانية (Primary Key Stage 2 - Year 3)',
-        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 3)',
-        shortLabelAr: 'Year 3',
-        shortLabelEn: 'Yr 3',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
-        stageEn: 'British Primary (Key Stage 2)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_4',
-        titleAr: 'السنة الرابعة البريطانية (Primary Key Stage 2 - Year 4)',
-        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 4)',
-        shortLabelAr: 'Year 4',
-        shortLabelEn: 'Yr 4',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
-        stageEn: 'British Primary (Key Stage 2)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_5',
-        titleAr: 'السنة الخامسة البريطانية (Primary Key Stage 2 - Year 5)',
-        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 5)',
-        shortLabelAr: 'Year 5',
-        shortLabelEn: 'Yr 5',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
-        stageEn: 'British Primary (Key Stage 2)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_6',
-        titleAr: 'السنة السادسة البريطانية (Primary Key Stage 2 - Year 6)',
-        titleEn: 'British Curriculum — Primary Key Stage 2 (Year 6)',
-        shortLabelAr: 'Year 6',
-        shortLabelEn: 'Yr 6',
-        stageAr: 'المرحلة الابتدائية البريطانية (Key Stage 2)',
-        stageEn: 'British Primary (Key Stage 2)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_7',
-        titleAr: 'السنة السابعة البريطانية (Secondary Key Stage 3 - Year 7)',
-        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 7)',
-        shortLabelAr: 'Year 7',
-        shortLabelEn: 'Yr 7',
-        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
-        stageEn: 'Lower Secondary (Key Stage 3)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_8',
-        titleAr: 'السنة الثامنة البريطانية (Secondary Key Stage 3 - Year 8)',
-        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 8)',
-        shortLabelAr: 'Year 8',
-        shortLabelEn: 'Yr 8',
-        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
-        stageEn: 'Lower Secondary (Key Stage 3)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_YEAR_9',
-        titleAr: 'السنة التاسعة البريطانية (Secondary Key Stage 3 - Year 9 / Pre-IG)',
-        titleEn: 'British Curriculum — Secondary Key Stage 3 (Year 9 / Pre-IGCSE)',
-        shortLabelAr: 'Year 9',
-        shortLabelEn: 'Yr 9',
-        stageAr: 'المرحلة الثانوية الدنيا (Key Stage 3)',
-        stageEn: 'Lower Secondary (Key Stage 3)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_OL',
-        titleAr: 'مستوى IGCSE Ordinary Level (Key Stage 4 — Year 10-11)',
-        titleEn: 'IGCSE O-Level Math (Key Stage 4 — Year 10-11)',
-        shortLabelAr: 'IGCSE OL',
-        shortLabelEn: 'IG OL',
-        stageAr: 'مرحلة شهادة الـ IGCSE (Key Stage 4)',
-        stageEn: 'Key Stage 4 (IGCSE)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_AS',
-        titleAr: 'مستوى IGCSE AS-Level (Sixth Form — Year 12)',
-        titleEn: 'IGCSE AS-Level Math (Sixth Form — Year 12)',
-        shortLabelAr: 'IGCSE AS',
-        shortLabelEn: 'IG AS',
-        stageAr: 'المستوى المتقدم التكميلي (Sixth Form)',
-        stageEn: 'Sixth Form (AS-Level)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      },
-      {
-        code: 'IGCSE_AL',
-        titleAr: 'مستوى IGCSE A-Level الكامل (Sixth Form — Year 13)',
-        titleEn: 'IGCSE Full A-Level Math (Sixth Form — Year 13)',
-        shortLabelAr: 'IGCSE AL',
-        shortLabelEn: 'IG AL',
-        stageAr: 'المستوى المتقدم الكامل (Sixth Form)',
-        stageEn: 'Sixth Form (A-Level)',
-        branchAr: 'المنهج البريطاني',
-        branchEn: 'British Curriculum'
-      }
+      ...INTERNATIONAL_DIVISIONS_DATA[0].grades,
+      ...INTERNATIONAL_DIVISIONS_DATA[1].grades
     ]
   },
 
@@ -1378,4 +1530,8 @@ export function findGulfCountry(code: string): IGulfCountryData | undefined {
 export function getGulfCountryGrades(countryCode: string): readonly IGradeLevelMeta[] {
   const country = findGulfCountry(countryCode);
   return country ? country.grades : (findCurriculumByCode('GULF')?.grades || []);
+}
+
+export function findInternationalDivision(code: string): IInternationalDivisionData | undefined {
+  return INTERNATIONAL_DIVISIONS_DATA.find(d => d.code === code);
 }

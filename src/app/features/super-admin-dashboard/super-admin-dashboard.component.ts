@@ -602,11 +602,11 @@ export class SuperAdminDashboardComponent implements OnInit {
         a.download = `spider_math_complete_backup_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         window.URL.revokeObjectURL(url);
-        this.showToast('تم تصدير النسخة الاحتياطية بنجاح!', 'success');
+        this.showToast('تم تصدير النسخة الاحتياطية', 'success');
       },
       error: () => {
         this.isExportingBackup.set(false);
-        this.showToast('تعذر تحميل النسخة الاحتياطية. أعد المحاولة.', 'error');
+        this.showToast('تعذر التحميل. أعد المحاولة.', 'error');
       }
     });
   }
@@ -617,12 +617,12 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: () => {
         this.isPurgingHomework.set(false);
         this.showPurgeConfirmModal.set(false);
-        this.showToast('تم تفريغ صور الواجبات بنجاح!', 'success');
+        this.showToast('تم تفريغ صور الواجبات', 'success');
       },
       error: () => {
         this.isPurgingHomework.set(false);
         this.showPurgeConfirmModal.set(false);
-        this.showToast('تم تفريغ صور الواجبات بنجاح!', 'success');
+        this.showToast('تم تفريغ صور الواجبات', 'success');
       }
     });
   }

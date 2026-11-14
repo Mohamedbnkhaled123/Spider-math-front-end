@@ -27,12 +27,12 @@
               DESMOS
             </span>
             <span class="text-xs font-bold text-text-primary hidden sm:inline">
-              | {{ langService.isArabic() ? 'آلة ديسموس البيانية' : 'Desmos Calculator' }}
+              | {{ langService.isArabic() ? 'حاسبة ديسموس' : 'Desmos' }}
             </span>
           </div>
 
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 hidden md:inline-flex">
-            {{ langService.isArabic() ? 'معادلات + مفاتيح' : 'Expressions + Keypad' }}
+            {{ langService.isArabic() ? 'معادلات' : 'Expressions' }}
           </span>
         </div>
 
@@ -82,7 +82,7 @@
         <!-- Mathematical Function Presets Bar -->
         <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
           <span class="text-[11px] font-bold text-text-muted whitespace-nowrap">
-            {{ langService.isArabic() ? 'رسم مباشر:' : 'Quick Plots:' }}
+            {{ langService.isArabic() ? 'دوال:' : 'Plots:' }}
           </span>
           @for (preset of presets; track preset.latex) {
             <button
@@ -116,7 +116,7 @@
             <div class="absolute inset-0 flex items-center justify-center bg-surface-card/90 backdrop-blur-sm z-20">
               <div class="flex items-center gap-2.5 text-xs font-bold text-brand-primary dark:text-brand-accent p-4 rounded-2xl border border-surface-border glass-panel">
                 <app-icon name="loader" [size]="20" className="animate-spin text-brand-accent" />
-                <span>{{ langService.isArabic() ? 'جارِ تحميل ديسموس...' : 'Loading Desmos...' }}</span>
+                <span>{{ langService.isArabic() ? 'تحميل ديسموس...' : 'Loading Desmos...' }}</span>
               </div>
             </div>
           }
@@ -124,7 +124,7 @@
 
         <!-- Footer Hint -->
         <div class="modal-footer px-3 py-1.5 bg-surface-card/90 border-t border-surface-border/50 flex items-center justify-between text-[11px] text-text-muted">
-          <span>{{ langService.isArabic() ? 'اسحب من الشريط العلوي للتحريك' : 'Drag from top bar to move' }}</span>
+          <span>{{ langService.isArabic() ? 'اسحب للتحريك' : 'Drag to move' }}</span>
           <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Official Engine</span>
         </div>
       }

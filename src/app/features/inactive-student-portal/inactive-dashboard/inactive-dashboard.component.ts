@@ -180,26 +180,26 @@ export class InactiveDashboardComponent implements OnInit {
   readonly trialLectures = signal<ITrialLecture[]>([
     {
       _id: 'trial_lec_1',
-      titleAr: 'المحاضرة التمهيدية المجانية: أساسيات واستراتيجيات التميز',
-      titleEn: 'Free Introductory Masterclass: Core Fundamentals',
+      titleAr: 'محاضرة تمهيدية: الأساسيات',
+      titleEn: 'Introductory Masterclass: Fundamentals',
       durationMinutes: 45,
       curriculum: 'EGYPTIAN',
       gradeLevel: 'SEC_3',
       academicTerm: 'TERM_1',
-      descriptionAr: 'شرح تمهيدي مفصل يوضح خرائط المنهج وحل مسائل نموذجية باستخدام حاسبة ديسموس.',
-      descriptionEn: 'Introductory lecture demonstrating syllabus blueprints and Desmos speed tactics.',
+      descriptionAr: 'خرائط المنهج واستراتيجيات ديسموس.',
+      descriptionEn: 'Syllabus roadmap and Desmos strategies.',
       is_free_trial: true
     },
     {
       _id: 'trial_lec_2',
-      titleAr: 'حل نماذج الامتحانات الاسترشادية وبنك الأسئلة الذكي',
-      titleEn: 'Sample Practice Workouts & Smart Question Bank',
+      titleAr: 'نماذج الامتحانات والبنك الذكي',
+      titleEn: 'Practice Exams & Question Bank',
       durationMinutes: 40,
       curriculum: 'EGYPTIAN',
       gradeLevel: 'SEC_3',
       academicTerm: 'TERM_1',
-      descriptionAr: 'تدريب تطبيقي على أفكار المسائل المركبة التي تتكرر في الاختبارات الرسمية.',
-      descriptionEn: 'High-yield practical problem solving covering recurring exam patterns.',
+      descriptionAr: 'تدريب على أفكار الاختبارات الرسمية.',
+      descriptionEn: 'Practical drills on recurring exam patterns.',
       is_free_trial: true
     }
   ]);
@@ -303,8 +303,8 @@ export class InactiveDashboardComponent implements OnInit {
                     curriculum: unit.curriculum,
                     gradeLevel: (unit as any).grade_level || (unit as any).gradeLevel,
                     academicTerm: (unit as any).academic_term || (unit as any).term,
-                    descriptionAr: fl.description_ar || 'حصة تجريبية مجانية مفتوحة لكافة الطلاب المسجلين بالمنصة.',
-                    descriptionEn: fl.description_en || 'Free trial lesson available for all registered students.',
+                    descriptionAr: fl.description_ar || 'حصة تجريبية مجانية.',
+                    descriptionEn: fl.description_en || 'Free trial lesson.',
                     is_free_trial: true,
                     videoEmbedId: fl.youtube_video_id || fl.youtube_url || fl.encrypted_video_id || fl.videoEmbedId || ''
                   }));
@@ -397,7 +397,7 @@ export class InactiveDashboardComponent implements OnInit {
     const confirmed = await this.confirmDialogService.confirm({
       title: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
       message: this.langService.isArabic()
-        ? 'تسجيل الخروج من حسابك؟'
+        ? 'تسجيل الخروج؟'
         : 'Log out of your account?',
       confirmLabel: this.langService.isArabic() ? 'خروج' : 'Log Out',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',

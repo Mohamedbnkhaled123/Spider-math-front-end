@@ -33,9 +33,9 @@
         <app-icon [name]="isUploading() ? 'loader' : 'upload-cloud'" [size]="14" [className]="isUploading() ? 'animate-spin text-brand-primary' : 'text-brand-primary'" />
         <span>
           @if (isProcessing()) {
-            {{ langService.isArabic() ? 'جارِ المعالجة...' : 'Processing...' }}
+            {{ langService.isArabic() ? 'معالجة...' : 'Processing...' }}
           } @else if (isUploading()) {
-            {{ langService.isArabic() ? 'جارِ الرفع...' : 'Uploading...' }}
+            {{ langService.isArabic() ? 'رفع...' : 'Uploading...' }}
           } @else {
             {{ buttonLabel() || (langService.isArabic() ? 'إرفاق صورة' : 'Attach Image') }}
           }
@@ -48,7 +48,7 @@
         (click)="openLiveCamera(cameraInput)"
         [disabled]="isProcessing() || isUploading()"
         class="h-9 px-2.5 rounded-xl border border-surface-border bg-surface-card hover:bg-brand-primary/10 hover:border-brand-primary text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm text-xs font-bold active:scale-95"
-        [title]="langService.isArabic() ? 'التقاط بالكاميرا' : 'Camera'"
+        [title]="langService.isArabic() ? 'كاميرا' : 'Camera'"
       >
         <app-icon name="camera" [size]="14" className="text-brand-primary" />
         <span class="hidden sm:inline">{{ langService.isArabic() ? 'كاميرا' : 'Camera' }}</span>
@@ -73,13 +73,13 @@
             @if (buttonLabel()) {
               {{ buttonLabel() }}
             } @else if (uploadTarget() === 'question') {
-              {{ langService.isArabic() ? 'إرفاق صورة للمسألة (كاميرا أو جهاز)' : 'Attach question image (Camera or device)' }}
+              {{ langService.isArabic() ? 'صورة المسألة' : 'Question image' }}
             } @else {
-              {{ langService.isArabic() ? 'إرفاق حل الواجب (1–2 صورة)' : 'Attach homework solution (1-2 photos)' }}
+              {{ langService.isArabic() ? 'حل الواجب (1–2 صورة)' : 'Homework solution (1-2 photos)' }}
             }
           </h4>
           <p class="text-xs text-text-secondary mt-1">
-            {{ langService.isArabic() ? 'ضغط تلقائي لأقل من 150KB لسرعة الرفع.' : 'Auto-compressed to under 150KB for fast upload.' }}
+            {{ langService.isArabic() ? 'ضغط تلقائي (<150KB).' : 'Auto-compressed (<150KB).' }}
           </p>
         </div>
 
@@ -95,9 +95,9 @@
             <app-icon name="camera" [size]="16" />
             <span>
               @if (isProcessing()) {
-                {{ langService.isArabic() ? 'جارِ المعالجة...' : 'Processing...' }}
+                {{ langService.isArabic() ? 'معالجة...' : 'Processing...' }}
               } @else {
-                {{ langService.isArabic() ? 'التقاط بالكاميرا' : 'Camera' }}
+                {{ langService.isArabic() ? 'كاميرا' : 'Camera' }}
               }
             </span>
           </button>
@@ -110,7 +110,7 @@
             class="px-4 py-2.5 rounded-xl font-bold text-xs text-text-primary bg-surface-card border border-surface-border hover:border-brand-primary hover:bg-brand-primary/5 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
           >
             <app-icon name="upload-cloud" [size]="16" className="text-brand-primary" />
-            <span>{{ langService.isArabic() ? 'اختيار من الملفات' : 'Choose File' }}</span>
+            <span>{{ langService.isArabic() ? 'من الملفات' : 'Files' }}</span>
           </button>
         </div>
       </div>
@@ -131,7 +131,7 @@
       <div class="flex items-center justify-between text-xs font-bold mb-2">
         <span class="text-brand-primary dark:text-brand-accent flex items-center gap-1.5">
           <app-icon name="loader" [size]="14" className="animate-spin" />
-          <span>{{ langService.isArabic() ? 'جارِ الرفع السحابي...' : 'Uploading...' }}</span>
+          <span>{{ langService.isArabic() ? 'رفع سحابي...' : 'Uploading...' }}</span>
         </span>
         <span class="font-numeric">{{ uploadProgress() }}%</span>
       </div>
@@ -174,7 +174,7 @@
 
             <!-- Compression Stats (e.g., 4.2 MB -> 125 KB) -->
             <p class="text-[11px] text-text-secondary mt-1 font-numeric">
-              {{ langService.isArabic() ? 'الحجم الأصلي: ' : 'Original size: ' }}{{ item.originalSizeKb }} KB ➔ <span class="font-bold text-emerald-600">{{ item.compressedSizeKb }} KB</span>
+              {{ langService.isArabic() ? 'الحجم: ' : 'Size: ' }}{{ item.originalSizeKb }} KB ➔ <span class="font-bold text-emerald-600">{{ item.compressedSizeKb }} KB</span>
             </p>
 
             <!-- Status Badge -->
@@ -183,13 +183,13 @@
                 @case ('SUCCESS') {
                   <span class="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
                     <app-icon name="check" [size]="12" />
-                    <span>{{ langService.isArabic() ? 'تم الرفع بنجاح' : 'Uploaded successfully' }}</span>
+                    <span>{{ langService.isArabic() ? 'تم الرفع' : 'Uploaded' }}</span>
                   </span>
                 }
                 @case ('UPLOADING') {
                   <span class="text-[10px] font-bold text-brand-accent flex items-center gap-1">
                     <app-icon name="loader" [size]="12" className="animate-spin" />
-                    <span>{{ langService.isArabic() ? 'جارِ الرفع...' : 'Uploading...' }}</span>
+                    <span>{{ langService.isArabic() ? 'رفع...' : 'Uploading...' }}</span>
                   </span>
                 }
                 @case ('ERROR') {
@@ -199,7 +199,7 @@
                 }
                 @default {
                   <span class="text-[10px] font-bold text-text-muted">
-                    {{ langService.isArabic() ? 'جاهزة للرفع' : 'Ready to upload' }}
+                    {{ langService.isArabic() ? 'جاهزة' : 'Ready' }}
                   </span>
                 }
               }
@@ -235,10 +235,10 @@
             </div>
             <div>
               <h3 class="text-base font-black text-text-primary">
-                {{ langService.isArabic() ? 'مراجعة وضوح الخط قبل التسليم' : 'Review Clarity Before Submitting' }}
+                {{ langService.isArabic() ? 'مراجعة الوضوح' : 'Review Clarity' }}
               </h3>
               <p class="text-xs text-text-secondary">
-                {{ langService.isArabic() ? 'تأكد من وضوح الصورة وتدويرها الصحيح.' : 'Ensure photo is clear and oriented properly.' }}
+                {{ langService.isArabic() ? 'تأكد من وضوح الصورة وتدويرها.' : 'Ensure image is clear & oriented.' }}
               </p>
             </div>
           </div>
@@ -291,7 +291,7 @@
                 [title]="langService.isArabic() ? 'تدوير 90 درجة لليسار' : 'Rotate 90 degrees left'"
               >
                 <app-icon name="rotate-ccw" [size]="14" />
-                <span>{{ langService.isArabic() ? 'تدوير لليسار' : 'Rotate Left' }}</span>
+                <span>{{ langService.isArabic() ? 'يسار' : 'Left' }}</span>
               </button>
 
               <span class="text-text-muted">|</span>
@@ -303,7 +303,7 @@
                 [title]="langService.isArabic() ? 'تدوير 90 درجة لليمين' : 'Rotate 90 degrees right'"
               >
                 <app-icon name="rotate-cw" [size]="14" />
-                <span>{{ langService.isArabic() ? 'تدوير لليمين' : 'Rotate Right' }}</span>
+                <span>{{ langService.isArabic() ? 'يمين' : 'Right' }}</span>
               </button>
             </div>
           </div>
@@ -319,7 +319,7 @@
               class="mt-0.5 rounded border-surface-border text-brand-primary focus:ring-brand-accent cursor-pointer w-4 h-4"
             />
             <span class="text-xs font-bold text-text-primary leading-relaxed">
-              {{ langService.isArabic() ? 'أتعهد بأن الصورة واضحة ومقروءة وبالاتجاه الصحيح للتصحيح.' : 'I confirm the image is clear, legible, and correctly oriented.' }}
+              {{ langService.isArabic() ? 'الصورة واضحة وبالاتجاه الصحيح.' : 'Image is clear and upright.' }}
             </span>
           </label>
         </div>
@@ -331,7 +331,7 @@
             (click)="cancelClarityModal()"
             class="px-4 py-2.5 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface-secondary transition-colors"
           >
-            {{ langService.isArabic() ? 'إلغاء واستبدال' : 'Cancel & Replace' }}
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
           </button>
 
           <button
@@ -363,10 +363,10 @@
             <div>
               <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
                 <app-icon name="camera" [size]="16" className="text-brand-primary" />
-                <span>{{ langService.isArabic() ? 'التقاط بالكاميرا' : 'Camera Capture' }}</span>
+                <span>{{ langService.isArabic() ? 'الكاميرا' : 'Camera' }}</span>
               </h3>
               <p class="text-[11px] text-text-secondary">
-                {{ langService.isArabic() ? 'وجه الكاميرا نحو الحل واضغط التقاط.' : 'Point camera at solution and tap capture.' }}
+                {{ langService.isArabic() ? 'وجه الكاميرا واضغط التقاط.' : 'Point camera and capture.' }}
               </p>
             </div>
           </div>
@@ -394,7 +394,7 @@
           <!-- Framing Reticle Overlay -->
           <div class="absolute inset-4 sm:inset-8 border-2 border-dashed border-white/40 rounded-2xl pointer-events-none flex items-center justify-center">
             <span class="text-white/80 text-[10px] font-bold bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm">
-              {{ langService.isArabic() ? 'ضع المحتوى داخل الإطار' : 'Fit inside frame' }}
+              {{ langService.isArabic() ? 'داخل الإطار' : 'Fit in frame' }}
             </span>
           </div>
 
@@ -402,7 +402,7 @@
           @if (isCameraStarting()) {
             <div class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 text-white">
               <app-icon name="loader" [size]="28" className="animate-spin text-brand-primary" />
-              <span class="text-xs font-bold">{{ langService.isArabic() ? 'جارِ تشغيل الكاميرا...' : 'Starting camera...' }}</span>
+              <span class="text-xs font-bold">{{ langService.isArabic() ? 'تشغيل الكاميرا...' : 'Starting camera...' }}</span>
             </div>
           }
         </div>
@@ -418,7 +418,7 @@
             [title]="langService.isArabic() ? 'تبديل الكاميرا' : 'Switch camera'"
           >
             <app-icon name="rotate-cw" [size]="15" />
-            <span class="hidden sm:inline">{{ langService.isArabic() ? 'تبديل الكاميرا' : 'Switch Camera' }}</span>
+            <span class="hidden sm:inline">{{ langService.isArabic() ? 'تبديل' : 'Switch' }}</span>
           </button>
 
           <!-- Big Shutter Capture Button -->
@@ -429,7 +429,7 @@
             class="group relative px-6 py-3 rounded-full text-white font-extrabold text-xs bg-gradient-spider shadow-brand-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <div class="w-3.5 h-3.5 rounded-full bg-white group-hover:scale-110 transition-transform"></div>
-            <span>{{ langService.isArabic() ? 'التقاط الصورة' : 'Capture Photo' }}</span>
+            <span>{{ langService.isArabic() ? 'التقاط' : 'Capture' }}</span>
           </button>
 
           <!-- Cancel / Close -->

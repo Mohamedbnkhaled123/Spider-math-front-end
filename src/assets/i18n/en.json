@@ -1,55 +1,55 @@
 {
   "BRAND": {
     "NAME": "Spider Math",
-    "TAGLINE": "Excellence in Mathematics with Eng. Heba Abdel-Wahab",
-    "SUBTITLE": "From fundamentals to mathematical mastery",
+    "TAGLINE": "Excellence in Mathematics with Eng. Heba",
+    "SUBTITLE": "From basics to mastery",
     "TEACHER": "Eng. Heba Abdel-Wahab"
   },
   "NAV": {
     "HOME": "Home",
-    "CURRICULUM": "Curriculums",
-    "TOPICS": "Topics Index",
+    "CURRICULUM": "Curricula",
+    "TOPICS": "Topics",
     "PLACEMENT_TEST": "Placement Test",
-    "PRICING": "Packages",
+    "PRICING": "Pricing",
     "LOGIN": "Sign In",
     "GET_STARTED": "Get Started",
     "DASHBOARD": "Dashboard",
     "LOGOUT": "Sign Out"
   },
   "CURRICULUM": {
-    "CHOOSE_TITLE": "Choose Your Curriculum",
-    "CHOOSE_SUBTITLE": "Curricula tailored for highest academic scores",
+    "CHOOSE_TITLE": "Choose Curriculum",
+    "CHOOSE_SUBTITLE": "Paths to mastery",
     "EGYPTIAN": {
       "TITLE": "Egyptian Curriculum",
-      "TAGLINE": "From Fundamentals to Thanaweya Amma Excellence",
-      "DESCRIPTION": "Full coverage of Prep and Secondary with drills and exams."
+      "TAGLINE": "Basics to Mastery",
+      "DESCRIPTION": "Prep and Secondary."
     },
     "GULF": {
       "TITLE": "Gulf Curriculum",
-      "TAGLINE": "Clear Explanations & Continuous Mastery",
-      "DESCRIPTION": "Aligned with Gulf ministerial standards (Grades 7–12)."
+      "TAGLINE": "Structured training",
+      "DESCRIPTION": "Grades 7–12 Gulf standards."
     },
     "INTERNATIONAL": {
-      "TITLE": "International Curricula (IGCSE / British)",
-      "TAGLINE": "Global Standard Mathematics",
-      "DESCRIPTION": "Cambridge & Edexcel (OL, AS, AL) with past-paper workouts."
+      "TITLE": "International (IGCSE)",
+      "TAGLINE": "Global Standards",
+      "DESCRIPTION": "Cambridge & Edexcel."
     },
     "AMERICAN": {
-      "TITLE": "American Diploma (SAT • EST • ACT)",
-      "TAGLINE": "SAT • EST • ACT College Board Readiness",
-      "DESCRIPTION": "Scoring strategies, shortcuts, and Desmos mastery."
+      "TITLE": "American Diploma",
+      "TAGLINE": "SAT • EST • ACT",
+      "DESCRIPTION": "SAT, EST, ACT & Desmos."
     },
     "TERMS": {
-      "TERM_1": "First Term",
-      "TERM_2": "Second Term"
+      "TERM_1": "Term 1",
+      "TERM_2": "Term 2"
     }
   },
   "DEVICE_LOCK": {
-    "TITLE": "Device Pending Approval",
-    "DESCRIPTION": "New device linked. Waiting for teacher authorization.",
+    "TITLE": "Pending Approval",
+    "DESCRIPTION": "New device. Awaiting approval.",
     "STATUS": "Pending Approval",
-    "NOTICE": "Your device will be reviewed shortly. Existing devices remain active.",
-    "REFRESH": "Check Status"
+    "NOTICE": "Authorized devices remain active.",
+    "REFRESH": "Refresh"
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -57,8 +57,8 @@
     "CANCEL": "Cancel",
     "SAVE": "Save",
     "SEARCH": "Search",
-    "LIGHT_MODE": "Light Mode",
-    "DARK_MODE": "Dark Mode",
+    "LIGHT_MODE": "Light",
+    "DARK_MODE": "Dark",
     "LANGUAGE": "Language",
     "CLOSE": "Close"
   }

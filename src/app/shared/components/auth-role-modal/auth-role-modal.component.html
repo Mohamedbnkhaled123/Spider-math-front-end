@@ -22,13 +22,13 @@
       <div class="mb-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-accent text-xs font-black mb-2">
           <app-icon name="shield" [size]="14" />
-          <span>{{ langService.isArabic() ? 'بوابة تسجيل الدخول' : 'Login Portal' }}</span>
+          <span>{{ langService.isArabic() ? 'تسجيل الدخول' : 'Login' }}</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-text-primary">
-          {{ langService.isArabic() ? 'اختر الدور لتجربة المنصة' : 'Select a role to explore' }}
+          {{ langService.isArabic() ? 'اختر الدور' : 'Select Role' }}
         </h2>
         <p class="text-xs sm:text-sm text-text-secondary mt-1">
-          {{ langService.isArabic() ? 'بدّل بين أدوار المنصة لتجربة المحاضرات والامتحانات ولوحة الإدارة.' : 'Switch between platform roles to test lectures, exams, and dashboards.' }}
+          {{ langService.isArabic() ? 'بدّل بين أدوار المنصة للتجربة.' : 'Switch roles to test.' }}
         </p>
       </div>
 
@@ -44,7 +44,7 @@
           [class.text-text-secondary]="activeTab() !== 'presets'"
         >
           <app-icon name="user" [size]="14" />
-          <span>{{ langService.isArabic() ? 'محاكاة الأدوار' : 'Simulate Roles' }}</span>
+          <span>{{ langService.isArabic() ? 'الأدوار' : 'Roles' }}</span>
         </button>
 
         <button
@@ -113,7 +113,7 @@
               </div>
 
               <div class="shrink-0 flex items-center gap-1.5 text-xs font-bold text-brand-primary dark:text-brand-accent group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">
-                <span>{{ langService.isArabic() ? 'تجربة الآن' : 'Test Now' }}</span>
+                <span>{{ langService.isArabic() ? 'تجربة' : 'Test' }}</span>
                 <app-icon name="chevron-left" [size]="14" />
               </div>
             </button>
@@ -121,14 +121,14 @@
 
           <!-- Reset to Guest Button -->
           <div class="pt-3 border-t border-surface-border flex items-center justify-between">
-            <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'تريد تصفح الموقع دون تسجيل؟' : 'Explore platform without logging in?' }}</span>
+            <span class="text-xs text-text-muted">{{ langService.isArabic() ? 'التصفح دون تسجيل؟' : 'Browse without login?' }}</span>
             <button
               type="button"
               (click)="switchToGuest()"
               class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-bg transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <app-icon name="log-out" [size]="14" />
-              <span>{{ langService.isArabic() ? 'المتابعة كزائر' : 'Continue as Guest' }}</span>
+              <span>{{ langService.isArabic() ? 'كزائر' : 'As Guest' }}</span>
             </button>
           </div>
         </div>
@@ -141,7 +141,7 @@
         <div class="space-y-4">
           <div>
             <label for="studentHaInput" class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'كود الطالب الفريد (HA Code)' : 'Unique Student Code (HA Code)' }}
+              {{ langService.isArabic() ? 'كود الطالب (HA Code)' : 'Student Code (HA Code)' }}
             </label>
             <input
               id="studentHaInput"
@@ -153,7 +153,7 @@
               class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-mono font-bold tracking-widest uppercase placeholder:text-text-muted/60 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-sm"
             />
             <p class="text-[11px] text-text-muted mt-1.5">
-              @if (langService.isArabic()) { أدخل كود الطالب أو الكود التجريبي: <span class="font-mono font-bold text-brand-secondary">HA4920</span> } @else { Enter student code or demo: <span class="font-mono font-bold text-brand-secondary">HA4920</span> }
+              @if (langService.isArabic()) { الكود أو التجريبي: <span class="font-mono font-bold text-brand-secondary">HA4920</span> } @else { Enter code or demo: <span class="font-mono font-bold text-brand-secondary">HA4920</span> }
             </p>
           </div>
 
@@ -166,7 +166,7 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="16" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري تسجيل الدخول...' : 'Logging in...' }}</span>
+                <span>{{ langService.isArabic() ? 'جاري الدخول...' : 'Logging in...' }}</span>
               } @else {
                 <app-icon name="graduation-cap" [size]="16" />
                 <span>{{ langService.isArabic() ? 'دخول الطالب' : 'Student Login' }}</span>
@@ -183,7 +183,7 @@
         <div class="space-y-4">
           <div>
             <label for="parentPhoneInput" class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'رقم هاتف ولي الأمر المسجل' : 'Registered Parent Phone' }}
+              {{ langService.isArabic() ? 'رقم ولي الأمر' : 'Parent Phone' }}
             </label>
             <input
               id="parentPhoneInput"
@@ -197,7 +197,7 @@
 
           <div>
             <label for="parentChildCodeInput" class="block text-xs font-bold text-text-secondary mb-1.5">
-              {{ langService.isArabic() ? 'كود أحد الأبناء (HAxxxx)' : 'Linked Student Code (HAxxxx)' }}
+              {{ langService.isArabic() ? 'كود الطالب (HAxxxx)' : 'Student Code (HAxxxx)' }}
             </label>
             <input
               id="parentChildCodeInput"
@@ -219,10 +219,10 @@
             >
               @if (isSubmitting()) {
                 <app-icon name="loader" [size]="16" className="animate-spin" />
-                <span>{{ langService.isArabic() ? 'جاري تسجيل الدخول...' : 'Logging in...' }}</span>
+                <span>{{ langService.isArabic() ? 'جاري الدخول...' : 'Logging in...' }}</span>
               } @else {
                 <app-icon name="shield" [size]="16" />
-                <span>{{ langService.isArabic() ? 'دخول بوابة متابعة ولي الأمر' : 'Enter Parent Portal' }}</span>
+                <span>{{ langService.isArabic() ? 'دخول ولي الأمر' : 'Parent Login' }}</span>
               }
             </button>
           </div>

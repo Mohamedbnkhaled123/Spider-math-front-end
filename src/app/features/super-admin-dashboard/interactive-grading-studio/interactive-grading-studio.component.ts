@@ -296,7 +296,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
     this.http.post<{ success: boolean; message: string }>(`/api/v1/admin/submissions/${sub.id}/approve`, {}).subscribe({
       next: () => {
         this.toastTriggered.emit({
-          text: `تم اعتماد نتيجة ${sub.studentName} بنجاح`,
+          text: `تم اعتماد نتيجة ${sub.studentName}`,
           type: 'success'
         });
         this.fetchAllSubmissions();
@@ -413,7 +413,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
 
     if (item.awardedScore < 0 || item.awardedScore > item.maxScore) {
       this.toastTriggered.emit({
-        text: `الدرجة المقالية يجب أن تكون بين 0 و ${item.maxScore}!`,
+        text: `الدرجة يجب أن تكون بين 0 و ${item.maxScore}`,
         type: 'error'
       });
       return;

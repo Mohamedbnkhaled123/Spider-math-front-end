@@ -641,7 +641,7 @@ export class StudentOverviewComponent implements OnInit {
           if (now < fromDate) {
             dueDateAr = `يبدأ: ${fromDate.toLocaleDateString('ar-EG')} ${fromDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
             canStart = false;
-            statusNote = 'الكويز مجدول ولم يحن موعد فتحه بعد';
+            statusNote = 'لم يحن موعد الكويز';
           }
         }
       }
@@ -815,12 +815,12 @@ export class StudentOverviewComponent implements OnInit {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.profileErrorMessage.set('يرجى اختيار ملف صورة صالح (JPG أو PNG أو WebP)');
+      this.profileErrorMessage.set('اختر صورة صالحة (JPG, PNG, WebP)');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      this.profileErrorMessage.set('حجم الصورة كبير جداً، الحد الأقصى المسموح به هو 5 ميجابايت');
+      this.profileErrorMessage.set('الحد الأقصى لحجم الصورة 5MB');
       return;
     }
 
@@ -865,7 +865,7 @@ export class StudentOverviewComponent implements OnInit {
     const country = this.editCountry();
 
     if (!name || name.length < 3) {
-      this.profileErrorMessage.set('يرجى كتابة اسم الطالب ثلاثياً بشكل صحيح');
+      this.profileErrorMessage.set('اكتب الاسم ثلاثياً');
       return;
     }
 
@@ -887,7 +887,7 @@ export class StudentOverviewComponent implements OnInit {
 
     if (phone && parentPhone && arePhoneNumbersIdentical(phone, parentPhone, country)) {
       this.profileErrorMessage.set(
-        'رقم هاتف ولي الأمر لا يمكن أن يكون مطابقاً لرقم هاتف الطالب نهائياً. يرجى إدخال رقم مختلف لولي الأمر.'
+        'يجب اختلاف رقم ولي الأمر عن الطالب.'
       );
       return;
     }
@@ -929,7 +929,7 @@ export class StudentOverviewComponent implements OnInit {
             avatarUrl: resolvedAvatar
           };
           this.authService.updateCurrentUser(patch);
-          this.profileSuccessMessage.set('تم حفظ البيانات بنجاح');
+          this.profileSuccessMessage.set('تم الحفظ');
           setTimeout(() => {
             if (this.isProfileModalOpen()) {
               this.closeProfileModal();
@@ -942,7 +942,7 @@ export class StudentOverviewComponent implements OnInit {
         this.profileErrorMessage.set(
           err?.error?.error?.message ||
           err?.error?.message ||
-          'حدث خطأ أثناء حفظ التعديلات. يرجى التأكد من البيانات والمحاولة مجدداً.'
+          'تعذر الحفظ. تحقق من البيانات.'
         );
       }
     });

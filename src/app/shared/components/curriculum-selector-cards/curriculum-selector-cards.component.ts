@@ -18,12 +18,16 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { AppIconComponent } from '../app-icon/app-icon.component';
+import { AppIconComponent, AppIconName } from '../app-icon/app-icon.component';
 import {
   CANONICAL_CURRICULUM_TREE,
   CurriculumCode,
   AcademicTermCode,
-  curriculumHasTerms
+  curriculumHasTerms,
+  INTERNATIONAL_DIVISIONS_DATA,
+  IInternationalDivisionData,
+  IInternationalStageDefinition,
+  findInternationalDivision
 } from '../../../core/constants/curriculum-tree.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
@@ -126,7 +130,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       phone = '2' + phone;
     }
     const msg = encodeURIComponent(
-      `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
+      `أرغب في الاشتراك بمحتوى: "${title}".`
     );
     return `https://wa.me/${phone}?text=${msg}`;
   });
@@ -142,6 +146,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   readonly isTrackModalOpen = signal<boolean>(false);
   readonly modalStep = signal<'GRADES' | 'UNITS'>('GRADES');
   readonly activeStageFilter = signal<StageFilterType>('ALL');
+  readonly selectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
 
   // Stable Spider Web Canvas & DOM References
   @ViewChild('desktopCurriculaContainer') desktopContainerRef!: ElementRef<HTMLDivElement>;
@@ -182,7 +187,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     return CANONICAL_CURRICULUM_TREE.map(node => {
       const serverCurriculum = rawTree.find(c => c.curriculum === node.code);
       const configuredTrack = tracks.find(t => t.code === node.code);
-      const gradesToMap = (configuredTrack?.grades && configuredTrack.grades.length > 0)
+      const isLegacyIntl = node.code === 'INTERNATIONAL' && configuredTrack && (!configuredTrack.grades || configuredTrack.grades.length <= 4);
+      const gradesToMap = (configuredTrack?.grades && configuredTrack.grades.length > 0 && !isLegacyIntl)
         ? configuredTrack.grades
         : node.grades;
 
@@ -195,14 +201,29 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         const isActive = this.discoveryService.isGradeActive(configuredGrade.code);
         const isAvail = serverGrade ? (serverGrade.isAvailable || hasPlacement) : false;
 
+        let stageAr = canonicalMeta?.stageAr || 'المرحلة الدراسية';
+        let stageEn = canonicalMeta?.stageEn || 'Academic Stage';
+        if (node.code === 'INTERNATIONAL' && configuredTrack?.divisions) {
+          for (const div of configuredTrack.divisions) {
+            const canonDiv = INTERNATIONAL_DIVISIONS_DATA.find((cd) => cd.code === div.code);
+            const canonStage = canonDiv?.stages.find((cs) => cs.gradeCodes.includes(configuredGrade.code));
+            if (canonStage) {
+              const configuredStage = div.stages?.find((s) => s.code === canonStage.code);
+              if (configuredStage?.nameAr) stageAr = configuredStage.nameAr;
+              if (configuredStage?.nameEn) stageEn = configuredStage.nameEn;
+              break;
+            }
+          }
+        }
+
         return {
           code: configuredGrade.code,
           titleAr: configuredGrade.titleAr || canonicalMeta?.titleAr || configuredGrade.code,
           titleEn: configuredGrade.titleEn || canonicalMeta?.titleEn || configuredGrade.code,
           shortLabelAr: canonicalMeta?.shortLabelAr || configuredGrade.titleAr || configuredGrade.code,
           shortLabelEn: canonicalMeta?.shortLabelEn || configuredGrade.titleEn || configuredGrade.code,
-          stageAr: canonicalMeta?.stageAr || 'المرحلة الدراسية',
-          stageEn: canonicalMeta?.stageEn || 'Academic Stage',
+          stageAr,
+          stageEn,
           subjectAr: canonicalMeta?.subjectAr,
           subjectEn: canonicalMeta?.subjectEn,
           branchAr: canonicalMeta?.branchAr,
@@ -216,9 +237,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         };
       });
 
+      const isLegacyName = node.code === 'INTERNATIONAL' && (!configuredTrack?.nameAr || configuredTrack.nameAr.includes('البريطانية'));
+      const titleAr = isLegacyName ? 'المناهج الدولية' : (configuredTrack?.nameAr || node.titleAr);
+      const titleEn = isLegacyName ? 'International Curriculum' : (configuredTrack?.nameEn || node.titleEn);
+
       return {
         ...node,
-        titleAr: configuredTrack?.nameAr || node.titleAr,
+        titleAr,
+        titleEn,
         availableGrades,
         isAvailable: serverCurriculum ? serverCurriculum.hasPublishedUnits : false,
         publishedUnitsCount: serverCurriculum ? serverCurriculum.totalPublishedUnitsCount : 0
@@ -314,6 +340,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           code.startsWith('US_GRADE_10') ||
           code.startsWith('US_GRADE_11') ||
           code.startsWith('US_GRADE_12') ||
+          code.startsWith('IGCSE_YEAR_10') ||
+          code.startsWith('IGCSE_YEAR_11') ||
+          code.startsWith('IGCSE_YEAR_12') ||
+          code.startsWith('IGCSE_YEAR_13') ||
           code.startsWith('IGCSE_OL') ||
           code.startsWith('IGCSE_AS') ||
           code.startsWith('IGCSE_AL') ||
@@ -323,6 +353,53 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       return true;
     });
   });
+
+  // Dynamic International Curriculum Divisions with Custom/CMS editable names
+  readonly intlDivisions = computed(() => {
+    const tracks = this.discoveryService.curriculaTracks();
+    const intlTrack = tracks.find(t => t.code === 'INTERNATIONAL');
+    return INTERNATIONAL_DIVISIONS_DATA.map(div => {
+      const configuredDiv = intlTrack?.divisions?.find(d => d.code === div.code);
+      return {
+        ...div,
+        nameAr: configuredDiv?.nameAr || div.nameAr,
+        nameEn: configuredDiv?.nameEn || div.nameEn,
+        stages: div.stages.map(st => {
+          const configuredStage = configuredDiv?.stages?.find(s => s.code === st.code);
+          return {
+            ...st,
+            nameAr: configuredStage?.nameAr || st.nameAr,
+            nameEn: configuredStage?.nameEn || st.nameEn
+          };
+        })
+      };
+    });
+  });
+
+  readonly activeIntlDivision = computed(() => {
+    const code = this.selectedIntlDivision();
+    return this.intlDivisions().find(d => d.code === code) || this.intlDivisions()[0];
+  });
+
+  selectIntlDivision(code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.selectedIntlDivision.set(code);
+  }
+
+  getDivisionIcon(name?: string, code?: string): AppIconName {
+    if (name === 'award' || name === 'graduation-cap' || name === 'book-open' || name === 'globe') {
+      return name;
+    }
+    if (code === 'AMERICAN_CURRICULUM') return 'award';
+    if (code === 'BRITISH_CURRICULUM') return 'graduation-cap';
+    return 'book-open';
+  }
+
+  getIntlStageGrades(stage: IInternationalStageDefinition): IGradeLevelAvailability[] {
+    const filtered = this.filteredGradesForModal();
+    return stage.gradeCodes
+      .map(code => filtered.find(g => g.code === code))
+      .filter((g): g is IGradeLevelAvailability => Boolean(g));
+  }
 
   // Computed: Selected Grade Object
   readonly currentSelectedGrade = computed<IGradeLevelAvailability | undefined>(() => {
@@ -766,10 +843,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           });
         } else {
           this.confirmDialogService.confirm({
-            title: this.langService.isArabic() ? 'تأكيد بدء الاختبار' : 'Confirm Exam Start',
+            title: this.langService.isArabic() ? 'بدء الاختبار' : 'Start Exam',
             message: this.langService.isArabic()
-              ? `بدء "${quiz.titleAr || quiz.titleEn}"؟ سيبدأ المؤقت فوراً ولا يمكن إيقافه.`
-              : `Start "${quiz.titleEn || quiz.titleAr}"? The timer will start immediately and cannot be paused.`,
+              ? `بدء "${quiz.titleAr || quiz.titleEn}"؟`
+              : `Start "${quiz.titleEn || quiz.titleAr}"?`,
             confirmLabel: this.langService.isArabic() ? 'ابدأ الاختبار' : 'Start Exam',
             cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
             icon: 'play-circle',
@@ -787,8 +864,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         this.pendingTargetUrl.set(targetUrl);
         this.authGateActionMessage.set(
           this.langService.isArabic()
-            ? 'سجل دخولك مجاناً لبدء هذا الكويز ومتابعة درجاتك وإجاباتك مع المعلمة'
-            : 'Sign in for free to take this quiz and submit your answers to the teacher'
+            ? 'سجل دخولك لبدء الاختبار.'
+            : 'Sign in to start quiz.'
         );
         this.showAuthGateModal.set(true);
       }
@@ -810,8 +887,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         this.pendingTargetUrl.set(targetUrl);
         this.authGateActionMessage.set(
           this.langService.isArabic()
-            ? 'سجل دخولك مجاناً لمشاهدة هذه المحاضرة والملزمة المرفقة'
-            : 'Sign in for free to watch this lecture and its study material'
+            ? 'سجل دخولك للمشاهدة.'
+            : 'Sign in to watch.'
         );
         this.showAuthGateModal.set(true);
       }
@@ -836,7 +913,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       phone = '2' + phone;
     }
     const msg = encodeURIComponent(
-      `مرحباً م/ هبة عبدالوهاب، أود الاستفادة من محتوى: "${title}". يرجى التكرم بتوضيح تفاصيل الاشتراك.`
+      `أرغب في الاشتراك بمحتوى: "${title}".`
     );
     if (isPlatformBrowser(this.platformId)) {
       window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
@@ -1012,8 +1089,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد والتسجيل بإشراف م/ هبة عبدالوهاب!`
-      : `⏳ Coming Soon — "${title}" is being prepared by Eng. Heba Abdel-Wahab!`;
+      ? `قريباً — "${title}".`
+      : `Coming Soon — "${title}".`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {
@@ -1109,17 +1186,36 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     if (grade.hasPlacementTest) {
       return isAr ? 'امتحان تحديد المستوى متاح' : 'Placement Test Available';
     }
-    return isAr ? 'Coming Soon (قريباً)' : 'Coming Soon (قريباً)';
+    return isAr ? 'قريباً' : 'Coming Soon';
   }
 
   getGradeMathIcon(code: string): 'operators' | 'division' | 'triangle' | 'calculus' {
-    if (code.includes('SEC_2') || code.includes('SEC_3') || code.includes('11') || code.includes('12')) {
+    if (
+      code.includes('SEC_2') ||
+      code.includes('SEC_3') ||
+      code.includes('11') ||
+      code.includes('12') ||
+      code.includes('13') ||
+      code.includes('AL') ||
+      code.includes('AS')
+    ) {
       return 'calculus';
     }
-    if (code.includes('PREP_3') || code.includes('SEC_1') || code.includes('9') || code.includes('10')) {
+    if (
+      code.includes('PREP_3') ||
+      code.includes('SEC_1') ||
+      code.includes('9') ||
+      code.includes('10') ||
+      code.includes('OL')
+    ) {
       return 'triangle';
     }
-    if (code.includes('PREP_1') || code.includes('PREP_2') || code.includes('7') || code.includes('8')) {
+    if (
+      code.includes('PREP_1') ||
+      code.includes('PREP_2') ||
+      code.includes('7') ||
+      code.includes('8')
+    ) {
       return 'division';
     }
     return 'operators';
@@ -1159,18 +1255,34 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
       case 'GRADE_10': return isAr ? 'الصف العاشر' : 'Grade 10';
       case 'GRADE_11': return isAr ? 'الصف الحادي عشر' : 'Grade 11';
       case 'GRADE_12': return isAr ? 'الصف الثاني عشر' : 'Grade 12';
-      case 'US_GRADE_1': return isAr ? 'الصف الأول (الابتدائي)' : 'Grade 1';
-      case 'US_GRADE_2': return isAr ? 'الصف الثاني (الابتدائي)' : 'Grade 2';
-      case 'US_GRADE_3': return isAr ? 'الصف الثالث (الابتدائي)' : 'Grade 3';
-      case 'US_GRADE_4': return isAr ? 'الصف الرابع (الابتدائي)' : 'Grade 4';
-      case 'US_GRADE_5': return isAr ? 'الصف الخامس (الابتدائي)' : 'Grade 5';
-      case 'US_GRADE_6': return isAr ? 'الصف السادس (الابتدائي)' : 'Grade 6';
-      case 'US_GRADE_7': return isAr ? 'الصف السابع (المتوسط)' : 'Grade 7';
-      case 'US_GRADE_8': return isAr ? 'الصف الثامن (المتوسط)' : 'Grade 8';
-      case 'US_GRADE_9': return isAr ? 'الصف التاسع (أمريكي)' : 'US Grade 9';
-      case 'US_GRADE_10': return isAr ? 'الصف العاشر (أمريكي)' : 'US Grade 10';
-      case 'US_GRADE_11': return isAr ? 'الصف الحادي عشر (أمريكي)' : 'US Grade 11';
-      case 'US_GRADE_12': return isAr ? 'الصف الثاني عشر (أمريكي)' : 'US Grade 12';
+      case 'US_GRADE_1': return isAr ? 'الصف الأول (Grade 1)' : 'Grade 1';
+      case 'US_GRADE_2': return isAr ? 'الصف الثاني (Grade 2)' : 'Grade 2';
+      case 'US_GRADE_3': return isAr ? 'الصف الثالث (Grade 3)' : 'Grade 3';
+      case 'US_GRADE_4': return isAr ? 'الصف الرابع (Grade 4)' : 'Grade 4';
+      case 'US_GRADE_5': return isAr ? 'الصف الخامس (Grade 5)' : 'Grade 5';
+      case 'US_GRADE_6': return isAr ? 'الصف السادس (Grade 6)' : 'Grade 6';
+      case 'US_GRADE_7': return isAr ? 'الصف السابع (Grade 7)' : 'Grade 7';
+      case 'US_GRADE_8': return isAr ? 'الصف الثامن (Grade 8)' : 'Grade 8';
+      case 'US_GRADE_9': return isAr ? 'الصف التاسع (Grade 9)' : 'Grade 9';
+      case 'US_GRADE_10': return isAr ? 'الصف العاشر (Grade 10)' : 'Grade 10';
+      case 'US_GRADE_11': return isAr ? 'الصف الحادي عشر (Grade 11)' : 'Grade 11';
+      case 'US_GRADE_12': return isAr ? 'الصف الثاني عشر (Grade 12)' : 'Grade 12';
+      case 'IGCSE_YEAR_1': return isAr ? 'السنة الأولى (Year 1)' : 'Year 1';
+      case 'IGCSE_YEAR_2': return isAr ? 'السنة الثانية (Year 2)' : 'Year 2';
+      case 'IGCSE_YEAR_3': return isAr ? 'السنة الثالثة (Year 3)' : 'Year 3';
+      case 'IGCSE_YEAR_4': return isAr ? 'السنة الرابعة (Year 4)' : 'Year 4';
+      case 'IGCSE_YEAR_5': return isAr ? 'السنة الخامسة (Year 5)' : 'Year 5';
+      case 'IGCSE_YEAR_6': return isAr ? 'السنة السادسة (Year 6)' : 'Year 6';
+      case 'IGCSE_YEAR_7': return isAr ? 'السنة السابعة (Year 7)' : 'Year 7';
+      case 'IGCSE_YEAR_8': return isAr ? 'السنة الثامنة (Year 8)' : 'Year 8';
+      case 'IGCSE_YEAR_9': return isAr ? 'السنة التاسعة (Year 9)' : 'Year 9';
+      case 'IGCSE_YEAR_10': return isAr ? 'السنة العاشرة (Year 10)' : 'Year 10';
+      case 'IGCSE_YEAR_11': return isAr ? 'السنة الحادية عشرة (Year 11)' : 'Year 11';
+      case 'IGCSE_YEAR_12': return isAr ? 'السنة الثانية عشرة (Year 12)' : 'Year 12';
+      case 'IGCSE_YEAR_13': return isAr ? 'السنة الثالثة عشرة (Year 13)' : 'Year 13';
+      case 'IGCSE_OL': return isAr ? 'مستوى IGCSE OL' : 'IGCSE O-Level';
+      case 'IGCSE_AS': return isAr ? 'مستوى IGCSE AS' : 'IGCSE AS-Level';
+      case 'IGCSE_AL': return isAr ? 'مستوى IGCSE AL' : 'IGCSE A-Level';
       case 'BACC_10': return isAr ? 'العاشر (بكالوريا)' : 'Bacc 10';
       case 'BACC_11': return isAr ? 'الحادي عشر (بكالوريا)' : 'Bacc 11';
       case 'BACC_12': return isAr ? 'الثاني عشر (بكالوريا)' : 'Bacc 12';
@@ -1191,6 +1303,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getGradeStageLabel(grade: IGradeLevelAvailability): string {
     const isAr = this.langService.isArabic();
+    if (grade.stageAr && grade.stageAr !== 'المرحلة الدراسية') {
+      return isAr ? grade.stageAr : (grade.stageEn || grade.stageAr);
+    }
     const code = grade.code;
     if (code.startsWith('PRI') || code.includes('PRIMARY') || ['GRADE_1','GRADE_2','GRADE_3','GRADE_4','GRADE_5','GRADE_6'].includes(code)) {
       return isAr ? 'المرحلة الابتدائية' : 'Primary Stage';

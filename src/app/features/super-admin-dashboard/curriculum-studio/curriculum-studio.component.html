@@ -44,9 +44,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
           [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
-          [title]="langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum'"
+          [title]="getCurriculumTrackName('EGYPTIAN')"
         >
-          {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
+          {{ getCurriculumTrackName('EGYPTIAN') }}
         </button>
 
         <button
@@ -55,9 +55,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
           [class.text-white]="selectedCurriculum() === 'GULF'"
-          [title]="langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum'"
+          [title]="getCurriculumTrackName('GULF')"
         >
-          {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
+          {{ getCurriculumTrackName('GULF') }}
         </button>
 
         <button
@@ -66,9 +66,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
-          [title]="langService.isArabic() ? 'البريطانية (IGCSE)' : 'British Curriculum (IGCSE)'"
+          [title]="getCurriculumTrackName('INTERNATIONAL')"
         >
-          {{ langService.isArabic() ? 'البريطانية (IGCSE)' : 'British (IGCSE)' }}
+          {{ getCurriculumTrackName('INTERNATIONAL') }}
         </button>
 
         <button
@@ -77,9 +77,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
           [class.text-white]="selectedCurriculum() === 'AMERICAN'"
-          [title]="langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)'"
+          [title]="getCurriculumTrackName('AMERICAN')"
         >
-          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American (SAT)' }}
+          {{ getCurriculumTrackName('AMERICAN') }}
         </button>
       </div>
 
@@ -113,6 +113,35 @@
         </div>
       }
 
+      <!-- International Divisions Selector when INTERNATIONAL curriculum is active (American & British) -->
+      @if (selectedCurriculum() === 'INTERNATIONAL') {
+        <div class="sm:col-span-12 flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+          <span class="text-xs font-bold text-text-muted px-1 flex items-center gap-1.5 shrink-0">
+            <app-icon name="globe" [size]="14" className="text-brand-primary" />
+            <span>{{ langService.isArabic() ? 'القسم الدولي:' : 'International Division:' }}</span>
+          </span>
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+            @for (div of getIntlDivisions(); track div.code) {
+              <button
+                type="button"
+                (click)="selectIntlDivision(div.code)"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                [class.bg-brand-primary]="selectedIntlDivision() === div.code"
+                [class.text-white]="selectedIntlDivision() === div.code"
+                [class.shadow-sm]="selectedIntlDivision() === div.code"
+                [class.bg-surface-card]="selectedIntlDivision() !== div.code"
+                [class.text-text-secondary]="selectedIntlDivision() !== div.code"
+                [class.border]="selectedIntlDivision() !== div.code"
+                [class.border-surface-border]="selectedIntlDivision() !== div.code"
+              >
+                <span>{{ div.flag }}</span>
+                <span>{{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <!-- 2. Grade Level Dropdown & Status Indicator (4 or 7 cols) -->
       <div [class]="currentCurriculumHasTerms() ? 'sm:col-span-4 space-y-1' : 'sm:col-span-7 space-y-1'">
         <div class="flex items-center justify-between px-1">
@@ -138,6 +167,16 @@
             @for (stage of getGulfStagesForFilter(); track stage.code) {
               <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
                 @for (grade of getGradesForStageInFilter(stage); track grade.code) {
+                  <option [value]="grade.code">
+                    {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                  </option>
+                }
+              </optgroup>
+            }
+          } @else if (selectedCurriculum() === 'INTERNATIONAL') {
+            @for (stage of getIntlStagesForSelectedDivision(); track stage.code) {
+              <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                @for (grade of getGradesForIntlStageInDivision(stage); track grade.code) {
                   <option [value]="grade.code">
                     {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
                   </option>
@@ -340,8 +379,8 @@
               (click)="openLectureModal(unit)"
               class="px-3 py-1.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-bg hover:border-brand-primary text-text-primary transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <app-icon name="video" [size]="13" />
-              <span>{{ langService.isArabic() ? '+ محاضرة' : '+ Lecture' }}</span>
+              <app-icon name="plus" [size]="13" />
+              <span>{{ langService.isArabic() ? '+ درس / ملفات' : '+ Lesson / Files' }}</span>
             </button>
 
             <!-- Delete Unit -->
@@ -370,6 +409,18 @@
                   <span class="truncate font-bold text-text-primary" [title]="(langService.isArabic() ? lec.titleAr : lec.titleEn) || ((langService.isArabic() ? 'محاضرة ' : 'Lecture ') + lec.order)">
                     {{ (langService.isArabic() ? lec.titleAr : lec.titleEn) || ((langService.isArabic() ? 'محاضرة ' : 'Lecture ') + (lec.order || 1)) }}
                   </span>
+                  @if (lec.youtubeUrl || lec.encryptedVideoId) {
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0 flex items-center gap-1" [title]="langService.isArabic() ? 'فيديو شرح' : 'Video'">
+                      <app-icon name="video" [size]="9" />
+                      <span>{{ langService.isArabic() ? 'فيديو' : 'Video' }}</span>
+                    </span>
+                  }
+                  @if (lec.googleDrivePdfFileId) {
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 shrink-0 flex items-center gap-1" [title]="langService.isArabic() ? 'ملف / ملزمة PDF' : 'PDF File'">
+                      <app-icon name="file-text" [size]="9" />
+                      <span>{{ langService.isArabic() ? 'ملف' : 'PDF' }}</span>
+                    </span>
+                  }
                 </div>
                 
                 <div class="flex items-center gap-2 shrink-0">
@@ -876,14 +927,17 @@
     <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'إضافة محاضرة جديدة للوحدة' : 'Add New Lecture to Unit' }}</h3>
+          <div class="flex items-center gap-2">
+            <app-icon name="book-open" [size]="18" className="text-brand-primary" />
+            <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'إضافة درس / محاضرة جديدة (فيديو أو ملفات)' : 'Add New Lesson / Lecture (Video or Files)' }}</h3>
+          </div>
           <button type="button" (click)="isLectureModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان المحاضرة' : 'Lecture Title' }}</label>
+          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان الدرس أو المحاضرة *' : 'Lesson / Lecture Title *' }}</label>
           <input
             type="text"
             [(ngModel)]="lectureForm().titleAr"
@@ -893,27 +947,42 @@
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج (اختياري)' : 'Unlisted YouTube Video URL (Optional)' }}
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-text-secondary">
+              {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج (اختياري - يمكن رفع ملفات فقط)' : 'Unlisted YouTube Video URL (Optional - files only allowed)' }}
+            </label>
+            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              {{ langService.isArabic() ? 'اختياري' : 'Optional' }}
+            </span>
+          </div>
           <input
             type="url"
             [(ngModel)]="lectureForm().youtubeUrl"
-            [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... (اختياري)' : 'https://www.youtube.com/watch?v=... (Optional)'"
+            [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... (اختياري - اتركيه فارغاً إذا كان الدرس ملفات فقط)' : 'https://www.youtube.com/watch?v=... (Optional - leave empty for files-only)'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'معرّف ملف الشرح على جوجل درايف (اختياري)' : 'Google Drive PDF File ID (Optional)' }}
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-text-secondary">
+              {{ langService.isArabic() ? 'معرّف أو رابط ملف الشرح (PDF / Google Drive)' : 'Google Drive PDF File ID or Link' }}
+            </label>
+            @if (!lectureForm().youtubeUrl.trim()) {
+              <span class="text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">
+                {{ langService.isArabic() ? 'محتوى ملفات فقط' : 'Files Only' }}
+              </span>
+            }
+          </div>
           <input
             type="text"
             [(ngModel)]="lectureForm().googleDrivePdfFileId"
-            [placeholder]="langService.isArabic() ? 'مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs (اختياري)' : 'e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs (Optional)'"
+            [placeholder]="langService.isArabic() ? 'رابط ملف Google Drive أو معرّف الملف (مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs)' : 'File ID or share link (e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs)'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
+          <p class="text-[11px] text-text-muted mt-1">
+            {{ langService.isArabic() ? 'يمكنك وضع رابط المشاركة المباشر من Google Drive أو معرّف الملف، أو ترك الفيديو فارغاً للاكتفاء بالملفات.' : 'You can paste the Google Drive share link or file ID, or leave video empty to publish documents only.' }}
+          </p>
         </div>
 
         <div>
@@ -1039,25 +1108,37 @@
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج (اختياري)' : 'Unlisted YouTube Video URL (Optional)' }}
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-text-secondary">
+              {{ langService.isArabic() ? 'رابط فيديو الشرح غير المدرج (اختياري - يمكن الاكتفاء بالملفات فقط)' : 'Unlisted YouTube Video URL (Optional - files only allowed)' }}
+            </label>
+            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              {{ langService.isArabic() ? 'اختياري' : 'Optional' }}
+            </span>
+          </div>
           <input
             type="url"
             [(ngModel)]="editLectureForm().youtubeUrl"
-            [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... (اختياري)' : 'https://www.youtube.com/watch?v=... (Optional)'"
+            [placeholder]="langService.isArabic() ? 'https://www.youtube.com/watch?v=... (اختياري - اتركيه فارغاً إذا كان الدرس ملفات فقط)' : 'https://www.youtube.com/watch?v=... (Optional - leave empty for files-only)'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
 
         <div>
-          <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'معرّف ملف الشرح على جوجل درايف (اختياري)' : 'Google Drive PDF File ID (Optional)' }}
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-text-secondary">
+              {{ langService.isArabic() ? 'معرّف أو رابط ملف الشرح (PDF / Google Drive)' : 'Google Drive PDF File ID or Link' }}
+            </label>
+            @if (!editLectureForm().youtubeUrl.trim()) {
+              <span class="text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">
+                {{ langService.isArabic() ? 'محتوى ملفات فقط' : 'Files Only' }}
+              </span>
+            }
+          </div>
           <input
             type="text"
             [(ngModel)]="editLectureForm().googleDrivePdfFileId"
-            [placeholder]="langService.isArabic() ? 'مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs (اختياري)' : 'e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs (Optional)'"
+            [placeholder]="langService.isArabic() ? 'رابط ملف Google Drive أو معرّف الملف (مثال: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs)' : 'File ID or share link (e.g.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs)'"
             class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-mono text-text-primary focus:outline-none focus:border-brand-primary"
           />
         </div>
@@ -1643,6 +1724,14 @@
                   <span class="text-sm font-black text-brand-primary tracking-wide">
                     {{ langService.isArabic() ? track.nameAr : (track.nameEn || track.nameAr) }}
                   </span>
+                  <button
+                    type="button"
+                    (click)="openEditTrackName(track.code)"
+                    class="p-1 rounded-md text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer"
+                    [title]="langService.isArabic() ? 'تعديل اسم المنهج' : 'Edit Track Name'"
+                  >
+                    <app-icon name="edit" [size]="12" />
+                  </button>
                   <span class="text-[11px] font-bold text-text-muted">
                     ({{ track.grades.length }} {{ langService.isArabic() ? 'صفوف دراسية' : 'Grade Levels' }})
                   </span>
@@ -1780,6 +1869,210 @@
                       </div>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @for (grade of getOtherGulfGrades(track); track grade.code) {
+                          <div
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            [class.border-brand-primary]="isGradeActive(grade.code)"
+                            [class.bg-brand-primary/5]="isGradeActive(grade.code)"
+                            [class.border-surface-border]="!isGradeActive(grade.code)"
+                            [class.bg-surface-card]="!isGradeActive(grade.code)"
+                          >
+                            <div class="space-y-1 min-w-0">
+                              <h4 class="text-xs font-bold text-text-primary truncate" [title]="langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)">
+                                {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                              </h4>
+                              <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-text-muted font-bold bg-surface-bg px-2.5 py-0.5 rounded-md border border-surface-border truncate">
+                                  {{ formatGradeDisplay(grade.code, grade.titleEn) }}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div class="active-grade-card-actions shrink-0">
+                              <button
+                                type="button"
+                                (click)="toggleGrade(grade.code)"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                                [class.bg-emerald-500/10]="isGradeActive(grade.code)"
+                                [class.text-emerald-500]="isGradeActive(grade.code)"
+                                [class.border-emerald-500/20]="isGradeActive(grade.code)"
+                                [class.bg-amber-500/10]="!isGradeActive(grade.code)"
+                                [class.text-amber-500]="!isGradeActive(grade.code)"
+                                [class.border-amber-500/20]="!isGradeActive(grade.code)"
+                                [title]="langService.isArabic() ? 'انقري للتبديل بين مفعل للتدريس وقريباً' : 'Toggle between Active and Coming Soon'"
+                              >
+                                @if (isGradeActive(grade.code)) {
+                                  <app-icon name="check-circle" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'مفعل للتدريس' : 'Active' }}</span>
+                                } @else {
+                                  <app-icon name="clock" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'قريباً' : 'Soon' }}</span>
+                                }
+                              </button>
+
+                              <div class="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  (click)="openEditGrade(track.code, grade)"
+                                  class="w-7 h-7 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-brand-primary hover:border-brand-primary transition-all cursor-pointer flex items-center justify-center shrink-0"
+                                  [title]="langService.isArabic() ? 'تعديل اسم أو كود هذا الصف' : 'Edit grade title or code'"
+                                >
+                                  <app-icon name="edit" [size]="13" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  (click)="deleteGrade(track.code, grade.code)"
+                                  class="w-7 h-7 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                                  [title]="langService.isArabic() ? 'حذف هذا الصف الدراسي نهائياً' : 'Delete grade permanently'"
+                                >
+                                  <app-icon name="trash" [size]="13" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else if (track.code === 'INTERNATIONAL') {
+                <!-- INTERNATIONAL 2-Division Breakdown (American & British) -->
+                <div class="p-2.5 rounded-xl bg-surface-card border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-text-muted flex items-center gap-1.5 shrink-0">
+                      <app-icon name="globe" [size]="14" className="text-brand-primary" />
+                      <span>{{ langService.isArabic() ? 'المسار الدولي:' : 'International Track:' }}</span>
+                    </span>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      @for (div of getIntlDivisionsForModal(track); track div.code) {
+                        <div class="flex items-center gap-1 bg-surface-bg p-1 rounded-xl border border-surface-border/50">
+                          <button
+                            type="button"
+                            (click)="selectModalIntlDivision(div.code)"
+                            class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            [class.bg-brand-primary]="modalIntlDivision() === div.code"
+                            [class.text-white]="modalIntlDivision() === div.code"
+                            [class.shadow-sm]="modalIntlDivision() === div.code"
+                            [class.text-text-secondary]="modalIntlDivision() !== div.code"
+                            [class.hover:text-text-primary]="modalIntlDivision() !== div.code"
+                          >
+                            <app-icon [name]="getDivisionIcon(div.iconName, div.code)" [size]="13" />
+                            <span>{{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}</span>
+                          </button>
+                          <button
+                            type="button"
+                            (click)="openEditDivisionName(track.code, div.code)"
+                            class="p-1 text-text-muted hover:text-brand-primary transition-colors cursor-pointer"
+                            [title]="langService.isArabic() ? 'تعديل اسم هذا المسار' : 'Edit Division Name'"
+                          >
+                            <app-icon name="edit" [size]="11" />
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- International Stages Sections -->
+                <div class="space-y-4">
+                  @for (stage of getStagesForModalIntlDivision(track); track stage.code) {
+                    <div class="space-y-2">
+                      <div class="flex items-center justify-between gap-2 px-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-black text-brand-primary">
+                            {{ langService.isArabic() ? stage.nameAr : (stage.nameEn || stage.nameAr) }}
+                          </span>
+                          <button
+                            type="button"
+                            (click)="openEditStageName(track.code, modalIntlDivision(), stage.code)"
+                            class="p-1 rounded text-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer"
+                            [title]="langService.isArabic() ? 'تعديل اسم المرحلة الدراسية' : 'Edit Stage Name'"
+                          >
+                            <app-icon name="edit" [size]="11" />
+                          </button>
+                        </div>
+                        <span class="h-px flex-1 bg-surface-border/70"></span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @for (grade of getGradesForIntlStage(stage, track); track grade.code) {
+                          <div
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            [class.border-brand-primary]="isGradeActive(grade.code)"
+                            [class.bg-brand-primary/5]="isGradeActive(grade.code)"
+                            [class.border-surface-border]="!isGradeActive(grade.code)"
+                            [class.bg-surface-card]="!isGradeActive(grade.code)"
+                          >
+                            <div class="space-y-1 min-w-0">
+                              <h4 class="text-xs font-bold text-text-primary truncate" [title]="langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)">
+                                {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                              </h4>
+                              <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-text-muted font-bold bg-surface-bg px-2.5 py-0.5 rounded-md border border-surface-border truncate">
+                                  {{ formatGradeDisplay(grade.code, grade.titleEn) }}
+                                </span>
+                              </div>
+                            </div>
+
+                            <!-- Grade Action Controls: Status Toggle + Edit Icon + Delete Icon -->
+                            <div class="active-grade-card-actions shrink-0">
+                              <button
+                                type="button"
+                                (click)="toggleGrade(grade.code)"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                                [class.bg-emerald-500/10]="isGradeActive(grade.code)"
+                                [class.text-emerald-500]="isGradeActive(grade.code)"
+                                [class.border-emerald-500/20]="isGradeActive(grade.code)"
+                                [class.bg-amber-500/10]="!isGradeActive(grade.code)"
+                                [class.text-amber-500]="!isGradeActive(grade.code)"
+                                [class.border-amber-500/20]="!isGradeActive(grade.code)"
+                                [title]="langService.isArabic() ? 'انقري للتبديل بين مفعل للتدريس وقريباً' : 'Toggle between Active and Coming Soon'"
+                              >
+                                @if (isGradeActive(grade.code)) {
+                                  <app-icon name="check-circle" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'مفعل للتدريس' : 'Active' }}</span>
+                                } @else {
+                                  <app-icon name="clock" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'قريباً' : 'Soon' }}</span>
+                                }
+                              </button>
+
+                              <div class="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  (click)="openEditGrade(track.code, grade)"
+                                  class="w-7 h-7 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-brand-primary hover:border-brand-primary transition-all cursor-pointer flex items-center justify-center shrink-0"
+                                  [title]="langService.isArabic() ? 'تعديل اسم أو كود هذا الصف' : 'Edit grade title or code'"
+                                >
+                                  <app-icon name="edit" [size]="13" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  (click)="deleteGrade(track.code, grade.code)"
+                                  class="w-7 h-7 rounded-lg border border-surface-border bg-surface-bg text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                                  [title]="langService.isArabic() ? 'حذف هذا الصف الدراسي نهائياً' : 'Delete grade permanently'"
+                                >
+                                  <app-icon name="trash" [size]="13" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Fallback if any custom grade is outside standard international stages -->
+                  @if (getOtherIntlGrades(track).length > 0) {
+                    <div class="space-y-2">
+                      <div class="flex items-center gap-2 px-1">
+                        <span class="text-xs font-black text-text-muted">
+                          {{ langService.isArabic() ? 'صفوف دراسية دولية أخرى' : 'Other International Grade Levels' }}
+                        </span>
+                        <span class="h-px flex-1 bg-surface-border/70"></span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @for (grade of getOtherIntlGrades(track); track grade.code) {
                           <div
                             class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
                             [class.border-brand-primary]="isGradeActive(grade.code)"
@@ -2025,6 +2318,21 @@
                     }
                   </optgroup>
                 }
+              } @else if (gradeModal().trackCode === 'INTERNATIONAL') {
+                @for (div of getIntlDivisionsForAddModal(); track div.code) {
+                  @for (stage of div.stages || []; track stage.code) {
+                    <optgroup [label]="(langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr)) + ' — ' + (langService.isArabic() ? stage.nameAr : (stage.nameEn || stage.nameAr))">
+                      @for (canonCode of getGradeCodesForIntlStage(div.code, stage.code); track canonCode) {
+                        @if (getCanonicalGradeMeta(canonCode); as canon) {
+                          <option [value]="canon.code">
+                            {{ langService.isArabic() ? (canon.titleAr + ' — ' + canon.titleEn) : (canon.titleEn + ' — ' + canon.titleAr) }}
+                            {{ isGradeInCurrentTrack(canon.code) ? (langService.isArabic() ? ' (مضاف)' : ' (Added)') : '' }}
+                          </option>
+                        }
+                      }
+                    </optgroup>
+                  }
+                }
               } @else {
                 @for (canon of canonicalGradesForModal(); track canon.code) {
                   <option [value]="canon.code">
@@ -2106,6 +2414,80 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Dynamic Title Edit for Curriculum Tracks, Divisions, and Stages -->
+  @if (titleEditModal().isOpen) {
+    <div
+      class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 animate-scale-up">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-brand-primary"></span>
+            <h3 class="text-sm font-black text-text-primary">
+              {{ langService.isArabic() ? titleEditModal().labelAr : titleEditModal().labelEn }}
+            </h3>
+          </div>
+          <button
+            type="button"
+            (click)="closeTitleEditModal()"
+            class="w-7 h-7 rounded-lg border border-surface-border text-text-muted hover:text-text-primary flex items-center justify-center cursor-pointer"
+          >
+            <app-icon name="x" [size]="14" />
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-text-secondary mb-1.5">
+              {{ langService.isArabic() ? 'الاسم باللغة العربية:' : 'Title in Arabic:' }}
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="titleEditModal().titleAr"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold text-xs focus:border-brand-primary outline-none"
+              placeholder="مثال: المنهج الأمريكي"
+              dir="rtl"
+            />
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1.5">
+              {{ langService.isArabic() ? 'الاسم باللغة الإنجليزية:' : 'Title in English:' }}
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="titleEditModal().titleEn"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold text-xs focus:border-brand-primary outline-none"
+              placeholder="e.g. American Curriculum"
+              dir="ltr"
+            />
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="closeTitleEditModal()"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-secondary font-bold text-xs cursor-pointer hover:bg-surface-card"
+          >
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+          </button>
+
+          <button
+            type="button"
+            (click)="saveTitleEditModal()"
+            class="px-5 py-2 rounded-xl text-white font-bold text-xs bg-gradient-spider hover:opacity-95 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <app-icon name="check" [size]="14" />
+            <span>{{ langService.isArabic() ? 'حفظ الاسم' : 'Save Title' }}</span>
+          </button>
+        </div>
       </div>
     </div>
   }

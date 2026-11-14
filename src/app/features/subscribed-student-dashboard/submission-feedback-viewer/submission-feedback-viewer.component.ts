@@ -220,7 +220,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
       error: (err) => {
         console.warn('Failed to load real submission feedback:', err);
         this.isLoading.set(false);
-        this.loadError.set(err?.error?.error?.message || 'عذراً، لم يتم العثور على تسليم سابق أو تقرير معتمد لهذا التقييم بعد.');
+        this.loadError.set(err?.error?.error?.message || 'لا يوجد تسليم معتمد.');
       }
     });
   }

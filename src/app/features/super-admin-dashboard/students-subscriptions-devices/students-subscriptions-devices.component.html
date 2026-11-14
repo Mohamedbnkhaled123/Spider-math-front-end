@@ -39,7 +39,7 @@
               type="button"
               (click)="approveDevice(dev)"
               class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-sm"
-              [title]="langService.isArabic() ? 'إضافة الجهاز الجديد لقائمة الأجهزة المعتمدة' : 'Add new device to approved list'"
+              [title]="langService.isArabic() ? 'اعتماد الجهاز الجديد' : 'Approve new device'"
             >
               {{ langService.isArabic() ? '+ اعتماد الجهاز' : '+ Approve Device' }}
             </button>
@@ -72,10 +72,10 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
-          {{ langService.isArabic() ? 'إدارة حسابات الطلاب والمستخدمين والاشتراكات' : 'Students, Users & Subscriptions Management' }}
+          {{ langService.isArabic() ? 'إدارة الطلاب والاشتراكات' : 'Students & Subscriptions' }}
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          {{ langService.isArabic() ? 'تصنيف الحسابات (طلاب باشتراك نشط، طلاب غير مشتركين، أولياء أمور)، والبحث الفوري وتفعيل الوحدات المخصصة.' : 'Filter students (active, inactive, parents), instant search, and activate custom unit access.' }}
+          {{ langService.isArabic() ? 'تصنيف الحسابات والبحث وتفعيل الوحدات.' : 'Filter accounts, search & activate units.' }}
         </p>
       </div>
 
@@ -657,7 +657,7 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'مقدار النقاط (موجب للبونص، سالب للخصم)' : 'Points amount (positive for bonus, negative for deduction)' }}
+            {{ langService.isArabic() ? 'مقدار النقاط (موجب للبونص، سالب للخصم):' : 'Points amount (+ for bonus, - for deduction):' }}
           </label>
           <input
             type="number"
@@ -668,7 +668,7 @@
 
         <div>
           <label class="block font-bold text-text-secondary mb-1">
-            {{ langService.isArabic() ? 'سبب التعديل (سيظهر في سجل الإشعارات للطالب وولي أمره)' : 'Adjustment reason (appears in student and parent notification log)' }}
+            {{ langService.isArabic() ? 'سبب التعديل (يظهر في الإشعارات):' : 'Adjustment reason (shown in notifications):' }}
           </label>
           <input
             type="text"
@@ -756,8 +756,8 @@
             } @else if (studentActiveSubscriptions().length === 0) {
               <div class="p-6 text-center rounded-2xl bg-surface-bg border border-surface-border space-y-2">
                 <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto opacity-40" />
-                <h5 class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد اشتراكات وحدات مسجلة لهذا الطالب حالياً' : 'No unit subscriptions found for this student' }}</h5>
-                <p class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يمكنك تفعيل وحدات جديدة له مباشرة باستخدام النموذج أدناه.' : 'You can activate new units below.' }}</p>
+                <h5 class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد اشتراكات وحدات' : 'No unit subscriptions' }}</h5>
+                <p class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'فعّل وحدات جديدة أدناه.' : 'Activate units below.' }}</p>
               </div>
             } @else {
               <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -794,14 +794,14 @@
                         (click)="revokeStudentSubscription(sub)"
                         [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
                         class="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 self-end sm:self-center shadow-sm"
-                        [title]="langService.isArabic() ? 'إلغاء اشتراك الطالب في هذه الوحدة فوراً' : 'Revoke unit subscription'"
+                        [title]="langService.isArabic() ? 'إلغاء اشتراك الوحدة' : 'Revoke unit subscription'"
                       >
                         @if (isRevokingSubscription() === (sub._id || sub.id)) {
                           <span class="w-3 h-3 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin"></span>
                           <span>{{ langService.isArabic() ? 'جاري الإلغاء...' : 'Revoking...' }}</span>
                         } @else {
                           <app-icon name="trash" [size]="13" />
-                          <span>{{ langService.isArabic() ? 'إلغاء اشتراك الوحدة' : 'Revoke' }}</span>
+                          <span>{{ langService.isArabic() ? 'إلغاء الاشتراك' : 'Revoke' }}</span>
                         }
                       </button>
                     }
@@ -819,7 +819,7 @@
                   <app-icon name="plus" [size]="15" />
                 </span>
                 <h4 class="text-xs sm:text-sm font-black text-text-primary">
-                  {{ langService.isArabic() ? 'تفعيل وحدة جديدة لهذا الطالب' : 'Activate New Unit for Student' }}
+                  {{ langService.isArabic() ? 'تفعيل وحدة لهذا الطالب' : 'Activate Unit for Student' }}
                 </h4>
               </div>
 
@@ -836,7 +836,7 @@
                 [class.text-text-muted]="!showAllUnits()"
               >
                 <app-icon [name]="showAllUnits() ? 'check' : 'filter'" [size]="12" />
-                <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض كل الوحدات (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كافة وحدات المناهج' : 'Show All Units') }}</span>
+                <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض الكل (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كل الوحدات' : 'Show All Units') }}</span>
               </button>
             </div>
 
@@ -855,14 +855,14 @@
                     {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}@if (isUnitActiveForStudent(unit.id || unit._id)) { ({{ langService.isArabic() ? 'مشترك بها حالياً' : 'Already Enrolled' }}) }@else if ((unit.originalPriceEgp || unit.original_price_egp) > (unit.priceEgp || unit.price_egp)) { ({{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}) }
                   </option>
                 } @empty {
-                  <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units available matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
+                  <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
                 }
               </select>
               @if (studentMatchingUnits().length === 0) {
                 <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2">
                   <app-icon name="alert-circle" [size]="15" />
                   <span>
-                    {{ langService.isArabic() ? ('لا توجد وحدات مسجلة لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). يمكنك الضغط على "عرض كافة وحدات المناهج" بالأعلى أو إضافتها من استوديو المناهج.') : ('No units registered for this grade. Toggle "Show All Units" above or add units in Curriculum Studio.') }}
+                    {{ langService.isArabic() ? ('لا توجد وحدات لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). فعّل "عرض كل الوحدات" أو أضفها.') : ('No units for this grade. Toggle "Show All" or add in Studio.') }}
                   </span>
                 </div>
               }
@@ -895,7 +895,7 @@
                       <span>{{ langService.isArabic() ? 'الوحدة كاملة' : 'Full Unit' }}</span>
                     </div>
                     <p class="text-[10px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات' : 'Access all video lectures, explanatory PDFs, quizzes, and homework.' }}
+                      {{ langService.isArabic() ? 'المحاضرات والملفات والاختبارات والواجبات' : 'Lectures, PDFs, quizzes & homework' }}
                     </p>
                   </div>
                 </label>
@@ -921,7 +921,7 @@
                       <span>{{ langService.isArabic() ? 'كويزات واختبارات فقط' : 'Quizzes & Exams Only' }}</span>
                     </div>
                     <p class="text-[10px] text-text-muted leading-relaxed">
-                      {{ langService.isArabic() ? 'حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)' : 'Access assessments, quizzes, and homework only (no lecture videos).' }}
+                      {{ langService.isArabic() ? 'الاختبارات والواجبات فقط (بدون محاضرات)' : 'Quizzes & homework only (no lectures)' }}
                     </p>
                   </div>
                 </label>

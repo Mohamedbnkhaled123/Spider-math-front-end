@@ -39,11 +39,11 @@ export class PendingDeviceApprovalComponent {
 
   async logout(): Promise<void> {
     const confirmed = await this.confirmDialogService.confirm({
-      title: this.langService.isArabic() ? 'تأكيد تسجيل الخروج' : 'Confirm Logout',
+      title: this.langService.isArabic() ? 'تسجيل الخروج' : 'Logout',
       message: this.langService.isArabic()
-        ? 'تسجيل الخروج من حسابك؟'
-        : 'Log out of your account?',
-      confirmLabel: this.langService.isArabic() ? 'تسجيل الخروج' : 'Log Out',
+        ? 'تسجيل الخروج؟'
+        : 'Log out?',
+      confirmLabel: this.langService.isArabic() ? 'خروج' : 'Log Out',
       cancelLabel: this.langService.isArabic() ? 'إلغاء' : 'Cancel',
       isDestructive: true,
       icon: 'log-out'

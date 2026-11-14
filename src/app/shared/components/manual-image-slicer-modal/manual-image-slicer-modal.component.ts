@@ -37,7 +37,7 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
   readonly isOpen = model<boolean>(false);
   readonly imageSource = input<string | HTMLCanvasElement | Blob | null>(null);
   readonly initialBox2d = input<[number, number, number, number] | null>(null);
-  readonly modalTitle = input<string>('قص وتحديد السؤال / الرسم الهندسي');
+  readonly modalTitle = input<string>('قص وتحديد السؤال');
   readonly uploadToCloudinary = input<boolean>(true);
 
   // Outputs
@@ -108,8 +108,8 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
         } else {
           this.errorMessage.set(
             this.langService.isArabic()
-              ? 'تعذر تحميل صورة الصفحة في أداة القص. يرجى المحاولة مرة أخرى.'
-              : 'Failed to load page image in slicer. Please retry.'
+              ? 'تعذر تحميل الصورة. أعد المحاولة.'
+              : 'Failed to load image. Retry.'
           );
         }
         return;
@@ -324,7 +324,7 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
       this.destroyCropper();
     } catch (err: any) {
       console.error('Failed to save cropped image:', err);
-      this.errorMessage.set('فشل حفظ القصاصة ورفعها. يرجى المحاولة مرة أخرى.');
+      this.errorMessage.set('تعذر حفظ القصاصة. أعد المحاولة.');
     } finally {
       this.isSaving.set(false);
     }

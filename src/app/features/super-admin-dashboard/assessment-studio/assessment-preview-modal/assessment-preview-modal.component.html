@@ -240,7 +240,7 @@
                     </button>
 
                     <span class="text-[11px] text-text-muted">
-                      {{ langService.isArabic() ? 'محاكي تدريبي؛ لا يتم رفع ملفات للسيرفر.' : 'Simulation only: no files uploaded.' }}
+                      {{ langService.isArabic() ? 'معاينة تجريبية؛ لا يتم رفع ملفات.' : 'Simulation only: no files uploaded.' }}
                     </span>
                   </div>
                 </div>
@@ -307,8 +307,8 @@
                   </h4>
                   <p class="text-xs leading-relaxed font-bold">
                     {{ langService.isArabic()
-                      ? 'تنبيه: يتضمن هذا الامتحان أسئلة مقالية تتطلب تصحيحاً ومراجعة يدوية من المعلمة، ولا يتم رصد درجاتها تلقائياً. النتيجة المعروضة خاصة بأسئلة الاختيار من متعدد فقط.'
-                      : 'Notice: This assessment contains essay questions requiring manual teacher review; they are not auto-graded. The result shown applies exclusively to multiple-choice questions.' }}
+                      ? 'يتضمن أسئلة مقالية للتصحيح اليدوي. النتيجة لأسئلة الاختيار فقط.'
+                      : 'Includes essay questions (manual grading). Score reflects MCQs only.' }}
                   </p>
                 </div>
               </div>
@@ -335,10 +335,10 @@
                 <p class="text-[11px] text-text-muted">
                   @if (scoringSummary().hasEssayQuestions) {
                     {{ langService.isArabic()
-                      ? ('يتضمن الامتحان ' + scoringSummary().essayCount + ' أسئلة مقالية بإجمالي ' + scoringSummary().essayTotalPoints + ' درجة مستثناة من التصحيح الآلي.')
-                      : ('تم احتساب جميع درجات أسئلة الاختيار من متعدد تلقائياً.') }}
+                      ? ('يتضمن ' + scoringSummary().essayCount + ' أسئلة مقالية (' + scoringSummary().essayTotalPoints + ' درجة) مستثناة من التصحيح الآلي.')
+                      : (scoringSummary().essayCount + ' essay questions (' + scoringSummary().essayTotalPoints + ' pts) excluded from auto-grading.') }}
                   } @else {
-                    {{ langService.isArabic() ? 'كافة الأسئلة اختيار من متعدد وحُسبت نتيجتها.' : 'All questions are MCQ and fully auto-graded.' }}
+                    {{ langService.isArabic() ? 'كافة الأسئلة مصححة تلقائياً.' : 'All questions auto-graded.' }}
                   }
                 </p>
               </div>
@@ -637,10 +637,10 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <h4 class="text-sm sm:text-base font-black text-text-primary font-academic-serif">
-                  {{ langService.isArabic() ? 'منشور الحل التوضيحي' : 'Verified Community Post Solution' }}
+                  {{ langService.isArabic() ? 'منشور الحل التوضيحي' : 'Explanation Post' }}
                 </h4>
                 <p class="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
-                  {{ langService.isArabic() ? 'شرح توضيحي إضافي من المعلمة لمسألة الاختبار.' : 'The teacher provided this YouTube community post as an in-depth explanation.' }}
+                  {{ langService.isArabic() ? 'حل توضيحي من المعلمة.' : 'Teacher explanation post.' }}
                 </p>
               </div>
 

@@ -72,7 +72,7 @@
             title="Desmos Graphing Calculator"
           >
             <app-icon name="calculator" [size]="14" />
-            <span class="hidden md:inline">{{ langService.isArabic() ? 'حاسبة ديسموس' : 'Desmos' }}</span>
+            <span class="hidden md:inline">{{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}</span>
           </button>
 
           <!-- Monotonic Countdown Timer with Toggle & Color States -->
@@ -106,7 +106,7 @@
                 [title]="langService.isArabic() ? 'إظهار المؤقت' : 'Show timer'"
               >
                 <app-icon name="clock" [size]="12" />
-                <span>{{ langService.isArabic() ? 'الوقت مخفي' : 'Timer Hidden' }}</span>
+                <span>{{ langService.isArabic() ? 'المؤقت مخفي' : 'Hidden' }}</span>
               </div>
             }
           </div>
@@ -166,14 +166,14 @@
         </div>
 
         <span class="inline-block px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-accent text-xs font-black mb-3">
-          {{ langService.isArabic() ? 'تقرير تحديد المستوى المعتمد' : 'Official Diagnostic Placement Report' }}
+          {{ langService.isArabic() ? 'تقرير تحديد المستوى' : 'Placement Report' }}
         </span>
 
         <h2 class="text-2xl sm:text-4xl font-black text-text-primary mb-2">
           {{ langService.isArabic() ? 'أحسنت يا ' + currentStudentName() + '!' : 'Well done, ' + currentStudentName() + '!' }}
         </h2>
         <p class="text-sm text-text-secondary max-w-xl mx-auto mb-8">
-          {{ langService.isArabic() ? 'تم تسجيل إجاباتك في ملفك الأكاديمي.' : 'Your responses are recorded in your profile.' }}
+          {{ langService.isArabic() ? 'تم تسجيل الإجابات.' : 'Responses recorded.' }}
         </p>
 
         <!-- Score & Stats Cards -->
@@ -189,7 +189,7 @@
 
           <div class="p-5 rounded-2xl bg-surface-bg border border-surface-border">
             <span class="text-xs font-bold text-text-muted block mb-1">
-              {{ langService.isArabic() ? 'الدرجة المحققة' : 'Achieved Score' }}
+              {{ langService.isArabic() ? 'الدرجة' : 'Score' }}
             </span>
             <span class="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-numeric">
               {{ res.score }} / {{ res.maxScore }}
@@ -236,15 +236,15 @@
         </div>
 
         <span class="inline-block px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-500 text-xs font-black mb-3">
-          {{ langService.isArabic() ? 'قريباً — Coming Soon' : 'Coming Soon' }}
+          {{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}
         </span>
 
         <h2 class="text-2xl sm:text-3xl font-black text-text-primary mb-3">
-          {{ langService.isArabic() ? 'اختبار تحديد المستوى لهذا الصف قريباً' : 'Placement Exam Coming Soon' }}
+          {{ langService.isArabic() ? 'الاختبار متاح قريباً' : 'Exam Coming Soon' }}
         </h2>
 
         <p class="text-sm text-text-secondary max-w-lg mx-auto mb-8 leading-relaxed">
-          {{ langService.isArabic() ? 'لم يتم نشر اختبار تحديد المستوى لصف (' + gradeTitleDisplay() + ') بعد. جاري الإعداد وسيتوفر قريباً.' : 'Diagnostic assessment is being prepared and will be available soon.' }}
+          {{ langService.isArabic() ? 'اختبار (' + gradeTitleDisplay() + ') قيد الإعداد.' : 'Assessment will be available soon.' }}
         </p>
 
         <!-- Quick Switch or Contact Support -->
@@ -256,7 +256,7 @@
               class="px-6 py-3 rounded-xl font-black text-xs sm:text-sm text-white bg-gradient-spider shadow-md hover:opacity-95 transition-all flex items-center gap-2"
             >
               <app-icon name="target" [size]="16" />
-              <span>{{ langService.isArabic() ? 'تجربة اختبار 3 ثانوي المتاح الآن' : 'Try Available Sec 3 Exam' }}</span>
+              <span>{{ langService.isArabic() ? 'اختبار 3 ثانوي' : 'Sec 3 Exam' }}</span>
             </button>
           }
 
@@ -406,10 +406,10 @@
               >
                 @if (isSubmitting()) {
                   <app-icon name="refresh" [size]="16" className="animate-spin" />
-                  <span>{{ langService.isArabic() ? 'جاري التسليم...' : 'Submitting...' }}</span>
+                  <span>{{ langService.isArabic() ? 'تسليم...' : 'Submitting...' }}</span>
                 } @else {
                   <app-icon name="check-circle" [size]="16" />
-                  <span>{{ langService.isArabic() ? 'تسليم الإجابات' : 'Submit Answers' }}</span>
+                  <span>{{ langService.isArabic() ? 'تسليم' : 'Submit' }}</span>
                 }
               </button>
             }

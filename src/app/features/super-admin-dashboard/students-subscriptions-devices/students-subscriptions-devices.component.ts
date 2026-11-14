@@ -306,7 +306,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly isXpModalOpen = signal<boolean>(false);
   readonly studentForXp = signal<StudentAdminSummary | null>(null);
   readonly xpDeltaAmount = signal<number>(50);
-  readonly xpAdjustmentReason = signal<string>('تميز ومثابرة في حل أسئلة التحدي');
+  readonly xpAdjustmentReason = signal<string>('تميز في حل أسئلة التحدي');
 
   // =========================================================================
   // Additive Device Approval Queue ($push strictly non-destructive)
@@ -432,7 +432,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
         this.studentUpdated.emit(updatedStudent);
         this.toastTriggered.emit({
-          text: `تم إلغاء اشتراك الطالب في وحدة "${sub.unitTitleAr || sub.titleAr || sub.titleEn || 'الدراسية'}" بنجاح!`,
+          text: `تم إلغاء اشتراك "${sub.unitTitleAr || sub.titleAr || sub.titleEn || 'الوحدة'}"`,
           type: 'success'
         });
       },
@@ -497,7 +497,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       },
       error: (err) => {
         this.isActivatingUnit.set(false);
-        const errMsg = err?.error?.error?.message || err?.error?.message || 'فشل تفعيل الوحدة. تحقق من البيانات.';
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'فشل تفعيل الوحدة.';
         this.toastTriggered.emit({
           text: errMsg,
           type: 'error'
@@ -544,7 +544,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   openXpModal(student: StudentAdminSummary, defaultAmount: number): void {
     this.studentForXp.set(student);
     this.xpDeltaAmount.set(defaultAmount);
-    this.xpAdjustmentReason.set(defaultAmount > 0 ? 'مكافأة تميز ومواظبة' : 'خصم لعدم الالتزام بتسليم الواجب');
+    this.xpAdjustmentReason.set(defaultAmount > 0 ? 'مكافأة تميز' : 'خصم لعدم تسليم الواجب');
     this.isXpModalOpen.set(true);
   }
 

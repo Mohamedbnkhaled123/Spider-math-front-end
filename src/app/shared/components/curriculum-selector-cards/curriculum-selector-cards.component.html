@@ -78,7 +78,7 @@
             <!-- Bottom Action: Explore Track -->
             <div class="pt-3 border-t border-surface-border/50 dark:border-white/10 flex items-center justify-between">
               <span class="text-xs sm:text-sm font-bold text-amber-600 dark:text-brand-gold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+                <span>{{ langService.isArabic() ? 'عرض المسار ←' : 'View Track →' }}</span>
               </span>
             </div>
           </div>
@@ -137,7 +137,7 @@
                 </p>
               </div>
               <div class="pt-2 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-amber-600 dark:text-brand-gold">
-                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+                <span>{{ langService.isArabic() ? 'عرض المسار ←' : 'View Track →' }}</span>
               </div>
             </div>
           </div>
@@ -200,7 +200,7 @@
                 </p>
               </div>
               <div class="pt-2 border-t border-surface-border/40 dark:border-white/10 flex items-center text-[11px] sm:text-xs font-bold text-amber-600 dark:text-brand-gold">
-                <span>{{ langService.isArabic() ? 'استعراض المسار ←' : 'Explore Track →' }}</span>
+                <span>{{ langService.isArabic() ? 'عرض المسار ←' : 'View Track →' }}</span>
               </div>
             </div>
           </div>
@@ -308,7 +308,7 @@
             class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-gold hover:underline cursor-pointer transition-colors"
           >
             <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
-            <span>{{ langService.isArabic() ? 'العودة للصفوف الدراسية' : 'Back to Grades' }}</span>
+            <span>{{ langService.isArabic() ? 'الصفوف' : 'Grades' }}</span>
           </button>
         } @else {
           <button
@@ -317,7 +317,7 @@
             class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-text-muted hover:text-brand-gold cursor-pointer transition-colors"
           >
             <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
-            <span>{{ langService.isArabic() ? 'العودة للمناهج' : 'Back to Curricula' }}</span>
+            <span>{{ langService.isArabic() ? 'المناهج' : 'Curricula' }}</span>
           </button>
         }
 
@@ -375,66 +375,90 @@
                 {{ langService.isArabic() ? selectedCurriculum().titleAr : selectedCurriculum().titleEn }}
               </h3>
               <p class="text-xs text-text-muted mt-0.5">
-                {{ selectedCurriculum().availableGrades.length }} {{ langService.isArabic() ? 'صفوف دراسية مسجلة' : 'Registered Grade Levels' }}
+                {{ selectedCurriculum().availableGrades.length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
               </p>
             </div>
           </div>
 
           <!-- Filter Tabs (GRADES step) -->
           @if (modalStep() === 'GRADES') {
-            <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md max-w-full overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                (click)="setStageFilter('ALL')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
-                [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
-                [class.text-slate-950]="activeStageFilter() === 'ALL'"
-                [class.font-bold]="activeStageFilter() === 'ALL'"
-                [class.shadow-sm]="activeStageFilter() === 'ALL'"
-                [class.text-text-secondary]="activeStageFilter() !== 'ALL'"
-                [class.hover:text-text-primary]="activeStageFilter() !== 'ALL'"
-              >
-                {{ langService.isArabic() ? 'جميع المراحل' : 'All Stages' }}
-              </button>
-              <button
-                type="button"
-                (click)="setStageFilter('PRIMARY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
-                [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
-                [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
-                [class.font-bold]="activeStageFilter() === 'PRIMARY'"
-                [class.shadow-sm]="activeStageFilter() === 'PRIMARY'"
-                [class.text-text-secondary]="activeStageFilter() !== 'PRIMARY'"
-                [class.hover:text-text-primary]="activeStageFilter() !== 'PRIMARY'"
-              >
-                {{ langService.isArabic() ? 'الابتدائية' : 'Primary' }}
-              </button>
-              <button
-                type="button"
-                (click)="setStageFilter('PREPARATORY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
-                [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
-                [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
-                [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
-                [class.shadow-sm]="activeStageFilter() === 'PREPARATORY'"
-                [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
-                [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
-              >
-                {{ langService.isArabic() ? 'الإعدادية' : 'Preparatory' }}
-              </button>
-              <button
-                type="button"
-                (click)="setStageFilter('SECONDARY')"
-                class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
-                [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
-                [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
-                [class.font-bold]="activeStageFilter() === 'SECONDARY'"
-                [class.shadow-sm]="activeStageFilter() === 'SECONDARY'"
-                [class.text-text-secondary]="activeStageFilter() !== 'SECONDARY'"
-                [class.hover:text-text-primary]="activeStageFilter() !== 'SECONDARY'"
-              >
-                {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
-              </button>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+              <!-- International Division Switcher (American Curriculum | British Curriculum) -->
+              @if (selectedCurriculumCode() === 'INTERNATIONAL') {
+                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-brand-gold/40 text-xs font-semibold self-start sm:self-auto backdrop-blur-md shadow-sm">
+                  @for (div of intlDivisions(); track div.code) {
+                    <button
+                      type="button"
+                      (click)="selectIntlDivision(div.code)"
+                      class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                      [class.bg-brand-gold]="selectedIntlDivision() === div.code"
+                      [class.text-slate-950]="selectedIntlDivision() === div.code"
+                      [class.font-bold]="selectedIntlDivision() === div.code"
+                      [class.shadow-sm]="selectedIntlDivision() === div.code"
+                      [class.text-text-secondary]="selectedIntlDivision() !== div.code"
+                      [class.hover:text-text-primary]="selectedIntlDivision() !== div.code"
+                    >
+                      <app-icon [name]="getDivisionIcon(div.iconName, div.code)" [size]="14" />
+                      <span>{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md max-w-full overflow-x-auto no-scrollbar">
+                  <button
+                    type="button"
+                    (click)="setStageFilter('ALL')"
+                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
+                    [class.text-slate-950]="activeStageFilter() === 'ALL'"
+                    [class.font-bold]="activeStageFilter() === 'ALL'"
+                    [class.shadow-sm]="activeStageFilter() === 'ALL'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'ALL'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'ALL'"
+                  >
+                    {{ langService.isArabic() ? 'جميع المراحل' : 'All Stages' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('PRIMARY')"
+                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
+                    [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
+                    [class.font-bold]="activeStageFilter() === 'PRIMARY'"
+                    [class.shadow-sm]="activeStageFilter() === 'PRIMARY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'PRIMARY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'PRIMARY'"
+                  >
+                    {{ langService.isArabic() ? 'الابتدائية' : 'Primary' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('PREPARATORY')"
+                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
+                    [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
+                    [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
+                    [class.shadow-sm]="activeStageFilter() === 'PREPARATORY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
+                  >
+                    {{ langService.isArabic() ? 'الإعدادية' : 'Preparatory' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('SECONDARY')"
+                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
+                    [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
+                    [class.font-bold]="activeStageFilter() === 'SECONDARY'"
+                    [class.shadow-sm]="activeStageFilter() === 'SECONDARY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'SECONDARY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'SECONDARY'"
+                  >
+                    {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
+                  </button>
+                </div>
+              }
             </div>
           }
 
@@ -444,8 +468,8 @@
               <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>
                 {{ selectedTermCode() === 'TERM_1'
-                  ? (langService.isArabic() ? 'الفصل الدراسي الأول (الترم النشط)' : 'Term 1 (Active Term)')
-                  : (langService.isArabic() ? 'الفصل الدراسي الثاني (الترم النشط)' : 'Term 2 (Active Term)') }}
+                  ? (langService.isArabic() ? 'الترم الأول (نشط)' : 'Term 1 (Active)')
+                  : (langService.isArabic() ? 'الترم الثاني (نشط)' : 'Term 2 (Active)') }}
               </span>
             </div>
           }
@@ -456,107 +480,141 @@
       <div>
         <!-- STEP 1: Grade Cards Grid (Exact Mockup Image 2) -->
         @if (modalStep() === 'GRADES') {
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            @for (grade of filteredGradesForModal(); track grade.code) {
-              <div
-                (click)="handleGradeCardClick(grade)"
-                class="grade-glass-card p-5 flex flex-col justify-between group relative overflow-hidden cursor-pointer"
-              >
-                <div>
-                  <!-- Top Row: Grade Name & Math Operator Icon -->
-                  <div class="flex items-start justify-between gap-2 mb-2">
-                    <h4 class="text-base sm:text-lg font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-brand-gold transition-colors">
-                      {{ getGradeDisplayTitle(grade) }}
-                    </h4>
-                    <!-- Math Vector Art Icon -->
-                    <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-brand-gold/80 group-hover:text-brand-gold group-hover:scale-110 transition-all">
-                      @switch (getGradeMathIcon(grade.code)) {
-                        @case ('operators') {
-                          <!-- + - over × = operators -->
-                          <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round">
-                            <line x1="4" y1="7" x2="10" y2="7" />
-                            <line x1="7" y1="4" x2="7" y2="10" />
-                            <line x1="14" y1="7" x2="20" y2="7" />
-                            <line x1="4.5" y1="14.5" x2="9.5" y2="19.5" />
-                            <line x1="9.5" y1="14.5" x2="4.5" y2="19.5" />
-                            <line x1="14" y1="15.5" x2="20" y2="15.5" />
-                            <line x1="14" y1="18.5" x2="20" y2="18.5" />
-                          </svg>
-                        }
-                        @case ('division') {
-                          <!-- + / over × ÷ operators -->
-                          <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round">
-                            <line x1="4" y1="7" x2="10" y2="7" />
-                            <line x1="7" y1="4" x2="7" y2="10" />
-                            <line x1="19" y1="4" x2="14" y2="10" />
-                            <line x1="4.5" y1="14.5" x2="9.5" y2="19.5" />
-                            <line x1="9.5" y1="14.5" x2="4.5" y2="19.5" />
-                            <line x1="14" y1="17" x2="20" y2="17" />
-                            <circle cx="17" cy="14" r="0.75" fill="currentColor" />
-                            <circle cx="17" cy="20" r="0.75" fill="currentColor" />
-                          </svg>
-                        }
-                        @case ('triangle') {
-                          <!-- Triangle geometry ruler -->
-                          <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 20 L20 20 L4 4 Z" />
-                            <path d="M7 17 L15 17 L7 9 Z" stroke-dasharray="1 1" opacity="0.6" />
-                            <line x1="8" y1="20" x2="8" y2="18" />
-                            <line x1="12" y1="20" x2="12" y2="17" />
-                            <line x1="16" y1="20" x2="16" y2="18" />
-                          </svg>
-                        }
-                        @case ('calculus') {
-                          <!-- Graph / Calculus axes -->
-                          <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="19" x2="21" y2="19" />
-                            <line x1="5" y1="3" x2="5" y2="21" />
-                            <path d="M 5,16 Q 10,16 13,10 T 21,4" stroke-width="2" />
-                          </svg>
-                        }
+          @if (selectedCurriculumCode() === 'INTERNATIONAL') {
+            <!-- Grouped by stages of the active division (American or British) -->
+            <div class="space-y-8">
+              @for (stage of activeIntlDivision().stages; track stage.code) {
+                @if (getIntlStageGrades(stage).length > 0) {
+                  <div class="space-y-3.5">
+                    <!-- Stage Header Bar matching the diagram -->
+                    <div class="flex items-center gap-3 px-1">
+                      <span class="inline-flex items-center gap-2 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border shadow-sm {{ stage.badgeColorClass }}">
+                        <span>{{ langService.isArabic() ? stage.nameAr : stage.nameEn }}</span>
+                      </span>
+                      <span class="h-px flex-1 bg-surface-border/70"></span>
+                      <span class="text-xs font-bold text-text-muted">
+                        {{ getIntlStageGrades(stage).length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
+                      </span>
+                    </div>
+
+                    <!-- Grade Cards Grid for this Stage -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                      @for (grade of getIntlStageGrades(stage); track grade.code) {
+                        <ng-container *ngTemplateOutlet="gradeCardTemplate; context: { grade: grade }"></ng-container>
                       }
                     </div>
                   </div>
+                }
+              }
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              @for (grade of filteredGradesForModal(); track grade.code) {
+                <ng-container *ngTemplateOutlet="gradeCardTemplate; context: { grade: grade }"></ng-container>
+              }
+            </div>
+          }
 
-                  <!-- Stage Pill Badge -->
-                  <div class="mb-2.5">
-                    <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
-                      {{ getGradeStageLabel(grade) }}
-                    </span>
+          <!-- Reusable Grade Card Template -->
+          <ng-template #gradeCardTemplate let-grade="grade">
+            <div
+              (click)="handleGradeCardClick(grade)"
+              class="grade-glass-card p-5 flex flex-col justify-between group relative overflow-hidden cursor-pointer"
+            >
+              <div>
+                <!-- Top Row: Grade Name & Math Operator Icon -->
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <h4 class="text-base sm:text-lg font-bold font-academic-serif text-text-primary dark:text-white group-hover:text-brand-gold transition-colors">
+                    {{ getGradeDisplayTitle(grade) }}
+                  </h4>
+                  <!-- Math Vector Art Icon -->
+                  <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-brand-gold/80 group-hover:text-brand-gold group-hover:scale-110 transition-all">
+                    @switch (getGradeMathIcon(grade.code)) {
+                      @case ('operators') {
+                        <!-- + - over × = operators -->
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round">
+                          <line x1="4" y1="7" x2="10" y2="7" />
+                          <line x1="7" y1="4" x2="7" y2="10" />
+                          <line x1="14" y1="7" x2="20" y2="7" />
+                          <line x1="4.5" y1="14.5" x2="9.5" y2="19.5" />
+                          <line x1="9.5" y1="14.5" x2="4.5" y2="19.5" />
+                          <line x1="14" y1="15.5" x2="20" y2="15.5" />
+                          <line x1="14" y1="18.5" x2="20" y2="18.5" />
+                        </svg>
+                      }
+                      @case ('division') {
+                        <!-- + / over × ÷ operators -->
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round">
+                          <line x1="4" y1="7" x2="10" y2="7" />
+                          <line x1="7" y1="4" x2="7" y2="10" />
+                          <line x1="19" y1="4" x2="14" y2="10" />
+                          <line x1="4.5" y1="14.5" x2="9.5" y2="19.5" />
+                          <line x1="9.5" y1="14.5" x2="4.5" y2="19.5" />
+                          <line x1="14" y1="17" x2="20" y2="17" />
+                          <circle cx="17" cy="14" r="0.75" fill="currentColor" />
+                          <circle cx="17" cy="20" r="0.75" fill="currentColor" />
+                        </svg>
+                      }
+                      @case ('triangle') {
+                        <!-- Triangle geometry ruler -->
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 20 L20 20 L4 4 Z" />
+                          <path d="M7 17 L15 17 L7 9 Z" stroke-dasharray="1 1" opacity="0.6" />
+                          <line x1="8" y1="20" x2="8" y2="18" />
+                          <line x1="12" y1="20" x2="12" y2="17" />
+                          <line x1="16" y1="20" x2="16" y2="18" />
+                        </svg>
+                      }
+                      @case ('calculus') {
+                        <!-- Graph / Calculus axes -->
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="3" y1="19" x2="21" y2="19" />
+                          <line x1="5" y1="3" x2="5" y2="21" />
+                          <path d="M 5,16 Q 10,16 13,10 T 21,4" stroke-width="2" />
+                        </svg>
+                      }
+                    }
                   </div>
-
-                  <!-- Subtitle -->
-                  <p class="text-xs text-text-secondary dark:text-slate-300/80 leading-relaxed mb-5 font-normal">
-                    {{ getGradeSubtitle(grade) }}
-                  </p>
                 </div>
 
-                <!-- Action -->
-                <div class="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-brand-gold">
-                  @if (grade.hasPublishedUnits && grade.publishedUnitsCount > 0) {
-                    <span class="group-hover:underline flex items-center gap-1.5">
-                      {{ langService.isArabic() ? 'عرض الوحدات' : 'View Units' }}
-                      <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="13" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                    </span>
-                  } @else if (grade.hasPlacementTest) {
-                    <button
-                      type="button"
-                      (click)="startPlacementExamForGrade(grade); $event.stopPropagation()"
-                      class="group-hover:underline flex items-center gap-1.5 text-brand-gold font-bold bg-transparent border-0 p-0 cursor-pointer text-xs"
-                    >
-                      <app-icon name="target" [size]="13" />
-                      <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
-                    </button>
-                  } @else {
-                    <span class="flex items-center gap-1.5 text-text-muted font-normal text-[11px]">
-                      <app-icon name="clock" [size]="12" />
-                      {{ langService.isArabic() ? 'قريباً (Coming Soon)' : 'Coming Soon' }}
-                    </span>
-                  }
+                <!-- Stage Pill Badge -->
+                <div class="mb-2.5">
+                  <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
+                    {{ getGradeStageLabel(grade) }}
+                  </span>
                 </div>
+
+                <!-- Subtitle -->
+                <p class="text-xs text-text-secondary dark:text-slate-300/80 leading-relaxed mb-5 font-normal">
+                  {{ getGradeSubtitle(grade) }}
+                </p>
               </div>
-            }
-          </div>
+
+              <!-- Action -->
+              <div class="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-brand-gold">
+                @if (grade.hasPublishedUnits && grade.publishedUnitsCount > 0) {
+                  <span class="group-hover:underline flex items-center gap-1.5">
+                    {{ langService.isArabic() ? 'عرض الوحدات' : 'View Units' }}
+                    <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="13" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  </span>
+                } @else if (grade.hasPlacementTest) {
+                  <button
+                    type="button"
+                    (click)="startPlacementExamForGrade(grade); $event.stopPropagation()"
+                    class="group-hover:underline flex items-center gap-1.5 text-brand-gold font-bold bg-transparent border-0 p-0 cursor-pointer text-xs"
+                  >
+                    <app-icon name="target" [size]="13" />
+                    <span>{{ langService.isArabic() ? 'تحديد المستوى' : 'Placement Test' }}</span>
+                  </button>
+                } @else {
+                  <span class="flex items-center gap-1.5 text-text-muted font-normal text-[11px]">
+                    <app-icon name="clock" [size]="12" />
+                    {{ langService.isArabic() ? 'قريباً' : 'Coming Soon' }}
+                  </span>
+                }
+              </div>
+            </div>
+          </ng-template>
         }
 
         <!-- STEP 2: UNITS & PACKAGES VIEW FOR SELECTED GRADE -->
@@ -592,7 +650,7 @@
 
                   <app-icon name="target" [size]="16" />
 
-                  <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
+                  <span>{{ langService.isArabic() ? 'تحديد المستوى' : 'Placement Test' }}</span>
 
                 </button>
 
@@ -607,7 +665,7 @@
                     <div class="p-12 text-center rounded-2xl bg-surface-card/40 border border-surface-border">
                       <app-icon name="refresh" [size]="28" className="animate-spin text-brand-gold mx-auto mb-3" />
                       <p class="text-sm text-text-muted">
-                        {{ langService.isArabic() ? 'جاري تحميل الوحدات الدراسية...' : 'Loading study units...' }}
+                        {{ langService.isArabic() ? 'جاري التحميل...' : 'Loading...' }}
                       </p>
                     </div>
                   } @else if (publishedUnits().length > 0) {
@@ -730,7 +788,7 @@
                       </h4>
 
                       <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-                        {{ langService.isArabic() ? 'يجري إعداد الشروحات والتمارين لهذا الصف. يمكنك أداء امتحان تحديد المستوى الآن.' : 'Lectures and exercises are being prepared for this grade. You can take the placement test now.' }}
+                        {{ langService.isArabic() ? 'المحتوى قيد الإعداد.' : 'Content coming soon.' }}
                       </p>
 
                       <button
@@ -757,10 +815,10 @@
                         </div>
                         <div>
                           <h5 class="text-sm font-bold text-text-primary">
-                            {{ langService.isArabic() ? 'كويزات واختبارات المنهج' : 'Curriculum Quizzes' }}
+                            {{ langService.isArabic() ? 'كويزات المنهج' : 'Curriculum Quizzes' }}
                           </h5>
                           <p class="text-[11px] text-text-muted">
-                            {{ langService.isArabic() ? 'تمارين تفاعلية مقسمة بالوحدات' : 'Unit-based practice quizzes' }}
+                            {{ langService.isArabic() ? 'تمارين تفاعلية.' : 'Practice quizzes' }}
                           </p>
                         </div>
                       </div>
@@ -777,14 +835,14 @@
                       <div class="p-8 text-center space-y-2">
                         <app-icon name="refresh" [size]="20" className="animate-spin text-brand-gold mx-auto" />
                         <p class="text-xs text-text-muted">
-                          {{ langService.isArabic() ? 'جاري تحميل الكويزات...' : 'Loading quizzes...' }}
+                          {{ langService.isArabic() ? 'جاري التحميل...' : 'Loading...' }}
                         </p>
                       </div>
                     } @else if (totalGradeQuizzesCount() === 0) {
                       <div class="p-6 text-center rounded-xl bg-surface-bg/50 border border-surface-border/50 space-y-3">
                         <app-icon name="clock" [size]="22" className="text-text-muted mx-auto" />
                         <p class="text-xs text-text-secondary leading-relaxed">
-                          {{ langService.isArabic() ? 'لا توجد كويزات منشورة بعد لهذا الصف.' : 'No quizzes published for this grade yet.' }}
+                          {{ langService.isArabic() ? 'لا توجد كويزات بعد.' : 'No quizzes yet.' }}
                         </p>
                         <button
                           type="button"
@@ -792,7 +850,7 @@
                           class="text-xs font-bold text-brand-gold hover:underline inline-flex items-center gap-1 cursor-pointer"
                         >
                           <app-icon name="target" [size]="12" />
-                          <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
+                          <span>{{ langService.isArabic() ? 'تحديد المستوى' : 'Placement Test' }}</span>
                         </button>
                       </div>
                     } @else {
@@ -832,7 +890,7 @@
                               <div class="p-3.5 pt-4 border-t border-surface-border/60 space-y-3 animate-fade-in">
                                 @if (unitGroup.quizzes.length === 0) {
                                   <p class="text-[11px] text-text-muted text-center py-2">
-                                    {{ langService.isArabic() ? 'لا توجد كويزات منشورة في هذه الوحدة حالياً' : 'No quizzes in this unit yet' }}
+                                    {{ langService.isArabic() ? 'لا توجد كويزات حالياً' : 'No quizzes yet' }}
                                   </p>
                                 } @else {
                                   @for (quiz of unitGroup.quizzes; track quiz.id) {
@@ -1003,7 +1061,7 @@
         </div>
       } @else if (unitLectures().length === 0) {
         <div class="p-6 text-center text-xs text-text-muted">
-          {{ langService.isArabic() ? 'لا توجد محاضرات منشورة في هذه الوحدة بعد.' : 'No lectures in this unit yet.' }}
+          {{ langService.isArabic() ? 'لا توجد محاضرات بعد.' : 'No lectures yet.' }}
         </div>
       } @else {
         <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
@@ -1068,7 +1126,7 @@
 
       <div class="space-y-2">
         <h3 class="text-lg sm:text-xl font-bold font-academic-serif text-text-primary">
-          {{ langService.isArabic() ? 'للاستفادة من هذا المحتوى' : 'To Access This Content' }}
+          {{ langService.isArabic() ? 'محتوى خاص' : 'Locked Content' }}
         </h3>
         @if (lockedContentTitle()) {
           <p class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-surface-bg border border-surface-border text-brand-gold inline-block max-w-full truncate">
@@ -1079,8 +1137,8 @@
 
       <p class="text-xs sm:text-sm text-text-secondary leading-relaxed font-normal">
         {{ langService.isArabic()
-          ? 'للاستفادة من هذا المحتوى يرجى التواصل معنا للاشتراك'
-          : 'To access this content, please contact us to subscribe.'
+          ? 'تواصل معنا للاشتراك.'
+          : 'Contact us to subscribe.'
         }}
       </p>
 
@@ -1092,7 +1150,7 @@
           class="w-full py-3.5 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all cursor-pointer"
         >
           <app-icon name="whatsapp" [size]="18" />
-          <span>{{ langService.isArabic() ? 'الاشتراك عبر واتساب' : 'Subscribe via WhatsApp' }}</span>
+          <span>{{ langService.isArabic() ? 'اشتراك عبر واتساب' : 'Subscribe via WhatsApp' }}</span>
         </a>
 
         <button
@@ -1134,10 +1192,10 @@
 
       <div class="space-y-2">
         <h3 class="text-lg sm:text-xl font-bold font-academic-serif text-text-primary">
-          {{ langService.isArabic() ? 'تسجيل الدخول مطلوب' : 'Authentication Required' }}
+          {{ langService.isArabic() ? 'تسجيل الدخول' : 'Sign In Required' }}
         </h3>
         <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
-          {{ authGateActionMessage() || (langService.isArabic() ? 'سجل الدخول أو أنشئ حساباً مجانياً للوصول للمحتوى.' : 'Sign in or create a free account to access content.') }}
+          {{ authGateActionMessage() || (langService.isArabic() ? 'سجل الدخول للمتابعة.' : 'Sign in to continue.') }}
         </p>
       </div>
 
@@ -1157,7 +1215,7 @@
           class="w-full py-3 px-6 rounded-2xl border border-surface-border hover:bg-surface-secondary text-text-primary font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <app-icon name="user-plus" [size]="16" />
-          <span>{{ langService.isArabic() ? 'إنشاء حساب جديد' : 'Create New Account' }}</span>
+          <span>{{ langService.isArabic() ? 'إنشاء حساب' : 'Create Account' }}</span>
         </button>
       </div>
 
@@ -1198,13 +1256,13 @@
       <!-- Unit Title & Coming Soon Header -->
       <div class="space-y-2">
         <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
-          {{ langService.isArabic() ? 'المحتوى قيد الإعداد' : 'Content In Preparation' }}
+          {{ langService.isArabic() ? 'قيد الإعداد' : 'In Preparation' }}
         </span>
         <h3 class="text-lg sm:text-xl font-black font-academic-serif text-text-primary">
           {{ comingSoonUnitTitle() }}
         </h3>
         <p class="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-sm mx-auto">
-          {{ langService.isArabic() ? 'يجري تجهيز المحاضرات والتمارين لهذه الوحدة لتكون متاحة قريباً.' : 'Lectures and exercises for this unit are being prepared and will be available soon.' }}
+          {{ langService.isArabic() ? 'المحتوى قيد الإعداد.' : 'Content in preparation.' }}
         </p>
       </div>
 
@@ -1216,7 +1274,7 @@
           class="w-full py-3 px-6 rounded-2xl btn-gold-metallic text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
         >
           <app-icon name="check-circle" [size]="16" />
-          <span>{{ langService.isArabic() ? 'حسناً، بانتظار الإتاحة' : 'Got it, waiting for release' }}</span>
+          <span>{{ langService.isArabic() ? 'حسناً' : 'Got it' }}</span>
         </button>
       </div>
     </div>

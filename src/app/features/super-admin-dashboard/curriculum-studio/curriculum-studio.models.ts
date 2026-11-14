@@ -15,10 +15,25 @@ export interface GradeOption {
   isCustom?: boolean;
 }
 
+export interface CurriculumStageItem {
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+}
+
+export interface CurriculumDivisionItem {
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+  iconName?: string;
+  stages?: CurriculumStageItem[];
+}
+
 export interface CurriculumTrackItem {
   code: CurriculumCode;
   nameAr: string;
   nameEn?: string;
+  divisions?: CurriculumDivisionItem[];
   grades: GradeOption[];
 }
 
