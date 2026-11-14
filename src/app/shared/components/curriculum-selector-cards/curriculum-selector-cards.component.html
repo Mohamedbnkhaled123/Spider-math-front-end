@@ -382,15 +382,15 @@
 
           <!-- Filter Tabs (GRADES step) -->
           @if (modalStep() === 'GRADES') {
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
-              <!-- International Division Switcher (American Curriculum | British Curriculum) -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap w-full">
+              <!-- International Division Switcher (American Curriculum | British Curriculum) + Stages Filter -->
               @if (selectedCurriculumCode() === 'INTERNATIONAL') {
-                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-brand-gold/40 text-xs font-semibold self-start sm:self-auto backdrop-blur-md shadow-sm">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center p-1 rounded-xl bg-surface-card border border-brand-gold/40 text-xs font-semibold w-full sm:w-auto backdrop-blur-md shadow-sm gap-1">
                   @for (div of intlDivisions(); track div.code) {
                     <button
                       type="button"
                       (click)="selectIntlDivision(div.code)"
-                      class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                      class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
                       [class.bg-brand-gold]="selectedIntlDivision() === div.code"
                       [class.text-slate-950]="selectedIntlDivision() === div.code"
                       [class.font-bold]="selectedIntlDivision() === div.code"
@@ -403,32 +403,13 @@
                     </button>
                   }
                 </div>
-              } @else if (selectedCurriculumCode() === 'GULF') {
-                <!-- Gulf Country Switcher (Saudi Arabia, Qatar, UAE, Kuwait) -->
-                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-brand-gold/40 text-xs font-semibold self-start sm:self-auto backdrop-blur-md shadow-sm max-w-full overflow-x-auto no-scrollbar">
-                  @for (country of gulfCountries; track country.code) {
-                    <button
-                      type="button"
-                      (click)="selectGulfCountry(country.code)"
-                      class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                      [class.bg-brand-gold]="selectedGulfCountry() === country.code"
-                      [class.text-slate-950]="selectedGulfCountry() === country.code"
-                      [class.font-bold]="selectedGulfCountry() === country.code"
-                      [class.shadow-sm]="selectedGulfCountry() === country.code"
-                      [class.text-text-secondary]="selectedGulfCountry() !== country.code"
-                      [class.hover:text-text-primary]="selectedGulfCountry() !== country.code"
-                    >
-                      <span>{{ country.flagEmoji }}</span>
-                      <span>{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
-                    </button>
-                  }
-                </div>
 
-                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md max-w-full overflow-x-auto no-scrollbar">
+                <!-- International Stage Filter -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold w-full sm:w-auto backdrop-blur-md gap-1">
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -441,7 +422,84 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
+                    [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
+                    [class.font-bold]="activeStageFilter() === 'PRIMARY'"
+                    [class.shadow-sm]="activeStageFilter() === 'PRIMARY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'PRIMARY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'PRIMARY'"
+                  >
+                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الابتدائية (Elementary)' : 'الابتدائية (Primary)') : 'Primary' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('PREPARATORY')"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
+                    [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
+                    [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
+                    [class.shadow-sm]="activeStageFilter() === 'PREPARATORY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
+                  >
+                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'المتوسطة (Middle)' : 'المتوسطة (Lower Sec)') : 'Middle' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('SECONDARY')"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
+                    [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
+                    [class.font-bold]="activeStageFilter() === 'SECONDARY'"
+                    [class.shadow-sm]="activeStageFilter() === 'SECONDARY'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'SECONDARY'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'SECONDARY'"
+                  >
+                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الثانوية (High School)' : 'الثانوية / IGCSE') : 'Secondary' }}
+                  </button>
+                </div>
+              } @else if (selectedCurriculumCode() === 'GULF') {
+                <!-- Gulf Country Switcher (Saudi Arabia, Qatar, UAE, Kuwait) -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center p-1 rounded-xl bg-surface-card border border-brand-gold/40 text-xs font-semibold w-full sm:w-auto backdrop-blur-md shadow-sm gap-1">
+                  @for (country of gulfCountries; track country.code) {
+                    <button
+                      type="button"
+                      (click)="selectGulfCountry(country.code)"
+                      class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
+                      [class.bg-brand-gold]="selectedGulfCountry() === country.code"
+                      [class.text-slate-950]="selectedGulfCountry() === country.code"
+                      [class.font-bold]="selectedGulfCountry() === country.code"
+                      [class.shadow-sm]="selectedGulfCountry() === country.code"
+                      [class.text-text-secondary]="selectedGulfCountry() !== country.code"
+                      [class.hover:text-text-primary]="selectedGulfCountry() !== country.code"
+                    >
+                      <span>{{ country.flagEmoji }}</span>
+                      <span class="sm:hidden">{{ langService.isArabic() ? getGulfCountryShortNameAr(country.code) : country.code }}</span>
+                      <span class="hidden sm:inline">{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
+                    </button>
+                  }
+                </div>
+
+                <!-- Gulf Stage Filter -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold w-full sm:w-auto backdrop-blur-md gap-1">
+                  <button
+                    type="button"
+                    (click)="setStageFilter('ALL')"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
+                    [class.text-slate-950]="activeStageFilter() === 'ALL'"
+                    [class.font-bold]="activeStageFilter() === 'ALL'"
+                    [class.shadow-sm]="activeStageFilter() === 'ALL'"
+                    [class.text-text-secondary]="activeStageFilter() !== 'ALL'"
+                    [class.hover:text-text-primary]="activeStageFilter() !== 'ALL'"
+                  >
+                    {{ langService.isArabic() ? 'جميع المراحل' : 'All Stages' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStageFilter('PRIMARY')"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -454,7 +512,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -462,12 +520,12 @@
                     [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
                     [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
                   >
-                    {{ langService.isArabic() ? 'المتوسطة / الإعدادية' : 'Intermediate' }}
+                    {{ langService.isArabic() ? 'المتوسطة' : 'Intermediate' }}
                   </button>
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -479,11 +537,12 @@
                   </button>
                 </div>
               } @else {
-                <div class="inline-flex items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold self-start sm:self-auto backdrop-blur-md max-w-full overflow-x-auto no-scrollbar">
+                <!-- Egyptian & General Stage Filter -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center p-1 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold w-full sm:w-auto backdrop-blur-md gap-1">
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -496,7 +555,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -509,7 +568,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -522,7 +581,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"

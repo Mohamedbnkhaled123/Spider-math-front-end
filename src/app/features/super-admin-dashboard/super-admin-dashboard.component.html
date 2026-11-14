@@ -51,8 +51,8 @@
     <main class="flex-1 w-full min-w-0 relative z-10">
 
       <!-- Desktop Permanent Top Workspace Navigation Bar (>= 1024px) -->
-      <div class="hidden lg:flex items-center justify-between p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in relative z-20">
-        <div class="flex items-center gap-2.5 min-w-0">
+      <div class="hidden lg:flex items-center justify-between flex-wrap xl:flex-nowrap gap-3 p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in relative z-20">
+        <div class="flex items-center gap-2.5 min-w-0 shrink-0">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
           <h1 class="text-sm font-bold text-text-primary font-academic-serif truncate">
             @if (langService.isArabic()) {
@@ -63,13 +63,13 @@
           </h1>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 xl:gap-3 shrink-0 flex-wrap">
           <!-- Quick Tab Navigation Pills -->
-          <div class="flex items-center gap-1.5 text-xs font-bold">
+          <div class="flex items-center gap-1 xl:gap-1.5 text-[11px] xl:text-xs font-bold">
             <button
               type="button"
               (click)="setTab('assessments')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'assessments'"
               [class.text-slate-950]="activeTab() === 'assessments'"
               [class.text-text-secondary]="activeTab() !== 'assessments'"
@@ -81,7 +81,7 @@
             <button
               type="button"
               (click)="setTab('analytics')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'analytics'"
               [class.text-slate-950]="activeTab() === 'analytics'"
               [class.text-text-secondary]="activeTab() !== 'analytics'"
@@ -93,7 +93,7 @@
             <button
               type="button"
               (click)="setTab('curriculum')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'curriculum'"
               [class.text-slate-950]="activeTab() === 'curriculum'"
               [class.text-text-secondary]="activeTab() !== 'curriculum'"
@@ -105,7 +105,7 @@
             <button
               type="button"
               (click)="setTab('grading')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 relative"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 relative shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'grading'"
               [class.text-slate-950]="activeTab() === 'grading'"
               [class.text-text-secondary]="activeTab() !== 'grading'"
@@ -122,7 +122,7 @@
             <button
               type="button"
               (click)="setTab('students')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'students'"
               [class.text-slate-950]="activeTab() === 'students'"
               [class.text-text-secondary]="activeTab() !== 'students'"
@@ -134,7 +134,7 @@
             <button
               type="button"
               (click)="setTab('leads_cms')"
-              class="px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
               [class.btn-gold-metallic]="activeTab() === 'leads_cms'"
               [class.text-slate-950]="activeTab() === 'leads_cms'"
               [class.text-text-secondary]="activeTab() !== 'leads_cms'"
@@ -146,15 +146,15 @@
           </div>
 
           <!-- Divider -->
-          <div class="h-6 w-px bg-surface-border"></div>
+          <div class="h-6 w-px bg-surface-border shrink-0"></div>
 
           <!-- Desktop Tools & Notifications Section (>= 1024px) -->
-          <div class="flex items-center gap-2 relative">
+          <div class="flex items-center gap-2 relative shrink-0">
             <!-- Notifications Bell -->
             <button
               type="button"
               (click)="toggleDesktopNotifications()"
-              class="relative p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer"
+              class="relative p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer shrink-0"
               [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
             >
               <app-icon name="bell" [size]="15" />
@@ -169,7 +169,7 @@
             <button
               type="button"
               (click)="toggleDesktopTools()"
-              class="p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+              class="p-2 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold shrink-0"
               [class.border-brand-primary]="isDesktopToolsOpen()"
               [class.text-text-primary]="isDesktopToolsOpen()"
               [title]="langService.isArabic() ? 'أدوات الصيانة والنظام' : 'Maintenance & System Tools'"

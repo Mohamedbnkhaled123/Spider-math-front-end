@@ -399,6 +399,16 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.selectedGulfCountry.set(code);
   }
 
+  getGulfCountryShortNameAr(code: string): string {
+    switch (code) {
+      case 'SA': return 'السعودية';
+      case 'QA': return 'قطر';
+      case 'AE': return 'الإمارات';
+      case 'KW': return 'الكويت';
+      default: return code;
+    }
+  }
+
   getDivisionIcon(name?: string, code?: string): AppIconName {
     if (name === 'award' || name === 'graduation-cap' || name === 'book-open' || name === 'globe') {
       return name;
