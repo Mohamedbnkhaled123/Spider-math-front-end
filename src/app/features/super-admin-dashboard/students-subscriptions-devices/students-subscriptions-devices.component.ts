@@ -89,6 +89,21 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly isLoadingSubscriptions = signal<boolean>(false);
   readonly isRevokingSubscription = signal<string | null>(null);
 
+  readonly activeSubscriptionsCount = computed(() => {
+    return this.studentActiveSubscriptions().filter(
+      (s) => (s.subscriptionStatus === 'ACTIVE' || s.subscriptionStatus === 'FROZEN') && !s.isExpired
+    ).length;
+  });
+
+  isUnitActiveForStudent(unitId: string): boolean {
+    if (!unitId) return false;
+    return this.studentActiveSubscriptions().some((s) => {
+      const sUnitId = s.unitPackageId || s.unit_package_id || s.unitId;
+      const isActiveOrFrozen = (s.subscriptionStatus === 'ACTIVE' || s.subscriptionStatus === 'FROZEN') && !s.isExpired;
+      return isActiveOrFrozen && sUnitId === unitId;
+    });
+  }
+
   readonly allAvailableUnits = computed(() => {
     const dbUnits = this.realUnits();
     if (dbUnits && dbUnits.length > 0) return dbUnits;
@@ -176,7 +191,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
   // Academic Integrity: Units matching student's exact curriculum and grade level
   readonly studentMatchingUnits = computed(() => {
-    const student = this.studentToActivate();
+    const student = this.studentToActivate() || this.studentForSubscriptions();
     const all = this.allAvailableUnits();
     if (!student) return [];
     if (this.showAllUnits()) return all;
@@ -279,7 +294,8 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       const currentId = this.activationUnitId();
       const stillValid = matching.some((u) => (u.id || u._id) === currentId);
       if (!currentId || !stillValid) {
-        this.activationUnitId.set(matching[0].id || matching[0]._id);
+        const notYetEnrolled = matching.find((u) => !this.isUnitActiveForStudent(u.id || u._id));
+        this.activationUnitId.set(notYetEnrolled ? (notYetEnrolled.id || notYetEnrolled._id) : (matching[0].id || matching[0]._id));
       }
     } else {
       this.activationUnitId.set('');
@@ -339,8 +355,29 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   // =========================================================================
   openSubscriptionsModal(student: StudentAdminSummary): void {
     this.studentForSubscriptions.set(student);
+    this.studentToActivate.set(student);
+    this.showAllUnits.set(false);
+    this.studentActiveSubscriptions.set([]);
+    this.fetchDatabaseUnits();
     this.isSubscriptionsModalOpen.set(true);
+    this.isActivateModalOpen.set(true);
     this.loadStudentSubscriptions(student.id);
+
+    // Auto-select first matching unit
+    this.syncSelectedActivationUnit();
+    setTimeout(() => {
+      this.syncSelectedActivationUnit();
+    }, 0);
+  }
+
+  closeUnitsModal(): void {
+    this.isSubscriptionsModalOpen.set(false);
+    this.isActivateModalOpen.set(false);
+    this.studentForSubscriptions.set(null);
+    this.studentToActivate.set(null);
+    this.studentActiveSubscriptions.set([]);
+    this.activationUnitId.set('');
+    this.showAllUnits.set(false);
   }
 
   loadStudentSubscriptions(studentId: string): void {
@@ -349,6 +386,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
       next: (res) => {
         this.studentActiveSubscriptions.set(res?.data || []);
         this.isLoadingSubscriptions.set(false);
+        this.syncSelectedActivationUnit();
       },
       error: () => {
         this.studentActiveSubscriptions.set([]);
@@ -394,14 +432,15 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
         this.studentUpdated.emit(updatedStudent);
         this.toastTriggered.emit({
-          text: `تم إلغاء اشتراك الطالب في وحدة "${sub.unitTitleAr || 'الدراسية'}" بنجاح!`,
+          text: `تم إلغاء اشتراك الطالب في وحدة "${sub.unitTitleAr || sub.titleAr || sub.titleEn || 'الدراسية'}" بنجاح!`,
           type: 'success'
         });
       },
       error: (err) => {
         this.isRevokingSubscription.set(null);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إلغاء اشتراك الوحدة.';
         this.toastTriggered.emit({
-          text: err?.error?.message || 'تعذر إلغاء اشتراك الوحدة.',
+          text: errMsg,
           type: 'error'
         });
       }
@@ -414,27 +453,11 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   }
 
   openActivateModal(student: StudentAdminSummary): void {
-    this.studentToActivate.set(student);
-    this.showAllUnits.set(false);
-    this.fetchDatabaseUnits();
-    this.loadStudentSubscriptions(student.id);
-
-    // Auto-select first matching unit
-    setTimeout(() => {
-      const units = this.studentMatchingUnits();
-      if (units && units.length > 0) {
-        this.activationUnitId.set(units[0].id || units[0]._id);
-      } else {
-        this.activationUnitId.set('');
-      }
-    }, 0);
-
-    this.activationScope.set('FULL');
-    this.isActivateModalOpen.set(true);
+    this.openSubscriptionsModal(student);
   }
 
   confirmUnitActivation(): void {
-    const student = this.studentToActivate();
+    const student = this.studentToActivate() || this.studentForSubscriptions();
     const unitId = this.activationUnitId();
     if (!student) return;
     if (!unitId) {
@@ -458,9 +481,14 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
           hasActiveSubscription: true,
           subscriptionStatus: 'ACTIVE'
         };
+        if (this.studentForSubscriptions()) {
+          this.studentForSubscriptions.set(updated);
+        }
+        if (this.studentToActivate()) {
+          this.studentToActivate.set(updated);
+        }
         this.studentUpdated.emit(updated);
         this.loadStudentSubscriptions(student.id);
-        this.isActivateModalOpen.set(false);
         const scopeLabel = this.activationScope() === 'ASSESSMENTS_ONLY' ? 'اختبارات فقط' : 'الوحدة كاملة';
         this.toastTriggered.emit({
           text: `تم تفعيل ${scopeLabel} لـ ${student.name}`,

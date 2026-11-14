@@ -244,7 +244,7 @@
                           <span>{{ langService.isArabic() ? 'مكتمل البيانات' : 'Profile Complete' }}</span>
                         </span>
                       }
-                      @if (student.isLeaderboardHidden) {
+                      @if (student.role !== 'PARENT' && student.isLeaderboardHidden) {
                         <span class="text-[10px] text-rose-500 font-normal mr-1">{{ langService.isArabic() ? '(مخفي من لوحة الشرف)' : '(Hidden from Hall of Fame)' }}</span>
                       }
                     </div>
@@ -257,26 +257,36 @@
               </td>
 
               <td class="p-4 text-text-secondary">
-                <div>{{ student.curriculum }}</div>
-                <div class="text-[11px] text-text-muted mt-0.5">{{ student.gradeLevel }}</div>
+                @if (student.role === 'PARENT') {
+                  <span class="text-text-muted font-mono text-xs">—</span>
+                } @else {
+                  <div>{{ student.curriculum }}</div>
+                  <div class="text-[11px] text-text-muted mt-0.5">{{ student.gradeLevel }}</div>
+                }
               </td>
 
               <td class="p-4">
-                <span
-                  class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
-                  [class.bg-emerald-500/10]="student.subscriptionStatus === 'ACTIVE'"
-                  [class.text-emerald-500]="student.subscriptionStatus === 'ACTIVE'"
-                  [class.bg-amber-500/10]="student.subscriptionStatus === 'FROZEN'"
-                  [class.text-amber-500]="student.subscriptionStatus === 'FROZEN'"
-                  [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
-                  [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
-                >
-                  {{ student.subscriptionStatus === 'ACTIVE' ? (langService.isArabic() ? 'اشتراك نشط' : 'Active Subscription') : student.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : (langService.isArabic() ? 'غير مشترك' : 'Inactive') }}
-                </span>
+                @if (student.role === 'PARENT') {
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-500">
+                    {{ langService.isArabic() ? 'حساب ولي أمر' : 'Parent' }}
+                  </span>
+                } @else {
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                    [class.bg-emerald-500/10]="student.subscriptionStatus === 'ACTIVE'"
+                    [class.text-emerald-500]="student.subscriptionStatus === 'ACTIVE'"
+                    [class.bg-amber-500/10]="student.subscriptionStatus === 'FROZEN'"
+                    [class.text-amber-500]="student.subscriptionStatus === 'FROZEN'"
+                    [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
+                    [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
+                  >
+                    {{ student.subscriptionStatus === 'ACTIVE' ? (langService.isArabic() ? 'اشتراك نشط' : 'Active Subscription') : student.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : (langService.isArabic() ? 'غير مشترك' : 'Inactive') }}
+                  </span>
+                }
               </td>
 
               <td class="p-4 font-mono font-bold text-text-primary">
-                {{ student.totalXp }} XP
+                {{ student.role === 'PARENT' ? '—' : (student.totalXp + ' XP') }}
               </td>
 
               <td class="p-4 font-mono text-text-secondary">
@@ -286,86 +296,71 @@
               <!-- Actions -->
               <td class="p-4 text-center">
                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                  
-                  <!-- Activate Unit -->
-                  <button
-                    type="button"
-                    (click)="openActivateModal(student)"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
-                  >
-                    {{ langService.isArabic() ? 'تفعيل وحدة' : 'Activate Unit' }}
-                  </button>
-
-                  <!-- Manage Unit Subscriptions / Revoke -->
-                  <button
-                    type="button"
-                    (click)="openSubscriptionsModal(student)"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-cyan-500/30 text-cyan-600 hover:bg-cyan-500/10 transition-colors cursor-pointer"
-                    [title]="langService.isArabic() ? 'عرض وإلغاء اشتراكات الوحدات' : 'Manage Unit Subscriptions'"
-                  >
-                    {{ langService.isArabic() ? 'اشتراكات الوحدات' : 'Units' }}
-                  </button>
-
-                  <!-- Toggle Freeze / Unfreeze -->
-                  @if (student.subscriptionStatus === 'ACTIVE') {
+                  @if (student.role === 'PARENT') {
+                    <span class="text-text-muted text-[11px] font-medium px-2 py-1 rounded-lg bg-surface-bg border border-surface-border">
+                      {{ langService.isArabic() ? 'حساب ولي أمر' : 'Parent Account' }}
+                    </span>
+                  } @else {
+                    <!-- Unified Units Button -->
                     <button
                       type="button"
-                      (click)="updateStatus(student, 'FROZEN')"
-                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-500/30 text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                      (click)="openSubscriptionsModal(student)"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-cyan-500/30 text-cyan-600 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                      [title]="langService.isArabic() ? 'إدارة وحدات واشتراكات الطالب (تفعيل، إلغاء، عرض)' : 'Manage Student Units & Subscriptions'"
                     >
-                      {{ langService.isArabic() ? 'تجميد' : 'Freeze' }}
+                      <app-icon name="book-open" [size]="12" />
+                      <span>{{ langService.isArabic() ? 'الوحدات' : 'Units' }}</span>
                     </button>
-                  } @else if (student.subscriptionStatus === 'FROZEN') {
+
+                    <!-- Toggle Freeze / Unfreeze -->
+                    @if (student.subscriptionStatus === 'ACTIVE') {
+                      <button
+                        type="button"
+                        (click)="updateStatus(student, 'FROZEN')"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-500/30 text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                      >
+                        {{ langService.isArabic() ? 'تجميد' : 'Freeze' }}
+                      </button>
+                    } @else if (student.subscriptionStatus === 'FROZEN') {
+                      <button
+                        type="button"
+                        (click)="updateStatus(student, 'ACTIVE')"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                      >
+                        {{ langService.isArabic() ? 'إلغاء التجميد' : 'Unfreeze' }}
+                      </button>
+                    }
+
+                    <!-- XP Bonus (+50) -->
                     <button
                       type="button"
-                      (click)="updateStatus(student, 'ACTIVE')"
-                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                      (click)="openXpModal(student, 50)"
+                      class="px-2 py-1 rounded-lg text-[10px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'منح نقاط إضافية' : 'Award Bonus XP'"
                     >
-                      {{ langService.isArabic() ? 'إلغاء التجميد' : 'Unfreeze' }}
+                      +XP
+                    </button>
+
+                    <!-- XP Penalty (-20) -->
+                    <button
+                      type="button"
+                      (click)="openXpModal(student, -20)"
+                      class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                      [title]="langService.isArabic() ? 'خصم نقاط' : 'Deduct XP'"
+                    >
+                      -XP
+                    </button>
+
+                    <!-- Toggle Leaderboard -->
+                    <button
+                      type="button"
+                      (click)="toggleLeaderboard(student)"
+                      class="px-2 py-1 rounded-lg text-[10px] font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                      [title]="student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show in Hall of Fame') : (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide from Hall of Fame')"
+                    >
+                      {{ student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار' : 'Show') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
                     </button>
                   }
-
-                  <!-- Cancel Subscription -->
-                  @if (student.subscriptionStatus !== 'CANCELLED') {
-                    <button
-                      type="button"
-                      (click)="updateStatus(student, 'CANCELLED')"
-                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                    >
-                      {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
-                    </button>
-                  }
-
-                  <!-- XP Bonus (+50) -->
-                  <button
-                    type="button"
-                    (click)="openXpModal(student, 50)"
-                    class="px-2 py-1 rounded-lg text-[10px] font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
-                    [title]="langService.isArabic() ? 'منح نقاط إضافية' : 'Award Bonus XP'"
-                  >
-                    +XP
-                  </button>
-
-                  <!-- XP Penalty (-20) -->
-                  <button
-                    type="button"
-                    (click)="openXpModal(student, -20)"
-                    class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
-                    [title]="langService.isArabic() ? 'خصم نقاط' : 'Deduct XP'"
-                  >
-                    -XP
-                  </button>
-
-                  <!-- Toggle Leaderboard -->
-                  <button
-                    type="button"
-                    (click)="toggleLeaderboard(student)"
-                    class="px-2 py-1 rounded-lg text-[10px] font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-                    [title]="student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show in Hall of Fame') : (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide from Hall of Fame')"
-                  >
-                    {{ student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار' : 'Show') : (langService.isArabic() ? 'إخفاء' : 'Hide') }}
-                  </button>
-
                 </div>
               </td>
             </tr>
@@ -423,7 +418,7 @@
                     <span>{{ langService.isArabic() ? 'مكتمل البيانات' : 'Profile Complete' }}</span>
                   </span>
                 }
-                @if (student.isLeaderboardHidden) {
+                @if (student.role !== 'PARENT' && student.isLeaderboardHidden) {
                   <span class="text-[10px] text-rose-500 font-normal mr-1">{{ langService.isArabic() ? '(مخفي من لوحة الشرف)' : '(Hidden from Hall of Fame)' }}</span>
                 }
               </div>
@@ -461,30 +456,42 @@
             <!-- Curriculum & Grade -->
             <div class="p-2 rounded-xl bg-surface-bg/60 border border-surface-border/50">
               <span class="text-[10px] text-text-muted block font-bold">{{ langService.isArabic() ? 'المنهج والصف' : 'Curriculum & Grade' }}</span>
-              <span class="text-xs font-bold text-text-primary block mt-0.5 truncate">{{ student.curriculum }}</span>
-              <span class="text-[10px] text-text-muted block truncate">{{ student.gradeLevel }}</span>
+              @if (student.role === 'PARENT') {
+                <span class="text-xs text-text-muted block mt-0.5 truncate">—</span>
+              } @else {
+                <span class="text-xs font-bold text-text-primary block mt-0.5 truncate">{{ student.curriculum }}</span>
+                <span class="text-[10px] text-text-muted block truncate">{{ student.gradeLevel }}</span>
+              }
             </div>
 
             <!-- Subscription Status -->
             <div class="p-2 rounded-xl bg-surface-bg/60 border border-surface-border/50 flex flex-col justify-between">
               <span class="text-[10px] text-text-muted block font-bold">{{ langService.isArabic() ? 'الاشتراك' : 'Subscription' }}</span>
-              <span
-                class="px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 text-center truncate inline-block"
-                [class.bg-emerald-500/10]="student.subscriptionStatus === 'ACTIVE'"
-                [class.text-emerald-500]="student.subscriptionStatus === 'ACTIVE'"
-                [class.bg-amber-500/10]="student.subscriptionStatus === 'FROZEN'"
-                [class.text-amber-500]="student.subscriptionStatus === 'FROZEN'"
-                [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
-                [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
-              >
-                {{ student.subscriptionStatus === 'ACTIVE' ? (langService.isArabic() ? 'اشتراك نشط' : 'Active') : student.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : (langService.isArabic() ? 'غير مشترك' : 'Inactive') }}
-              </span>
+              @if (student.role === 'PARENT') {
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 text-center truncate inline-block bg-teal-500/10 text-teal-500">
+                  {{ langService.isArabic() ? 'ولي أمر' : 'Parent' }}
+                </span>
+              } @else {
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 text-center truncate inline-block"
+                  [class.bg-emerald-500/10]="student.subscriptionStatus === 'ACTIVE'"
+                  [class.text-emerald-500]="student.subscriptionStatus === 'ACTIVE'"
+                  [class.bg-amber-500/10]="student.subscriptionStatus === 'FROZEN'"
+                  [class.text-amber-500]="student.subscriptionStatus === 'FROZEN'"
+                  [class.bg-rose-500/10]="student.subscriptionStatus === 'CANCELLED'"
+                  [class.text-rose-500]="student.subscriptionStatus === 'CANCELLED'"
+                >
+                  {{ student.subscriptionStatus === 'ACTIVE' ? (langService.isArabic() ? 'اشتراك نشط' : 'Active') : student.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : (langService.isArabic() ? 'غير مشترك' : 'Inactive') }}
+                </span>
+              }
             </div>
 
             <!-- XP Points -->
             <div class="p-2 rounded-xl bg-surface-bg/60 border border-surface-border/50">
               <span class="text-[10px] text-text-muted block font-bold">{{ langService.isArabic() ? 'نقاط التميز' : 'XP Points' }}</span>
-              <span class="text-xs font-black font-mono text-brand-primary mt-0.5 block">{{ student.totalXp }} XP</span>
+              <span class="text-xs font-black font-mono text-brand-primary mt-0.5 block">
+                {{ student.role === 'PARENT' ? '—' : (student.totalXp + ' XP') }}
+              </span>
             </div>
 
             <!-- Devices -->
@@ -496,82 +503,69 @@
 
           <!-- Actions Bar (Thumb-Friendly Wrapped Buttons) -->
           <div class="pt-2 border-t border-surface-border/60 flex flex-wrap items-center gap-1.5">
-            <!-- Activate Unit -->
-            <button
-              type="button"
-              (click)="openActivateModal(student)"
-              class="flex-1 min-w-[90px] px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-center transition-colors cursor-pointer"
-            >
-              {{ langService.isArabic() ? 'تفعيل وحدة' : 'Activate Unit' }}
-            </button>
-
-            <!-- Manage Unit Subscriptions / Revoke -->
-            <button
-              type="button"
-              (click)="openSubscriptionsModal(student)"
-              class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-cyan-500/40 bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20 text-center transition-colors cursor-pointer"
-              [title]="langService.isArabic() ? 'عرض وإلغاء اشتراكات الوحدات' : 'Manage Unit Subscriptions'"
-            >
-              {{ langService.isArabic() ? 'الوحدات' : 'Units' }}
-            </button>
-
-            <!-- Toggle Freeze / Unfreeze -->
-            @if (student.subscriptionStatus === 'ACTIVE') {
+            @if (student.role === 'PARENT') {
+              <div class="w-full text-center py-1 text-xs text-text-muted font-medium">
+                {{ langService.isArabic() ? 'حساب ولي أمر (متابعة فقط)' : 'Parent Account (View Only)' }}
+              </div>
+            } @else {
+              <!-- Unified Units Button -->
               <button
                 type="button"
-                (click)="updateStatus(student, 'FROZEN')"
-                class="flex-1 min-w-[65px] px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 text-center transition-colors cursor-pointer"
+                (click)="openSubscriptionsModal(student)"
+                class="flex-1 min-w-[100px] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-cyan-500/40 bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20 text-center transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                [title]="langService.isArabic() ? 'إدارة وحدات واشتراكات الطالب (تفعيل، إلغاء، عرض)' : 'Manage Student Units & Subscriptions'"
               >
-                {{ langService.isArabic() ? 'تجميد' : 'Freeze' }}
+                <app-icon name="book-open" [size]="14" />
+                <span>{{ langService.isArabic() ? 'الوحدات' : 'Units' }}</span>
               </button>
-            } @else if (student.subscriptionStatus === 'FROZEN') {
+
+              <!-- Toggle Freeze / Unfreeze -->
+              @if (student.subscriptionStatus === 'ACTIVE') {
+                <button
+                  type="button"
+                  (click)="updateStatus(student, 'FROZEN')"
+                  class="flex-1 min-w-[65px] px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 text-center transition-colors cursor-pointer"
+                >
+                  {{ langService.isArabic() ? 'تجميد' : 'Freeze' }}
+                </button>
+              } @else if (student.subscriptionStatus === 'FROZEN') {
+                <button
+                  type="button"
+                  (click)="updateStatus(student, 'ACTIVE')"
+                  class="flex-1 min-w-[75px] px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-center transition-colors cursor-pointer"
+                >
+                  {{ langService.isArabic() ? 'إلغاء التجميد' : 'Unfreeze' }}
+                </button>
+              }
+
+              <!-- XP Bonus / Penalty -->
               <button
                 type="button"
-                (click)="updateStatus(student, 'ACTIVE')"
-                class="flex-1 min-w-[75px] px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-center transition-colors cursor-pointer"
+                (click)="openXpModal(student, 50)"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
+                [title]="langService.isArabic() ? 'منح نقاط إضافية' : 'Award Bonus XP'"
               >
-                {{ langService.isArabic() ? 'إلغاء التجميد' : 'Unfreeze' }}
+                +XP
+              </button>
+              <button
+                type="button"
+                (click)="openXpModal(student, -20)"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                [title]="langService.isArabic() ? 'خصم نقاط' : 'Deduct XP'"
+              >
+                -XP
+              </button>
+
+              <!-- Toggle Leaderboard -->
+              <button
+                type="button"
+                (click)="toggleLeaderboard(student)"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                [title]="student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show in Hall of Fame') : (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide from Hall of Fame')"
+              >
+                {{ student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار باللوحة' : 'Show') : (langService.isArabic() ? 'إخفاء من اللوحة' : 'Hide') }}
               </button>
             }
-
-            <!-- Cancel Subscription -->
-            @if (student.subscriptionStatus !== 'CANCELLED') {
-              <button
-                type="button"
-                (click)="updateStatus(student, 'CANCELLED')"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-rose-500/40 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
-              >
-                {{ langService.isArabic() ? 'إلغاء الاشتراك' : 'Cancel' }}
-              </button>
-            }
-
-            <!-- XP Bonus / Penalty -->
-            <button
-              type="button"
-              (click)="openXpModal(student, 50)"
-              class="px-2 py-1.5 rounded-xl text-xs font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 transition-colors cursor-pointer"
-              [title]="langService.isArabic() ? 'منح نقاط إضافية' : 'Award Bonus XP'"
-            >
-              +XP
-            </button>
-            <button
-              type="button"
-              (click)="openXpModal(student, -20)"
-              class="px-2 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
-              [title]="langService.isArabic() ? 'خصم نقاط' : 'Deduct XP'"
-            >
-              -XP
-            </button>
-
-            <!-- Toggle Leaderboard -->
-            <button
-              type="button"
-              (click)="toggleLeaderboard(student)"
-              class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-surface-border text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-              [title]="student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار في لوحة الشرف' : 'Show in Hall of Fame') : (langService.isArabic() ? 'إخفاء من لوحة الشرف' : 'Hide from Hall of Fame')"
-            >
-              {{ student.isLeaderboardHidden ? (langService.isArabic() ? 'إظهار باللوحة' : 'Show') : (langService.isArabic() ? 'إخفاء من اللوحة' : 'Hide') }}
-            </button>
           </div>
 
         </div>
@@ -644,196 +638,7 @@
     }
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: Manual Unit Activation                                             -->
-  <!-- ========================================================================= -->
-  @if (isActivateModalOpen() && studentToActivate(); as student) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-md max-h-[90dvh] min-h-0 overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
-        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <h3 class="text-sm font-black text-text-primary">
-            {{ langService.isArabic() ? ('تفعيل وحدة دراسية للطالب: ' + student.name + ' (' + student.haCode + ')') : ('Activate Study Unit for: ' + student.name + ' (' + student.haCode + ')') }}
-          </h3>
-          <button type="button" (click)="isActivateModalOpen.set(false)" class="p-1 rounded-lg text-text-muted hover:bg-surface-bg">
-            <app-icon name="x" [size]="16" />
-          </button>
-        </div>
 
-        <!-- Student Academic Track & Grade Info -->
-        <div class="p-3 rounded-2xl bg-surface-bg border border-surface-border text-xs flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-text-secondary">{{ langService.isArabic() ? 'المسار والصف الدراسي:' : 'Track & Grade Level:' }}</span>
-            <span class="px-2.5 py-0.5 rounded-lg font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 font-mono">
-              {{ student.curriculum }} — {{ student.gradeLevel }}
-            </span>
-          </div>
-          <button
-            type="button"
-            (click)="toggleShowAllUnits()"
-            class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1.5"
-            [class.bg-brand-primary/15]="showAllUnits()"
-            [class.border-brand-primary/40]="showAllUnits()"
-            [class.text-brand-primary]="showAllUnits()"
-            [class.bg-surface-card]="!showAllUnits()"
-            [class.border-surface-border]="!showAllUnits()"
-            [class.text-text-muted]="!showAllUnits()"
-          >
-            <app-icon [name]="showAllUnits() ? 'check' : 'filter'" [size]="12" />
-            <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض كل الوحدات (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كافة وحدات المناهج' : 'Show All Units') }}</span>
-          </button>
-        </div>
-
-        <!-- Currently Enrolled Units (with 1-click Revoke capability) -->
-        @if (studentActiveSubscriptions().length > 0) {
-          <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-text-primary text-xs flex items-center gap-1.5">
-                <app-icon name="book-open" [size]="14" className="text-emerald-500" />
-                <span>{{ langService.isArabic() ? 'الوحدات المشترك بها حالياً:' : 'Currently Enrolled Units:' }}</span>
-              </span>
-              <span class="text-[10px] text-text-muted font-numeric">({{ studentActiveSubscriptions().length }})</span>
-            </div>
-            <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-              @for (sub of studentActiveSubscriptions(); track (sub._id || sub.id)) {
-                <div class="p-2 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between gap-2 text-xs">
-                  <div class="min-w-0">
-                    <span class="font-bold text-text-primary block truncate">{{ sub.unitTitleAr }}</span>
-                    <span class="text-[10px] text-text-muted font-mono">{{ sub.curriculum }} • {{ sub.gradeLevel }} • {{ sub.accessScope === 'ASSESSMENTS_ONLY' ? 'اختبارات فقط' : 'كاملة' }}</span>
-                  </div>
-                  @if (sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired) {
-                    <button
-                      type="button"
-                      (click)="revokeStudentSubscription(sub)"
-                      [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
-                      class="px-2.5 py-1 rounded-lg text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50"
-                      [title]="langService.isArabic() ? 'إلغاء اشتراك الطالب في هذه الوحدة' : 'Revoke unit subscription'"
-                    >
-                      @if (isRevokingSubscription() === (sub._id || sub.id)) {
-                        <span class="animate-spin inline-block">⏳</span>
-                      } @else {
-                        <span>{{ langService.isArabic() ? 'إلغاء الاشتراك' : 'Revoke' }}</span>
-                      }
-                    </button>
-                  } @else {
-                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-500/10 text-slate-400">
-                      {{ sub.subscriptionStatus === 'CANCELLED' ? (langService.isArabic() ? 'ملغي' : 'Cancelled') : (langService.isArabic() ? 'منتهي' : 'Expired') }}
-                    </span>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-        }
-
-        <div>
-          <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? ('اختر الوحدة المطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + '):') : ('Select Unit for Student (' + student.curriculum + ' - ' + student.gradeLevel + '):') }}</label>
-          <select
-            [ngModel]="activationUnitId()"
-            (ngModelChange)="activationUnitId.set($event)"
-            class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
-          >
-            @for (unit of studentMatchingUnits(); track (unit.id || unit._id)) {
-              <option [value]="unit.id || unit._id">
-                {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}@if ((unit.originalPriceEgp || unit.original_price_egp) > (unit.priceEgp || unit.price_egp)) { ({{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}) }
-              </option>
-            } @empty {
-              <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units available matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
-            }
-          </select>
-          @if (studentMatchingUnits().length === 0) {
-            <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2 mt-2">
-              <app-icon name="alert-circle" [size]="16" />
-              <span>
-                {{ langService.isArabic() ? ('لا توجد وحدات مسجلة لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). أضيفي وحدات من استوديو المناهج.') : ('No units registered for (' + student.curriculum + ' - ' + student.gradeLevel + '). Add units in Curriculum Studio.') }}
-              </span>
-            </div>
-          }
-        </div>
-
-        <!-- Subscription Scope (Full Unit vs Assessments Only) -->
-        <div>
-          <label class="block font-bold text-text-secondary mb-1.5">{{ langService.isArabic() ? 'نوع صلاحية التفعيل (نطاق وصول الطالب)' : 'Activation Permission Scope' }}</label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <label
-              class="flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all"
-              [class.border-cyan-500]="activationScope() === 'FULL'"
-              [class.bg-cyan-500/10]="activationScope() === 'FULL'"
-              [class.border-surface-border]="activationScope() !== 'FULL'"
-              [class.bg-surface-bg]="activationScope() !== 'FULL'"
-            >
-              <input
-                type="radio"
-                name="activationScope"
-                value="FULL"
-                [ngModel]="activationScope()"
-                (ngModelChange)="activationScope.set($event)"
-                class="mt-0.5 accent-cyan-500"
-              />
-              <div class="space-y-0.5">
-                <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
-                  <app-icon name="check-circle" [size]="13" className="text-cyan-500" />
-                  <span>{{ langService.isArabic() ? 'الوحدة كاملة' : 'Full Unit' }}</span>
-                </div>
-                <p class="text-[10px] text-text-muted leading-relaxed">
-                  {{ langService.isArabic() ? 'مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات' : 'Access all video lectures, explanatory PDFs, quizzes, and homework.' }}
-                </p>
-              </div>
-            </label>
-
-            <label
-              class="flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all"
-              [class.border-purple-500]="activationScope() === 'ASSESSMENTS_ONLY'"
-              [class.bg-purple-500/10]="activationScope() === 'ASSESSMENTS_ONLY'"
-              [class.border-surface-border]="activationScope() !== 'ASSESSMENTS_ONLY'"
-              [class.bg-surface-bg]="activationScope() !== 'ASSESSMENTS_ONLY'"
-            >
-              <input
-                type="radio"
-                name="activationScope"
-                value="ASSESSMENTS_ONLY"
-                [ngModel]="activationScope()"
-                (ngModelChange)="activationScope.set($event)"
-                class="mt-0.5 accent-purple-500"
-              />
-              <div class="space-y-0.5">
-                <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
-                  <app-icon name="shield" [size]="13" className="text-purple-500" />
-                  <span>{{ langService.isArabic() ? 'كويزات واختبارات فقط' : 'Quizzes & Exams Only' }}</span>
-                </div>
-                <p class="text-[10px] text-text-muted leading-relaxed">
-                  {{ langService.isArabic() ? 'حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)' : 'Access assessments, quizzes, and homework only (no lecture videos).' }}
-                </p>
-              </div>
-            </label>
-          </div>
-        </div>
-
-
-        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
-          <button
-            type="button"
-            (click)="isActivateModalOpen.set(false)"
-            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted hover:bg-surface-card transition-all cursor-pointer"
-          >
-            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
-          </button>
-          <button
-            type="button"
-            (click)="confirmUnitActivation()"
-            [disabled]="isActivatingUnit() || !activationUnitId() || studentMatchingUnits().length === 0"
-            class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-          >
-            @if (isActivatingUnit()) {
-              <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              <span>{{ langService.isArabic() ? 'جاري الحفظ...' : 'Saving...' }}</span>
-            } @else {
-              <span>{{ langService.isArabic() ? 'تأكيد التفعيل الفوري' : 'Confirm Instant Activation' }}</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 
   <!-- ========================================================================= -->
   <!-- MODAL: XP Bonus & Penalty Adjustment                                      -->
@@ -894,111 +699,262 @@
 
 
   <!-- ========================================================================= -->
-  <!-- 4. Student Subscriptions & Units Management Modal (Revoke / View)          -->
+  <!-- 4. Unified Student Subscriptions & Units Management Modal (View/Revoke/Add) -->
   <!-- ========================================================================= -->
-  @if (isSubscriptionsModalOpen() && studentForSubscriptions(); as student) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="relative w-full max-w-lg rounded-3xl spider-rim-glass-card bg-surface-card p-6 shadow-2xl space-y-4 border border-surface-border">
+  @if ((isSubscriptionsModalOpen() || isActivateModalOpen()) && (studentForSubscriptions() || studentToActivate()); as student) {
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto" (click)="closeUnitsModal()">
+      <div class="relative w-full max-w-2xl max-h-[92dvh] min-h-0 flex flex-col rounded-3xl spider-rim-glass-card bg-surface-card shadow-2xl border border-surface-border text-xs" (click)="$event.stopPropagation()">
         
-        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-          <div class="flex items-center gap-2.5">
-            <span class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-4 sm:p-5 border-b border-surface-border shrink-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center shadow-sm shrink-0">
               <app-icon name="book-open" [size]="18" />
             </span>
-            <div>
-              <h3 class="font-black text-sm text-text-primary">
-                {{ langService.isArabic() ? 'إدارة اشتراكات الطالب في الوحدات' : 'Manage Student Unit Subscriptions' }}
+            <div class="min-w-0">
+              <h3 class="font-black text-sm sm:text-base text-text-primary truncate">
+                {{ langService.isArabic() ? 'إدارة وحدات واشتراكات الطالب' : 'Student Units & Subscriptions' }}
               </h3>
-              <p class="text-[11px] text-text-muted mt-0.5 font-mono">
-                {{ student.name }} ({{ student.haCode }}) — {{ student.curriculum }}
-              </p>
+              <div class="text-[11px] text-text-muted mt-0.5 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span class="font-bold text-text-primary">{{ student.name }}</span>
+                <span class="px-2 py-0.5 rounded-md font-mono font-bold bg-surface-bg border border-surface-border text-brand-primary text-[10px]">{{ student.haCode }}</span>
+                <span class="text-text-muted">• {{ student.curriculum }} — {{ student.gradeLevel }}</span>
+              </div>
             </div>
           </div>
           <button
             type="button"
-            (click)="isSubscriptionsModalOpen.set(false)"
-            class="w-8 h-8 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+            (click)="closeUnitsModal()"
+            class="w-8 h-8 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0"
           >
             <app-icon name="x" [size]="16" />
           </button>
         </div>
 
-        <!-- Student Subscriptions List -->
-        <div class="space-y-3">
-          @if (isLoadingSubscriptions()) {
-            <div class="p-6 text-center text-text-muted space-y-2">
-              <span class="w-5 h-5 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin inline-block"></span>
-              <p class="text-xs">{{ langService.isArabic() ? 'جاري تحميل اشتراكات الوحدات...' : 'Loading subscriptions...' }}</p>
-            </div>
-          } @else if (studentActiveSubscriptions().length === 0) {
-            <div class="p-6 text-center rounded-2xl bg-surface-bg border border-surface-border space-y-2">
-              <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto opacity-40" />
-              <h4 class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد اشتراكات وحدات مسجلة لهذا الطالب' : 'No unit subscriptions found' }}</h4>
-              <p class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يمكنك تفعيل وحدات جديدة للطالب في أي وقت.' : 'You can activate new units anytime.' }}</p>
-            </div>
-          } @else {
-            <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
-              @for (sub of studentActiveSubscriptions(); track (sub._id || sub.id)) {
-                <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border flex items-center justify-between gap-3 text-xs">
-                  <div class="min-w-0 space-y-1">
-                    <div class="flex items-center gap-2">
-                      <span class="font-bold text-text-primary text-sm truncate">{{ sub.unitTitleAr }}</span>
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[9px] font-bold"
-                        [class.bg-emerald-500/10]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
-                        [class.text-emerald-500]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
-                        [class.bg-rose-500/10]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
-                        [class.text-rose-500]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
-                      >
-                        {{ sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired ? (langService.isArabic() ? 'نشط' : 'Active') : sub.subscriptionStatus === 'CANCELLED' ? (langService.isArabic() ? 'ملغي' : 'Cancelled') : (langService.isArabic() ? 'منتهي' : 'Expired') }}
-                      </span>
-                    </div>
-                    <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-2">
-                      <span>{{ sub.curriculum }} • {{ sub.gradeLevel }}</span>
-                      <span>• {{ sub.accessScope === 'ASSESSMENTS_ONLY' ? (langService.isArabic() ? 'اختبارات فقط' : 'Quizzes Only') : (langService.isArabic() ? 'وحدة كاملة' : 'Full Unit') }}</span>
-                      @if (sub.pricePaidEgp !== undefined) {
-                        <span>• {{ sub.pricePaidEgp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}</span>
-                      }
-                    </div>
-                  </div>
+        <!-- Scrollable Modal Body -->
+        <div class="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
 
-                  <!-- Revoke Action -->
-                  @if (sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired) {
-                    <button
-                      type="button"
-                      (click)="revokeStudentSubscription(sub)"
-                      [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
-                      class="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
-                    >
-                      @if (isRevokingSubscription() === (sub._id || sub.id)) {
-                        <span class="w-3 h-3 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin"></span>
-                        <span>{{ langService.isArabic() ? 'جاري الإلغاء...' : 'Revoking...' }}</span>
-                      } @else {
-                        <app-icon name="trash" [size]="13" />
-                        <span>{{ langService.isArabic() ? 'إلغاء اشتراك الوحدة' : 'Revoke Subscription' }}</span>
-                      }
-                    </button>
-                  }
+          <!-- 1. Currently Enrolled Units List -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <app-icon name="book-open" [size]="15" className="text-emerald-500" />
+                <h4 class="font-black text-xs sm:text-sm text-text-primary">
+                  {{ langService.isArabic() ? 'الوحدات المشترك بها حالياً' : 'Currently Enrolled Units' }}
+                </h4>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary font-numeric">
+                {{ activeSubscriptionsCount() }} {{ langService.isArabic() ? 'نشط' : 'Active' }} / {{ studentActiveSubscriptions().length }} {{ langService.isArabic() ? 'إجمالي' : 'Total' }}
+              </span>
+            </div>
+
+            @if (isLoadingSubscriptions()) {
+              <div class="p-6 text-center text-text-muted space-y-2 rounded-2xl bg-surface-bg border border-surface-border">
+                <span class="w-5 h-5 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin inline-block"></span>
+                <p class="text-xs">{{ langService.isArabic() ? 'جاري تحميل اشتراكات الوحدات...' : 'Loading subscriptions...' }}</p>
+              </div>
+            } @else if (studentActiveSubscriptions().length === 0) {
+              <div class="p-6 text-center rounded-2xl bg-surface-bg border border-surface-border space-y-2">
+                <app-icon name="book-open" [size]="28" className="text-text-muted mx-auto opacity-40" />
+                <h5 class="text-xs font-bold text-text-primary">{{ langService.isArabic() ? 'لا توجد اشتراكات وحدات مسجلة لهذا الطالب حالياً' : 'No unit subscriptions found for this student' }}</h5>
+                <p class="text-[11px] text-text-muted">{{ langService.isArabic() ? 'يمكنك تفعيل وحدات جديدة له مباشرة باستخدام النموذج أدناه.' : 'You can activate new units below.' }}</p>
+              </div>
+            } @else {
+              <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                @for (sub of studentActiveSubscriptions(); track (sub._id || sub.id)) {
+                  <div class="p-3 rounded-2xl bg-surface-bg border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                    <div class="min-w-0 space-y-1">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-text-primary text-xs sm:text-sm truncate">{{ sub.unitTitleAr || sub.titleAr || sub.titleEn }}</span>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0"
+                          [class.bg-emerald-500/10]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
+                          [class.text-emerald-500]="sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired"
+                          [class.bg-amber-500/10]="sub.subscriptionStatus === 'FROZEN'"
+                          [class.text-amber-500]="sub.subscriptionStatus === 'FROZEN'"
+                          [class.bg-rose-500/10]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
+                          [class.text-rose-500]="sub.subscriptionStatus === 'CANCELLED' || sub.isExpired"
+                        >
+                          {{ sub.subscriptionStatus === 'ACTIVE' && !sub.isExpired ? (langService.isArabic() ? 'نشط' : 'Active') : sub.subscriptionStatus === 'FROZEN' ? (langService.isArabic() ? 'مجمّد' : 'Frozen') : sub.subscriptionStatus === 'CANCELLED' ? (langService.isArabic() ? 'ملغي' : 'Cancelled') : (langService.isArabic() ? 'منتهي' : 'Expired') }}
+                        </span>
+                      </div>
+                      <div class="text-[11px] text-text-muted font-mono flex flex-wrap items-center gap-2">
+                        <span>{{ sub.curriculum }} • {{ sub.gradeLevel }}</span>
+                        <span>• {{ sub.accessScope === 'ASSESSMENTS_ONLY' ? (langService.isArabic() ? 'اختبارات فقط' : 'Quizzes Only') : (langService.isArabic() ? 'وحدة كاملة' : 'Full Unit') }}</span>
+                        @if (sub.pricePaidEgp !== undefined) {
+                          <span>• {{ sub.pricePaidEgp }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Revoke Action -->
+                    @if ((sub.subscriptionStatus === 'ACTIVE' || sub.subscriptionStatus === 'FROZEN') && !sub.isExpired) {
+                      <button
+                        type="button"
+                        (click)="revokeStudentSubscription(sub)"
+                        [disabled]="isRevokingSubscription() === (sub._id || sub.id)"
+                        class="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 self-end sm:self-center shadow-sm"
+                        [title]="langService.isArabic() ? 'إلغاء اشتراك الطالب في هذه الوحدة فوراً' : 'Revoke unit subscription'"
+                      >
+                        @if (isRevokingSubscription() === (sub._id || sub.id)) {
+                          <span class="w-3 h-3 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin"></span>
+                          <span>{{ langService.isArabic() ? 'جاري الإلغاء...' : 'Revoking...' }}</span>
+                        } @else {
+                          <app-icon name="trash" [size]="13" />
+                          <span>{{ langService.isArabic() ? 'إلغاء اشتراك الوحدة' : 'Revoke' }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- 2. Integrated Unit Activation Section -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.03] space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-border gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+                  <app-icon name="plus" [size]="15" />
+                </span>
+                <h4 class="text-xs sm:text-sm font-black text-text-primary">
+                  {{ langService.isArabic() ? 'تفعيل وحدة جديدة لهذا الطالب' : 'Activate New Unit for Student' }}
+                </h4>
+              </div>
+
+              <!-- Toggle Show All Units -->
+              <button
+                type="button"
+                (click)="toggleShowAllUnits()"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                [class.bg-brand-primary/15]="showAllUnits()"
+                [class.border-brand-primary/40]="showAllUnits()"
+                [class.text-brand-primary]="showAllUnits()"
+                [class.bg-surface-card]="!showAllUnits()"
+                [class.border-surface-border]="!showAllUnits()"
+                [class.text-text-muted]="!showAllUnits()"
+              >
+                <app-icon [name]="showAllUnits() ? 'check' : 'filter'" [size]="12" />
+                <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض كل الوحدات (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كافة وحدات المناهج' : 'Show All Units') }}</span>
+              </button>
+            </div>
+
+            <!-- Unit Dropdown Selection -->
+            <div class="space-y-1.5">
+              <label class="block font-bold text-text-secondary text-xs">
+                {{ langService.isArabic() ? ('اختر الوحدة الدراسية (' + student.curriculum + ' - ' + student.gradeLevel + '):') : ('Select Unit for (' + student.curriculum + ' - ' + student.gradeLevel + '):') }}
+              </label>
+              <select
+                [ngModel]="activationUnitId()"
+                (ngModelChange)="activationUnitId.set($event)"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+              >
+                @for (unit of studentMatchingUnits(); track (unit.id || unit._id)) {
+                  <option [value]="unit.id || unit._id">
+                    {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}@if (isUnitActiveForStudent(unit.id || unit._id)) { ({{ langService.isArabic() ? 'مشترك بها حالياً' : 'Already Enrolled' }}) }@else if ((unit.originalPriceEgp || unit.original_price_egp) > (unit.priceEgp || unit.price_egp)) { ({{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}) }
+                  </option>
+                } @empty {
+                  <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة لصف الطالب (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units available matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
+                }
+              </select>
+              @if (studentMatchingUnits().length === 0) {
+                <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2">
+                  <app-icon name="alert-circle" [size]="15" />
+                  <span>
+                    {{ langService.isArabic() ? ('لا توجد وحدات مسجلة لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). يمكنك الضغط على "عرض كافة وحدات المناهج" بالأعلى أو إضافتها من استوديو المناهج.') : ('No units registered for this grade. Toggle "Show All Units" above or add units in Curriculum Studio.') }}
+                  </span>
                 </div>
               }
             </div>
-          }
+
+            <!-- Subscription Scope -->
+            <div class="space-y-1.5">
+              <label class="block font-bold text-text-secondary text-xs">
+                {{ langService.isArabic() ? 'نوع صلاحية التفعيل (نطاق وصول الطالب):' : 'Activation Permission Scope:' }}
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label
+                  class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all"
+                  [class.border-cyan-500]="activationScope() === 'FULL'"
+                  [class.bg-cyan-500/10]="activationScope() === 'FULL'"
+                  [class.border-surface-border]="activationScope() !== 'FULL'"
+                  [class.bg-surface-card]="activationScope() !== 'FULL'"
+                >
+                  <input
+                    type="radio"
+                    name="activationScope"
+                    value="FULL"
+                    [ngModel]="activationScope()"
+                    (ngModelChange)="activationScope.set($event)"
+                    class="mt-0.5 accent-cyan-500"
+                  />
+                  <div class="space-y-0.5">
+                    <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
+                      <app-icon name="check-circle" [size]="13" className="text-cyan-500" />
+                      <span>{{ langService.isArabic() ? 'الوحدة كاملة' : 'Full Unit' }}</span>
+                    </div>
+                    <p class="text-[10px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'مشاهدة كافة المحاضرات وملفات الشرح وحل جميع الاختبارات والكويزات' : 'Access all video lectures, explanatory PDFs, quizzes, and homework.' }}
+                    </p>
+                  </div>
+                </label>
+
+                <label
+                  class="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all"
+                  [class.border-purple-500]="activationScope() === 'ASSESSMENTS_ONLY'"
+                  [class.bg-purple-500/10]="activationScope() === 'ASSESSMENTS_ONLY'"
+                  [class.border-surface-border]="activationScope() !== 'ASSESSMENTS_ONLY'"
+                  [class.bg-surface-card]="activationScope() !== 'ASSESSMENTS_ONLY'"
+                >
+                  <input
+                    type="radio"
+                    name="activationScope"
+                    value="ASSESSMENTS_ONLY"
+                    [ngModel]="activationScope()"
+                    (ngModelChange)="activationScope.set($event)"
+                    class="mt-0.5 accent-purple-500"
+                  />
+                  <div class="space-y-0.5">
+                    <div class="font-bold text-xs text-text-primary flex items-center gap-1.5">
+                      <app-icon name="shield" [size]="13" className="text-purple-500" />
+                      <span>{{ langService.isArabic() ? 'كويزات واختبارات فقط' : 'Quizzes & Exams Only' }}</span>
+                    </div>
+                    <p class="text-[10px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'حل الكويزات والامتحانات والواجبات فقط (بدون إمكانية فتح المحاضرات)' : 'Access assessments, quizzes, and homework only (no lecture videos).' }}
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Activation Action Button -->
+            <div class="pt-2 flex items-center justify-end">
+              <button
+                type="button"
+                (click)="confirmUnitActivation()"
+                [disabled]="isActivatingUnit() || !activationUnitId() || studentMatchingUnits().length === 0"
+                class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-spider text-white font-black text-xs shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                @if (isActivatingUnit()) {
+                  <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>{{ langService.isArabic() ? 'جاري التفعيل...' : 'Activating...' }}</span>
+                } @else {
+                  <app-icon name="plus" [size]="14" />
+                  <span>{{ langService.isArabic() ? 'تأكيد تفعيل الوحدة للطالب' : 'Confirm Unit Activation' }}</span>
+                }
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        <div class="pt-3 border-t border-surface-border flex items-center justify-between gap-2">
+        <!-- Modal Footer -->
+        <div class="p-4 border-t border-surface-border flex items-center justify-end shrink-0">
           <button
             type="button"
-            (click)="isSubscriptionsModalOpen.set(false); openActivateModal(student)"
-            class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 font-bold text-xs hover:bg-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            <app-icon name="plus" [size]="14" />
-            <span>{{ langService.isArabic() ? '+ تفعيل وحدة جديدة لهذا الطالب' : '+ Activate New Unit' }}</span>
-          </button>
-
-          <button
-            type="button"
-            (click)="isSubscriptionsModalOpen.set(false)"
-            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-muted hover:bg-surface-card transition-all cursor-pointer text-xs"
+            (click)="closeUnitsModal()"
+            class="px-5 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-secondary hover:bg-surface-card hover:text-text-primary transition-all cursor-pointer text-xs"
           >
             {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
           </button>
@@ -1007,5 +963,4 @@
       </div>
     </div>
   }
-
 </section>
