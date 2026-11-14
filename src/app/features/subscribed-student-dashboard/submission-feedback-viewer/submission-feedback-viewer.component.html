@@ -219,14 +219,14 @@
           <!-- Score Breakdown Cards -->
           <div class="grid grid-cols-2 gap-2 sm:gap-3 w-full sm:w-auto">
             <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
-              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'اختيار من متعدد' : 'MCQ' }}</span>
+              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'تصحيح تلقائي' : 'Auto-Graded' }}</span>
               <span class="text-base font-black font-numeric text-text-primary">
                 {{ feedback().mcqAutoScore }}
               </span>
             </div>
 
             <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
-              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'مسائل مقالية' : 'Essay' }}</span>
+              <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'تصحيح يدوي (مقالي)' : 'Manual Essay' }}</span>
               <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
                 {{ feedback().essayManualScore }}
               </span>
@@ -380,9 +380,27 @@
                         </span>
                       }
                     } @else {
-                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-brand-accent/10 text-brand-primary dark:text-brand-accent border border-brand-accent/20 font-numeric">
-                        <span>{{ q.awardedPoints !== undefined ? q.awardedPoints : (langService.isArabic() ? 'قيد التقييم' : 'Under Review') }} / {{ q.points }} {{ langService.isArabic() ? 'درجة' : 'Pts' }}</span>
-                      </span>
+                      @if (q.awardedPoints === undefined) {
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-numeric">
+                          <app-icon name="clock" [size]="14" />
+                          <span>{{ langService.isArabic() ? 'بانتظار التصحيح اليدوي' : 'Pending Manual Review' }} ({{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }})</span>
+                        </span>
+                      } @else if (q.awardedPoints >= q.points) {
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-numeric">
+                          <app-icon name="check" [size]="14" />
+                          <span>{{ langService.isArabic() ? ('+' + q.awardedPoints + ' / ' + q.points + ' درجة (درجة كاملة)') : ('+' + q.awardedPoints + ' / ' + q.points + ' Pts (Full)') }}</span>
+                        </span>
+                      } @else if (q.awardedPoints > 0) {
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-numeric">
+                          <app-icon name="check" [size]="14" />
+                          <span>{{ langService.isArabic() ? ('+' + q.awardedPoints + ' / ' + q.points + ' درجة (نصف درجة)') : ('+' + q.awardedPoints + ' / ' + q.points + ' Pts (Half)') }}</span>
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-numeric">
+                          <app-icon name="x" [size]="14" />
+                          <span>{{ langService.isArabic() ? ('0 / ' + q.points + ' درجة (إجابة خاطئة)') : ('0 / ' + q.points + ' Pts (Zero)') }}</span>
+                        </span>
+                      }
                     }
                   </div>
 

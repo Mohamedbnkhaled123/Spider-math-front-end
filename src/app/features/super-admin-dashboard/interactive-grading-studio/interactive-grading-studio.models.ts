@@ -12,14 +12,24 @@ export interface GradingMistake {
 }
 
 export interface QuestionAnswerDetail {
+  questionId?: string;
   questionText: string;
-  questionType: 'MCQ' | 'ESSAY';
+  questionType: 'MCQ' | 'INPUT_TEXT' | 'ESSAY_PHOTO' | 'ESSAY';
   points: number;
   pointsEarned: number;
   isCorrect: boolean;
+  // MCQ fields
   selectedOptionIndex?: number;
   correctOptionIndex?: number;
   options?: string[];
+  // INPUT_TEXT fields
+  studentTextAnswer?: string;
+  acceptedAnswers?: string[];
+  modelAnswerText?: string;
+  // ESSAY / PHOTO fields
+  isPendingManualGrading?: boolean;
+  gradingDecision?: 'FULL' | 'HALF' | 'ZERO' | null;
+  studentSolutionImages?: Array<{ imageUrl: string; rotation?: number }>;
   imageUrl?: string | null;
   uploadedImageUrl?: string | null;
 }
@@ -48,6 +58,7 @@ export interface AllQuizSubmissionItem {
   isSuspiciousFastSolve: boolean;
   clockTamperDetected: boolean;
   answers: QuestionAnswerDetail[];
+  essayAnswers?: Array<{ question_id: string; points_earned: number; decision?: 'FULL' | 'HALF' | 'ZERO' }>;
   homeworkImages?: Array<{ imageUrl: string; rotation?: number }>;
   teacherFeedbackNotes?: string;
 }

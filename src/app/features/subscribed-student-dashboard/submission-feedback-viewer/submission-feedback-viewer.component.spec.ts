@@ -41,4 +41,23 @@ describe('SubmissionFeedbackViewerComponent', () => {
     component.feedback.update((f) => ({ ...f, resultVisibility: 'HIDDEN_PENDING_TEACHER' }));
     expect(component.isPublished()).toBeFalse();
   });
+
+  it('should calculate score percentage and full mark condition correctly', () => {
+    component.feedback.update((f) => ({
+      ...f,
+      resultVisibility: 'PUBLISHED_TO_STUDENT_AND_PARENT',
+      finalTotalScore: 10,
+      maxScore: 15
+    }));
+    expect(component.scorePercentage()).toBe(67);
+    expect(component.isFullMark()).toBeFalse();
+
+    component.feedback.update((f) => ({
+      ...f,
+      finalTotalScore: 15,
+      maxScore: 15
+    }));
+    expect(component.scorePercentage()).toBe(100);
+    expect(component.isFullMark()).toBeTrue();
+  });
 });

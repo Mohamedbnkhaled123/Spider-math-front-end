@@ -437,25 +437,82 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-5">
           @for (q of item.answers; track $index; let qIdx = $index) {
             <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-black text-brand-primary">{{ langService.isArabic() ? ('السؤال رقم ' + (qIdx + 1)) : ('Question #' + (qIdx + 1)) }}</span>
-                <span
-                  class="px-2.5 py-1 rounded-full text-xs font-bold font-numeric"
-                  [class.bg-emerald-500/10]="q.isCorrect"
-                  [class.text-emerald-600]="q.isCorrect"
-                  [class.bg-rose-500/10]="!q.isCorrect"
-                  [class.text-rose-600]="!q.isCorrect"
-                >
-                  {{ q.isCorrect ? (langService.isArabic() ? ('+ ' + q.pointsEarned + ' درجات (صحيح)') : ('+ ' + q.pointsEarned + ' Pts (Correct)')) : (langService.isArabic() ? ('0 / ' + q.points + ' (إجابة خاطئة)') : ('0 / ' + q.points + ' (Incorrect)')) }}
-                </span>
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-black text-brand-primary">
+                    {{ langService.isArabic() ? ('السؤال رقم ' + (qIdx + 1)) : ('Question #' + (qIdx + 1)) }}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-card border border-surface-border text-text-muted">
+                    {{ q.questionType === 'MCQ' ? (langService.isArabic() ? 'اختيار من متعدد' : 'MCQ') : q.questionType === 'INPUT_TEXT' ? (langService.isArabic() ? 'إدخال نص / كتابة' : 'Text Input') : (langService.isArabic() ? 'مسألة مقالية / صورة' : 'Essay / Solution Image') }}
+                  </span>
+                </div>
+
+                <!-- Points & Evaluation Badge -->
+                @if (q.questionType === 'ESSAY_PHOTO' && q.isPendingManualGrading) {
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1.5 animate-pulse">
+                    <app-icon name="clock" [size]="12" />
+                    <span>{{ langService.isArabic() ? 'بانتظار التصحيح اليدوي' : 'Pending Manual Review' }}</span>
+                    <span class="text-[10px] font-numeric opacity-80">({{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }})</span>
+                  </span>
+                } @else if (q.questionType === 'ESSAY_PHOTO' && !q.isPendingManualGrading) {
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-bold font-numeric border flex items-center gap-1"
+                    [class.bg-emerald-500/10]="q.gradingDecision === 'FULL'"
+                    [class.text-emerald-600]="q.gradingDecision === 'FULL'"
+                    [class.border-emerald-500/30]="q.gradingDecision === 'FULL'"
+                    [class.bg-blue-500/10]="q.gradingDecision === 'HALF'"
+                    [class.text-blue-600]="q.gradingDecision === 'HALF'"
+                    [class.border-blue-500/30]="q.gradingDecision === 'HALF'"
+                    [class.bg-rose-500/10]="q.gradingDecision === 'ZERO'"
+                    [class.text-rose-600]="q.gradingDecision === 'ZERO'"
+                    [class.border-rose-500/30]="q.gradingDecision === 'ZERO'"
+                  >
+                    <app-icon [name]="q.pointsEarned > 0 ? 'check' : 'x'" [size]="12" />
+                    <span>
+                      {{ q.gradingDecision === 'FULL'
+                        ? (langService.isArabic() ? ('+ ' + q.pointsEarned + ' درجات (درجة كاملة)') : ('+ ' + q.pointsEarned + ' Pts (Full)'))
+                        : q.gradingDecision === 'HALF'
+                        ? (langService.isArabic() ? ('+ ' + q.pointsEarned + ' درجات (نصف درجة)') : ('+ ' + q.pointsEarned + ' Pts (Half)'))
+                        : (langService.isArabic() ? ('0 / ' + q.points + ' (إجابة خاطئة)') : ('0 / ' + q.points + ' (Zero Pts)'))
+                      }}
+                    </span>
+                  </span>
+                } @else {
+                  <!-- Auto-Graded (MCQ / INPUT_TEXT) -->
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-bold font-numeric border flex items-center gap-1"
+                    [class.bg-emerald-500/10]="q.isCorrect"
+                    [class.text-emerald-600]="q.isCorrect"
+                    [class.border-emerald-500/30]="q.isCorrect"
+                    [class.bg-rose-500/10]="!q.isCorrect"
+                    [class.text-rose-600]="!q.isCorrect"
+                    [class.border-rose-500/30]="!q.isCorrect"
+                  >
+                    <app-icon [name]="q.isCorrect ? 'check' : 'x'" [size]="12" />
+                    <span>
+                      {{ q.isCorrect
+                        ? (langService.isArabic() ? ('+ ' + q.pointsEarned + ' درجات (صحيح)') : ('+ ' + q.pointsEarned + ' Pts (Correct)'))
+                        : (langService.isArabic() ? ('0 / ' + q.points + ' (إجابة خاطئة)') : ('0 / ' + q.points + ' (Incorrect)'))
+                      }}
+                    </span>
+                  </span>
+                }
               </div>
 
+              <!-- Question Text -->
               <h4 class="text-sm font-bold text-text-primary leading-relaxed">
                 <app-math-formula [text]="q.questionText" />
               </h4>
 
-              <!-- MCQ Options list -->
-              @if (q.options && q.options.length > 0) {
+              <!-- Diagram / Question Image if present -->
+              @if (q.imageUrl) {
+                <div class="max-w-md rounded-xl overflow-hidden border border-surface-border">
+                  <img [src]="q.imageUrl" [alt]="langService.isArabic() ? 'صورة السؤال' : 'Question image'" class="w-full h-auto object-contain max-h-48" />
+                </div>
+              }
+
+              <!-- 1. MCQ Options list -->
+              @if (q.questionType === 'MCQ' && q.options && q.options.length > 0) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                   @for (opt of q.options; track $index; let optIdx = $index) {
                     <div
@@ -497,6 +554,157 @@
                       }
                     </div>
                   }
+                </div>
+              }
+
+              <!-- 2. INPUT_TEXT Details Comparison -->
+              @if (q.questionType === 'INPUT_TEXT') {
+                <div
+                  class="mt-3 p-4 rounded-xl border space-y-3"
+                  [class.bg-emerald-500/5]="q.isCorrect"
+                  [class.border-emerald-500/30]="q.isCorrect"
+                  [class.bg-rose-500/5]="!q.isCorrect"
+                  [class.border-rose-500/30]="!q.isCorrect"
+                >
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span class="text-[11px] font-bold text-text-muted block mb-1">
+                        {{ langService.isArabic() ? 'إجابة الطالب المكتوبة:' : "Student's Written Answer:" }}
+                      </span>
+                      <div class="flex items-center gap-2">
+                        <span
+                          class="text-sm font-bold font-mono px-3 py-1.5 rounded-lg border"
+                          [class.bg-emerald-500/10]="q.isCorrect"
+                          [class.border-emerald-500/40]="q.isCorrect"
+                          [class.text-emerald-700]="q.isCorrect"
+                          [class.bg-rose-500/10]="!q.isCorrect"
+                          [class.border-rose-500/40]="!q.isCorrect"
+                          [class.text-rose-700]="!q.isCorrect"
+                        >
+                          {{ q.studentTextAnswer || (langService.isArabic() ? 'لم تتم الإجابة' : 'No Answer Typed') }}
+                        </span>
+                        <span class="text-xs font-bold" [class.text-emerald-600]="q.isCorrect" [class.text-rose-600]="!q.isCorrect">
+                          {{ q.isCorrect ? (langService.isArabic() ? '✓ متطابقة وتصححت تلقائياً' : '✓ Auto-Graded Correct') : (langService.isArabic() ? '✗ غير مطابقة' : '✗ Incorrect') }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span class="text-[11px] font-bold text-text-muted block mb-1">
+                        {{ langService.isArabic() ? 'الإجابة النموذجية المعتمدة:' : 'Accepted Model Answer:' }}
+                      </span>
+                      <span class="text-sm font-bold font-mono text-emerald-600 bg-surface-card px-3 py-1.5 rounded-lg border border-surface-border block">
+                        {{ (q.acceptedAnswers && q.acceptedAnswers.length > 0) ? q.acceptedAnswers.join('  /  ') : (q.modelAnswerText || (langService.isArabic() ? 'لا يوجد نص محدد' : 'None specified')) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- 3. ESSAY_PHOTO Solution Image & Teacher Interactive Grading Controls -->
+              @if (q.questionType === 'ESSAY_PHOTO') {
+                <div class="mt-3 p-4 rounded-xl border border-surface-border bg-surface-card space-y-4">
+                  
+                  <!-- Uploaded Student Solution Image(s) -->
+                  <div>
+                    <span class="text-xs font-bold text-text-muted block mb-2 flex items-center gap-1.5">
+                      <app-icon name="image" [size]="14" className="text-brand-primary" />
+                      <span>{{ langService.isArabic() ? 'صورة خطوات الحل المرفوعة من الطالب:' : "Student's Uploaded Solution Step Image:" }}</span>
+                    </span>
+
+                    @if (q.studentSolutionImages && q.studentSolutionImages.length > 0) {
+                      <div class="flex flex-wrap items-center gap-3">
+                        @for (img of q.studentSolutionImages; track $index) {
+                          <div
+                            (click)="openImagePreview(img.imageUrl)"
+                            class="group relative w-36 h-28 rounded-xl overflow-hidden border border-surface-border hover:border-brand-primary cursor-pointer transition-all shadow-sm bg-black/5"
+                          >
+                            <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'حل الطالب' : 'Student Solution'" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold gap-1">
+                              <app-icon name="maximize" [size]="14" />
+                              <span>{{ langService.isArabic() ? 'معاينة وتكبير' : 'Zoom' }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="p-3 rounded-xl bg-surface-bg border border-surface-border text-xs text-text-muted flex items-center gap-2">
+                        <app-icon name="alert-circle" [size]="14" />
+                        <span>{{ langService.isArabic() ? 'لم يقم الطالب برفع صورة حل لهذا السؤال.' : 'No solution image uploaded.' }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Teacher Direct Grading Action Buttons -->
+                  <div class="pt-3 border-t border-surface-border">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div class="space-y-0.5">
+                        <span class="text-xs font-black text-text-primary block flex items-center gap-1.5">
+                          <app-icon name="award" [size]="14" className="text-brand-accent" />
+                          <span>{{ langService.isArabic() ? 'تصحيح المعلمة لهذا السؤال المقالي:' : 'Teacher Direct Grading Decision:' }}</span>
+                        </span>
+                        <span class="text-[11px] text-text-muted">
+                          {{ langService.isArabic() ? 'اختر التقييم ليتم تحديث مجموع درجات الطالب واعتماده فورياً:' : 'Select grade to update and persist total score instantly:' }}
+                        </span>
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <!-- Full Mark Button -->
+                        <button
+                          type="button"
+                          (click)="gradeEssayQuestionInModal(item, q, 'FULL')"
+                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
+                          [class.bg-emerald-600]="q.gradingDecision === 'FULL'"
+                          [class.text-white]="q.gradingDecision === 'FULL'"
+                          [class.shadow-brand-glow]="q.gradingDecision === 'FULL'"
+                          [class.border-emerald-600]="q.gradingDecision === 'FULL'"
+                          [class.bg-surface-bg]="q.gradingDecision !== 'FULL'"
+                          [class.text-emerald-700]="q.gradingDecision !== 'FULL'"
+                          [class.border-emerald-500/30]="q.gradingDecision !== 'FULL'"
+                          [class.hover:bg-emerald-500/10]="q.gradingDecision !== 'FULL'"
+                        >
+                          <app-icon name="check-circle" [size]="13" />
+                          <span>{{ langService.isArabic() ? ('صح (درجة كاملة: ' + q.points + ')') : ('Correct (Full: ' + q.points + ')') }}</span>
+                        </button>
+
+                        <!-- Half Mark Button -->
+                        <button
+                          type="button"
+                          (click)="gradeEssayQuestionInModal(item, q, 'HALF')"
+                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
+                          [class.bg-blue-600]="q.gradingDecision === 'HALF'"
+                          [class.text-white]="q.gradingDecision === 'HALF'"
+                          [class.shadow-md]="q.gradingDecision === 'HALF'"
+                          [class.border-blue-600]="q.gradingDecision === 'HALF'"
+                          [class.bg-surface-bg]="q.gradingDecision !== 'HALF'"
+                          [class.text-blue-700]="q.gradingDecision !== 'HALF'"
+                          [class.border-blue-500/30]="q.gradingDecision !== 'HALF'"
+                          [class.hover:bg-blue-500/10]="q.gradingDecision !== 'HALF'"
+                        >
+                          <app-icon name="star" [size]="13" />
+                          <span>{{ langService.isArabic() ? ('نصف الدرجة (' + (q.points / 2) + ')') : ('Half Points (' + (q.points / 2) + ')') }}</span>
+                        </button>
+
+                        <!-- Zero Mark Button -->
+                        <button
+                          type="button"
+                          (click)="gradeEssayQuestionInModal(item, q, 'ZERO')"
+                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
+                          [class.bg-rose-600]="q.gradingDecision === 'ZERO'"
+                          [class.text-white]="q.gradingDecision === 'ZERO'"
+                          [class.shadow-md]="q.gradingDecision === 'ZERO'"
+                          [class.border-rose-600]="q.gradingDecision === 'ZERO'"
+                          [class.bg-surface-bg]="q.gradingDecision !== 'ZERO'"
+                          [class.text-rose-700]="q.gradingDecision !== 'ZERO'"
+                          [class.border-rose-500/30]="q.gradingDecision !== 'ZERO'"
+                          [class.hover:bg-rose-500/10]="q.gradingDecision !== 'ZERO'"
+                        >
+                          <app-icon name="x" [size]="13" />
+                          <span>{{ langService.isArabic() ? 'خطأ (صفر)' : 'Wrong (Zero)' }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
@@ -754,6 +962,40 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: Fullscreen Student Solution Image Lightbox Preview                 -->
+  <!-- ========================================================================= -->
+  @if (previewImageUrl(); as previewUrl) {
+    <div class="fixed inset-0 z-layer-top bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-fade-in">
+      <!-- Toolbar -->
+      <div class="absolute top-4 right-4 rtl:right-auto rtl:left-4 flex items-center gap-3 z-10">
+        <div class="flex items-center gap-1 bg-surface-card/90 border border-surface-border rounded-xl px-2 py-1 text-xs text-text-primary">
+          <button type="button" (click)="zoomOutPreview()" class="p-1 hover:text-brand-primary" [title]="langService.isArabic() ? 'تصغير' : 'Zoom Out'">-</button>
+          <span class="px-2 font-numeric font-bold">{{ (previewImageZoom() * 100).toFixed(0) }}%</span>
+          <button type="button" (click)="zoomInPreview()" class="p-1 hover:text-brand-primary" [title]="langService.isArabic() ? 'تكبير' : 'Zoom In'">+</button>
+        </div>
+
+        <button type="button" (click)="rotatePreview()" class="p-2 rounded-xl bg-surface-card/90 border border-surface-border text-text-primary hover:text-brand-primary transition-all cursor-pointer">
+          <app-icon name="rotate-cw" [size]="16" />
+        </button>
+
+        <button type="button" (click)="closeImagePreview()" class="p-2 rounded-xl bg-surface-card/90 border border-surface-border text-text-primary hover:text-rose-500 transition-all cursor-pointer">
+          <app-icon name="x" [size]="16" />
+        </button>
+      </div>
+
+      <!-- Image Viewport -->
+      <div class="max-w-4xl max-h-[85vh] overflow-auto flex items-center justify-center p-4">
+        <img
+          [src]="previewUrl"
+          [alt]="langService.isArabic() ? 'معاينة حل الطالب' : 'Student Solution Preview'"
+          class="max-w-full max-h-[80vh] object-contain transition-transform duration-200"
+          [style.transform]="'scale(' + previewImageZoom() + ') rotate(' + previewImageRotation() + 'deg)'"
+        />
       </div>
     </div>
   }
