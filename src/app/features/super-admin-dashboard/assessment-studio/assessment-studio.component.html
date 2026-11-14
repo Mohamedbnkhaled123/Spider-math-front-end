@@ -1748,35 +1748,53 @@
                 </div>
               </div>
 
-              <!-- Question Composer Card (Add / Edit) -->
+              <!-- Question Composer Card (Add / Edit) - Distinctive Theme for Easy Visual Identification -->
               <div
                 id="questionComposerSection"
-                class="p-4 sm:p-5 rounded-2xl border space-y-4 transition-all duration-200"
-                [class.border-surface-border]="!editingQuestionId()"
-                [class.bg-surface-bg/50]="!editingQuestionId()"
-                [class.border-amber-500]="editingQuestionId()"
-                [class.bg-amber-500/5]="editingQuestionId()"
-                [class.ring-2]="editingQuestionId()"
-                [class.ring-amber-500/20]="editingQuestionId()"
+                class="p-4 sm:p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-md relative overflow-hidden"
+                [class.border-surface-border]="false"
+                [class.border-amber-400]="editingQuestionId()"
+                [class.bg-amber-500/10]="editingQuestionId()"
+                [class.ring-2]="true"
+                [class.ring-amber-400/40]="editingQuestionId()"
+                [class.bg-gradient-to-br]="!editingQuestionId()"
+                [class.from-amber-500/10]="!editingQuestionId()"
+                [class.via-purple-500/5]="!editingQuestionId()"
+                [class.to-amber-500/5]="!editingQuestionId()"
+                [class.border-amber-500/40]="!editingQuestionId()"
+                [class.ring-amber-500/20]="!editingQuestionId()"
+                [class.dark:from-amber-500/15]="!editingQuestionId()"
+                [class.dark:via-purple-900/25]="!editingQuestionId()"
+                [class.dark:to-amber-500/10]="!editingQuestionId()"
+                [class.dark:border-amber-400/35]="!editingQuestionId()"
               >
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div class="flex items-center gap-2">
+                <!-- Decorative Top Distinctive Accent Line -->
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 via-brand-primary to-purple-500"></div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-0.5">
+                  <div class="flex items-center gap-2 flex-wrap">
                     <h4
-                      class="font-black flex items-center gap-2 text-sm"
+                      class="font-black flex items-center gap-2 text-sm text-text-primary"
                       [class.text-amber-500]="editingQuestionId()"
-                      [class.text-text-primary]="!editingQuestionId()"
                     >
                       @if (editingQuestionId()) {
                         <app-icon name="edit" [size]="16" className="text-amber-500" />
                         <span>{{ langService.isArabic() ? 'تعديل السؤال الحالي بالامتحان' : 'Edit Question in Assessment' }}</span>
                       } @else {
-                        <app-icon name="plus" [size]="16" className="text-brand-primary" />
-                        <span>{{ langService.isArabic() ? 'إضافة سؤال جديد' : 'Add Question' }}</span>
+                        <div class="w-6 h-6 rounded-lg bg-amber-500/20 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                          <app-icon name="plus" [size]="14" />
+                        </div>
+                        <span class="text-amber-600 dark:text-amber-400 font-black">{{ langService.isArabic() ? 'محرر السؤال قيد الإنشاء' : 'Active Question Composer' }}</span>
                       }
                     </h4>
                     @if (editingQuestionId()) {
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                        {{ langService.isArabic() ? 'وضع التعديل' : 'Edit Mode' }}
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/40 animate-pulse">
+                        {{ langService.isArabic() ? 'وضع التعديل النشط' : 'Active Edit Mode' }}
+                      </span>
+                    } @else {
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                        <span>{{ langService.isArabic() ? 'السؤال الحالي' : 'Current Draft' }}</span>
                       </span>
                     }
                   </div>

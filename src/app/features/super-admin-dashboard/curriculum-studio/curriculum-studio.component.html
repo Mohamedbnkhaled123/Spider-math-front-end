@@ -1439,11 +1439,20 @@
             }
           </div>
 
-          <!-- Add New Question Box -->
-          <div class="p-5 rounded-2xl border border-dashed border-brand-primary/30 bg-brand-primary/[0.02] space-y-4">
-            <span class="font-bold text-brand-primary block text-xs">
-              {{ langService.isArabic() ? 'إضافة سؤال جديد للامتحان:' : 'Add New Question to Assessment:' }}
-            </span>
+          <!-- Add New Question Box - Distinctive Visual Theme for Easy Identification -->
+          <div class="p-5 rounded-2xl border-2 border-amber-500/40 dark:border-amber-400/35 bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-amber-500/5 dark:from-amber-500/15 dark:via-purple-900/25 dark:to-amber-500/10 space-y-4 shadow-md relative overflow-hidden ring-2 ring-amber-500/20">
+            <!-- Decorative Top Distinctive Accent Line -->
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 via-brand-primary to-purple-500"></div>
+
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="font-black text-amber-600 dark:text-amber-400 block text-xs flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>{{ langService.isArabic() ? 'محرر السؤال قيد الإنشاء حالياً:' : 'Active Question Composer:' }}</span>
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                {{ langService.isArabic() ? 'السؤال الجديد' : 'New Question Draft' }}
+              </span>
+            </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
