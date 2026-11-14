@@ -140,6 +140,15 @@
                       <span>{{ langService.isArabic() ? 'سؤال مقالي - يتطلب تصحيحاً ومراجعة يدوية من المعلمة' : 'Essay Question - Requires Teacher Manual Review' }}</span>
                     </span>
                   }
+                  @if (isCurrentQuestionInputText()) {
+                    <span
+                      class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5"
+                      data-testid="input-text-badge"
+                    >
+                      <app-icon name="edit" [size]="13" />
+                      <span>{{ langService.isArabic() ? 'إدخال نص / كتابة - تصحيح تلقائي' : 'Text Input - Auto-Graded' }}</span>
+                    </span>
+                  }
                 </div>
 
                 <span class="text-xs font-bold text-text-muted font-mono">
@@ -165,8 +174,8 @@
                 </div>
               }
 
-              <!-- MCQ Choices Grid -->
-              @if (!isCurrentQuestionEssay()) {
+              <!-- 1. MCQ Choices Grid -->
+              @if (isCurrentQuestionMcq()) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   @for (opt of q.options; track $index; let optIdx = $index) {
                     <div
@@ -198,7 +207,36 @@
                 </div>
               }
 
-              <!-- Essay Simulation Area -->
+              <!-- 2. INPUT_TEXT Simulation Area -->
+              @if (isCurrentQuestionInputText()) {
+                <div class="p-5 sm:p-6 rounded-2xl border border-surface-border bg-surface-card space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-text-secondary flex items-center gap-1.5">
+                      <app-icon name="edit" [size]="15" className="text-brand-primary" />
+                      <span>{{ langService.isArabic() ? 'إجابتك المكتوبة (محاكاة الطالب):' : "Your written answer (Simulation):" }}</span>
+                    </span>
+                    <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      {{ langService.isArabic() ? 'تصحيح تلقائي فوري' : 'Instant Auto-Grading' }}
+                    </span>
+                  </div>
+
+                  <div class="space-y-2">
+                    <input
+                      type="text"
+                      [ngModel]="textAnswers()[q.id] || ''"
+                      (ngModelChange)="updateTextAnswer(q.id, $event)"
+                      class="w-full p-3.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm font-bold font-mono focus:border-brand-primary outline-none transition-colors"
+                      [placeholder]="langService.isArabic() ? 'اكتب إجابتك هنا (مثلاً: رقم أو كلمة)...' : 'Type your answer here (e.g. number or word)...'"
+                      [attr.data-testid]="'preview-text-input-' + q.id"
+                    />
+                    <p class="text-[11px] text-text-muted leading-relaxed">
+                      {{ langService.isArabic() ? 'يتم تصحيح الإجابة تلقائياً بمطابقتها مع الإجابات المقبولة التي حددتها المعلمة.' : 'Answer is auto-graded against teacher accepted answers.' }}
+                    </p>
+                  </div>
+                </div>
+              }
+
+              <!-- 3. Essay Simulation Area -->
               @if (isCurrentQuestionEssay()) {
                 <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-card space-y-4">
                   <div class="flex items-center justify-between">
@@ -326,16 +364,16 @@
                   </span>
                   <span class="text-sm font-bold text-text-secondary">
                     @if (scoringSummary().hasEssayQuestions) {
-                      ({{ scoringSummary().mcqEarnedPoints }} / {{ scoringSummary().mcqTotalPoints }} {{ langService.isArabic() ? 'درجة MCQ' : 'MCQ pts' }})
+                      ({{ scoringSummary().autoEarnedPoints }} / {{ scoringSummary().autoTotalPoints }} {{ langService.isArabic() ? 'درجة تصحيح آلي' : 'Auto pts' }})
                     } @else {
-                      ({{ scoringSummary().mcqEarnedPoints }} / {{ scoringSummary().totalPoints }} {{ langService.isArabic() ? 'درجة' : 'pts' }})
+                      ({{ scoringSummary().autoEarnedPoints }} / {{ scoringSummary().totalPoints }} {{ langService.isArabic() ? 'درجة' : 'pts' }})
                     }
                   </span>
                 </div>
                 <p class="text-[11px] text-text-muted">
                   @if (scoringSummary().hasEssayQuestions) {
                     {{ langService.isArabic()
-                      ? ('يتضمن ' + scoringSummary().essayCount + ' أسئلة مقالية (' + scoringSummary().essayTotalPoints + ' درجة) مستثناة من التصحيح الآلي.')
+                      ? ('يتضمن ' + scoringSummary().essayCount + ' أسئلة مقالية (' + scoringSummary().essayTotalPoints + ' درجة) مستثناة من التصحيح الآلي وبانتظار المراجعة اليدوية.')
                       : (scoringSummary().essayCount + ' essay questions (' + scoringSummary().essayTotalPoints + ' pts) excluded from auto-grading.') }}
                   } @else {
                     {{ langService.isArabic() ? 'كافة الأسئلة مصححة تلقائياً.' : 'All questions auto-graded.' }}
@@ -389,6 +427,25 @@
                           <app-icon name="alert-triangle" [size]="11" />
                           <span>{{ langService.isArabic() ? 'سؤال مقالي - يتطلب تصحيحاً ومراجعة يدوية من المعلمة' : 'Essay - Requires Manual Teacher Review' }}</span>
                         </span>
+                      } @else if (isQuestionInputText(q)) {
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 border border-brand-primary/20 text-brand-primary flex items-center gap-1"
+                          data-testid="input-text-question-badge"
+                        >
+                          <app-icon name="edit" [size]="11" />
+                          <span>{{ langService.isArabic() ? 'إدخال نصي - تصحيح تلقائي' : 'Text Input - Auto-Graded' }}</span>
+                        </span>
+                        @if (isInputTextCorrect(q)) {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <app-icon name="check-circle" [size]="11" />
+                            <span>{{ langService.isArabic() ? 'إجابة صحيحة' : 'Correct Answer' }}</span>
+                          </span>
+                        } @else {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-600 flex items-center gap-1">
+                            <app-icon name="x" [size]="11" />
+                            <span>{{ langService.isArabic() ? 'إجابة خاطئة' : 'Incorrect' }}</span>
+                          </span>
+                        }
                       } @else {
                         @if (selectedMcqAnswers()[q.id] === q.correctOptionIndex) {
                           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -404,11 +461,13 @@
                       }
                     </div>
 
-                    <span class="text-[11px] font-mono font-bold text-text-muted">
+                    <span class="text-[11px] font-mono font-bold">
                       @if (isQuestionEssayType(q)) {
-                        0 / {{ q.points }} {{ langService.isArabic() ? 'درجات (تصحيح يدوي)' : 'Pts (Manual)' }}
+                        <span class="text-text-muted">0 / {{ q.points }} {{ langService.isArabic() ? 'درجات (تصحيح يدوي)' : 'Pts (Manual)' }}</span>
                       } @else {
-                        {{ getEarnedPointsForQuestion(q) }} / {{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }}
+                        <span [class.text-emerald-600]="getEarnedPointsForQuestion(q) > 0" [class.text-rose-600]="getEarnedPointsForQuestion(q) === 0">
+                          {{ getEarnedPointsForQuestion(q) }} / {{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Pts' }}
+                        </span>
                       }
                     </span>
                   </div>
@@ -425,8 +484,8 @@
                     </div>
                   }
 
-                  <!-- MCQ Option Model Answers -->
-                  @if (!isQuestionEssayType(q)) {
+                  <!-- 1. MCQ Option Model Answers -->
+                  @if (isQuestionMcq(q)) {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                       @for (opt of q.options; track $index; let optIdx = $index) {
                         <div
@@ -466,6 +525,66 @@
                           }
                         </div>
                       }
+                    </div>
+                  }
+
+                  <!-- 2. INPUT_TEXT Simulated Student Answer & Accepted Answers Review -->
+                  @if (isQuestionInputText(q)) {
+                    <div
+                      class="p-4 rounded-2xl border space-y-3 text-xs"
+                      [class.bg-emerald-500/5]="isInputTextCorrect(q)"
+                      [class.border-emerald-500/30]="isInputTextCorrect(q)"
+                      [class.bg-rose-500/5]="!isInputTextCorrect(q)"
+                      [class.border-rose-500/30]="!isInputTextCorrect(q)"
+                      data-testid="preview-input-text-review"
+                    >
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Student Typed Answer -->
+                        <div class="space-y-1.5">
+                          <span class="text-[11px] font-bold text-text-muted block">
+                            {{ langService.isArabic() ? 'إجابتك المسجلة بالمحاكاة:' : 'Your simulated answer:' }}
+                          </span>
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="text-sm font-bold font-mono px-3 py-1.5 rounded-xl border block"
+                              [class.bg-emerald-500/10]="isInputTextCorrect(q)"
+                              [class.border-emerald-500/40]="isInputTextCorrect(q)"
+                              [class.text-emerald-700]="isInputTextCorrect(q)"
+                              [class.dark:text-emerald-300]="isInputTextCorrect(q)"
+                              [class.bg-rose-500/10]="!isInputTextCorrect(q)"
+                              [class.border-rose-500/40]="!isInputTextCorrect(q)"
+                              [class.text-rose-700]="!isInputTextCorrect(q)"
+                              [class.dark:text-rose-300]="!isInputTextCorrect(q)"
+                              data-testid="preview-student-typed-answer"
+                            >
+                              {{ textAnswers()[q.id] || (langService.isArabic() ? 'لم تسجل إجابة' : 'No Answer Typed') }}
+                            </span>
+                            <span class="text-xs font-bold" [class.text-emerald-600]="isInputTextCorrect(q)" [class.text-rose-600]="!isInputTextCorrect(q)">
+                              {{ isInputTextCorrect(q) ? (langService.isArabic() ? '✓ متطابقة وتصححت تلقائياً' : '✓ Auto-Graded Correct') : (langService.isArabic() ? '✗ غير مطابقة' : '✗ Incorrect') }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <!-- Accepted Model Answers List -->
+                        <div class="space-y-1.5">
+                          <span class="text-[11px] font-bold text-text-muted block">
+                            {{ langService.isArabic() ? 'الإجابات المقبولة المعتمدة من المعلمة:' : 'Accepted Model Answers:' }}
+                          </span>
+                          <div class="flex flex-wrap gap-1.5 pt-0.5" data-testid="preview-accepted-answers-list">
+                            @for (cand of getAcceptedAnswersList(q); track $index) {
+                              <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                <app-icon name="check" [size]="12" className="text-emerald-500" />
+                                <span>{{ cand }}</span>
+                              </span>
+                            }
+                            @if (getAcceptedAnswersList(q).length === 0) {
+                              <span class="text-[11px] text-text-muted italic">
+                                {{ langService.isArabic() ? 'لا توجد إجابات مقبولة محددة' : 'None specified' }}
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   }
 

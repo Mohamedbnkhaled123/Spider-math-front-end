@@ -262,7 +262,19 @@ export class InteractiveGradingStudioComponent implements OnInit {
 
           const mappedAnswers: QuestionAnswerDetail[] = questionsList.map((q: any, idx: number) => {
             const qId = q._id?.toString() || q._id || `q_${idx}`;
-            const qType: 'MCQ' | 'INPUT_TEXT' | 'ESSAY_PHOTO' = q.question_type || 'MCQ';
+            const rawType = (q.question_type || q.type || q.questionType || '').toUpperCase();
+            const hasAccepted = (Array.isArray(q.accepted_answers) && q.accepted_answers.length > 0) ||
+                                (Array.isArray(q.acceptedAnswers) && q.acceptedAnswers.length > 0);
+            const hasOptions = Array.isArray(q.options) && q.options.length > 0;
+
+            let qType: 'MCQ' | 'INPUT_TEXT' | 'ESSAY_PHOTO';
+            if (rawType === 'INPUT_TEXT' || rawType === 'SHORT_ANSWER' || hasAccepted) {
+              qType = 'INPUT_TEXT';
+            } else if (rawType === 'ESSAY_PHOTO' || rawType === 'ESSAY' || (!hasOptions && !hasAccepted)) {
+              qType = 'ESSAY_PHOTO';
+            } else {
+              qType = 'MCQ';
+            }
             const points = Number(q.points) || 1;
 
             if (qType === 'MCQ') {
@@ -271,7 +283,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
               const pointsEarned = ans ? (ans.points_earned ?? (isCorrect ? points : 0)) : 0;
               return {
                 questionId: qId,
-                questionText: q.question_text || `السؤال ${idx + 1}`,
+                questionText: q.question_text || q.textAr || `السؤال ${idx + 1}`,
                 questionType: 'MCQ',
                 points,
                 pointsEarned,
@@ -281,18 +293,21 @@ export class InteractiveGradingStudioComponent implements OnInit {
                 options: Array.isArray(q.options)
                   ? q.options.map((opt: any) => (typeof opt === 'string' ? opt : opt.text_ar || opt.text || ''))
                   : [],
-                imageUrl: q.question_image_url || null,
+                imageUrl: q.question_image_url || q.questionImageUrl || null,
                 uploadedImageUrl: null
               };
             }
 
             if (qType === 'INPUT_TEXT') {
               const ans = textLookup.get(qId) || (s.text_answers && s.text_answers[idx]);
-              const studentText = ans?.text_answer || '';
-              const accepted = Array.isArray(q.accepted_answers) ? q.accepted_answers : [];
+              const studentText = ans?.text_answer || (typeof ans === 'string' ? ans : '');
+              const accepted = Array.isArray(q.accepted_answers)
+                ? q.accepted_answers
+                : (Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers : []);
               const candidates = [...accepted];
-              if (q.model_answer_text && !candidates.includes(q.model_answer_text)) {
-                candidates.push(q.model_answer_text);
+              const modelAns = q.model_answer_text || q.modelAnswerText || q.explanationAr || q.explanation_ar;
+              if (modelAns && !candidates.includes(modelAns)) {
+                candidates.push(modelAns);
               }
 
               let isCorrect = ans ? !!ans.is_correct : false;
@@ -303,15 +318,15 @@ export class InteractiveGradingStudioComponent implements OnInit {
               const pointsEarned = isCorrect ? (ans?.points_earned || points) : 0;
               return {
                 questionId: qId,
-                questionText: q.question_text || `السؤال ${idx + 1}`,
+                questionText: q.question_text || q.textAr || `السؤال ${idx + 1}`,
                 questionType: 'INPUT_TEXT',
                 points,
                 pointsEarned,
                 isCorrect,
                 studentTextAnswer: studentText,
                 acceptedAnswers: accepted,
-                modelAnswerText: q.model_answer_text || (accepted.length > 0 ? accepted.join(' / ') : ''),
-                imageUrl: q.question_image_url || null,
+                modelAnswerText: modelAns || (accepted.length > 0 ? accepted.join(' / ') : ''),
+                imageUrl: q.question_image_url || q.questionImageUrl || null,
                 uploadedImageUrl: null
               };
             }

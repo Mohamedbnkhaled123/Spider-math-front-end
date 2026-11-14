@@ -207,7 +207,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
             questionsReview: (data.questionsReview || []).map((q: any, idx: number) => ({
               questionId: q.questionId,
               questionOrder: q.questionOrder ?? idx + 1,
-              questionType: q.questionType || 'MCQ',
+              questionType: q.questionType || q.question_type || q.type || 'MCQ',
               questionText: q.questionText || '',
               questionImageUrl: q.questionImageUrl || q.question_image_url || q.imageUrl || null,
               options: q.options || [],

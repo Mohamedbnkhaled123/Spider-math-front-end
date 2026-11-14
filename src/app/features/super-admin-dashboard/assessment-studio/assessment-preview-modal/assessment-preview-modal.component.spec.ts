@@ -317,6 +317,136 @@ describe('AssessmentPreviewModalComponent', () => {
     });
   });
 
+  describe('3-Question Types: INPUT_TEXT Auto-Grading & Accepted Answers Display', () => {
+    const textAndEssayAssessment: AssessmentItem = {
+      id: 'asm_text_and_essay',
+      titleAr: 'اختبار تجريبي: إدخال نصي ومقالي واختيار',
+      titleEn: 'Input Text & Essay & MCQ Assessment',
+      curriculum: 'EGYPTIAN',
+      gradeLevel: 'SEC_1',
+      term: 'TERM_1',
+      calculatorType: 'NONE',
+      durationMinutes: 30,
+      passPercentage: 60,
+      maxAttempts: 1,
+      totalPoints: 15,
+      isPublished: true,
+      isPlacementTest: false,
+      submissionsCount: 0,
+      questions: [
+        {
+          id: 'q1_mcq',
+          order: 1,
+          type: 'MCQ',
+          textAr: 'test mcq',
+          options: ['1', '2', '3', '4'],
+          correctOptionIndex: 2,
+          points: 5
+        },
+        {
+          id: 'q2_text',
+          order: 2,
+          type: 'INPUT_TEXT',
+          textAr: 'test text',
+          options: [],
+          correctOptionIndex: 0,
+          acceptedAnswers: ['1', 'one'],
+          points: 5
+        },
+        {
+          id: 'q3_essay',
+          order: 3,
+          type: 'ESSAY',
+          textAr: 'test 3 essay photo',
+          options: [],
+          correctOptionIndex: 0,
+          points: 5
+        }
+      ]
+    };
+
+    beforeEach(() => {
+      componentRef.setInput('isOpen', true);
+      componentRef.setInput('assessment', textAndEssayAssessment);
+      fixture.detectChanges();
+    });
+
+    it('should distinguish INPUT_TEXT from ESSAY and show correct badge in simulation', () => {
+      // Question 2 is INPUT_TEXT
+      component.selectQuestion(1);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const textBadge = hostEl.querySelector('[data-testid="input-text-badge"]');
+      const essayBadge = hostEl.querySelector('[data-testid="essay-badge"]');
+      const textInput = hostEl.querySelector('[data-testid="preview-text-input-q2_text"]');
+
+      expect(textBadge).toBeTruthy();
+      expect(textBadge?.textContent).toContain('إدخال نص / كتابة - تصحيح تلقائي');
+      expect(essayBadge).toBeNull();
+      expect(textInput).toBeTruthy();
+    });
+
+    it('should auto-grade INPUT_TEXT with student answer "1" against accepted answers ["1", "one"] to full 5/5 points', () => {
+      // Simulate student typing "1" for Question 2
+      component.updateTextAnswer('q2_text', '1');
+      // Answer MCQ incorrectly
+      component.selectOption('q1_mcq', 0);
+      // Finish simulation
+      component.finishPreview();
+      fixture.detectChanges();
+
+      const q2 = textAndEssayAssessment.questions[1];
+      expect(component.isInputTextCorrect(q2)).toBeTrue();
+      expect(component.getEarnedPointsForQuestion(q2)).toBe(5);
+
+      const summary = component.scoringSummary();
+      expect(summary.inputTextEarnedPoints).toBe(5);
+      expect(summary.inputTextTotalPoints).toBe(5);
+      // Auto-points total is 5/10 (q1 wrong, q2 right, q3 essay excluded from auto denominator)
+      expect(summary.autoEarnedPoints).toBe(5);
+      expect(summary.autoTotalPoints).toBe(10);
+      expect(summary.percentage).toBe(50);
+    });
+
+    it('should auto-grade Arabic numerals "١" matching "1" due to normalization', () => {
+      component.updateTextAnswer('q2_text', '١');
+      component.finishPreview();
+      fixture.detectChanges();
+
+      const q2 = textAndEssayAssessment.questions[1];
+      expect(component.isInputTextCorrect(q2)).toBeTrue();
+      expect(component.getEarnedPointsForQuestion(q2)).toBe(5);
+    });
+
+    it('should display accepted answers list ["1", "one"] clearly in results view', () => {
+      component.updateTextAnswer('q2_text', '1');
+      component.finishPreview();
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const acceptedAnswersContainer = hostEl.querySelector('[data-testid="preview-accepted-answers-list"]');
+      expect(acceptedAnswersContainer).toBeTruthy();
+      expect(acceptedAnswersContainer?.textContent).toContain('1');
+      expect(acceptedAnswersContainer?.textContent).toContain('one');
+
+      // Verify Question 2 does NOT get essay review badge
+      const badges = hostEl.querySelectorAll('[data-testid="input-text-question-badge"]');
+      expect(badges.length).toBe(1);
+      expect(badges[0].textContent).toContain('إدخال نصي - تصحيح تلقائي');
+    });
+
+    it('should only mark ESSAY questions as requiring manual review', () => {
+      component.finishPreview();
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const essayBadges = hostEl.querySelectorAll('[data-testid="essay-question-badge"]');
+      // ONLY Question 3 is an essay question!
+      expect(essayBadges.length).toBe(1);
+    });
+  });
+
   describe('R4 Strict Zero-Emoji Compliance', () => {
     it('should strictly contain zero Unicode emojis across both simulation and results views', () => {
       componentRef.setInput('isOpen', true);

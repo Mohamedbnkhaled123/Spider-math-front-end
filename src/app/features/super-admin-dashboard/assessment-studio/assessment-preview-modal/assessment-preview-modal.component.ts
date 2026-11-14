@@ -20,7 +20,10 @@ import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem, AssessmentQuestionItem } from '../assessment-studio.models';
 import {
   PreviewScoringSummary,
-  isEssayQuestion
+  isEssayQuestion,
+  isInputTextQuestion,
+  isMcqQuestion,
+  isTextAnswerMatch
 } from './assessment-preview-modal.models';
 
 /**
@@ -30,8 +33,10 @@ import {
  * - Pure client-side sandbox simulating student assessment experience
  * - Zero HTTP network mutations (no submission API calls)
  * - Zero IndexedDB / Dexie writes (isolated from activeQuizzes & syncQueue)
- * - Real-time MCQ score calculation + model answers & explanations
- * - Strict exclusion of essay questions from auto-grading with Arabic alert & badges
+ * - Distinct 3-Question Type Engine:
+ *   1. MCQ: Auto-graded against correctOptionIndex.
+ *   2. INPUT_TEXT: Auto-graded against teacher's acceptedAnswers with normalization.
+ *   3. ESSAY_PHOTO: Exclusively requires teacher manual grading.
  * - Strict R4 compliance (zero Unicode emojis, standard SVG <app-icon> exclusively)
  */
 @Component({
@@ -61,6 +66,7 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   // Interactive Simulation State
   readonly activeQuestionIndex = signal<number>(0);
   readonly selectedMcqAnswers = signal<Record<string, number>>({});
+  readonly textAnswers = signal<Record<string, string>>({});
   readonly essayAnswers = signal<Record<string, string>>({});
   readonly essayPhotoAttached = signal<Record<string, boolean>>({});
   readonly isResultsMode = signal<boolean>(false);
@@ -108,6 +114,45 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     return q ? isEssayQuestion(q) : false;
   });
 
+  readonly isCurrentQuestionInputText = computed<boolean>(() => {
+    const q = this.currentQuestion();
+    return q ? isInputTextQuestion(q) : false;
+  });
+
+  readonly isCurrentQuestionMcq = computed<boolean>(() => {
+    const q = this.currentQuestion();
+    return q ? isMcqQuestion(q) : false;
+  });
+
+  getAcceptedAnswersList(q: AssessmentQuestionItem): string[] {
+    if (!q) return [];
+    const list: string[] = [];
+    const rawAccepted = q.acceptedAnswers || (q as any).accepted_answers;
+    if (Array.isArray(rawAccepted)) {
+      for (const item of rawAccepted) {
+        if (typeof item === 'string' && item.trim()) {
+          const t = item.trim();
+          if (!list.includes(t)) list.push(t);
+        }
+      }
+    }
+    const modelAns = q.explanationAr || (q as any).model_answer_text;
+    if (modelAns && typeof modelAns === 'string' && modelAns.trim()) {
+      const t = modelAns.trim();
+      if (!list.includes(t)) list.push(t);
+    }
+    return list;
+  }
+
+  isInputTextCorrect(q: AssessmentQuestionItem): boolean {
+    if (!q) return false;
+    const studentText = (this.textAnswers()[q.id] || '').trim();
+    if (!studentText) return false;
+    const candidates = this.getAcceptedAnswersList(q);
+    if (candidates.length === 0) return false;
+    return candidates.some((cand) => isTextAnswerMatch(studentText, cand));
+  }
+
   readonly scoringSummary = computed<PreviewScoringSummary>(() => {
     const qs = this.questions();
     const mcqAnswers = this.selectedMcqAnswers();
@@ -116,18 +161,27 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     let totalPoints = 0;
     let mcqTotalPoints = 0;
     let mcqEarnedPoints = 0;
+    let inputTextTotalPoints = 0;
+    let inputTextEarnedPoints = 0;
     let essayTotalPoints = 0;
     let mcqCount = 0;
+    let inputTextCount = 0;
     let essayCount = 0;
 
     for (const q of qs) {
       const pts = Number(q.points) || 1;
       totalPoints += pts;
-      const essay = isEssayQuestion(q);
-      if (essay) {
+
+      if (isEssayQuestion(q)) {
         essayCount++;
         essayTotalPoints += pts;
-        // Essay questions are STRICTLY EXCLUDED from automated calculation (pointsEarned = 0)
+        // Essay questions strictly require manual grading by teacher
+      } else if (isInputTextQuestion(q)) {
+        inputTextCount++;
+        inputTextTotalPoints += pts;
+        if (this.isInputTextCorrect(q)) {
+          inputTextEarnedPoints += pts;
+        }
       } else {
         mcqCount++;
         mcqTotalPoints += pts;
@@ -139,19 +193,25 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     }
 
     const hasEssayQuestions = essayCount > 0;
-    // When essay questions exist: score and percentage are calculated ONLY for MCQ questions
-    const denominator = hasEssayQuestions ? mcqTotalPoints : totalPoints;
-    const percentage = denominator > 0 ? Math.round((mcqEarnedPoints / denominator) * 100) : 0;
+    const autoTotalPoints = mcqTotalPoints + inputTextTotalPoints;
+    const autoEarnedPoints = mcqEarnedPoints + inputTextEarnedPoints;
+    const denominator = hasEssayQuestions ? autoTotalPoints : totalPoints;
+    const percentage = denominator > 0 ? Math.round((autoEarnedPoints / denominator) * 100) : 0;
     const isPassed = percentage >= passPct;
 
     return {
       allQuestionsCount: qs.length,
       mcqCount,
+      inputTextCount,
       essayCount,
       hasEssayQuestions,
       totalPoints,
+      autoTotalPoints,
+      autoEarnedPoints,
       mcqTotalPoints,
       mcqEarnedPoints,
+      inputTextTotalPoints,
+      inputTextEarnedPoints,
       essayTotalPoints,
       percentage,
       isPassed
@@ -188,6 +248,13 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     return this.selectedMcqAnswers()[questionId] === optionIndex;
   }
 
+  updateTextAnswer(questionId: string, text: string): void {
+    this.textAnswers.update((prev) => ({
+      ...prev,
+      [questionId]: text
+    }));
+  }
+
   updateEssayAnswer(questionId: string, text: string): void {
     this.essayAnswers.update((prev) => ({
       ...prev,
@@ -203,6 +270,9 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   }
 
   isQuestionAnswered(q: AssessmentQuestionItem): boolean {
+    if (isInputTextQuestion(q)) {
+      return Boolean(this.textAnswers()[q.id]?.trim());
+    }
     if (isEssayQuestion(q)) {
       const text = this.essayAnswers()[q.id]?.trim();
       const hasPhoto = this.essayPhotoAttached()[q.id];
@@ -215,9 +285,20 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     return isEssayQuestion(q);
   }
 
+  isQuestionInputText(q: AssessmentQuestionItem): boolean {
+    return isInputTextQuestion(q);
+  }
+
+  isQuestionMcq(q: AssessmentQuestionItem): boolean {
+    return isMcqQuestion(q);
+  }
+
   getEarnedPointsForQuestion(q: AssessmentQuestionItem): number {
     if (isEssayQuestion(q)) {
-      return 0; // Strictly excluded from automated scoring
+      return 0; // Strictly excluded from automated scoring (requires manual teacher review)
+    }
+    if (isInputTextQuestion(q)) {
+      return this.isInputTextCorrect(q) ? Number(q.points || 1) : 0;
     }
     const selected = this.selectedMcqAnswers()[q.id];
     return selected === q.correctOptionIndex ? Number(q.points || 1) : 0;
@@ -231,6 +312,7 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
 
   resetSimulation(): void {
     this.selectedMcqAnswers.set({});
+    this.textAnswers.set({});
     this.essayAnswers.set({});
     this.essayPhotoAttached.set({});
     this.activeQuestionIndex.set(0);

@@ -591,11 +591,21 @@
 
                     <div>
                       <span class="text-[11px] font-bold text-text-muted block mb-1">
-                        {{ langService.isArabic() ? 'الإجابة النموذجية المعتمدة:' : 'Accepted Model Answer:' }}
+                        {{ langService.isArabic() ? 'الإجابات المقبولة المعتمدة من المعلمة:' : 'Accepted Model Answers:' }}
                       </span>
-                      <span class="text-sm font-bold font-mono text-emerald-600 bg-surface-card px-3 py-1.5 rounded-lg border border-surface-border block">
-                        {{ (q.acceptedAnswers && q.acceptedAnswers.length > 0) ? q.acceptedAnswers.join('  /  ') : (q.modelAnswerText || (langService.isArabic() ? 'لا يوجد نص محدد' : 'None specified')) }}
-                      </span>
+                      <div class="flex flex-wrap gap-1.5 pt-0.5">
+                        @for (ans of (q.acceptedAnswers && q.acceptedAnswers.length > 0 ? q.acceptedAnswers : (q.modelAnswerText ? [q.modelAnswerText] : [])); track $index) {
+                          <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                            <app-icon name="check" [size]="12" className="text-emerald-500" />
+                            <span>{{ ans }}</span>
+                          </span>
+                        }
+                        @if (!q.acceptedAnswers?.length && !q.modelAnswerText) {
+                          <span class="text-xs text-text-muted italic bg-surface-card px-3 py-1.5 rounded-lg border border-surface-border block">
+                            {{ langService.isArabic() ? 'لا يوجد نص محدد' : 'None specified' }}
+                          </span>
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>

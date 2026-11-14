@@ -171,9 +171,13 @@ export class AssessmentAttemptViewComponent implements OnInit {
             })),
             points: q.points || 1,
             requiresDesmos: !!q.requires_desmos,
-            type: q.question_type === 'INPUT_TEXT'
+            type: ((q.question_type || (q as any).questionType || (q as any).type || '').toUpperCase() === 'INPUT_TEXT' ||
+                   (q.question_type || (q as any).questionType || (q as any).type || '').toUpperCase() === 'SHORT_ANSWER' ||
+                   ((q as any).accepted_answers?.length > 0) || ((q as any).acceptedAnswers?.length > 0))
               ? 'INPUT_TEXT'
-              : (q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' || !q.options || q.options.length === 0)
+              : ((q.question_type || (q as any).questionType || (q as any).type || '').toUpperCase() === 'ESSAY_PHOTO' ||
+                 (q.question_type || (q as any).questionType || (q as any).type || '').toUpperCase() === 'ESSAY' ||
+                 !q.options || q.options.length === 0)
               ? 'ESSAY'
               : 'MCQ',
             moduleIndex: ((q as any).module_index === 2 || (q as any).moduleIndex === 2) ? 2 : 1

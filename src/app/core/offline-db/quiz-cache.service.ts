@@ -99,22 +99,34 @@ export class QuizCacheService implements OnDestroy {
           const data: any = response.data;
           const asm = data.assessment || data;
           const questionsList = asm.questions || data.questions || [];
-          const sanitizedQuestions: CachedQuestion[] = questionsList.map((q: any, idx: number) => ({
-            _id: q._id || `q_${idx}`,
-            question_order: q.question_order ?? q.order ?? idx + 1,
-            question_type: q.question_type || q.questionType || q.type || ((q.options && q.options.length > 0) ? 'MCQ' : 'ESSAY'),
-            question_text_ar: q.question_text_ar || q.question_text || q.textAr || '',
-            question_text_en: q.question_text_en || q.textEn || '',
-            question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
-            options: (q.options || []).map((opt: any, oIdx: number) => ({
-              option_index: typeof opt === 'object' && opt.option_index !== undefined ? opt.option_index : oIdx,
-              text_ar: typeof opt === 'string' ? opt : (opt.text_ar || opt.text || ''),
-              text_en: typeof opt === 'string' ? opt : (opt.text_en || opt.text || '')
-            })),
-            points: q.points ?? 1,
-            module_index: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
-            requires_desmos: !!(q.requires_desmos || q.requiresDesmos)
-          }));
+          const sanitizedQuestions: CachedQuestion[] = questionsList.map((q: any, idx: number) => {
+            const rawType = (q.question_type || q.questionType || q.type || '').toUpperCase();
+            const hasAccepted = (Array.isArray(q.accepted_answers) && q.accepted_answers.length > 0) ||
+                                (Array.isArray(q.acceptedAnswers) && q.acceptedAnswers.length > 0);
+            const hasOpts = Array.isArray(q.options) && q.options.length > 0;
+            const qType = (rawType === 'INPUT_TEXT' || rawType === 'SHORT_ANSWER' || hasAccepted)
+              ? 'INPUT_TEXT'
+              : (rawType === 'ESSAY_PHOTO' || rawType === 'ESSAY' || (!hasOpts && !hasAccepted))
+              ? 'ESSAY'
+              : 'MCQ';
+
+            return {
+              _id: q._id || `q_${idx}`,
+              question_order: q.question_order ?? q.order ?? idx + 1,
+              question_type: qType,
+              question_text_ar: q.question_text_ar || q.question_text || q.textAr || '',
+              question_text_en: q.question_text_en || q.textEn || '',
+              question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
+              options: (q.options || []).map((opt: any, oIdx: number) => ({
+                option_index: typeof opt === 'object' && opt.option_index !== undefined ? opt.option_index : oIdx,
+                text_ar: typeof opt === 'string' ? opt : (opt.text_ar || opt.text || ''),
+                text_en: typeof opt === 'string' ? opt : (opt.text_en || opt.text || '')
+              })),
+              points: q.points ?? 1,
+              module_index: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
+              requires_desmos: !!(q.requires_desmos || q.requiresDesmos)
+            };
+          });
 
           // Check Dexie and synchronous localStorage fallback before updating record
           const cached = await this.getExistingState(assessmentId);
