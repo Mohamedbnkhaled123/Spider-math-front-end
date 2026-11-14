@@ -10,7 +10,12 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import {
   CANONICAL_CURRICULUM_TREE,
   CurriculumCode,
-  AcademicTermCode
+  AcademicTermCode,
+  GULF_COUNTRIES_DATA,
+  findGulfCountry,
+  INTERNATIONAL_DIVISIONS_DATA,
+  findInternationalDivision,
+  curriculumHasTerms
 } from '../../../core/constants/curriculum-tree.constant';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import {
@@ -90,8 +95,34 @@ export class LoginPageComponent implements OnInit {
     getPhonePlaceholderByCountry(this.regCountry())
   );
 
+  readonly regGulfCountries = GULF_COUNTRIES_DATA;
+  readonly regIntlDivisions = INTERNATIONAL_DIVISIONS_DATA;
+  readonly regSelectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+  readonly regHasTerms = computed<boolean>(() => curriculumHasTerms(this.regCurriculum()));
+
   readonly regAvailableGrades = computed(() => {
-    return this.discoveryService.getAvailableGradesForCurriculum(this.regCurriculum(), true);
+    const curr = this.regCurriculum();
+    if (curr === 'GULF') {
+      const countryData = findGulfCountry(this.regCountry()) || GULF_COUNTRIES_DATA[0];
+      return countryData.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn,
+        shortLabelAr: g.shortLabelAr || g.titleAr,
+        shortLabelEn: g.shortLabelEn || g.titleEn
+      }));
+    }
+    if (curr === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.regSelectedIntlDivision()) || INTERNATIONAL_DIVISIONS_DATA[0];
+      return divData.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn,
+        shortLabelAr: g.shortLabelAr || g.titleAr,
+        shortLabelEn: g.shortLabelEn || g.titleEn
+      }));
+    }
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true);
   });
 
   ngOnInit(): void {
@@ -160,11 +191,27 @@ export class LoginPageComponent implements OnInit {
 
   onRegCurriculumChange(code: CurriculumCode): void {
     this.regCurriculum.set(code);
-    if (code === 'GULF' && this.regCountry() === 'EG') {
+    if (code === 'GULF' && (!['SA', 'QA', 'AE', 'KW'].includes(this.regCountry()))) {
       this.regCountry.set('SA');
     } else if (code === 'EGYPTIAN' && this.regCountry() !== 'EG') {
       this.regCountry.set('EG');
     }
+    const grades = this.regAvailableGrades();
+    if (grades.length > 0) {
+      this.regGradeLevel.set(grades[0].code);
+    }
+  }
+
+  onRegGulfCountryChange(countryCode: string): void {
+    this.regCountry.set(countryCode);
+    const grades = this.regAvailableGrades();
+    if (grades.length > 0) {
+      this.regGradeLevel.set(grades[0].code);
+    }
+  }
+
+  onRegIntlDivisionChange(divCode: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.regSelectedIntlDivision.set(divCode);
     const grades = this.regAvailableGrades();
     if (grades.length > 0) {
       this.regGradeLevel.set(grades[0].code);

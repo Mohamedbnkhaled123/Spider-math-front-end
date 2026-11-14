@@ -440,6 +440,58 @@
                   </div>
                 </div>
 
+                <!-- Gulf Country Sub-Selector -->
+                @if (regCurriculum() === 'GULF') {
+                  <div class="animate-fade-in">
+                    <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                      {{ langService.isArabic() ? 'اختر الدولة الخليجية:' : 'Select Gulf Country:' }}
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      @for (c of regGulfCountries; track c.code) {
+                        <button
+                          type="button"
+                          (click)="onRegGulfCountryChange(c.code)"
+                          class="p-2 rounded-xl border text-center transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold"
+                          [class.border-brand-primary]="regCountry() === c.code"
+                          [class.bg-brand-primary/10]="regCountry() === c.code"
+                          [class.text-brand-primary]="regCountry() === c.code"
+                          [class.border-surface-border]="regCountry() !== c.code"
+                          [class.text-text-secondary]="regCountry() !== c.code"
+                        >
+                          <span>{{ c.flagEmoji }}</span>
+                          <span class="truncate">{{ langService.isArabic() ? c.nameAr : c.nameEn }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- International Division Sub-Selector -->
+                @if (regCurriculum() === 'INTERNATIONAL') {
+                  <div class="animate-fade-in">
+                    <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                      {{ langService.isArabic() ? 'اختر القسم الدولي:' : 'Select International Division:' }}
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                      @for (div of regIntlDivisions; track div.code) {
+                        <button
+                          type="button"
+                          (click)="onRegIntlDivisionChange(div.code)"
+                          class="p-2.5 rounded-xl border text-center transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer text-xs font-bold"
+                          [class.border-brand-primary]="regSelectedIntlDivision() === div.code"
+                          [class.bg-brand-primary/10]="regSelectedIntlDivision() === div.code"
+                          [class.text-brand-primary]="regSelectedIntlDivision() === div.code"
+                          [class.border-surface-border]="regSelectedIntlDivision() !== div.code"
+                          [class.text-text-secondary]="regSelectedIntlDivision() !== div.code"
+                        >
+                          <app-icon [name]="div.iconName === 'award' ? 'award' : 'graduation-cap'" [size]="15" />
+                          <span class="truncate">{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
                 <!-- 6. Grade Selection -->
                 <div>
                   <label for="regGradeLevel" class="block text-xs sm:text-sm font-extrabold text-text-primary mb-1.5">

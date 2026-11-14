@@ -1310,8 +1310,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 12 (Senior / Thanaweya / Cycle 3)',
         shortLabelAr: 'صف ١٢',
         shortLabelEn: 'Gr 12',
-        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
-        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
       },
       {
         code: 'GRADE_11',
@@ -1319,8 +1319,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 11 (Secondary 2 / Cycle 3)',
         shortLabelAr: 'صف ١١',
         shortLabelEn: 'Gr 11',
-        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
-        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
       },
       {
         code: 'GRADE_10',
@@ -1328,8 +1328,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 10 (Secondary 1 / Cycle 3)',
         shortLabelAr: 'صف ١٠',
         shortLabelEn: 'Gr 10',
-        stageAr: 'المرحلة الثانوية (السعودية، قطر، الكويت) • الحلقة 3 (الإمارات)',
-        stageEn: 'Secondary (KSA, Qatar, Kuwait) • Cycle 3 (UAE)'
+        stageAr: 'المرحلة الثانوية',
+        stageEn: 'Secondary Stage'
       },
       {
         code: 'GRADE_9',
@@ -1337,8 +1337,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 9 (Intermediate / Prep / Cycle 3)',
         shortLabelAr: 'صف ٩',
         shortLabelEn: 'Gr 9',
-        stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 3 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 3 (UAE)'
+        stageAr: 'المرحلة المتوسطة / الإعدادية',
+        stageEn: 'Intermediate / Preparatory'
       },
       {
         code: 'GRADE_8',
@@ -1347,7 +1347,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         shortLabelAr: 'صف ٨',
         shortLabelEn: 'Gr 8',
         stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
+        stageEn: 'Intermediate / Preparatory'
       },
       {
         code: 'GRADE_7',
@@ -1356,7 +1356,7 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         shortLabelAr: 'صف ٧',
         shortLabelEn: 'Gr 7',
         stageAr: 'المتوسطة (السعودية، الكويت) • الإعدادية (قطر) • الحلقة 2 (الإمارات)',
-        stageEn: 'Intermediate (KSA, Kuwait) • Prep (Qatar) • Cycle 2 (UAE)'
+        stageEn: 'Intermediate / Preparatory'
       },
       {
         code: 'GRADE_6',
@@ -1373,8 +1373,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 5 (Primary / Cycle 2)',
         shortLabelAr: 'صف ٥',
         shortLabelEn: 'Gr 5',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 2 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 2 (UAE)'
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       },
       {
         code: 'GRADE_4',
@@ -1382,8 +1382,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 4 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٤',
         shortLabelEn: 'Gr 4',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       },
       {
         code: 'GRADE_3',
@@ -1391,8 +1391,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 3 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٣',
         shortLabelEn: 'Gr 3',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       },
       {
         code: 'GRADE_2',
@@ -1400,8 +1400,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 2 (Primary / Cycle 1)',
         shortLabelAr: 'صف ٢',
         shortLabelEn: 'Gr 2',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       },
       {
         code: 'GRADE_1',
@@ -1409,8 +1409,8 @@ export const CANONICAL_CURRICULUM_TREE: readonly ICurriculumNode[] = [
         titleEn: 'Grade 1 (Primary / Cycle 1)',
         shortLabelAr: 'صف ١',
         shortLabelEn: 'Gr 1',
-        stageAr: 'المرحلة الابتدائية (السعودية، قطر، الكويت) • الحلقة 1 (الإمارات)',
-        stageEn: 'Primary (KSA, Qatar, Kuwait) • Cycle 1 (UAE)'
+        stageAr: 'المرحلة الابتدائية',
+        stageEn: 'Primary Stage'
       }
     ]
   },

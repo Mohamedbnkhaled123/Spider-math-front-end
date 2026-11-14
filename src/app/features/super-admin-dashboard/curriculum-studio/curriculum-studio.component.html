@@ -276,8 +276,44 @@
             </span>
           </div>
 
+          @if (track.code === 'GULF') {
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 border-b border-surface-border/40 pb-1.5">
+              @for (c of GULF_COUNTRIES; track c.code) {
+                <button
+                  type="button"
+                  (click)="overviewGulfCountry.set(c.code)"
+                  class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                  [class.bg-brand-primary]="overviewGulfCountry() === c.code"
+                  [class.text-white]="overviewGulfCountry() === c.code"
+                  [class.bg-surface-bg]="overviewGulfCountry() !== c.code"
+                  [class.text-text-muted]="overviewGulfCountry() !== c.code"
+                >
+                  <span>{{ c.flag }}</span>
+                  <span>{{ langService.isArabic() ? c.shortNameAr : c.shortNameEn }}</span>
+                </button>
+              }
+            </div>
+          } @else if (track.code === 'INTERNATIONAL') {
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 border-b border-surface-border/40 pb-1.5">
+              @for (div of intlDivisionsData; track div.code) {
+                <button
+                  type="button"
+                  (click)="overviewIntlDivision.set(div.code)"
+                  class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                  [class.bg-brand-primary]="overviewIntlDivision() === div.code"
+                  [class.text-white]="overviewIntlDivision() === div.code"
+                  [class.bg-surface-bg]="overviewIntlDivision() !== div.code"
+                  [class.text-text-muted]="overviewIntlDivision() !== div.code"
+                >
+                  <app-icon [name]="div.iconName === 'award' ? 'award' : 'graduation-cap'" [size]="11" />
+                  <span>{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
+                </button>
+              }
+            </div>
+          }
+
           <div class="space-y-1.5">
-            @for (grade of track.grades; track grade.code) {
+            @for (grade of getOverviewGradesForTrack(track); track grade.code) {
               <div
                 (click)="toggleGrade(grade.code)"
                 class="p-2 rounded-xl border transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
@@ -639,6 +675,28 @@
           <button type="button" (click)="isUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted">
             <app-icon name="x" [size]="16" />
           </button>
+        </div>
+
+        <!-- Target Scope Pill / Banner -->
+        <div class="p-3 rounded-2xl bg-surface-bg/80 border border-surface-border space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-text-muted">{{ langService.isArabic() ? 'نطاق الوحدة الجديد:' : 'Target Scope:' }}</span>
+            @if (currentCurriculumHasTerms()) {
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                {{ selectedTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }}
+              </span>
+            }
+          </div>
+          <div class="flex items-center gap-1.5 text-xs font-black text-text-primary">
+            <app-icon name="book-open" [size]="14" className="text-brand-primary" />
+            @if (selectedCurriculum() === 'GULF') {
+              <span>{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf' }} ({{ getSelectedGulfCountryName() }}) • {{ getSelectedGradeTitle() }}</span>
+            } @else if (selectedCurriculum() === 'INTERNATIONAL') {
+              <span>{{ langService.isArabic() ? 'المناهج الدولية' : 'International' }} ({{ getSelectedIntlDivisionName() }}) • {{ getSelectedGradeTitle() }}</span>
+            } @else {
+              <span>{{ getCurriculumTrackName(selectedCurriculum()) }} • {{ getSelectedGradeTitle() }}</span>
+            }
+          </div>
         </div>
 
         <div>
@@ -2293,6 +2351,23 @@
                     {{ country.flag }} {{ langService.isArabic() ? country.nameAr : country.nameEn }}
                   </option>
                 }
+              </select>
+            </div>
+          }
+
+          <!-- 2.b International Division Selector Dropdown (When INTERNATIONAL curriculum is selected) -->
+          @if (gradeModal().trackCode === 'INTERNATIONAL') {
+            <div>
+              <label class="block font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'المسار الدولي:' : 'International Track:' }}
+              </label>
+              <select
+                [ngModel]="modalAddGradeIntlDivision()"
+                (ngModelChange)="onModalAddGradeIntlDivisionChange($event)"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary font-bold text-xs focus:border-brand-primary outline-none cursor-pointer"
+              >
+                <option value="AMERICAN_CURRICULUM">{{ langService.isArabic() ? 'المنهج الأمريكي (American Curriculum)' : 'American Curriculum' }}</option>
+                <option value="BRITISH_CURRICULUM">{{ langService.isArabic() ? 'المنهج البريطاني (British Curriculum)' : 'British Curriculum' }}</option>
               </select>
             </div>
           }

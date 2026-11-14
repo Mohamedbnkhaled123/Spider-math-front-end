@@ -27,7 +27,11 @@ import {
   INTERNATIONAL_DIVISIONS_DATA,
   IInternationalDivisionData,
   IInternationalStageDefinition,
-  findInternationalDivision
+  findInternationalDivision,
+  GULF_COUNTRIES_DATA,
+  IGulfCountryData,
+  IGulfStageDefinition,
+  findGulfCountry
 } from '../../../core/constants/curriculum-tree.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
@@ -147,6 +151,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   readonly modalStep = signal<'GRADES' | 'UNITS'>('GRADES');
   readonly activeStageFilter = signal<StageFilterType>('ALL');
   readonly selectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+  readonly selectedGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly gulfCountries = GULF_COUNTRIES_DATA;
 
   // Stable Spider Web Canvas & DOM References
   @ViewChild('desktopCurriculaContainer') desktopContainerRef!: ElementRef<HTMLDivElement>;
@@ -385,6 +391,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     this.selectedIntlDivision.set(code);
   }
 
+  readonly activeGulfCountry = computed<IGulfCountryData>(() => {
+    return findGulfCountry(this.selectedGulfCountry()) || GULF_COUNTRIES_DATA[0];
+  });
+
+  selectGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.selectedGulfCountry.set(code);
+  }
+
   getDivisionIcon(name?: string, code?: string): AppIconName {
     if (name === 'award' || name === 'graduation-cap' || name === 'book-open' || name === 'globe') {
       return name;
@@ -399,6 +413,45 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     return stage.gradeCodes
       .map(code => filtered.find(g => g.code === code))
       .filter((g): g is IGradeLevelAvailability => Boolean(g));
+  }
+
+  getGulfStageGrades(stage: IGulfStageDefinition): IGradeLevelAvailability[] {
+    const curr = this.selectedCurriculum();
+    const country = this.activeGulfCountry();
+    const filter = this.activeStageFilter();
+
+    return stage.gradeCodes
+      .map(code => {
+        const countryGradeMeta = country.grades.find(g => g.code === code);
+        const availGrade = curr?.availableGrades.find(g => g.code === code);
+        const isActive = availGrade?.isActive ?? this.discoveryService.isGradeActive(code);
+        const isAvailable = availGrade?.isAvailable ?? false;
+
+        const gradeItem: IGradeLevelAvailability = {
+          code,
+          titleAr: countryGradeMeta?.titleAr || availGrade?.titleAr || code,
+          titleEn: countryGradeMeta?.titleEn || availGrade?.titleEn || code,
+          shortLabelAr: countryGradeMeta?.shortLabelAr || availGrade?.shortLabelAr || code,
+          shortLabelEn: countryGradeMeta?.shortLabelEn || availGrade?.shortLabelEn || code,
+          stageAr: stage.nameAr,
+          stageEn: stage.nameEn,
+          isAvailable: isAvailable && isActive,
+          isActive,
+          hasPublishedUnits: availGrade?.hasPublishedUnits ?? false,
+          publishedUnitsCount: availGrade?.publishedUnitsCount ?? 0,
+          hasPlacementTest: availGrade?.hasPlacementTest ?? false
+        };
+        return gradeItem;
+      })
+      .filter(grade => {
+        if (!grade.isActive) return false;
+        if (filter === 'ALL') return true;
+        const sCode = stage.code;
+        if (filter === 'PRIMARY') return sCode === 'PRIMARY' || sCode === 'CYCLE_1';
+        if (filter === 'PREPARATORY') return sCode === 'INTERMEDIATE' || sCode === 'PREPARATORY' || sCode === 'CYCLE_2';
+        if (filter === 'SECONDARY') return sCode === 'SECONDARY' || sCode === 'CYCLE_3';
+        return true;
+      });
   }
 
   // Computed: Selected Grade Object
@@ -1223,6 +1276,12 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   getGradeDisplayTitle(grade: IGradeLevelAvailability): string {
     const isAr = this.langService.isArabic();
+    if (this.selectedCurriculumCode() === 'GULF') {
+      const countryGrade = this.activeGulfCountry().grades.find(g => g.code === grade.code);
+      if (countryGrade) {
+        return isAr ? countryGrade.titleAr : countryGrade.titleEn;
+      }
+    }
     if (isAr && grade.titleAr) {
       return grade.titleAr;
     }

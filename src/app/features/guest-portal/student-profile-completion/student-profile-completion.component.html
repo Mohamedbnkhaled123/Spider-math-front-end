@@ -107,6 +107,64 @@
             </div>
           </div>
 
+          <!-- Gulf Country Sub-Selector -->
+          @if (curriculum() === 'GULF') {
+            <div class="animate-fade-in">
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'اختر الدولة الخليجية:' : 'Select Gulf Country:' }}
+              </label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                @for (c of gulfCountries; track c.code) {
+                  <button
+                    type="button"
+                    (click)="onGulfCountryChange(c.code)"
+                    class="p-2 rounded-xl border text-center transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
+                    [ngClass]="{
+                      'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
+                        country() === c.code,
+                      'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
+                        country() !== c.code
+                    }"
+                  >
+                    <span>{{ c.flagEmoji }}</span>
+                    <span class="text-xs font-bold truncate">
+                      {{ langService.isArabic() ? c.nameAr : c.nameEn }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- International Division Sub-Selector -->
+          @if (curriculum() === 'INTERNATIONAL') {
+            <div class="animate-fade-in">
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'اختر القسم الدولي:' : 'Select International Division:' }}
+              </label>
+              <div class="grid grid-cols-2 gap-2.5">
+                @for (div of intlDivisions; track div.code) {
+                  <button
+                    type="button"
+                    (click)="onIntlDivisionChange(div.code)"
+                    class="p-2.5 rounded-xl border text-center transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    [ngClass]="{
+                      'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
+                        selectedIntlDivision() === div.code,
+                      'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
+                        selectedIntlDivision() !== div.code
+                    }"
+                  >
+                    <app-icon [name]="div.iconName === 'award' ? 'award' : 'graduation-cap'" [size]="15" />
+                    <span class="text-xs font-bold truncate">
+                      {{ langService.isArabic() ? div.nameAr : div.nameEn }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Grade Level -->
           <div>
             <label class="block text-xs font-bold text-text-secondary mb-1.5">
@@ -116,7 +174,7 @@
               [ngModel]="gradeLevel()"
               (ngModelChange)="gradeLevel.set($event)"
               name="gradeLevel"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-sm focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all cursor-pointer"
             >
               @for (grade of availableGrades(); track grade.code) {
                 <option [value]="grade.code">
@@ -125,6 +183,43 @@
               }
             </select>
           </div>
+
+          <!-- Academic Term (When applicable) -->
+          @if (hasTerms()) {
+            <div class="animate-fade-in">
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}
+              </label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  (click)="academicTerm.set('TERM_1')"
+                  class="p-2 rounded-xl border text-center transition-all duration-200 cursor-pointer"
+                  [ngClass]="{
+                    'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
+                      academicTerm() === 'TERM_1',
+                    'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
+                      academicTerm() !== 'TERM_1'
+                  }"
+                >
+                  <span class="text-xs font-bold">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="academicTerm.set('TERM_2')"
+                  class="p-2 rounded-xl border text-center transition-all duration-200 cursor-pointer"
+                  [ngClass]="{
+                    'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
+                      academicTerm() === 'TERM_2',
+                    'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
+                      academicTerm() !== 'TERM_2'
+                  }"
+                >
+                  <span class="text-xs font-bold">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</span>
+                </button>
+              </div>
+            </div>
+          }
 
           <!-- Country Selection & Conditional Governorate -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

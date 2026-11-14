@@ -14,7 +14,12 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import {
   CANONICAL_CURRICULUM_TREE,
   CurriculumCode,
-  AcademicTermCode
+  AcademicTermCode,
+  GULF_COUNTRIES_DATA,
+  findGulfCountry,
+  INTERNATIONAL_DIVISIONS_DATA,
+  findInternationalDivision,
+  curriculumHasTerms
 } from '../../../core/constants/curriculum-tree.constant';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
@@ -55,19 +60,44 @@ export class StudentProfileCompletionComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly issuedHaCode = signal<string | null>(null);
 
-  // Constants
+  // Constants & Sub-divisions
   readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
   readonly egyptGovernorates = EGYPT_GOVERNORATES;
+  readonly gulfCountries = GULF_COUNTRIES_DATA;
+  readonly intlDivisions = INTERNATIONAL_DIVISIONS_DATA;
+  readonly selectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
 
   // Computed Properties
   readonly isEgypt = computed<boolean>(() => this.country() === 'EG');
+  readonly hasTerms = computed<boolean>(() => curriculumHasTerms(this.curriculum()));
 
   readonly phonePlaceholder = computed<string>(() =>
     getPhonePlaceholderByCountry(this.country())
   );
 
   readonly availableGrades = computed(() => {
-    return this.discoveryService.getAvailableGradesForCurriculum(this.curriculum(), true);
+    const curr = this.curriculum();
+    if (curr === 'GULF') {
+      const countryData = findGulfCountry(this.country()) || GULF_COUNTRIES_DATA[0];
+      return countryData.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn,
+        shortLabelAr: g.shortLabelAr || g.titleAr,
+        shortLabelEn: g.shortLabelEn || g.titleEn
+      }));
+    }
+    if (curr === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.selectedIntlDivision()) || INTERNATIONAL_DIVISIONS_DATA[0];
+      return divData.grades.map(g => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn,
+        shortLabelAr: g.shortLabelAr || g.titleAr,
+        shortLabelEn: g.shortLabelEn || g.titleEn
+      }));
+    }
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true);
   });
 
   ngOnInit(): void {
@@ -98,6 +128,29 @@ export class StudentProfileCompletionComponent implements OnInit {
 
   onCurriculumChange(code: CurriculumCode): void {
     this.curriculum.set(code);
+    if (code === 'GULF') {
+      if (!['SA', 'QA', 'AE', 'KW'].includes(this.country())) {
+        this.country.set('SA');
+      }
+    } else if (code === 'EGYPTIAN') {
+      this.country.set('EG');
+    }
+    const grades = this.availableGrades();
+    if (grades.length > 0) {
+      this.gradeLevel.set(grades[0].code);
+    }
+  }
+
+  onGulfCountryChange(countryCode: string): void {
+    this.country.set(countryCode);
+    const grades = this.availableGrades();
+    if (grades.length > 0) {
+      this.gradeLevel.set(grades[0].code);
+    }
+  }
+
+  onIntlDivisionChange(divCode: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.selectedIntlDivision.set(divCode);
     const grades = this.availableGrades();
     if (grades.length > 0) {
       this.gradeLevel.set(grades[0].code);

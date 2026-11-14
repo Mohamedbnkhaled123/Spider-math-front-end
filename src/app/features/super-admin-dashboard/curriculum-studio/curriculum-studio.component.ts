@@ -210,6 +210,9 @@ export class CurriculumStudioComponent implements OnInit {
   readonly selectedGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
   readonly modalGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
   readonly modalAddGradeCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly modalAddGradeIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+  readonly overviewGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly overviewIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
 
   selectGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
     this.selectedGulfCountry.set(code);
@@ -620,9 +623,60 @@ export class CurriculumStudioComponent implements OnInit {
       const country = findGulfCountry(this.modalAddGradeCountry());
       return country ? country.grades : [];
     }
+    if (trackCode === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.modalAddGradeIntlDivision());
+      return divData ? divData.grades : [];
+    }
     const treeNode = this.canonicalCurriculumTree.find((c) => c.code === trackCode);
     return treeNode ? treeNode.grades : [];
   });
+
+  getOverviewGradesForTrack(track: CurriculumTrackItem): GradeOption[] {
+    if (track.code === 'GULF') {
+      const countryData = findGulfCountry(this.overviewGulfCountry());
+      if (countryData) {
+        return countryData.grades.map(cg => {
+          const matchingTrackGrade = track.grades.find(g => g.code === cg.code);
+          return {
+            code: cg.code,
+            titleAr: cg.titleAr,
+            titleEn: cg.titleEn,
+            isCustom: matchingTrackGrade?.isCustom
+          };
+        });
+      }
+    }
+    if (track.code === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.overviewIntlDivision());
+      if (divData) {
+        const divGradeCodes = new Set(divData.stages.flatMap(s => s.gradeCodes));
+        return track.grades.filter(g => divGradeCodes.has(g.code));
+      }
+    }
+    return track.grades;
+  }
+
+  getSelectedGulfCountryName(): string {
+    const c = findGulfCountry(this.selectedGulfCountry());
+    if (!c) return '';
+    return this.langService.isArabic() ? `${c.flagEmoji} ${c.nameAr}` : `${c.flagEmoji} ${c.nameEn}`;
+  }
+
+  getSelectedIntlDivisionName(): string {
+    const d = findInternationalDivision(this.selectedIntlDivision());
+    if (!d) return '';
+    const flag = d.code === 'AMERICAN_CURRICULUM' ? '🇺🇸' : '🇬🇧';
+    return this.langService.isArabic() ? `${flag} ${d.nameAr}` : `${flag} ${d.nameEn}`;
+  }
+
+  getSelectedGradeTitle(): string {
+    const code = this.selectedGrade();
+    const opt = this.gradeOptions().find(g => g.code === code);
+    if (opt) {
+      return this.langService.isArabic() ? opt.titleAr : (opt.titleEn || opt.titleAr);
+    }
+    return code;
+  }
 
   readonly currentCurriculumHasTerms = computed<boolean>(() => curriculumHasTerms(this.selectedCurriculum()));
 
@@ -659,6 +713,22 @@ export class CurriculumStudioComponent implements OnInit {
       const countryData = findGulfCountry(this.selectedGulfCountry());
       if (countryData) {
         return countryData.grades.map(g => ({
+          code: g.code,
+          titleAr: g.titleAr,
+          titleEn: g.titleEn
+        }));
+      }
+    }
+    if (curr === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.selectedIntlDivision());
+      if (divData) {
+        const divGradeCodes = new Set(divData.stages.flatMap(s => s.gradeCodes));
+        const track = this.allCurriculaTracks().find((t) => t.code === curr);
+        if (track) {
+          const filtered = track.grades.filter(g => divGradeCodes.has(g.code));
+          if (filtered.length > 0) return filtered;
+        }
+        return divData.grades.map(g => ({
           code: g.code,
           titleAr: g.titleAr,
           titleEn: g.titleEn
@@ -935,6 +1005,9 @@ export class CurriculumStudioComponent implements OnInit {
     if (curr === 'GULF') {
       const country = findGulfCountry(this.modalAddGradeCountry());
       firstGrade = country?.grades[0];
+    } else if (curr === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(this.modalAddGradeIntlDivision());
+      firstGrade = divData?.grades[0];
     } else {
       const treeNode = this.canonicalCurriculumTree.find((c) => c.code === curr);
       firstGrade = treeNode?.grades[0];
@@ -947,6 +1020,21 @@ export class CurriculumStudioComponent implements OnInit {
       titleAr: firstGrade?.titleAr || '',
       titleEn: firstGrade?.titleEn || ''
     }));
+  }
+
+  onModalAddGradeIntlDivisionChange(divCode: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.modalAddGradeIntlDivision.set(divCode);
+    const divData = findInternationalDivision(divCode);
+    const firstGrade = divData?.grades[0];
+    if (firstGrade) {
+      this.gradeModal.update((s) => ({
+        ...s,
+        selectedCanonicalCode: firstGrade.code,
+        code: firstGrade.code,
+        titleAr: firstGrade.titleAr,
+        titleEn: firstGrade.titleEn || ''
+      }));
+    }
   }
 
   onModalGradeChange(gradeCode: string): void {
