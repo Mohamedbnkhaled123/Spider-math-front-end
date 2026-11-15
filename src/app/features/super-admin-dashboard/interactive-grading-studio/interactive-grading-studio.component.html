@@ -1187,12 +1187,12 @@
               ></textarea>
             </div>
 
-            <!-- Specific Mistake Cases (RULES.md Zero Image Bloat) -->
+            <!-- Specific Mistake Cases (RULES.md Zero Image Bloat - Text Note Only) -->
             <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="font-bold text-rose-500 flex items-center gap-1">
                   <app-icon name="alert-circle" [size]="13" />
-                  <span>{{ langService.isArabic() ? 'الأخطاء المرصودة وروابط يوتيوب:' : 'Logged Mistake Cases & YouTube Links:' }}</span>
+                  <span>{{ langService.isArabic() ? 'الأخطاء والملاحظات العلاجية المرصودة:' : 'Logged Mistake Cases & Notes:' }}</span>
                 </span>
                 <button
                   type="button"
@@ -1219,45 +1219,8 @@
                   <input
                     type="text"
                     [(ngModel)]="mistake.errorNote"
-                    [placeholder]="langService.isArabic() ? 'الملاحظة العلاجية للخطأ...' : 'Explanation note for mistake...'"
-                    class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs text-text-primary"
-                  />
-
-                  <div class="flex items-center gap-2 pt-1">
-                    <span class="text-[11px] font-bold text-text-muted">{{ langService.isArabic() ? 'نوع الحل المرفق:' : 'Solution Type:' }}</span>
-                    <button
-                      type="button"
-                      (click)="mistake.solutionType = 'VIDEO'"
-                      class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
-                      [class.bg-brand-primary]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
-                      [class.text-white]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
-                      [class.border-brand-primary]="(mistake.solutionType || 'VIDEO') === 'VIDEO'"
-                      [class.border-surface-border]="(mistake.solutionType || 'VIDEO') !== 'VIDEO'"
-                      [class.text-text-muted]="(mistake.solutionType || 'VIDEO') !== 'VIDEO'"
-                    >
-                      <app-icon name="video" [size]="10" />
-                      <span>{{ langService.isArabic() ? 'فيديو يوتيوب' : 'YouTube Video' }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      (click)="mistake.solutionType = 'POST'"
-                      class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border"
-                      [class.bg-brand-primary]="mistake.solutionType === 'POST'"
-                      [class.text-white]="mistake.solutionType === 'POST'"
-                      [class.border-brand-primary]="mistake.solutionType === 'POST'"
-                      [class.border-surface-border]="mistake.solutionType !== 'POST'"
-                      [class.text-text-muted]="mistake.solutionType !== 'POST'"
-                    >
-                      <app-icon name="file-text" [size]="10" />
-                      <span>{{ langService.isArabic() ? 'منشور يوتيوب' : 'YouTube Post' }}</span>
-                    </button>
-                  </div>
-
-                  <input
-                    type="url"
-                    [(ngModel)]="mistake.youtubeSolutionUrl"
-                    [placeholder]="mistake.solutionType === 'POST' ? (langService.isArabic() ? 'رابط منشور الحل (https://www.youtube.com/post/...)' : 'Post URL (https://www.youtube.com/post/...)') : (langService.isArabic() ? 'رابط فيديو الحل (https://www.youtube.com/watch?v=...)' : 'Video URL (https://www.youtube.com/watch?v=...)')"
-                    class="w-full px-3 py-1.5 rounded-lg border border-surface-border bg-surface-card text-xs font-mono text-text-primary"
+                    [placeholder]="langService.isArabic() ? 'الملاحظة العلاجية وتوجيه الخطأ للطالب...' : 'Explanation note for student mistake...'"
+                    class="w-full px-3 py-2 rounded-lg border border-surface-border bg-surface-card text-xs text-text-primary focus:border-brand-primary outline-none"
                   />
                 </div>
               }

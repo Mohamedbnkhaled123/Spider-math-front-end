@@ -54,6 +54,7 @@ export type AssessmentAdminType = 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
 export interface AssessmentAdminItem {
   id: string;
   unitId: string;
+  lectureId?: string | null;
   titleAr: string;
   titleEn?: string;
   type?: AssessmentAdminType;
@@ -79,6 +80,8 @@ export interface LectureAdminItem {
   isFree?: boolean;
   isFreeTrial?: boolean;
   xpReward?: number | null;
+  hasAssessment?: boolean;
+  assessmentId?: string;
 }
 
 export interface UnitPackageAdminItem {

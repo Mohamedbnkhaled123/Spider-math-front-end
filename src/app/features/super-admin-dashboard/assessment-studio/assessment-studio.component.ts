@@ -220,6 +220,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     curriculum: CurriculumCode;
     gradeLevel: string;
     term: AcademicTermCode;
+    unitPackageId: string | null;
+    lectureId: string | null;
     durationMinutes: number;
     isMultiModule: boolean;
     module1TimeMinutes: number;
@@ -240,6 +242,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     curriculum: 'EGYPTIAN',
     gradeLevel: '',
     term: 'TERM_1',
+    unitPackageId: null,
+    lectureId: null,
     durationMinutes: 45,
     isMultiModule: false,
     module1TimeMinutes: 35,
@@ -260,6 +264,121 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     const track = this.allCurriculaTracks().find((t) => t.code === formCurr);
     return track ? track.grades : [];
   });
+
+  readonly availableUnitsInCreate = signal<{ id: string; titleAr: string; lectures: { id: string; order: number; titleAr: string }[] }[]>([]);
+  readonly createSelectedUnit = computed(() => {
+    const unitId = this.createForm().unitPackageId;
+    if (!unitId) return null;
+    return this.availableUnitsInCreate().find((u) => u.id === unitId) || null;
+  });
+
+  onUnitChangeInCreate(unitId: string | null): void {
+    this.createForm.update((prev) => ({
+      ...prev,
+      unitPackageId: unitId || null,
+      lectureId: null
+    }));
+  }
+
+  loadUnitsForCreate(curr: string, grade: string, term: string): void {
+    if (!grade) {
+      this.availableUnitsInCreate.set([]);
+      return;
+    }
+    const termQuery = curriculumHasTerms(curr as CurriculumCode) ? `&term=${term}` : '';
+    this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?curriculum=${curr}&gradeLevel=${grade}${termQuery}`).subscribe({
+      next: (res) => {
+        const rawUnits = Array.isArray(res?.data) ? res.data : [];
+        const unitsWithLectures = rawUnits.map((u: any) => ({
+          id: u._id || u.id,
+          titleAr: u.title_ar || '',
+          lectures: [] as { id: string; order: number; titleAr: string }[]
+        }));
+        this.availableUnitsInCreate.set(unitsWithLectures);
+
+        unitsWithLectures.forEach((unit) => {
+          this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${unit.id}/curriculum-contents`).subscribe({
+            next: (cRes) => {
+              if (cRes?.data?.lectures) {
+                const lecs = (cRes.data.lectures || []).map((l: any) => ({
+                  id: l._id || l.id,
+                  order: l.order_index || l.order || 1,
+                  titleAr: l.lecture_title_ar || l.title_ar || l.title || ('محاضرة ' + (l.order_index || l.order || 1))
+                }));
+                this.availableUnitsInCreate.update((list) =>
+                  list.map((item) => (item.id === unit.id ? { ...item, lectures: lecs } : item))
+                );
+              }
+            }
+          });
+        });
+      },
+      error: () => this.availableUnitsInCreate.set([])
+    });
+  }
+
+  readonly availableUnitsInEditor = signal<{ id: string; titleAr: string; lectures: { id: string; order: number; titleAr: string }[] }[]>([]);
+  readonly editorSelectedUnit = computed(() => {
+    const unitId = this.activeAssessment()?.unitId;
+    if (!unitId) return null;
+    return this.availableUnitsInEditor().find((u) => u.id === unitId) || null;
+  });
+
+  onUnitChangeInEditor(unitId: string | null): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+    asm.unitId = unitId || null;
+    asm.lectureId = null;
+    const selUnit = this.availableUnitsInEditor().find((u) => u.id === unitId);
+    asm.unitTitle = selUnit ? selUnit.titleAr : null;
+    asm.lectureTitle = null;
+  }
+
+  onLectureChangeInEditor(lectureId: string | null): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+    asm.lectureId = lectureId || null;
+    const selUnit = this.editorSelectedUnit();
+    const selLec = selUnit?.lectures.find((l) => l.id === lectureId);
+    asm.lectureTitle = selLec ? selLec.titleAr : null;
+  }
+
+  loadUnitsForEditor(curr: string, grade: string, term: string): void {
+    if (!grade) {
+      this.availableUnitsInEditor.set([]);
+      return;
+    }
+    const termQuery = curriculumHasTerms(curr as CurriculumCode) ? `&term=${term}` : '';
+    this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?curriculum=${curr}&gradeLevel=${grade}${termQuery}`).subscribe({
+      next: (res) => {
+        const rawUnits = Array.isArray(res?.data) ? res.data : [];
+        const unitsWithLectures = rawUnits.map((u: any) => ({
+          id: u._id || u.id,
+          titleAr: u.title_ar || '',
+          lectures: [] as { id: string; order: number; titleAr: string }[]
+        }));
+        this.availableUnitsInEditor.set(unitsWithLectures);
+
+        unitsWithLectures.forEach((unit) => {
+          this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${unit.id}/curriculum-contents`).subscribe({
+            next: (cRes) => {
+              if (cRes?.data?.lectures) {
+                const lecs = (cRes.data.lectures || []).map((l: any) => ({
+                  id: l._id || l.id,
+                  order: l.order_index || l.order || 1,
+                  titleAr: l.lecture_title_ar || l.title_ar || l.title || ('محاضرة ' + (l.order_index || l.order || 1))
+                }));
+                this.availableUnitsInEditor.update((list) =>
+                  list.map((item) => (item.id === unit.id ? { ...item, lectures: lecs } : item))
+                );
+              }
+            }
+          });
+        });
+      },
+      error: () => this.availableUnitsInEditor.set([])
+    });
+  }
 
   // Question & Settings Safe Visual Editor State
   readonly isEditorOpen = signal<boolean>(false);
@@ -748,6 +867,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       curriculum: asm.curriculum,
       grade_level: asm.gradeLevel,
       academic_term: asm.term,
+      unit_package_id: asm.unitId !== undefined ? (asm.unitId || null) : undefined,
+      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
       reference_sheet_url: asm.referenceSheetUrl || null,
@@ -973,6 +1094,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           const untilIso = a.available_until ? new Date(a.available_until).toISOString() : null;
           return {
             id: a._id || a.id,
+            unitId: a.unit_package_id ? (a.unit_package_id._id || a.unit_package_id).toString() : null,
+            lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : null,
+            unitTitle: (typeof a.unit_package_id === 'object' && a.unit_package_id) ? (a.unit_package_id.title_ar || a.unit_package_id.title_en || null) : null,
+            lectureTitle: (typeof a.lecture_id === 'object' && a.lecture_id) ? (a.lecture_id.lecture_title_ar || a.lecture_id.lecture_title_en || null) : null,
             titleAr: a.title_ar || a.titleAr || a.title_en || a.titleEn || a.title || '',
             titleEn: a.title_en || a.titleEn || a.title_ar || a.titleAr || a.title || '',
             curriculum: a.curriculum,
@@ -1128,6 +1253,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       curriculum: this.selectedCurriculum(),
       gradeLevel: initialGrade,
       term: this.selectedTerm(),
+      unitPackageId: null,
+      lectureId: null,
       durationMinutes: 45,
       isMultiModule: false,
       module1TimeMinutes: 35,
@@ -1142,6 +1269,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       isPlacementTest: false,
       requiresTeacherReview: false
     });
+    this.loadUnitsForCreate(this.selectedCurriculum(), initialGrade, this.selectedTerm());
     this.isCreateModalOpen.set(true);
   }
 
@@ -1183,8 +1311,31 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.createForm.update((f) => ({
       ...f,
       curriculum: curr,
-      gradeLevel: firstGrade
+      gradeLevel: firstGrade,
+      unitPackageId: null,
+      lectureId: null
     }));
+    this.loadUnitsForCreate(curr, firstGrade, this.createForm().term);
+  }
+
+  onGradeChangeInCreate(grade: string): void {
+    this.createForm.update((f) => ({
+      ...f,
+      gradeLevel: grade,
+      unitPackageId: null,
+      lectureId: null
+    }));
+    this.loadUnitsForCreate(this.createForm().curriculum, grade, this.createForm().term);
+  }
+
+  onTermChangeInCreate(term: AcademicTermCode): void {
+    this.createForm.update((f) => ({
+      ...f,
+      term,
+      unitPackageId: null,
+      lectureId: null
+    }));
+    this.loadUnitsForCreate(this.createForm().curriculum, this.createForm().gradeLevel, term);
   }
 
   saveNewAssessment(): void {
@@ -1226,6 +1377,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       curriculum: form.curriculum,
       grade_level: form.gradeLevel,
       academic_term: form.term,
+      unit_package_id: form.unitPackageId || null,
+      lecture_id: form.lectureId || null,
       assessment_type: computedType,
       calculator_mode: form.calculatorType,
       graph_calculator: form.calculatorType,
@@ -1471,6 +1624,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.editorErrorMessage.set(null);
     this.autoRegradeWarning.set(false);
     this.isEditorOpen.set(true);
+    this.loadUnitsForEditor(copy.curriculum, copy.gradeLevel, copy.term);
 
     // Also check async Dexie draft in case IndexedDB holds a newer version than localStorage
     this.draftService.getDraft(copy.id).then((asyncDraft) => {
@@ -1521,8 +1675,37 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.activeAssessment.set({
       ...asm,
       curriculum: curr,
-      gradeLevel: firstGrade
+      gradeLevel: firstGrade,
+      unitId: null,
+      lectureId: null,
+      unitTitle: null,
+      lectureTitle: null
     });
+    this.loadUnitsForEditor(curr, firstGrade, asm.term);
+    this.triggerDraftAutoSave(true);
+  }
+
+  onGradeChangeInEditor(grade: string): void {
+    const asm = this.activeAssessment();
+    if (!asm || asm.submissionsCount > 0) return;
+    asm.gradeLevel = grade;
+    asm.unitId = null;
+    asm.lectureId = null;
+    asm.unitTitle = null;
+    asm.lectureTitle = null;
+    this.loadUnitsForEditor(asm.curriculum, grade, asm.term);
+    this.triggerDraftAutoSave(true);
+  }
+
+  onTermChangeInEditor(term: AcademicTermCode): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+    asm.term = term;
+    asm.unitId = null;
+    asm.lectureId = null;
+    asm.unitTitle = null;
+    asm.lectureTitle = null;
+    this.loadUnitsForEditor(asm.curriculum, asm.gradeLevel, term);
     this.triggerDraftAutoSave(true);
   }
 
@@ -1938,6 +2121,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       curriculum: asm.curriculum,
       grade_level: asm.gradeLevel,
       academic_term: asm.term,
+      unit_package_id: asm.unitId !== undefined ? (asm.unitId || null) : undefined,
+      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
       reference_sheet_url: asm.referenceSheetUrl || null,

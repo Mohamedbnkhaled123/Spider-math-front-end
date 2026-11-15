@@ -463,9 +463,16 @@
             <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg flex flex-col justify-between gap-4 transition-all hover:border-brand-accent/40 shadow-xs">
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
-                    {{ asm.assessmentType === 'HOMEWORK' ? (langService.isArabic() ? 'واجب منزلي' : 'Homework') : asm.assessmentType === 'EXAM' ? (langService.isArabic() ? 'امتحان شامل' : 'Comprehensive Exam') : (langService.isArabic() ? 'كويز تفاعلي' : 'Interactive Quiz') }}
-                  </span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                      {{ asm.assessmentType === 'HOMEWORK' ? (langService.isArabic() ? 'واجب منزلي' : 'Homework') : asm.assessmentType === 'EXAM' ? (langService.isArabic() ? 'امتحان شامل' : 'Comprehensive Exam') : (langService.isArabic() ? 'كويز تفاعلي' : 'Interactive Quiz') }}
+                    </span>
+                    @if (asm.lectureTitle) {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 max-w-[170px] truncate" [title]="asm.lectureTitle">
+                        {{ langService.isArabic() ? ('درس: ' + asm.lectureTitle) : ('Lesson: ' + asm.lectureTitle) }}
+                      </span>
+                    }
+                  </div>
 
                   <!-- Time Window State Badge -->
                   @if (asm.studentAttemptStatus?.timeWindowState === 'UPCOMING') {

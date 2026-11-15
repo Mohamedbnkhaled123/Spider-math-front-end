@@ -393,11 +393,14 @@ export class SuperAdminDashboardComponent implements OnInit {
                               durationMinutes: l.video_duration_sec ? Math.round(l.video_duration_sec / 60) : (l.duration_minutes || 45),
                               isFree: !!(l.is_free ?? l.isFree ?? l.is_free_trial),
                               isFreeTrial: !!(l.is_free ?? l.isFree ?? l.is_free_trial),
-                              xpReward: l.xp_reward_on_complete ?? null
+                              xpReward: l.xp_reward_on_complete ?? null,
+                              hasAssessment: !!(l.hasAssessment || l.linked_assessment_id),
+                              assessmentId: l.linked_assessment_id || l.assessmentId || null
                             })),
                             assessments: (cRes.data.assessments || []).map((a: any) => ({
                               id: a._id || a.id,
                               unitId: unit.id,
+                              lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : (a.lectureId || null),
                               titleAr: a.title_ar,
                               type: a.assessment_type || 'QUIZ',
                               calculatorType: a.calculator_mode || a.calculatorType || 'NONE',
@@ -722,10 +725,22 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   onAssessmentSaved(asm: AssessmentAdminItem): void {
     this.unitsList.update((list) =>
-      list.map((u) => ({
-        ...u,
-        assessments: u.assessments.map((a) => (a.id === asm.id ? asm : a))
-      }))
+      list.map((u) => {
+        const updatedAssessments = u.assessments.map((a) => (a.id === asm.id ? asm : a));
+        const updatedLectures = (u.lectures || []).map((l) => {
+          const hasThisAsm = updatedAssessments.find((a) => a.lectureId === l.id);
+          return {
+            ...l,
+            hasAssessment: !!hasThisAsm,
+            assessmentId: hasThisAsm ? hasThisAsm.id : undefined
+          };
+        });
+        return {
+          ...u,
+          lectures: updatedLectures,
+          assessments: updatedAssessments
+        };
+      })
     );
   }
 

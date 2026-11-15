@@ -23,6 +23,8 @@ export interface LessonLectureItem {
 
 export interface UnitAssessmentItem {
   _id: string;
+  lectureId?: string | null;
+  lectureTitle?: string | null;
   titleAr: string;
   titleEn: string;
   assessmentType: 'QUIZ' | 'HOMEWORK' | 'EXAM';

@@ -130,36 +130,51 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         const rawLectures = res?.data?.lectures || [];
         const rawAssessments = res?.data?.assessments || [];
 
-        const mappedLectures: LessonLectureItem[] = rawLectures.map((l: any, idx: number) => ({
-          _id: l._id,
-          order: l.order_index ?? idx + 1,
-          titleAr: l.lecture_title_ar || l.title_ar,
-          titleEn: l.lecture_title_en || l.title_en || '',
-          durationMinutes: l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 5),
-          videoDurationSec: l.video_duration_sec || (l.duration_minutes ? l.duration_minutes * 60 : 105),
-          encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
-          googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_materials?.[0]?.storage_file_id || l.pdf_materials?.[0]?._id?.toString() || '',
-          isPrintAllowed: l.is_print_allowed !== undefined ? !!l.is_print_allowed : !!l.pdf_materials?.[0]?.is_print_allowed,
-          watchPercentage: l.watchPercentage || 0,
-          isCompleted: !!l.isCompleted,
-          hasAssessment: !!l.linked_assessment_id,
-          assessmentId: l.linked_assessment_id,
-          isAccessible: l.isAccessible !== undefined ? !!l.isAccessible : (isSubscribed || !!l.is_free_trial || !!l.is_free || !!l.isFreeTrial || !!l.isFree),
-          isFreeTrial: !!(l.is_free_trial || l.is_free || l.isFreeTrial || l.isFree)
-        }));
+        const mappedLectures: LessonLectureItem[] = rawLectures.map((l: any, idx: number) => {
+          const linkedAsm = rawAssessments.find((a: any) =>
+            (a.lecture_id && (a.lecture_id._id || a.lecture_id).toString() === l._id?.toString()) ||
+            (a.lectureId && a.lectureId.toString() === l._id?.toString())
+          );
+          const assessmentId = l.linked_assessment_id || l.assessmentId || (linkedAsm ? (linkedAsm._id || linkedAsm.id) : undefined);
+          return {
+            _id: l._id,
+            order: l.order_index ?? idx + 1,
+            titleAr: l.lecture_title_ar || l.title_ar,
+            titleEn: l.lecture_title_en || l.title_en || '',
+            durationMinutes: l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 5),
+            videoDurationSec: l.video_duration_sec || (l.duration_minutes ? l.duration_minutes * 60 : 105),
+            encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
+            googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_materials?.[0]?.storage_file_id || l.pdf_materials?.[0]?._id?.toString() || '',
+            isPrintAllowed: l.is_print_allowed !== undefined ? !!l.is_print_allowed : !!l.pdf_materials?.[0]?.is_print_allowed,
+            watchPercentage: l.watchPercentage || 0,
+            isCompleted: !!l.isCompleted,
+            hasAssessment: !!assessmentId,
+            assessmentId,
+            isAccessible: l.isAccessible !== undefined ? !!l.isAccessible : (isSubscribed || !!l.is_free_trial || !!l.is_free || !!l.isFreeTrial || !!l.isFree),
+            isFreeTrial: !!(l.is_free_trial || l.is_free || l.isFreeTrial || l.isFree)
+          };
+        });
 
-        const mappedAssessments: UnitAssessmentItem[] = rawAssessments.map((a: any) => ({
-          _id: a._id,
-          titleAr: a.title_ar,
-          titleEn: a.title_en || '',
-          assessmentType: a.assessment_type || 'QUIZ',
-          totalPoints: a.total_points || 0,
-          timeLimitMinutes: a.time_limit_minutes || 30,
-          maxAttempts: a.max_attempts || 1,
-          availableFrom: a.available_from,
-          availableUntil: a.available_until,
-          studentAttemptStatus: a.studentAttemptStatus
-        }));
+        const mappedAssessments: UnitAssessmentItem[] = rawAssessments.map((a: any) => {
+          const matchedLec = rawLectures.find((l: any) =>
+            (a.lecture_id && (a.lecture_id._id || a.lecture_id).toString() === l._id?.toString()) ||
+            (a.lectureId && a.lectureId.toString() === l._id?.toString())
+          );
+          return {
+            _id: a._id,
+            lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : (a.lectureId || null),
+            lectureTitle: matchedLec ? (matchedLec.lecture_title_ar || matchedLec.title_ar || matchedLec.title) : (a.lecture_id?.lecture_title_ar || null),
+            titleAr: a.title_ar,
+            titleEn: a.title_en || '',
+            assessmentType: a.assessment_type || 'QUIZ',
+            totalPoints: a.total_points || 0,
+            timeLimitMinutes: a.time_limit_minutes || 30,
+            maxAttempts: a.max_attempts || 1,
+            availableFrom: a.available_from,
+            availableUntil: a.available_until,
+            studentAttemptStatus: a.studentAttemptStatus
+          };
+        });
 
         const freshWorkspace: UnitWorkspaceData = {
           unitId: unit?._id || unitId,

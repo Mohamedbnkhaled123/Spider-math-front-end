@@ -28,6 +28,10 @@ export interface AssessmentQuestionItem {
 
 export interface AssessmentItem {
   id: string;
+  unitId?: string | null;
+  lectureId?: string | null;
+  unitTitle?: string | null;
+  lectureTitle?: string | null;
   titleAr: string;
   titleEn?: string;
   curriculum: CurriculumCode;

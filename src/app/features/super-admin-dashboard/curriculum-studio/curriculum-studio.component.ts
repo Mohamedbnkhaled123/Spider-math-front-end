@@ -841,6 +841,7 @@ export class CurriculumStudioComponent implements OnInit {
     xpReward: number | null;
     referenceSheetUrl: string | null;
     requiresTeacherReview: boolean;
+    lectureId: string | null;
   }>({
     titleAr: '',
     type: 'QUIZ',
@@ -848,7 +849,8 @@ export class CurriculumStudioComponent implements OnInit {
     calculatorType: 'NONE',
     xpReward: null,
     referenceSheetUrl: null,
-    requiresTeacherReview: false
+    requiresTeacherReview: false,
+    lectureId: null
   });
 
   // Reference Sheet Toggles
@@ -1830,17 +1832,25 @@ export class CurriculumStudioComponent implements OnInit {
   deleteLecture(unit: UnitPackageAdminItem, lectureId: string): void {
     this.http.delete(`/api/v1/admin/lectures/${lectureId}`).subscribe({
       next: () => {
+        const updatedAssessments = (unit.assessments || []).map((a) =>
+          a.lectureId === lectureId ? { ...a, lectureId: null } : a
+        );
         const updatedUnit: UnitPackageAdminItem = {
           ...unit,
-          lectures: unit.lectures.filter((l) => l.id !== lectureId)
+          lectures: unit.lectures.filter((l) => l.id !== lectureId),
+          assessments: updatedAssessments
         };
         this.unitUpdated.emit(updatedUnit);
         this.toastTriggered.emit({ text: 'تم حذف المحاضرة', type: 'warning' });
       },
       error: () => {
+        const updatedAssessments = (unit.assessments || []).map((a) =>
+          a.lectureId === lectureId ? { ...a, lectureId: null } : a
+        );
         const updatedUnit: UnitPackageAdminItem = {
           ...unit,
-          lectures: unit.lectures.filter((l) => l.id !== lectureId)
+          lectures: unit.lectures.filter((l) => l.id !== lectureId),
+          assessments: updatedAssessments
         };
         this.unitUpdated.emit(updatedUnit);
         this.toastTriggered.emit({ text: 'تم حذف المحاضرة!', type: 'warning' });
@@ -1886,7 +1896,7 @@ export class CurriculumStudioComponent implements OnInit {
     return asm.questions.some(q => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
   }
 
-  openCreateAssessmentModal(unit: UnitPackageAdminItem): void {
+  openCreateAssessmentModal(unit: UnitPackageAdminItem, targetLectureId?: string): void {
     this.activeUnitForAssessment.set(unit);
     this.isRefSheetActiveInCreateAssessment.set(false);
     this.newAssessmentForm.set({
@@ -1896,7 +1906,8 @@ export class CurriculumStudioComponent implements OnInit {
       calculatorType: 'NONE',
       xpReward: null,
       referenceSheetUrl: null,
-      requiresTeacherReview: false
+      requiresTeacherReview: false,
+      lectureId: targetLectureId || null
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -1911,7 +1922,8 @@ export class CurriculumStudioComponent implements OnInit {
       calculatorType: 'NONE',
       xpReward: null,
       referenceSheetUrl: null,
-      requiresTeacherReview: false
+      requiresTeacherReview: false,
+      lectureId: null
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -2006,6 +2018,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     const payload = {
       unit_package_id: unit.id,
+      lecture_id: form.lectureId || null,
       curriculum: unit.curriculum,
       grade_level: unit.gradeLevel,
       academic_term: unit.term,
@@ -2026,9 +2039,11 @@ export class CurriculumStudioComponent implements OnInit {
     this.http.post<{ success: boolean; data: any }>('/api/v1/admin/assessments', payload).subscribe({
       next: (res) => {
         const created = res?.data;
+        const newAsmId = created?._id || created?.id;
         const newAsm: AssessmentAdminItem = {
-          id: created?._id || created?.id,
+          id: newAsmId,
           unitId: unit.id,
+          lectureId: form.lectureId || null,
           titleAr: form.titleAr.trim(),
           type: form.type,
           calculatorType: form.calculatorType,
@@ -2051,8 +2066,13 @@ export class CurriculumStudioComponent implements OnInit {
           }))
         };
 
+        const updatedLectures = form.lectureId
+          ? unit.lectures.map(l => l.id === form.lectureId ? { ...l, hasAssessment: true, assessmentId: newAsmId } : l)
+          : unit.lectures;
+
         const updatedUnit: UnitPackageAdminItem = {
           ...unit,
+          lectures: updatedLectures,
           assessments: [...unit.assessments, newAsm]
         };
         this.unitUpdated.emit(updatedUnit);
@@ -2071,16 +2091,24 @@ export class CurriculumStudioComponent implements OnInit {
   deleteAssessment(unit: UnitPackageAdminItem, assessmentId: string): void {
     this.http.delete(`/api/v1/admin/assessments/${assessmentId}`).subscribe({
       next: () => {
+        const updatedLectures = (unit.lectures || []).map((l) =>
+          l.assessmentId === assessmentId ? { ...l, hasAssessment: false, assessmentId: undefined } : l
+        );
         const updatedUnit: UnitPackageAdminItem = {
           ...unit,
+          lectures: updatedLectures,
           assessments: unit.assessments.filter((a) => a.id !== assessmentId)
         };
         this.unitUpdated.emit(updatedUnit);
         this.toastTriggered.emit({ text: 'تم حذف الامتحان', type: 'warning' });
       },
       error: () => {
+        const updatedLectures = (unit.lectures || []).map((l) =>
+          l.assessmentId === assessmentId ? { ...l, hasAssessment: false, assessmentId: undefined } : l
+        );
         const updatedUnit: UnitPackageAdminItem = {
           ...unit,
+          lectures: updatedLectures,
           assessments: unit.assessments.filter((a) => a.id !== assessmentId)
         };
         this.unitUpdated.emit(updatedUnit);
@@ -2499,6 +2527,7 @@ export class CurriculumStudioComponent implements OnInit {
       reference_sheet_url: asm.referenceSheetUrl || null,
       xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
       requires_teacher_review: requiresTeacherReview,
+      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';
         const isInputText = q.type === 'INPUT_TEXT';
@@ -2536,5 +2565,19 @@ export class CurriculumStudioComponent implements OnInit {
         });
       }
     });
+  }
+
+  getLectureTitle(unit: UnitPackageAdminItem, lectureId?: string | null): string {
+    if (!lectureId) return '';
+    const lec = (unit.lectures || []).find((l) => l.id === lectureId);
+    return lec ? (this.langService.isArabic() ? lec.titleAr : (lec.titleEn || lec.titleAr)) : '';
+  }
+
+  getAssessmentForLecture(unit: UnitPackageAdminItem, lectureId: string): AssessmentAdminItem | undefined {
+    return (unit.assessments || []).find((a) => a.lectureId === lectureId);
+  }
+
+  getUnitForAssessment(asm: AssessmentAdminItem): UnitPackageAdminItem | undefined {
+    return this.units().find((u) => u.id === asm.unitId || (u.assessments || []).some((a) => a.id === asm.id));
   }
 }

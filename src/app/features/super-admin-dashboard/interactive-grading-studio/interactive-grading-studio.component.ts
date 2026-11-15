@@ -882,7 +882,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
     this.isDragging = false;
   }
 
-  // Mistakes List (Zero Image Bloat - Note + YouTube Link ONLY)
+  // Mistakes List (Zero Image Bloat - Text Note Only)
   addMistakeCase(): void {
     const item = this.currentGradingItem();
     if (!item) return;
@@ -891,8 +891,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
       questionOrder: item.questionNumber || 1,
       questionPromptText: item.questionText || '',
       errorNote: '',
-      youtubeSolutionUrl: '',
-      solutionType: 'VIDEO'
+      youtubeSolutionUrl: ''
     };
 
     item.mistakes = [...item.mistakes, newMistake];
@@ -933,7 +932,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
         question_order: m.questionOrder,
         question_prompt_text: m.questionPromptText,
         error_note: m.errorNote,
-        youtube_solution_url: m.youtubeSolutionUrl
+        youtube_solution_url: m.youtubeSolutionUrl || null
       }))
     };
 

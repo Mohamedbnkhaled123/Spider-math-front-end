@@ -7,7 +7,7 @@ export interface GradingMistake {
   questionOrder: number;
   questionPromptText: string;
   errorNote: string;
-  youtubeSolutionUrl: string;
+  youtubeSolutionUrl?: string;
   solutionType?: 'VIDEO' | 'POST';
 }
 
