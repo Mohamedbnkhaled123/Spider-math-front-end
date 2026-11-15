@@ -6,6 +6,7 @@ import {
   signal,
   computed,
   effect,
+  untracked,
   inject,
   PLATFORM_ID,
   OnDestroy
@@ -91,9 +92,11 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const existing = this.existingImageUrl();
-      if (this.compact() && !existing) {
-        this.clearItems();
-      }
+      untracked(() => {
+        if (this.compact() && !existing && this.items().length > 0) {
+          this.clearItems();
+        }
+      });
     });
   }
 
@@ -118,6 +121,9 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   }
 
   clearItems(): void {
+    if (this.items().length === 0 && !this.errorMessage()) {
+      return;
+    }
     if (isPlatformBrowser(this.platformId)) {
       for (const item of this.items()) {
         if (item.previewUrl && item.previewUrl.startsWith('blob:')) {

@@ -9,7 +9,8 @@ import {
   model,
   inject,
   PLATFORM_ID,
-  effect
+  effect,
+  untracked
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -137,9 +138,11 @@ export class AiQuestionExtractionModalComponent {
       const open = this.isOpen();
       const session = this.existingSession();
 
-      if (open && session && !this.uploadedFile() && !this.currentCanvas) {
-        this.restoreCachedSession(session);
-      }
+      untracked(() => {
+        if (open && session && !this.uploadedFile() && !this.currentCanvas) {
+          this.restoreCachedSession(session);
+        }
+      });
     });
   }
 

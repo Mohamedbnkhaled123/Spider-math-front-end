@@ -7,6 +7,7 @@ import {
   input,
   output,
   effect,
+  untracked,
   OnDestroy,
   PLATFORM_ID
 } from '@angular/core';
@@ -86,11 +87,13 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     effect(() => {
       const open = this.isOpen();
       const asm = this.assessment();
-      if (open && asm) {
-        this.resetSimulation();
-      } else {
-        this.stopTimer();
-      }
+      untracked(() => {
+        if (open && asm) {
+          this.resetSimulation();
+        } else {
+          this.stopTimer();
+        }
+      });
     });
   }
 
