@@ -1294,8 +1294,9 @@
                   @for (s of [1, 2, 3, 4, 5]; track s) {
                     <app-icon
                       name="star"
-                      [size]="13"
-                      [className]="s <= item.rating ? 'text-brand-gold' : 'text-surface-border'"
+                      [size]="14"
+                      [fill]="s <= item.rating ? 'currentColor' : 'none'"
+                      [className]="s <= item.rating ? 'text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,106,0.35)]' : 'text-surface-border'"
                     />
                   }
                 </div>
@@ -1390,7 +1391,8 @@
                   <app-icon
                     name="star"
                     [size]="22"
-                    [className]="star <= testimonialRating() ? 'text-brand-gold' : 'text-surface-border'"
+                    [fill]="star <= testimonialRating() ? 'currentColor' : 'none'"
+                    [className]="star <= testimonialRating() ? 'text-brand-gold drop-shadow-[0_0_8px_rgba(212,175,106,0.35)]' : 'text-surface-border'"
                   />
                 </button>
               }

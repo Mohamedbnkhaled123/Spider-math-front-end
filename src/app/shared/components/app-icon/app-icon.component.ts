@@ -94,4 +94,5 @@ export class AppIconComponent {
   readonly size = input<number>(20);
   readonly className = input<string>('');
   readonly strokeWidth = input<number>(2);
+  readonly fill = input<string>('none');
 }
