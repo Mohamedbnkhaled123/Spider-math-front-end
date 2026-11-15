@@ -2614,8 +2614,8 @@
 
   <!-- Modal: Grade Add / Edit Modal -->
   @if (gradeModal().isOpen) {
-    <div class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="w-full max-w-lg rounded-3xl bg-surface-card border border-surface-border shadow-2xl p-5 sm:p-6 space-y-4 animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/70 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20">
+      <div class="w-full max-w-lg max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl bg-surface-card border border-surface-border shadow-2xl p-5 sm:p-6 space-y-4 animate-scale-up">
         
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
@@ -2809,11 +2809,11 @@
   <!-- Modal: Dynamic Title Edit for Curriculum Tracks, Divisions, and Stages -->
   @if (titleEditModal().isOpen) {
     <div
-      class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-layer-modal bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 animate-scale-up">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 animate-scale-up">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-brand-primary"></span>
@@ -2883,11 +2883,11 @@
   <!-- In-App Decision Confirmation Dialog (Strictly Zero window.confirm) -->
   @if (confirmDialog().isOpen) {
     <div
-      class="fixed inset-0 z-[100] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-layer-dialog bg-black/75 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 text-center animate-scale-up">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl bg-surface-card border border-surface-border p-6 shadow-2xl space-y-5 text-center animate-scale-up">
         
         <div
           class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center"

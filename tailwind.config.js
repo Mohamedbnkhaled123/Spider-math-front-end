@@ -68,8 +68,16 @@ module.exports = {
         'shield': '20',
         'watermark': '25',
         'player': '30',
-        'header': '40',
-        'modal': '50'
+        'modal': '800',
+        'submodal': '850',
+        'preview': '900',
+        'preview-submodal': '920',
+        'slicer': '940',
+        'calculator': '950',
+        'keyboard': '960',
+        'dialog': '1000',
+        'header': '1200',
+        'header-dropdown': '1300'
       }
     },
   },

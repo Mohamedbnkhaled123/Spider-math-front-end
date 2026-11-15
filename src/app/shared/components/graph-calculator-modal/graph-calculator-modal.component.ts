@@ -102,11 +102,11 @@ export class GraphCalculatorModalComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       const w = window.innerWidth;
       if (w < 640) {
-        this.position.set({ x: 8, y: 64 });
+        this.position.set({ x: 8, y: 68 });
       } else if (w < 1024) {
-        this.position.set({ x: 16, y: 70 });
+        this.position.set({ x: 16, y: 88 });
       } else {
-        this.position.set({ x: Math.max(20, Math.floor((w - 860) / 2)), y: 75 });
+        this.position.set({ x: Math.max(20, Math.floor((w - 860) / 2)), y: 88 });
       }
     }
   }
@@ -221,7 +221,8 @@ export class GraphCalculatorModalComponent implements OnInit, OnDestroy {
     const minX = 4;
     const maxX = Math.max(4, screenW - modalW - 4);
     const newX = Math.max(minX, Math.min(maxX, this.initialPosX + deltaX));
-    const newY = Math.max(50, Math.min(screenH - 100, this.initialPosY + deltaY));
+    const minClearance = screenW < 640 ? 64 : 80;
+    const newY = Math.max(minClearance + 4, Math.min(screenH - 100, this.initialPosY + deltaY));
 
     this.position.set({ x: newX, y: newY });
   }

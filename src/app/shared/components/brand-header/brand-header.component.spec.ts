@@ -40,4 +40,47 @@ describe('BrandHeaderComponent', () => {
     component.toggleTheme();
     expect(component.themeService.currentTheme()).not.toEqual(initialTheme);
   });
+
+  describe('Navbar Visibility, Layering & Dropdowns Contract', () => {
+    it('should have sticky top positioning and z-layer-header on the main header element', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      fixture.detectChanges();
+      const headerEl: HTMLElement | null = fixture.nativeElement.querySelector('header');
+      expect(headerEl).toBeTruthy();
+      expect(headerEl?.classList.contains('sticky')).toBeTrue();
+      expect(headerEl?.classList.contains('top-0')).toBeTrue();
+      expect(headerEl?.classList.contains('z-layer-header')).toBeTrue();
+    });
+
+    it('should assign z-layer-header-dropdown to the mobile drawer when opened', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+      component.isMobileMenuOpen.set(true);
+      fixture.detectChanges();
+
+      const mobileDrawer: HTMLElement | null = fixture.nativeElement.querySelector('.drawer-smooth-05');
+      expect(mobileDrawer).toBeTruthy();
+      expect(mobileDrawer?.classList.contains('z-layer-header-dropdown')).toBeTrue();
+    });
+
+    it('should assign z-layer-header-dropdown to notifications dropdown when opened', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+      component.notificationsService.isDropdownOpen.set(true);
+      fixture.detectChanges();
+
+      const notifDropdown: HTMLElement | null = fixture.nativeElement.querySelector('.notifications-dropdown');
+      expect(notifDropdown).toBeTruthy();
+      expect(notifDropdown?.classList.contains('z-layer-header-dropdown')).toBeTrue();
+    });
+  });
+
+  describe('Zero-Emoji Compliance', () => {
+    it('should contain zero Unicode emojis in the rendered template', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      fixture.detectChanges();
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
+  });
 });

@@ -224,8 +224,8 @@
   <!-- Mandatory Homework Clarity Confirmation Modal                              -->
   <!-- ========================================================================= -->
   @if (showClarityModal()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/35 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="clarity-modal-content w-full max-w-lg rounded-3xl border border-surface-border glass-panel shadow-glass p-6 bg-surface-card flex flex-col max-h-[90vh]">
+    <div class="fixed inset-0 z-layer-modal bg-black/35 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20">
+      <div class="clarity-modal-content w-full max-w-lg rounded-3xl border border-surface-border glass-panel shadow-glass p-6 bg-surface-card flex flex-col max-h-[calc(100dvh-5.5rem)]">
         
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-4 border-b border-surface-border">
@@ -353,8 +353,8 @@
   <!-- Live Camera Viewfinder Modal (HTML5 getUserMedia Video Feed)              -->
   <!-- ========================================================================= -->
   @if (isLiveCameraOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/35 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
-      <div class="w-full max-w-xl rounded-3xl border border-surface-border glass-panel shadow-glass bg-surface-card overflow-hidden flex flex-col max-h-[92vh]">
+    <div class="fixed inset-0 z-layer-modal bg-black/35 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 pt-16 sm:pt-20 animate-fade-in">
+      <div class="w-full max-w-xl rounded-3xl border border-surface-border glass-panel shadow-glass bg-surface-card overflow-hidden flex flex-col max-h-[calc(100dvh-5.5rem)]">
         
         <!-- Live Camera Header -->
         <div class="p-4 border-b border-surface-border flex items-center justify-between bg-surface-card/90">

@@ -669,8 +669,8 @@
 
   <!-- In-Platform Embedded YouTube Solution Modal (Video or Community Post) -->
   @if (activeInPlatformSolution(); as sol) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
-      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
+      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[calc(100dvh-5.5rem)] overflow-y-auto" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
@@ -758,8 +758,8 @@
 
   <!-- Dedicated Exam Mistakes Review Modal for Parents -->
   @if (selectedReviewSubmission(); as revSub) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeSubmissionReviewModal()">
-      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-gold-accent/40 shadow-2xl space-y-4 max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeSubmissionReviewModal()">
+      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-gold-accent/40 shadow-2xl space-y-4 max-h-[calc(100dvh-5.5rem)] flex flex-col" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->
         <div class="flex items-start justify-between pb-3 border-b border-surface-border">

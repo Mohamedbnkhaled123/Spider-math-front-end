@@ -520,8 +520,8 @@
   <!-- MODAL: Confirm Purge Old Term Homework Photos                              -->
   <!-- ========================================================================= -->
   @if (showPurgeConfirmModal()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="w-full max-w-md rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs text-right rtl:text-right">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs text-right rtl:text-right">
         <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
           <app-icon name="trash" [size]="28" />
         </div>

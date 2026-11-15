@@ -137,7 +137,10 @@
 }
 
 // ==============================================================================
-// Z-Index Layering Contract (DRM, Watermarks & Floating Modals)
+// Z-Index Layering Contract (DRM, Watermarks, Floating Modals & Global Top Navbar)
+// Master rule: Top brand navbar (.z-layer-header) is strictly elevated above all
+// modal backdrops and windows so it remains clearly visible, crisp, interactive,
+// and unblurred across both desktop and mobile screens.
 // ==============================================================================
 .z-layer-grid { z-index: 1; }
 
@@ -146,16 +149,36 @@
 .z-layer-shield { z-index: 20; }          // .yt-security-shield
 .z-layer-watermark { z-index: 25; }       // <app-anti-tamper-watermark>
 .z-layer-player-controls { z-index: 30; } // Custom video player controls
-.z-layer-modal { z-index: 1100; }         // Lead Gate, Assessment Editor & Modals (Backdrop & Content)
-.z-layer-header { z-index: 1200; }        // Sticky Navbar & Sync Banner (Crisp & visible above modal backdrops)
-.z-layer-header-dropdown { z-index: 1250; } // Mobile Navigation Menu & Notifications Dropdowns (Above header)
-.z-layer-submodal { z-index: 1300; }      // Secondary Modals (AI extraction modal)
-.z-layer-preview { z-index: 1350; }       // Student Assessment Simulation Preview Modal
-.z-layer-slicer { z-index: 1400; }        // Manual Image Slicer Modal
-.z-layer-keyboard { z-index: 1450; }      // Math Virtual Keyboard (Above modals & slicers)
-.z-layer-preview-submodal { z-index: 1500; } // Preview Submodals (Formula sheet, video solution)
-.z-layer-calculator { z-index: 1550; }    // Desmos Graphing Calculator Modal (Above previews, modals & slicers)
-.z-layer-dialog { z-index: 1600; }        // Confirmation Dialogs (Topmost)
+
+// Modals, Overlays, Slicers & In-Platform Simulation Previews (< 1100)
+.z-layer-modal { z-index: 800; }          // Base Modals (Forms, Editors, Viewers)
+.z-layer-submodal { z-index: 850; }       // Secondary Submodals (AI Extraction Modal)
+.z-layer-preview { z-index: 900; }        // Student Assessment Simulation Preview Modal
+.z-layer-preview-submodal { z-index: 920; } // Preview Submodals (Formula sheet, video solution)
+.z-layer-slicer { z-index: 940; }         // Manual Image Slicer Modal
+.z-layer-calculator { z-index: 950; }     // Desmos Graphing Calculator Modal
+.z-layer-keyboard { z-index: 960; }       // Math Virtual Keyboard (Above modals & slicers)
+.z-layer-dialog { z-index: 1000; }        // In-modal Confirmation Dialogs (Above modals, below navbar)
+
+// Global Navigation Bar & Elevated Dropdowns (>= 1200)
+.z-layer-header { z-index: 1200 !important; }        // Sticky Navbar & Sync Banner (Crisp & visible above modal backdrops)
+.z-layer-header-dropdown { z-index: 1300 !important; } // Mobile Navigation Menu & Notifications Dropdowns (Above header)
+
+// Universal Safe Viewport Clearance for Modal Overlays
+// Ensures modal dialogs never slide under or get covered by the sticky navbar on mobile (h-16 = 4rem) or desktop (h-20 = 5rem)
+.modal-safe-clearance,
+.celebration-backdrop,
+.z-layer-modal.fixed.inset-0,
+.z-layer-submodal.fixed.inset-0,
+.z-layer-preview.fixed.inset-0,
+.z-layer-preview-submodal.fixed.inset-0,
+.z-layer-slicer.fixed.inset-0,
+.z-layer-dialog.fixed.inset-0 {
+  padding-top: 4rem;
+  @media (min-width: 640px) {
+    padding-top: 5rem;
+  }
+}
 // ==============================================================================
 // Global Typography & Direction Resets
 // ==============================================================================

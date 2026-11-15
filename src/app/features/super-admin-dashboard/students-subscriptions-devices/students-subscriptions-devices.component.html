@@ -671,8 +671,8 @@
   <!-- MODAL: XP Bonus & Penalty Adjustment                                      -->
   <!-- ========================================================================= -->
   @if (isXpModalOpen() && studentForXp(); as student) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-md max-h-[90dvh] min-h-0 overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] min-h-0 overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-4 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <h3 class="text-sm font-black text-text-primary">
             {{ langService.isArabic() ? ('تعديل نقاط الطالب: ' + student.name + ' (' + student.haCode + ')') : ('Adjust XP for: ' + student.name + ' (' + student.haCode + ')') }}
@@ -729,8 +729,8 @@
   <!-- 4. Unified Student Subscriptions & Units Management Modal (View/Revoke/Add) -->
   <!-- ========================================================================= -->
   @if ((isSubscriptionsModalOpen() || isActivateModalOpen()) && (studentForSubscriptions() || studentToActivate()); as student) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto" (click)="closeUnitsModal()">
-      <div class="relative w-full max-w-2xl max-h-[92dvh] min-h-0 flex flex-col rounded-3xl spider-rim-glass-card bg-surface-card shadow-2xl border border-surface-border text-xs" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto" (click)="closeUnitsModal()">
+      <div class="relative w-full max-w-2xl max-h-[calc(100dvh-5.5rem)] min-h-0 flex flex-col rounded-3xl spider-rim-glass-card bg-surface-card shadow-2xl border border-surface-border text-xs" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->
         <div class="flex items-center justify-between p-4 sm:p-5 border-b border-surface-border shrink-0">

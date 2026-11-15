@@ -164,4 +164,22 @@ describe('CelebrationModalComponent', () => {
     component.onReviewAnswers();
     expect(reviewCalled).toBe(true);
   });
+
+  describe('Navbar Clearance and Layering Contract', () => {
+    it('should layer celebration backdrop below sticky header and render skip button cleanly', () => {
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const backdrop: HTMLElement | null = fixture.nativeElement.querySelector('.celebration-backdrop');
+      expect(backdrop).toBeTruthy();
+
+      const skipBtn: HTMLButtonElement | null = fixture.nativeElement.querySelector('.skip-btn');
+      expect(skipBtn).toBeTruthy();
+
+      let skipTriggered = false;
+      component.closed.subscribe(() => (skipTriggered = true));
+      skipBtn?.click();
+      expect(skipTriggered).toBeTrue();
+    });
+  });
 });

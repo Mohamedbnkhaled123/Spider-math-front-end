@@ -591,5 +591,44 @@ describe('MathVirtualKeyboardComponent', () => {
       const previewBar = hostEl.querySelector('.preview-bar, .keyboard-preview');
       expect(previewBar).toBeNull();
     });
+
+    it('should clamp vertical keyboard dragging to stay strictly below the sticky navbar', () => {
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const keyboardAside: HTMLElement | null = hostEl.querySelector('aside.google-math-keyboard');
+      expect(keyboardAside?.classList.contains('z-layer-keyboard')).toBeTrue();
+
+      // Trigger drag start
+      const dragHandle = hostEl.querySelector('.cursor-grab') as HTMLElement;
+      expect(dragHandle).toBeTruthy();
+
+      const pointerDown = new PointerEvent('pointerdown', { clientX: 200, clientY: 300, pointerId: 1, bubbles: true });
+      dragHandle.dispatchEvent(pointerDown);
+
+      // Attempt dragging upward into the sticky header region (clientY = 0)
+      const pointerMove = new PointerEvent('pointermove', { clientX: 200, clientY: 0, pointerId: 1 });
+      window.dispatchEvent(pointerMove);
+
+      // Clamped Y must stay safely below navbar (>= 72px)
+      const pos = component.dragPosition();
+      expect(pos).not.toBeNull();
+      expect(pos!.y).toBeGreaterThanOrEqual(72);
+
+      const pointerUp = new PointerEvent('pointerup', { pointerId: 1 });
+      window.dispatchEvent(pointerUp);
+      expect(component.isDragging()).toBeFalse();
+    });
+
+    it('should contain zero Unicode emojis in rendered template', () => {
+      fixture.componentRef.setInput('targetInput', inputEl);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
   });
 });

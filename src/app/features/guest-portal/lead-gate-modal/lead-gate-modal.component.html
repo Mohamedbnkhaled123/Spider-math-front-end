@@ -1,5 +1,5 @@
 @if (isOpen()) {
-  <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 overflow-y-auto">
+  <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 overflow-y-auto">
     
     <!-- Modal Backdrop -->
     <div
@@ -8,7 +8,7 @@
     ></div>
 
     <!-- Modal Box (Glassmorphic) -->
-    <div class="spider-rim-glass-card relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-modal/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl overflow-hidden z-10 my-8">
+    <div class="spider-rim-glass-card relative w-full max-w-lg rounded-3xl border border-surface-border bg-surface-modal/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl overflow-hidden z-10 max-h-[calc(100dvh-5.5rem)] overflow-y-auto">
       
       <!-- Ambient Lock Glow -->
       <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-44 h-44 bg-brand-gold/20 rounded-full blur-2xl pointer-events-none"></div>

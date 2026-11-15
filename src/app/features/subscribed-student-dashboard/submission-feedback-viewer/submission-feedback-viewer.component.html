@@ -742,11 +742,11 @@
   @if (previewImageUrl(); as pUrl) {
     <div
       (click)="closeImagePreview()"
-      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
     >
       <div
         (click)="$event.stopPropagation()"
-        class="relative max-w-4xl max-h-[90vh] bg-surface-card rounded-3xl overflow-hidden shadow-2xl border border-surface-border flex flex-col"
+        class="relative max-w-4xl max-h-[calc(100dvh-5.5rem)] bg-surface-card rounded-3xl overflow-hidden shadow-2xl border border-surface-border flex flex-col"
       >
         <div class="p-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
           <span class="text-xs font-bold text-text-primary flex items-center gap-2">
@@ -770,8 +770,8 @@
 
   <!-- In-Platform Embedded YouTube Solution Modal (Video or Community Post) -->
   @if (activeInPlatformSolution(); as sol) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
-      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
+      <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[calc(100dvh-5.5rem)] overflow-y-auto" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">

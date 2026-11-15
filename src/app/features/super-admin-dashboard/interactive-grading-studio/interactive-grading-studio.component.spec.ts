@@ -353,4 +353,34 @@ describe('InteractiveGradingStudioComponent', () => {
     expect(component.searchQuery()).toBe('');
     expect(component.activeStudentSummary()).toBeNull();
   });
+
+  describe('Navbar Clearance and Lightbox Layering Contract', () => {
+    it('should assign z-layer-preview and safe navbar clearance to image preview lightbox', () => {
+      component.previewImageUrl.set('https://example.com/solution-essay.jpg');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const lightbox = hostEl.querySelector('.z-layer-preview');
+      expect(lightbox).toBeTruthy();
+      expect(lightbox?.classList.contains('pt-16')).toBeTrue();
+      expect(lightbox?.classList.contains('sm:pt-20')).toBeTrue();
+
+      // Verify toolbar is positioned below the navbar (top-18 / top-24)
+      const toolbar = lightbox?.querySelector('.absolute.top-18');
+      expect(toolbar).toBeTruthy();
+      expect(toolbar?.classList.contains('sm:top-24')).toBeTrue();
+
+      // Close button inside toolbar (4th button in toolbar controls)
+      const allButtons = toolbar?.querySelectorAll('button');
+      const closeBtn = allButtons ? allButtons[allButtons.length - 1] as HTMLButtonElement : null;
+      expect(closeBtn).toBeTruthy();
+      closeBtn?.click();
+      expect(component.previewImageUrl()).toBeNull();
+    });
+
+    it('should contain zero Unicode emojis in rendered template', () => {
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
+  });
 });

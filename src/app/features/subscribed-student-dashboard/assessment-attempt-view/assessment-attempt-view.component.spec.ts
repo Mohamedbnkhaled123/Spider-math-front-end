@@ -47,4 +47,29 @@ describe('AssessmentAttemptViewComponent', () => {
     component.toggleDesmos();
     expect(component.isDesmosOpen()).toBeTrue();
   });
+
+  describe('Navbar Clearance and Layering Contract', () => {
+    it('should assign z-layer-modal and responsive navbar clearance to reference sheet modal', () => {
+      component.bundle.set({
+        ...component.bundle(),
+        referenceSheetUrl: 'https://example.com/sheet.png'
+      });
+      component.isReferenceOpen.set(true);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const refModalBackdrop = hostEl.querySelector('.z-layer-modal');
+      expect(refModalBackdrop).toBeTruthy();
+      expect(refModalBackdrop?.classList.contains('pt-16')).toBeTrue();
+      expect(refModalBackdrop?.classList.contains('sm:pt-20')).toBeTrue();
+
+      const innerCard = refModalBackdrop?.querySelector('.rounded-3xl');
+      expect(innerCard?.classList.contains('max-h-[calc(100dvh-5.5rem)]')).toBeTrue();
+    });
+
+    it('should contain zero Unicode emojis in rendered template', () => {
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
+  });
 });

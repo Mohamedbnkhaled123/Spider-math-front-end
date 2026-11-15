@@ -123,4 +123,19 @@ describe('ConfirmDialogComponent', () => {
     expect(result).toBeFalse();
     expect(service.state().isOpen).toBeFalse();
   });
+
+  it('should apply z-layer-dialog and safe navbar clearance classes to backdrop and card', () => {
+    service.confirm({
+      title: 'Navbar Clearance Test',
+      message: 'Checking top padding and z-index'
+    });
+    fixture.detectChanges();
+
+    const backdrop: HTMLElement = fixture.nativeElement.querySelector('#confirm-modal-backdrop');
+    const card: HTMLElement = fixture.nativeElement.querySelector('#confirm-modal-card');
+    expect(backdrop.classList.contains('z-layer-dialog')).toBeTrue();
+    expect(backdrop.classList.contains('pt-16')).toBeTrue();
+    expect(backdrop.classList.contains('sm:pt-20')).toBeTrue();
+    expect(card.classList.contains('max-h-[calc(100dvh-5.5rem)]')).toBeTrue();
+  });
 });

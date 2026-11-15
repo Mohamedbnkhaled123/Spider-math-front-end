@@ -522,6 +522,33 @@ describe('AssessmentPreviewModalComponent', () => {
     });
   });
 
+  describe('Navbar Safe Clearance & Layering Contract', () => {
+    it('should apply z-layer-preview and safe top padding (pt-16 sm:pt-20) to ensure navbar visibility', () => {
+      componentRef.setInput('isOpen', true);
+      componentRef.setInput('assessment', pureMcqAssessment);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const backdropEl = hostEl.querySelector('.z-layer-preview');
+      expect(backdropEl).toBeTruthy();
+      expect(backdropEl?.classList.contains('pt-16')).toBeTrue();
+      expect(backdropEl?.classList.contains('sm:pt-20')).toBeTrue();
+      expect(backdropEl?.classList.contains('fixed')).toBeTrue();
+      expect(backdropEl?.classList.contains('inset-0')).toBeTrue();
+    });
+
+    it('should constrain modal container height so close button and header remain visible below navbar', () => {
+      componentRef.setInput('isOpen', true);
+      componentRef.setInput('assessment', pureMcqAssessment);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const containerEl = hostEl.querySelector('[data-testid="assessment-preview-modal-container"]');
+      expect(containerEl).toBeTruthy();
+      expect(containerEl?.classList.contains('max-h-[calc(100dvh-5.5rem)]')).toBeTrue();
+    });
+  });
+
   describe('R4 Strict Zero-Emoji Compliance', () => {
     it('should strictly contain zero Unicode emojis across both simulation and results views', () => {
       componentRef.setInput('isOpen', true);

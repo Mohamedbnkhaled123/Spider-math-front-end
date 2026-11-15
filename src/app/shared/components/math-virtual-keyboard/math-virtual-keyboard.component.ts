@@ -556,11 +556,13 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
 
     const rect = containerEl.getBoundingClientRect();
     const padding = 8;
+    const headerClearance = viewportWidth < 640 ? 64 : 80;
+    const minY = headerClearance + padding;
     const maxX = Math.max(padding, viewportWidth - rect.width - padding);
-    const maxY = Math.max(padding, viewportHeight - rect.height - padding);
+    const maxY = Math.max(minY, viewportHeight - rect.height - padding);
 
     const clampedX = Math.min(Math.max(padding, pos.x), maxX);
-    const clampedY = Math.min(Math.max(padding, pos.y), maxY);
+    const clampedY = Math.min(Math.max(minY, pos.y), maxY);
 
     if (clampedX !== pos.x || clampedY !== pos.y) {
       this.dragPosition.set({ x: clampedX, y: clampedY });
@@ -623,16 +625,18 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     const rawX = this.dragStartRect.x + deltaX;
     const rawY = this.dragStartRect.y + deltaY;
 
-    // Viewport boundaries padding (8px)
+    // Viewport boundaries padding (8px) and sticky navbar clearance
     const padding = 8;
     const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
     const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
+    const headerClearance = viewportWidth < 640 ? 64 : 80;
+    const minY = headerClearance + padding;
 
     const maxX = Math.max(padding, viewportWidth - this.dragStartRect.width - padding);
-    const maxY = Math.max(padding, viewportHeight - this.dragStartRect.height - padding);
+    const maxY = Math.max(minY, viewportHeight - this.dragStartRect.height - padding);
 
     const clampedX = Math.min(Math.max(padding, rawX), maxX);
-    const clampedY = Math.min(Math.max(padding, rawY), maxY);
+    const clampedY = Math.min(Math.max(minY, rawY), maxY);
 
     this.dragPosition.set({ x: clampedX, y: clampedY });
   }

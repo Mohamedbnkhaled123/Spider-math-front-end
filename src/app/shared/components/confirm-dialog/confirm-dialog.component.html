@@ -1,7 +1,7 @@
 @if (dialogState().isOpen) {
   <div
     id="confirm-modal-backdrop"
-    class="fixed inset-0 z-[1500] bg-black/35 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+    class="fixed inset-0 z-layer-dialog bg-black/35 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
     role="dialog"
     aria-modal="true"
     [attr.aria-label]="dialogState().config.title"
@@ -9,7 +9,7 @@
   >
     <div
       id="confirm-modal-card"
-      class="w-full max-w-md rounded-3xl bg-surface-card border border-surface-border p-6 sm:p-7 shadow-2xl space-y-5 text-center animate-scale-up relative cursor-default"
+      class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl bg-surface-card border border-surface-border p-6 sm:p-7 shadow-2xl space-y-5 text-center animate-scale-up relative cursor-default"
       (click)="$event.stopPropagation()"
     >
       <!-- Close X Button -->

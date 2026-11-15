@@ -404,13 +404,13 @@
   <!-- 5. Free Trial Lecture Modal Player                                        -->
   <!-- ========================================================================= -->
   @if (activeTrialLecture(); as trial) {
-    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 overflow-y-auto">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 overflow-y-auto">
       <div
         (click)="closeTrialLecture()"
         class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
       ></div>
 
-      <div class="relative w-full max-w-3xl rounded-3xl spider-rim-glass-card p-6 shadow-2xl overflow-hidden z-10 my-8">
+      <div class="relative w-full max-w-3xl rounded-3xl spider-rim-glass-card p-6 shadow-2xl overflow-hidden z-10 max-h-[calc(100dvh-5.5rem)] overflow-y-auto">
         <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-4">
           <div class="flex items-center gap-2.5">
             <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -490,11 +490,11 @@
   <!-- ========================================================================= -->
   @if (showComingSoonModal()) {
     <div
-      class="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+      class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 bg-slate-950/85 backdrop-blur-md animate-fade-in"
       (click)="closeComingSoonModal()"
     >
       <div
-        class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-surface-card border border-brand-gold/30 shadow-2xl text-center space-y-5 cursor-default spider-rim-glass-card"
+        class="relative w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto p-6 sm:p-8 rounded-3xl bg-surface-card border border-brand-gold/30 shadow-2xl text-center space-y-5 cursor-default spider-rim-glass-card"
         (click)="$event.stopPropagation()"
       >
         <button
