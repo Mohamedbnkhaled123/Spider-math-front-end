@@ -287,15 +287,6 @@
                       {{ langService.isArabic() ? 'مسودة' : 'Draft' }}
                     </span>
                   }
-                  @if (item.lectureTitle) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 max-w-[200px] truncate" [title]="item.lectureTitle">
-                      {{ langService.isArabic() ? ('درس: ' + item.lectureTitle) : ('Lesson: ' + item.lectureTitle) }}
-                    </span>
-                  } @else if (item.unitTitle) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 max-w-[200px] truncate" [title]="item.unitTitle">
-                      {{ langService.isArabic() ? ('وحدة: ' + item.unitTitle) : ('Unit: ' + item.unitTitle) }}
-                    </span>
-                  }
                 </div>
               </div>
 
@@ -626,66 +617,11 @@
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الصف الدراسي (عزل كامل):' : 'Grade Level (Strict Isolation):' }}</label>
               <div class="relative">
                 <select
-                  [ngModel]="createForm().gradeLevel"
-                  (ngModelChange)="onGradeChangeInCreate($event)"
+                  [(ngModel)]="createForm().gradeLevel"
                   class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none appearance-none cursor-pointer"
                 >
                   @for (grade of createGradeOptions(); track grade.code) {
                     <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
-                  }
-                </select>
-                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                  <app-icon name="chevron-down" [size]="14" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Unit and Lecture Scope Selector -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-surface-bg border border-surface-border">
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">
-                {{ langService.isArabic() ? 'الوحدة الدراسية (اختياري):' : 'Study Unit (Optional):' }}
-              </label>
-              <div class="relative">
-                <select
-                  [ngModel]="createForm().unitPackageId"
-                  (ngModelChange)="onUnitChangeInCreate($event)"
-                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
-                >
-                  <option [ngValue]="null">
-                    {{ langService.isArabic() ? 'كامل المرحلة (كويز عام بدون وحدة)' : 'Grade-Level (General Quiz)' }}
-                  </option>
-                  @for (unit of availableUnitsInCreate(); track unit.id) {
-                    <option [value]="unit.id">{{ unit.titleAr }}</option>
-                  }
-                </select>
-                <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                  <app-icon name="chevron-down" [size]="14" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">
-                {{ langService.isArabic() ? 'نطاق التقييم / المحاضرة:' : 'Assessment Scope / Lecture:' }}
-              </label>
-              <div class="relative">
-                <select
-                  [ngModel]="createForm().lectureId"
-                  (ngModelChange)="createForm().lectureId = $event || null"
-                  [disabled]="!createForm().unitPackageId"
-                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option [ngValue]="null">
-                    {{ langService.isArabic() ? 'كامل الوحدة الدراسية' : 'Full Unit' }}
-                  </option>
-                  @if (createSelectedUnit(); as selUnit) {
-                    @for (lec of selUnit.lectures; track lec.id) {
-                      <option [value]="lec.id">
-                        {{ langService.isArabic() ? ('محاضرة ' + lec.order + ': ' + lec.titleAr) : ('Lecture ' + lec.order + ': ' + lec.titleAr) }}
-                      </option>
-                    }
                   }
                 </select>
                 <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -701,8 +637,7 @@
                 <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
                 <div class="relative">
                   <select
-                    [ngModel]="createForm().term"
-                    (ngModelChange)="onTermChangeInCreate($event)"
+                    [(ngModel)]="createForm().term"
                     class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
                   >
                     <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
@@ -1280,8 +1215,7 @@
                   </label>
                   <div class="relative">
                     <select
-                      [ngModel]="asm.gradeLevel"
-                      (ngModelChange)="onGradeChangeInEditor($event)"
+                      [(ngModel)]="asm.gradeLevel"
                       [disabled]="asm.submissionsCount > 0"
                       class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
                     >
@@ -1302,8 +1236,7 @@
                     <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
                     <div class="relative">
                       <select
-                        [ngModel]="asm.term"
-                        (ngModelChange)="onTermChangeInEditor($event)"
+                        [(ngModel)]="asm.term"
                         class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
                       >
                         <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
@@ -1338,61 +1271,6 @@
                     max="100"
                     class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono focus:border-brand-primary outline-none"
                   />
-                </div>
-              </div>
-
-              <!-- Unit and Lecture Scope Selector in Editor -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-surface-bg border border-surface-border">
-                <div>
-                  <label class="block font-bold text-text-secondary mb-1">
-                    {{ langService.isArabic() ? 'الوحدة الدراسية (اختياري):' : 'Study Unit (Optional):' }}
-                  </label>
-                  <div class="relative">
-                    <select
-                      [ngModel]="asm.unitId"
-                      (ngModelChange)="onUnitChangeInEditor($event)"
-                      [disabled]="asm.submissionsCount > 0"
-                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
-                    >
-                      <option [ngValue]="null">
-                        {{ langService.isArabic() ? 'كامل المرحلة (كويز عام بدون وحدة)' : 'Grade-Level (General Quiz)' }}
-                      </option>
-                      @for (unit of availableUnitsInEditor(); track unit.id) {
-                        <option [value]="unit.id">{{ unit.titleAr }}</option>
-                      }
-                    </select>
-                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                      <app-icon name="chevron-down" [size]="14" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block font-bold text-text-secondary mb-1">
-                    {{ langService.isArabic() ? 'نطاق التقييم / المحاضرة:' : 'Assessment Scope / Lecture:' }}
-                  </label>
-                  <div class="relative">
-                    <select
-                      [ngModel]="asm.lectureId"
-                      (ngModelChange)="onLectureChangeInEditor($event)"
-                      [disabled]="!asm.unitId"
-                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option [ngValue]="null">
-                        {{ langService.isArabic() ? 'كامل الوحدة الدراسية' : 'Full Unit' }}
-                      </option>
-                      @if (editorSelectedUnit(); as selUnit) {
-                        @for (lec of selUnit.lectures; track lec.id) {
-                          <option [value]="lec.id">
-                            {{ langService.isArabic() ? ('محاضرة ' + lec.order + ': ' + lec.titleAr) : ('Lecture ' + lec.order + ': ' + lec.titleAr) }}
-                          </option>
-                        }
-                      }
-                    </select>
-                    <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
-                      <app-icon name="chevron-down" [size]="14" />
-                    </div>
-                  </div>
                 </div>
               </div>
 

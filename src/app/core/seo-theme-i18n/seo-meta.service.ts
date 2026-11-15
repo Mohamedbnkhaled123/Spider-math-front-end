@@ -31,8 +31,8 @@ export class SeoMetaService {
   private readonly metaService = inject(Meta);
   private readonly document = inject(DOCUMENT);
 
-  private readonly DEFAULT_BASE_URL = 'https://spider-math.com';
-  private readonly DEFAULT_OG_IMAGE = 'https://spider-math.com/assets/branding/spider-math-og.jpg';
+  private readonly DEFAULT_BASE_URL = 'https://www.spider-math.com';
+  private readonly DEFAULT_OG_IMAGE = 'https://www.spider-math.com/assets/branding/spider-math-og.jpg';
   private readonly BRAND_NAME_AR = 'منصة سبايدر ماث التعليمية — المهندسة هبة عبدالوهاب';
   private readonly BRAND_NAME_EN = 'Spider Math Platform — Eng. Heba Abdel-Wahab';
 

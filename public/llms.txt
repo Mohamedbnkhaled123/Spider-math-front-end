@@ -5,15 +5,15 @@
 Spider Math provides interactive coursework, diagnostic skill quizzes, video lectures, Desmos-powered graphing workflows, and structured revision plans for high school and preparatory students.
 
 ## Platform Features & Diagnostic Engine
-- [Spider Math Learning Platform](https://spider-math.vercel.app/): Interactive mathematics learning portal, curriculum selection, course syllabi, and video masterclasses.
-- [Diagnostic Assessment Engine](https://spider-math.vercel.app/placement-test): Free intelligent skill evaluation diagnosing strengths and weaknesses to produce a targeted learning path.
-- [Knowledge & Topics Directory](https://spider-math.vercel.app/topics): Curated index of key math concepts, formula sheets, and solved problems across all grade levels.
-- [Student & Parent Portal Login](https://spider-math.vercel.app/login): Access student dashboard, homework assignments, diagnostic reports, and analytics.
+- [Spider Math Learning Platform](https://www.spider-math.com/): Interactive mathematics learning portal, curriculum selection, course syllabi, and video masterclasses.
+- [Diagnostic Assessment Engine](https://www.spider-math.com/placement-test): Free intelligent skill evaluation diagnosing strengths and weaknesses to produce a targeted learning path.
+- [Knowledge & Topics Directory](https://www.spider-math.com/topics): Curated index of key math concepts, formula sheets, and solved problems across all grade levels.
+- [Student & Parent Portal Login](https://www.spider-math.com/login): Access student dashboard, homework assignments, diagnostic reports, and analytics.
 
 ## Curricular Knowledge Modules & Study Guides
-- [Thanaweya Amma Differentiation and Integration](https://spider-math.vercel.app/topic/thanweya-amma-differentiation-integration): Comprehensive study guide, rules, and exam practice for calculus.
-- [Digital SAT Passport to Advanced Math](https://spider-math.vercel.app/topic/sat-passport-advanced-math): Quadratics, non-linear functions, systems of equations, and Desmos techniques.
-- [IGCSE Mathematics Algebra and Functions](https://spider-math.vercel.app/topic/igcse-algebra-functions): Cambridge and Edexcel math modules covering core and extended problem solving.
+- [Thanaweya Amma Differentiation and Integration](https://www.spider-math.com/topic/thanweya-amma-differentiation-integration): Comprehensive study guide, rules, and exam practice for calculus.
+- [Digital SAT Passport to Advanced Math](https://www.spider-math.com/topic/sat-passport-advanced-math): Quadratics, non-linear functions, systems of equations, and Desmos techniques.
+- [IGCSE Mathematics Algebra and Functions](https://www.spider-math.com/topic/igcse-algebra-functions): Cambridge and Edexcel math modules covering core and extended problem solving.
 
 ## Contact & Teacher Information
-- [Eng. Heba Abdel-Wahab (Heba Ayad)](https://spider-math.vercel.app/): Lead mathematics engineer, curriculum architect, and educator.
+- [Eng. Heba Abdel-Wahab (Heba Ayad)](https://www.spider-math.com/): Lead mathematics engineer, curriculum architect, and educator.

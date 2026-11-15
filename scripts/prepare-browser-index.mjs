@@ -195,17 +195,17 @@ function generateStaticSeoPages(baseHtml) {
       `  <meta property="og:url" content="${escapeHtml(config.canonicalUrl)}">`,
       `  <meta property="og:type" content="${config.ogType || 'article'}">`,
       `  <meta property="og:site_name" content="Spider Math Educational Platform">`,
-      `  <meta property="og:image" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
-      `  <meta property="og:image:secure_url" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta property="og:image" content="https://www.spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta property="og:image:secure_url" content="https://www.spider-math.com/assets/branding/spider-math-og.jpg">`,
       `  <meta property="og:image:type" content="image/jpeg">`,
       `  <meta property="og:image:width" content="1024">`,
       `  <meta property="og:image:height" content="1024">`,
       `  <meta property="og:image:alt" content="Spider Math Platform | منصة سبايدر ماث — المهندسة هبة عبدالوهاب">`,
-      `  <link rel="image_src" href="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <link rel="image_src" href="https://www.spider-math.com/assets/branding/spider-math-og.jpg">`,
       `  <meta name="twitter:card" content="summary_large_image">`,
       `  <meta name="twitter:title" content="${escapeHtml(config.title)}">`,
       `  <meta name="twitter:description" content="${escapeHtml(config.description)}">`,
-      `  <meta name="twitter:image" content="https://spider-math.com/assets/branding/spider-math-og.jpg">`,
+      `  <meta name="twitter:image" content="https://www.spider-math.com/assets/branding/spider-math-og.jpg">`,
       `  <meta name="twitter:image:alt" content="Spider Math Platform | منصة سبايدر ماث — المهندسة هبة عبدالوهاب">`
     ];
 
@@ -246,7 +246,7 @@ function generateStaticSeoPages(baseHtml) {
       '@type': 'ListItem',
       position: index + 1,
       name: topic.keywordAr,
-      url: `https://spider-math.com/topic/${topic.slug}`
+      url: `https://www.spider-math.com/topic/${topic.slug}`
     }))
   };
 
@@ -263,7 +263,7 @@ function generateStaticSeoPages(baseHtml) {
   const topicsHtml = customizeHtml({
     title: 'فهرس مواضيع ومناهج سبايدر ماث | Spider Math Topics & Curricula',
     description: 'استعرض كافة الموضوعات والمناهج وشروحات الرياضيات للدبلومة الأمريكية والبكالوريا والثانوية العامة والشهادة الإعدادية مع المهندسة هبة عبدالوهاب.',
-    canonicalUrl: 'https://spider-math.com/topics',
+    canonicalUrl: 'https://www.spider-math.com/topics',
     ogType: 'website',
     schemas: [topicsItemListSchema],
     noscriptContent: topicsNoscript
@@ -280,9 +280,9 @@ function generateStaticSeoPages(baseHtml) {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://spider-math.com/' },
-        { '@type': 'ListItem', position: 2, name: 'فهرس الموضوعات والمناهج', item: 'https://spider-math.com/topics' },
-        { '@type': 'ListItem', position: 3, name: item.keywordAr, item: `https://spider-math.com/topic/${item.slug}` }
+        { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://www.spider-math.com/' },
+        { '@type': 'ListItem', position: 2, name: 'فهرس الموضوعات والمناهج', item: 'https://www.spider-math.com/topics' },
+        { '@type': 'ListItem', position: 3, name: item.keywordAr, item: `https://www.spider-math.com/topic/${item.slug}` }
       ]
     };
 
@@ -296,7 +296,7 @@ function generateStaticSeoPages(baseHtml) {
         '@type': 'EducationalOrganization',
         name: 'Spider Math Educational Platform',
         alternateName: 'منصة سبايدر ماث التعليمية',
-        url: 'https://spider-math.com'
+        url: 'https://www.spider-math.com'
       },
       instructor: {
         '@type': 'Person',
@@ -338,7 +338,7 @@ function generateStaticSeoPages(baseHtml) {
     const topicHtml = customizeHtml({
       title: item.pageTitleAr,
       description: item.metaDescriptionAr,
-      canonicalUrl: `https://spider-math.com/topic/${item.slug}`,
+      canonicalUrl: `https://www.spider-math.com/topic/${item.slug}`,
       ogType: 'article',
       schemas,
       noscriptContent

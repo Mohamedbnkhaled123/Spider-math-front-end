@@ -771,7 +771,7 @@ let xml = `<?xml version="1.0" encoding="UTF-8"?>
 
 // Add core routes
 for (const r of coreRoutes) {
-  const url = `https://spider-math.com${r.path ? '/' + r.path : ''}`;
+  const url = `https://www.spider-math.com${r.path ? '/' + r.path : ''}`;
   xml += `  <url>
     <loc>${url}</loc>
     <lastmod>${currentDate}</lastmod>
@@ -782,7 +782,7 @@ for (const r of coreRoutes) {
 
 // Add all 75 keyword topic pages
 for (const item of list) {
-  const topicUrl = `https://spider-math.com/topic/${item.slug}`;
+  const topicUrl = `https://www.spider-math.com/topic/${item.slug}`;
   xml += `  <url>
     <loc>${topicUrl}</loc>
     <lastmod>${currentDate}</lastmod>
