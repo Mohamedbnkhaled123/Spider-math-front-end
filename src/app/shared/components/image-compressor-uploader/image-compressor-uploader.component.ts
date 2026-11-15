@@ -5,6 +5,7 @@ import {
   output,
   signal,
   computed,
+  effect,
   inject,
   PLATFORM_ID,
   OnDestroy
@@ -87,6 +88,27 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   readonly isCameraStarting = signal<boolean>(false);
   readonly cameraFacingMode = signal<'environment' | 'user'>('environment');
   private cameraMediaStream: MediaStream | null = null;
+
+  constructor() {
+    effect(() => {
+      const existing = this.existingImageUrl();
+      if (!existing) {
+        this.clearItems();
+      }
+    });
+  }
+
+  clearItems(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      for (const item of this.items()) {
+        if (item.previewUrl && item.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      }
+    }
+    this.items.set([]);
+    this.errorMessage.set(null);
+  }
 
   ngOnDestroy(): void {
     this.closeLiveCamera();

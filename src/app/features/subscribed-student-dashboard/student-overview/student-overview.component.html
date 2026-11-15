@@ -771,13 +771,33 @@
                 </div>
 
                 @if (quiz.isCompleted) {
-                  <a
-                    [routerLink]="quiz.feedbackUrl"
-                    class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <app-icon name="check-circle" [size]="14" />
-                    <span>{{ langService.isArabic() ? ('تم التسليم (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة') + ') — مراجعة') : ('Submitted (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Under Review') + ') — Review') }}</span>
-                  </a>
+                  @if (quiz.canRetake) {
+                    <div class="flex items-center gap-2">
+                      <a
+                        [routerLink]="quiz.feedbackUrl"
+                        class="flex-1 py-2 px-2.5 rounded-xl bg-surface-card hover:bg-surface-secondary text-text-primary border border-surface-border font-bold text-[11px] shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer truncate"
+                      >
+                        <app-icon name="check-circle" [size]="13" className="text-emerald-500 shrink-0" />
+                        <span class="truncate">{{ langService.isArabic() ? ('النتيجة: ' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة')) : ('Score: ' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Pending')) }}</span>
+                      </a>
+                      <button
+                        type="button"
+                        (click)="startQuiz(quiz)"
+                        class="flex-1 py-2 px-2.5 rounded-xl btn-gold-metallic font-extrabold text-[11px] shadow-gold-glow transition-all flex items-center justify-center gap-1 cursor-pointer truncate"
+                      >
+                        <app-icon name="rotate-ccw" [size]="13" className="shrink-0" />
+                        <span class="truncate">{{ langService.isArabic() ? ('إعادة (' + ((quiz.completedAttemptsCount ?? 1) + 1) + ' من ' + (quiz.maxAttempts ?? 1) + ')') : ('Retake (' + ((quiz.completedAttemptsCount ?? 1) + 1) + '/' + (quiz.maxAttempts ?? 1) + ')') }}</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <a
+                      [routerLink]="quiz.feedbackUrl"
+                      class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <app-icon name="check-circle" [size]="14" />
+                      <span>{{ langService.isArabic() ? ('تم التسليم (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة') + ') — مراجعة') : ('Submitted (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Under Review') + ') — Review') }}</span>
+                    </a>
+                  }
                 } @else if (quiz.canStart !== false) {
                   <button
                     type="button"

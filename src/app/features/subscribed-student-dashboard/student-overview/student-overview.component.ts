@@ -600,22 +600,37 @@ export class StudentOverviewComponent implements OnInit {
 
     const completed = this.completedGrades();
     const completedMap = new Map<string, StudentCompletedGradeItem>();
+    const completedAttemptsMap = new Map<string, number>();
+
     completed.forEach((c) => {
-      if (c.assessmentId) completedMap.set(c.assessmentId, c);
-      if (c.id) completedMap.set(c.id, c);
+      if (c.assessmentId) {
+        if (!completedMap.has(c.assessmentId)) {
+          completedMap.set(c.assessmentId, c);
+        }
+        completedAttemptsMap.set(c.assessmentId, (completedAttemptsMap.get(c.assessmentId) || 0) + 1);
+      }
+      if (c.id && !completedMap.has(c.id)) {
+        completedMap.set(c.id, c);
+      }
     });
 
     const now = new Date();
     const mapped: StudentDueQuizItem[] = rawList.map((asm: any) => {
       const match = completedMap.get(asm._id);
+      const completedAttemptsCount = completedAttemptsMap.get(asm._id) || (match ? 1 : 0);
+      const maxAttempts = asm.max_attempts || asm.maxAttempts || 1;
+      const canRetake = match ? (completedAttemptsCount < maxAttempts) : false;
+
       let dueDateAr = asm.time_limit_minutes ? `${asm.time_limit_minutes} دقيقة` : 'متاح للحل الآن';
       let isUrgent = false;
       let canStart = true;
       let statusNote: string | undefined = undefined;
 
       if (match) {
-        canStart = false;
-        dueDateAr = 'تم التسليم بنجاح';
+        canStart = canRetake;
+        dueDateAr = canRetake
+          ? `متاح إعادة المحاولة (${completedAttemptsCount} / ${maxAttempts})`
+          : 'تم التسليم بنجاح';
         statusNote = match.status === 'PENDING_REVIEW'
           ? 'تم التسليم — قيد مراجعة وتصحيح المعلمة'
           : `تم التسليم — الدرجة: ${match.score} / ${match.maxScore}`;
@@ -688,7 +703,10 @@ export class StudentOverviewComponent implements OnInit {
         submissionId: match ? (match.submissionId || match.id) : undefined,
         score: match ? match.score : undefined,
         maxScore: match ? match.maxScore : undefined,
-        feedbackUrl: match ? (match.feedbackUrl || `/student/submissions/${match.submissionId || match.id}/feedback`) : undefined
+        feedbackUrl: match ? (match.feedbackUrl || `/student/submissions/${match.submissionId || match.id}/feedback`) : undefined,
+        maxAttempts,
+        completedAttemptsCount,
+        canRetake
       };
     });
 

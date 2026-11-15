@@ -144,8 +144,8 @@
     </div>
   }
 
-  <!-- List of Selected / Compressed Files -->
-  @if (items().length > 0) {
+  <!-- List of Selected / Compressed Files (Only rendered in full dropzone mode, omitted in compact mode to prevent duplicate previews) -->
+  @if (!compact() && items().length > 0) {
     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
       @for (item of items(); track item.id; let idx = $index) {
         <div class="p-3 rounded-xl border border-surface-border bg-surface-card flex items-center gap-3">

@@ -91,12 +91,17 @@ export interface StudentDueQuizItem {
   score?: number;
   maxScore?: number;
   feedbackUrl?: string;
+  maxAttempts?: number;
+  completedAttemptsCount?: number;
+  canRetake?: boolean;
 }
 
 export interface StudentCompletedGradeItem {
   id: string;
   submissionId?: string;
   assessmentId?: string;
+  maxAttempts?: number;
+  attemptNumber?: number;
   titleAr: string;
   unitTitleAr: string;
   score: number;

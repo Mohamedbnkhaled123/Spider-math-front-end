@@ -63,6 +63,11 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
 
   readonly feedback = signal<SubmissionFeedbackData>({
     submissionId: '',
+    assessmentId: '',
+    unitId: '',
+    maxAttempts: 1,
+    completedAttemptsCount: 1,
+    canRetake: false,
     assessmentTitleAr: 'تقييم دراسي',
     assessmentTitleEn: 'Assessment Feedback',
     unitTitleAr: 'الوحدة الدراسية',
@@ -87,6 +92,14 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
 
   readonly isPublished = computed(
     () => this.feedback().resultVisibility === 'PUBLISHED_TO_STUDENT_AND_PARENT'
+  );
+
+  readonly canRetake = computed(
+    () => !!this.feedback().canRetake && !!this.feedback().assessmentId
+  );
+
+  readonly remainingAttempts = computed(() =>
+    Math.max(0, (this.feedback().maxAttempts || 1) - (this.feedback().completedAttemptsCount || 1))
   );
 
   readonly isReviewExpired = computed(
@@ -180,6 +193,11 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
         if (data) {
           this.feedback.set({
             submissionId: data.submissionId || id,
+            assessmentId: data.assessmentId || '',
+            unitId: data.unitId || '',
+            maxAttempts: data.maxAttempts ?? 1,
+            completedAttemptsCount: data.completedAttemptsCount ?? 1,
+            canRetake: data.canRetake ?? false,
             assessmentTitleAr: data.assessmentTitleAr || 'تقييم دراسي',
             assessmentTitleEn: data.assessmentTitleEn || 'Assessment Feedback',
             unitTitleAr: data.unitTitleAr || 'الوحدة الدراسية',

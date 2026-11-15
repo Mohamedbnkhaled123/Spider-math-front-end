@@ -40,6 +40,11 @@ export interface EssaySolutionImageItem {
 
 export interface SubmissionFeedbackData {
   submissionId: string;
+  assessmentId?: string;
+  unitId?: string;
+  maxAttempts?: number;
+  completedAttemptsCount?: number;
+  canRetake?: boolean;
   assessmentTitleAr: string;
   assessmentTitleEn: string;
   unitTitleAr: string;
