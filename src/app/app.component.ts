@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
 import {
   RouterOutlet,
   Router,
@@ -9,7 +9,8 @@ import {
   RouteConfigLoadStart,
   RouteConfigLoadEnd
 } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { filter } from 'rxjs/operators';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -43,6 +44,8 @@ export class AppComponent implements OnInit {
   readonly uiLayoutService = inject(UiLayoutService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
+  private speedInsightsHandler: ReturnType<typeof injectSpeedInsights> | null = null;
 
   readonly isExamOrQuizPage = signal<boolean>(false);
   readonly isRouteNavigating = signal<boolean>(false);
@@ -53,6 +56,10 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.speedInsightsHandler = injectSpeedInsights({ framework: 'angular' });
+    }
+
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
     this.checkIsExamPage(this.router.url);
 
@@ -78,7 +85,9 @@ export class AppComponent implements OnInit {
         event instanceof NavigationError
       ) {
         if (event instanceof NavigationEnd) {
-          this.checkIsExamPage(event.urlAfterRedirects || event.url);
+          const activeUrl = event.urlAfterRedirects || event.url;
+          this.checkIsExamPage(activeUrl);
+          this.speedInsightsHandler?.setRoute(activeUrl);
         }
         this.navigatingUrl.set('');
         this.isRouteNavigating.set(false);
