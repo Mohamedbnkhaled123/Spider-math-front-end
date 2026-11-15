@@ -702,8 +702,8 @@
   <!-- MODAL 1: Create Unit Package (Centered Viewport Dialog with Safe Navbar Clearance) -->
   <!-- ========================================================================= -->
   @if (isUnitModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-md max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] flex flex-col rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden animate-scale-up text-xs">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] flex flex-col rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden animate-scale-up text-xs">
         <div class="flex items-center justify-between p-4 sm:p-5 border-b border-surface-border shrink-0">
           <h3 class="text-sm font-black text-text-primary">{{ langService.isArabic() ? 'إضافة وحدة دراسية جديدة' : 'Add New Study Unit' }}</h3>
           <button type="button" (click)="isUnitModalOpen.set(false)" class="p-1 rounded-lg hover:bg-surface-bg text-text-muted cursor-pointer">
@@ -866,8 +866,8 @@
   <!-- MODAL: Edit Unit Package (Patch in Database)                              -->
   <!-- ========================================================================= -->
   @if (isEditUnitModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-md max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <div class="flex items-center gap-2">
             <app-icon name="edit" [size]="18" className="text-brand-primary" />
@@ -1019,8 +1019,8 @@
   <!-- MODAL 2: Add Lecture Material                                             -->
   <!-- ========================================================================= -->
   @if (isLectureModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-lg max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-lg max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-xs">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <div class="flex items-center gap-2">
             <app-icon name="book-open" [size]="18" className="text-brand-primary" />
@@ -1178,8 +1178,8 @@
   <!-- MODAL: Edit Lecture (Patch in Database & Real-Time Sync)                    -->
   <!-- ========================================================================= -->
   @if (isEditLectureModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-lg max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-lg max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up">
         <div class="flex items-center justify-between pb-3 border-b border-surface-border">
           <div class="flex items-center gap-2">
             <app-icon name="edit" [size]="18" className="text-brand-primary" />
@@ -1336,8 +1336,8 @@
   <!-- MODAL 3: Assessment Safe Editor & Direct Question Image Uploader          -->
   <!-- ========================================================================= -->
   @if (isAssessmentEditorOpen() && activeAssessment(); as asm) {
-    <div class="fixed inset-0 z-layer-modal bg-black/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] flex flex-col animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[calc(100dvh-5.5rem)] flex flex-col animate-scale-up">
         
         <!-- Header -->
         <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
@@ -2030,8 +2030,8 @@
 
   <!-- Modal 1: Active Grades Studio Modal (Centered Viewport Dialog with Safe Navbar Clearance) -->
   @if (isGradesModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-4xl max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-4xl max-h-[calc(100dvh-5.5rem)] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
         
         <!-- Header: Responsive & Shortened Copy -->
         <div class="p-4 sm:p-5 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border shrink-0">
@@ -2936,8 +2936,8 @@
 
   <!-- Modal 2: Create Assessment Modal (Centered Viewport Dialog with Safe Navbar Clearance) -->
   @if (isCreateAssessmentModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-lg max-h-[calc(100dvh-2.5rem)] sm:max-h-[88vh] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 pt-16 sm:pt-20 overflow-y-auto overscroll-contain">
+      <div class="w-full max-w-lg max-h-[calc(100dvh-5.5rem)] flex flex-col rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
         
         <div class="p-4 sm:p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between shrink-0">
           <div>

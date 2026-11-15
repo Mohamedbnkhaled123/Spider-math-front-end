@@ -673,8 +673,8 @@
   <!-- MODAL: Detailed Student Answers Inspection                                -->
   <!-- ========================================================================= -->
   @if (isAnswersModalOpen() && selectedSubmissionForReview(); as item) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90dvh] min-h-0 flex flex-col animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto">
+      <div class="w-full max-w-3xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[calc(100dvh-5.5rem)] min-h-0 flex flex-col animate-scale-up">
         
         <!-- Modal Header -->
         <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
@@ -936,14 +936,14 @@
                           }
                         </span>
                         <span class="text-[11px] text-text-muted">
-                          {{ langService.isArabic() ? 'حددي درجة الطالب بحرية، أو اختاري من الأزرار السريعة:' : 'Set student score freely or select a quick preset:' }}
+                          {{ langService.isArabic() ? 'حددي درجة الطالب بحرية ثم اضغطي رصد:' : 'Set student score freely then click Set:' }}
                         </span>
                       </div>
 
-                      <div class="flex flex-wrap items-center gap-2">
+                      <div class="flex items-center gap-2">
                         <!-- Custom Score Direct Input -->
-                        <div class="flex items-center gap-1.5 bg-surface-bg p-1 rounded-xl border border-surface-border focus-within:border-brand-primary transition-colors">
-                          <label class="text-[11px] font-bold text-text-secondary px-1">
+                        <div class="flex items-center gap-1.5 bg-surface-bg p-1.5 rounded-xl border border-surface-border focus-within:border-brand-primary transition-colors shadow-xs">
+                          <label class="text-xs font-bold text-text-secondary px-1">
                             {{ langService.isArabic() ? 'الدرجة:' : 'Score:' }}
                           </label>
                           <input
@@ -954,76 +954,16 @@
                             [value]="q.pointsEarned"
                             #customScoreInput
                             (keydown.enter)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
-                            class="w-14 sm:w-16 px-2 py-1 rounded-lg bg-surface-card border border-surface-border text-center font-mono font-bold text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+                            class="w-16 sm:w-20 px-2.5 py-1.5 rounded-lg bg-surface-card border border-surface-border text-center font-mono font-bold text-xs text-text-primary focus:outline-none focus:border-brand-primary"
                           />
                           <span class="text-xs font-mono font-bold text-text-muted">/ {{ q.points }}</span>
                           <button
                             type="button"
                             (click)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
-                            class="px-2.5 py-1 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-[11px] font-black transition-all cursor-pointer shadow-xs active:scale-95"
+                            class="px-3.5 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95"
                             [title]="langService.isArabic() ? 'اعتماد الدرجة المكتوبة' : 'Save score'"
                           >
                             {{ langService.isArabic() ? 'رصد' : 'Set' }}
-                          </button>
-                        </div>
-
-                        <!-- Quick Presets -->
-                        <div class="flex items-center gap-1.5">
-                          <!-- Full Mark Preset -->
-                          <button
-                            type="button"
-                            (click)="customScoreInput.value = '' + q.points; gradeEssayQuestionInModal(item, q, 'FULL')"
-                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
-                            [class.bg-emerald-600]="q.gradingDecision === 'FULL'"
-                            [class.text-white]="q.gradingDecision === 'FULL'"
-                            [class.shadow-brand-glow]="q.gradingDecision === 'FULL'"
-                            [class.border-emerald-600]="q.gradingDecision === 'FULL'"
-                            [class.bg-surface-bg]="q.gradingDecision !== 'FULL'"
-                            [class.text-emerald-700]="q.gradingDecision !== 'FULL'"
-                            [class.border-emerald-500/30]="q.gradingDecision !== 'FULL'"
-                            [class.hover:bg-emerald-500/10]="q.gradingDecision !== 'FULL'"
-                            [title]="langService.isArabic() ? 'درجة كاملة' : 'Full score'"
-                          >
-                            <app-icon name="check-circle" [size]="12" />
-                            <span>{{ langService.isArabic() ? ('كاملة (' + q.points + ')') : ('Full (' + q.points + ')') }}</span>
-                          </button>
-
-                          <!-- Half Mark Preset -->
-                          <button
-                            type="button"
-                            (click)="customScoreInput.value = '' + (q.points / 2); gradeEssayQuestionInModal(item, q, 'HALF')"
-                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
-                            [class.bg-blue-600]="q.gradingDecision === 'HALF'"
-                            [class.text-white]="q.gradingDecision === 'HALF'"
-                            [class.shadow-md]="q.gradingDecision === 'HALF'"
-                            [class.border-blue-600]="q.gradingDecision === 'HALF'"
-                            [class.bg-surface-bg]="q.gradingDecision !== 'HALF'"
-                            [class.text-blue-700]="q.gradingDecision !== 'HALF'"
-                            [class.border-blue-500/30]="q.gradingDecision !== 'HALF'"
-                            [class.hover:bg-blue-500/10]="q.gradingDecision !== 'HALF'"
-                            [title]="langService.isArabic() ? 'نصف الدرجة' : 'Half score'"
-                          >
-                            <app-icon name="star" [size]="12" />
-                            <span>{{ langService.isArabic() ? ('نصف (' + (q.points / 2) + ')') : ('Half (' + (q.points / 2) + ')') }}</span>
-                          </button>
-
-                          <!-- Zero Mark Preset -->
-                          <button
-                            type="button"
-                            (click)="customScoreInput.value = '0'; gradeEssayQuestionInModal(item, q, 'ZERO')"
-                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
-                            [class.bg-rose-600]="q.gradingDecision === 'ZERO'"
-                            [class.text-white]="q.gradingDecision === 'ZERO'"
-                            [class.shadow-md]="q.gradingDecision === 'ZERO'"
-                            [class.border-rose-600]="q.gradingDecision === 'ZERO'"
-                            [class.bg-surface-bg]="q.gradingDecision !== 'ZERO'"
-                            [class.text-rose-700]="q.gradingDecision !== 'ZERO'"
-                            [class.border-rose-500/30]="q.gradingDecision !== 'ZERO'"
-                            [class.hover:bg-rose-500/10]="q.gradingDecision !== 'ZERO'"
-                            [title]="langService.isArabic() ? 'صفر / خطأ' : 'Zero'"
-                          >
-                            <app-icon name="x" [size]="12" />
-                            <span>{{ langService.isArabic() ? 'صفر' : 'Zero' }}</span>
                           </button>
                         </div>
                       </div>
@@ -1081,8 +1021,8 @@
   <!-- MODAL: Interactive Canvas Essay Grading Studio (Zoom, Pan, Rotate 90°)    -->
   <!-- ========================================================================= -->
   @if (isGradingModalOpen() && currentGradingItem(); as item) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div class="w-full max-w-5xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[90dvh] min-h-0 flex flex-col animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto">
+      <div class="w-full max-w-5xl rounded-3xl border border-surface-border bg-surface-card shadow-2xl overflow-hidden max-h-[calc(100dvh-5.5rem)] min-h-0 flex flex-col animate-scale-up">
         
         <!-- Modal Header -->
         <div class="px-6 py-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
