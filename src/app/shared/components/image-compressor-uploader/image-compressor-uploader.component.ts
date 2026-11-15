@@ -13,7 +13,6 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import imageCompression from 'browser-image-compression';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
@@ -92,10 +91,30 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const existing = this.existingImageUrl();
-      if (!existing) {
+      if (this.compact() && !existing) {
         this.clearItems();
       }
     });
+  }
+
+  /**
+   * Safe Cross-Platform Camera Trigger:
+   * On mobile devices (Android/iOS), directly invokes native camera intent via <input capture="environment">.
+   * This avoids Android's ActivityManager memory eviction ("تعذر إكمال العملية نظراً لانخفاض الذاكرة")
+   * and preserves the user activation token.
+   * On desktop, opens HTML5 getUserMedia live viewfinder stream.
+   */
+  triggerCamera(fallbackInput?: HTMLInputElement): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      ('ontouchstart' in window && window.innerWidth <= 800);
+
+    if (isMobile && fallbackInput) {
+      fallbackInput.click();
+    } else {
+      this.openLiveCamera(fallbackInput);
+    }
   }
 
   clearItems(): void {
@@ -246,7 +265,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   }
 
   /**
-   * Core processing: compresses selected/captured files into WebP <= 150KB.
+   * Core processing: creates instant preview and prepares items.
    */
   async processFiles(files: File[]): Promise<void> {
     this.errorMessage.set(null);
@@ -268,20 +287,18 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
 
       for (const file of files) {
         const originalSizeKb = Math.round(file.size / 1024);
-        const compressedBlob = await this.compressToWebP(file);
-        const compressedSizeKb = Math.round(compressedBlob.size / 1024);
-
+        // Instant sharp preview directly from source file - avoids black/blank screen
         const previewUrl = isPlatformBrowser(this.platformId)
-          ? URL.createObjectURL(compressedBlob)
+          ? URL.createObjectURL(file)
           : '';
 
         processedItems.push({
           id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           originalFile: file,
-          compressedBlob,
+          compressedBlob: file,
           previewUrl,
           originalSizeKb,
-          compressedSizeKb,
+          compressedSizeKb: originalSizeKb,
           rotationDeg: 0,
           uploadStatus: 'PENDING'
         });
@@ -289,83 +306,102 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
 
       this.items.set(processedItems);
 
-      // If homework: open mandatory clarity confirmation modal
+      // If homework: open mandatory clarity confirmation modal with instant preview
       if (this.uploadTarget() === 'homework') {
         this.activePreviewIndex.set(0);
         this.isClarityConfirmed.set(false);
         this.showClarityModal.set(true);
       } else {
-        // For teacher question: direct upload
-        await this.executeDirectCdnUpload();
+        // For teacher question: compress and execute direct upload
+        await this.prepareAndUpload();
       }
     } catch (err: any) {
-      console.error('Image processing/compression failed:', err);
-      this.errorMessage.set('فشل ضغط الصورة.');
+      console.error('Image processing failed:', err);
+      this.errorMessage.set('فشل تجهيز الصورة.');
     } finally {
       this.isProcessing.set(false);
     }
   }
 
   /**
-   * Compresses image to <= 150KB WebP using Web Worker with Canvas fallback.
+   * Compresses image to <= 150KB WebP using lightweight canvas downscale.
+   * Handles 90/180/270 degree rotation and falls back to JPEG if WebP is unsupported.
    */
-  private async compressToWebP(file: File): Promise<Blob> {
-    const isQuestion = this.uploadTarget() === 'question';
-    const options = {
-      maxSizeMB: isQuestion ? 0.09 : 0.14, // <= 90KB for questions, <= 140KB for homework
-      maxWidthOrHeight: isQuestion ? 960 : 1280,
-      useWebWorker: true,
-      fileType: 'image/webp',
-      initialQuality: 0.78
-    };
+  private async compressToWebP(file: File, rotationDeg: number = 0): Promise<Blob> {
+    return new Promise((resolve) => {
+      if (!isPlatformBrowser(this.platformId)) {
+        resolve(file);
+        return;
+      }
 
-    try {
-      return await imageCompression(file, options);
-    } catch (workerErr) {
-      console.warn('Worker compression fallback to canvas:', workerErr);
-      return this.canvasCompressFallback(file);
-    }
-  }
-
-  /**
-   * Lightweight HTML5 Canvas WebP fallback.
-   */
-  private canvasCompressFallback(file: File): Promise<Blob> {
-    return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
+
       img.onload = () => {
-        URL.revokeObjectURL(url);
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        try {
+          const maxDim = this.uploadTarget() === 'question' ? 960 : 1280;
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
 
-        if (width > 1600 || height > 1600) {
-          if (width > height) {
-            height = Math.round((height * 1600) / width);
-            width = 1600;
-          } else {
-            width = Math.round((width * 1600) / height);
-            height = 1600;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
           }
+
+          const canvas = document.createElement('canvas');
+          const isRotated90or270 = rotationDeg === 90 || rotationDeg === 270;
+          canvas.width = isRotated90or270 ? height : width;
+          canvas.height = isRotated90or270 ? width : height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            URL.revokeObjectURL(url);
+            resolve(file);
+            return;
+          }
+
+          if (rotationDeg !== 0) {
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((rotationDeg * Math.PI) / 180);
+            ctx.drawImage(img, -width / 2, -height / 2, width, height);
+          } else {
+            ctx.drawImage(img, 0, 0, width, height);
+          }
+
+          URL.revokeObjectURL(url);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob && blob.size > 0) {
+                resolve(blob);
+              } else {
+                canvas.toBlob(
+                  (jpegBlob) => resolve(jpegBlob || file),
+                  'image/jpeg',
+                  0.82
+                );
+              }
+            },
+            'image/webp',
+            0.8
+          );
+        } catch (canvasErr) {
+          console.warn('Canvas transform error:', canvasErr);
+          URL.revokeObjectURL(url);
+          resolve(file);
         }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject(new Error('Canvas context unavailable'));
-
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(
-          blob => {
-            if (blob) resolve(blob);
-            else reject(new Error('Canvas toBlob failed'));
-          },
-          'image/webp',
-          0.78
-        );
       };
-      img.onerror = reject;
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+
       img.src = url;
     });
   }
@@ -403,11 +439,31 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   }
 
   /**
-   * Confirms clarity and proceeds to direct Cloudinary upload.
+   * Confirms clarity and proceeds to compress and upload.
    */
   async confirmAndUpload(): Promise<void> {
     if (!this.isClarityConfirmed()) return;
     this.showClarityModal.set(false);
+    await this.prepareAndUpload();
+  }
+
+  private async prepareAndUpload(): Promise<void> {
+    const list = this.items();
+    if (list.length === 0) return;
+
+    this.isProcessing.set(true);
+    try {
+      for (const item of list) {
+        item.compressedBlob = await this.compressToWebP(item.originalFile, item.rotationDeg);
+        item.compressedSizeKb = Math.round(item.compressedBlob.size / 1024);
+      }
+      this.items.set([...list]);
+    } catch (err) {
+      console.warn('Compression error, using original files:', err);
+    } finally {
+      this.isProcessing.set(false);
+    }
+
     await this.executeDirectCdnUpload();
   }
 

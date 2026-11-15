@@ -45,7 +45,7 @@
       <!-- Direct Camera Button -->
       <button
         type="button"
-        (click)="openLiveCamera(cameraInput)"
+        (click)="triggerCamera(cameraInput)"
         [disabled]="isProcessing() || isUploading()"
         class="h-9 px-2.5 rounded-xl border border-surface-border bg-surface-card hover:bg-brand-primary/10 hover:border-brand-primary text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm text-xs font-bold active:scale-95"
         [title]="langService.isArabic() ? 'كاميرا' : 'Camera'"
@@ -85,10 +85,10 @@
 
         <!-- Action Buttons: Camera & Gallery -->
         <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
-          <!-- Direct Mobile Camera Button (Live HTML5 getUserMedia Stream) -->
+          <!-- Direct Mobile Camera Button (Synchronous Native Intent on Mobile / HTML5 on Desktop) -->
           <button
             type="button"
-            (click)="openLiveCamera(cameraInput)"
+            (click)="triggerCamera(cameraInput)"
             [disabled]="isProcessing() || isUploading()"
             class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-spider shadow-brand-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
