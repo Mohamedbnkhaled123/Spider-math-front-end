@@ -486,10 +486,10 @@
     }
   </div>
 
-  <!-- Modal 1: Create Assessment Modal -->
+  <!-- Modal 1: Create Assessment Modal (Centered Viewport Dialog) -->
   @if (isCreateModalOpen()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-start sm:items-center justify-center p-2 sm:p-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-[calc(env(safe-area-inset-bottom,0px)+12px)] overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-lg max-h-[calc(100dvh-24px)] sm:max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 overflow-hidden">
+      <div class="w-full max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
         
         <div class="p-4 sm:p-6 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex items-center justify-between shrink-0">
           <div>
@@ -1034,10 +1034,10 @@
     </div>
   }
 
-  <!-- Modal 2: Question & Settings Safe Visual Editor Modal -->
+  <!-- Modal 2: Question & Settings Safe Visual Editor Modal (Centered Viewport Dialog) -->
   @if (isEditorOpen() && activeAssessment(); as asm) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-md flex items-start sm:items-center justify-center p-3 sm:p-6 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-[calc(env(safe-area-inset-bottom,0px)+12px)] overflow-y-auto overscroll-contain">
-      <div class="w-full max-w-4xl max-h-[calc(100dvh-24px)] sm:max-h-[88vh] min-h-0 flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden my-auto animate-scale-up">
+    <div class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 sm:p-6 overflow-hidden">
+      <div class="w-full max-w-4xl h-[94dvh] sm:h-[88vh] max-h-[94dvh] sm:max-h-[88vh] min-h-0 flex flex-col rounded-2xl sm:rounded-3xl bg-surface-card border border-surface-border shadow-2xl overflow-hidden animate-scale-up">
         
         <!-- Header -->
         <div class="p-3 sm:p-5 bg-gradient-to-r from-brand-primary/10 via-surface-card to-surface-card border-b border-surface-border flex flex-col gap-2.5 shrink-0">
@@ -1083,23 +1083,23 @@
 
           <!-- Bottom Row: Metadata Badges (Full width, wraps cleanly on mobile, no horizontal scroll) -->
           <div class="w-full flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs">
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0 whitespace-nowrap">
               <app-icon name="book-open" [size]="10" className="text-brand-primary shrink-0" />
               <span>{{ asm.curriculum }}</span>
             </span>
 
             @if (currentCurriculumHasTerms()) {
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0 whitespace-nowrap">
                 <span>{{ langService.isArabic() ? (asm.term === 'TERM_1' ? 'الترم 1' : 'الترم 2') : (asm.term === 'TERM_1' ? 'Term 1' : 'Term 2') }}</span>
               </span>
             }
 
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0 whitespace-nowrap">
               <app-icon name="clock" [size]="10" className="text-amber-500 shrink-0" />
               <span>{{ asm.durationMinutes }} دقيقة</span>
             </span>
 
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-bg border border-surface-border font-semibold text-text-secondary shrink-0 whitespace-nowrap">
               <app-icon name="check" [size]="10" className="text-emerald-500 shrink-0" />
               <span>النجاح: {{ asm.passPercentage }}%</span>
             </span>
@@ -1610,9 +1610,9 @@
             <div class="space-y-6 animate-fade-in relative pt-3 sm:pt-4">
 
               <!-- Sticky Exam Options Bar (Question Types & Math Keyboard) -->
-              <div class="sticky top-0 z-30 bg-surface-card p-2 sm:p-3 rounded-2xl border border-surface-border shadow-md flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-wrap">
-                  <span class="text-xs font-bold text-text-primary truncate">
+              <div class="sticky top-0 z-30 bg-surface-card p-2 sm:p-3 rounded-2xl border border-surface-border shadow-md flex items-center justify-between gap-1.5 sm:gap-2">
+                <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                  <span class="text-xs font-bold text-text-primary truncate hidden xs:inline">
                     @if (editingQuestionId()) {
                       {{ langService.isArabic() ? 'تعديل السؤال' : 'Editing' }}
                     } @else {
@@ -1639,12 +1639,12 @@
                   }
                 </div>
 
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <!-- Quick Math Keyboard Toggle Button -->
                   <button
                     type="button"
                     (click)="toggleMathKeyboard(qTextArea)"
-                    class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border"
+                    class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border"
                     [class.bg-brand-primary]="isMathKeyboardOpen()"
                     [class.text-white]="isMathKeyboardOpen()"
                     [class.border-brand-primary]="isMathKeyboardOpen()"
@@ -1662,14 +1662,15 @@
                     <button
                       type="button"
                       (click)="toggleExamOptions()"
-                      class="px-3 py-1.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:bg-surface-bg text-text-primary transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:bg-surface-bg text-text-primary transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 shadow-sm"
                       [class.ring-2]="isExamOptionsOpen()"
                       [class.ring-brand-primary/30]="isExamOptionsOpen()"
                       [title]="langService.isArabic() ? 'خيارات الامتحان وتحديد نوع السؤال' : 'Exam Options'"
                       data-testid="exam-options-dropdown-toggle"
                     >
                       <app-icon name="settings" [size]="14" className="text-brand-primary" />
-                      <span>{{ langService.isArabic() ? 'خيارات الامتحان' : 'Exam Options' }}</span>
+                      <span class="sm:hidden">{{ langService.isArabic() ? 'خيارات' : 'Options' }}</span>
+                      <span class="hidden sm:inline">{{ langService.isArabic() ? 'خيارات الامتحان' : 'Exam Options' }}</span>
                       <app-icon [name]="isExamOptionsOpen() ? 'chevron-up' : 'chevron-down'" [size]="12" />
                     </button>
 
@@ -2383,12 +2384,12 @@
           </div>
         }
 
-        <!-- Footer -->
-        <div class="px-4 sm:px-6 py-4 bg-surface-bg border-t border-surface-border flex flex-col-reverse sm:flex-row items-center justify-between gap-3 shrink-0">
+        <!-- Footer: Balanced Responsive Single Row, Never Cut Off -->
+        <div class="px-3.5 sm:px-6 py-2.5 sm:py-3.5 bg-surface-bg/95 border-t border-surface-border flex items-center justify-between gap-2.5 sm:gap-4 shrink-0 backdrop-blur-sm">
           <button
             type="button"
             (click)="closeEditor()"
-            class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold border border-surface-border bg-surface-card text-text-secondary cursor-pointer text-center"
+            class="px-4 py-2.5 rounded-xl text-xs font-bold border border-surface-border bg-surface-card hover:bg-surface-bg text-text-secondary hover:text-text-primary transition-all cursor-pointer text-center shrink-0"
           >
             {{ langService.isArabic() ? 'إغلاق' : 'Close' }}
           </button>
@@ -2397,9 +2398,9 @@
             type="button"
             (click)="saveAssessmentEditor()"
             [disabled]="isSaving()"
-            class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            class="flex-1 sm:flex-initial px-5 sm:px-7 py-2.5 rounded-xl text-xs font-black text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
-            <app-icon name="check-circle" [size]="16" />
+            <app-icon name="check-circle" [size]="15" />
             <span>{{ isSaving() ? (langService.isArabic() ? 'جارٍ الحفظ...' : 'Saving...') : (langService.isArabic() ? 'حفظ التعديلات' : 'Save Changes') }}</span>
           </button>
         </div>

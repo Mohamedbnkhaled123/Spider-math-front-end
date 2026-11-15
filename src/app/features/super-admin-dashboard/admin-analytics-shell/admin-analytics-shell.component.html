@@ -44,11 +44,11 @@
     </div>
 
     <div class="flex items-center gap-1.5 shrink-0">
-      <!-- Notification Bell -->
+      <!-- Notification Bell (Symmetrical 32px Square Pill) -->
       <button
         type="button"
         (click)="toggleNotifications()"
-        class="relative p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer"
+        class="relative w-8 h-8 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer flex items-center justify-center shrink-0"
         [title]="langService.isArabic() ? 'الإشعارات' : 'Notifications'"
       >
         <app-icon name="bell" [size]="15" />
@@ -64,7 +64,7 @@
         <button
           type="button"
           (click)="toggleMobileTools()"
-          class="p-1.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+          class="h-8 px-2 sm:px-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-muted hover:text-text-primary hover:border-brand-primary transition-all cursor-pointer flex items-center justify-center gap-1 text-[11px] font-bold shrink-0"
           [title]="langService.isArabic() ? 'أدوات الصيانة' : 'Maintenance Tools'"
         >
           <app-icon name="settings" [size]="14" />
@@ -72,14 +72,14 @@
         </button>
       }
 
-      <!-- Collapse / Expand Toggle Button -->
+      <!-- Collapse / Expand Toggle Button (Symmetrical 32px Square Pill) -->
       <button
         type="button"
         (click)="toggleToolbarCollapse()"
         data-testid="toolbar-collapse-toggle"
         [attr.aria-expanded]="!isToolbarCollapsed()"
         aria-controls="mobile-admin-toolbar-content"
-        class="p-1.5 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center justify-center"
+        class="w-8 h-8 rounded-xl border border-surface-border bg-surface-bg hover:border-brand-primary text-text-muted hover:text-text-primary transition-all cursor-pointer flex items-center justify-center shrink-0"
         [title]="isToolbarCollapsed() ? (langService.isArabic() ? 'توسيع' : 'Expand') : (langService.isArabic() ? 'طي' : 'Collapse')"
       >
         <app-icon [name]="isToolbarCollapsed() ? 'chevron-down' : 'chevron-up'" [size]="14" />

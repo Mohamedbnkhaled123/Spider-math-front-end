@@ -390,7 +390,7 @@
                     <button
                       type="button"
                       (click)="selectIntlDivision(div.code)"
-                      class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
+                      class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1.5 text-center w-full sm:w-auto min-w-0"
                       [class.bg-brand-gold]="selectedIntlDivision() === div.code"
                       [class.text-slate-950]="selectedIntlDivision() === div.code"
                       [class.font-bold]="selectedIntlDivision() === div.code"
@@ -399,7 +399,7 @@
                       [class.hover:text-text-primary]="selectedIntlDivision() !== div.code"
                     >
                       <app-icon [name]="getDivisionIcon(div.iconName, div.code)" [size]="14" />
-                      <span>{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
+                      <span class="truncate">{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
                     </button>
                   }
                 </div>
@@ -409,7 +409,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -422,7 +422,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -430,12 +430,13 @@
                     [class.text-text-secondary]="activeStageFilter() !== 'PRIMARY'"
                     [class.hover:text-text-primary]="activeStageFilter() !== 'PRIMARY'"
                   >
-                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الابتدائية (Elementary)' : 'الابتدائية (Primary)') : 'Primary' }}
+                    <span class="sm:hidden">{{ langService.isArabic() ? 'الابتدائية' : 'Primary' }}</span>
+                    <span class="hidden sm:inline">{{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الابتدائية (Elementary)' : 'الابتدائية (Primary)') : 'Primary' }}</span>
                   </button>
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -443,12 +444,13 @@
                     [class.text-text-secondary]="activeStageFilter() !== 'PREPARATORY'"
                     [class.hover:text-text-primary]="activeStageFilter() !== 'PREPARATORY'"
                   >
-                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'المتوسطة (Middle)' : 'المتوسطة (Lower Sec)') : 'Middle' }}
+                    <span class="sm:hidden">{{ langService.isArabic() ? 'المتوسطة' : 'Middle' }}</span>
+                    <span class="hidden sm:inline">{{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'المتوسطة (Middle)' : 'المتوسطة (Lower Sec)') : 'Middle' }}</span>
                   </button>
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -456,7 +458,8 @@
                     [class.text-text-secondary]="activeStageFilter() !== 'SECONDARY'"
                     [class.hover:text-text-primary]="activeStageFilter() !== 'SECONDARY'"
                   >
-                    {{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الثانوية (High School)' : 'الثانوية / IGCSE') : 'Secondary' }}
+                    <span class="sm:hidden">{{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}</span>
+                    <span class="hidden sm:inline">{{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الثانوية (High School)' : 'الثانوية / IGCSE') : 'Secondary' }}</span>
                   </button>
                 </div>
               } @else if (selectedCurriculumCode() === 'GULF') {
@@ -466,7 +469,7 @@
                     <button
                       type="button"
                       (click)="selectGulfCountry(country.code)"
-                      class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
+                      class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1 text-center w-full sm:w-auto min-w-0"
                       [class.bg-brand-gold]="selectedGulfCountry() === country.code"
                       [class.text-slate-950]="selectedGulfCountry() === country.code"
                       [class.font-bold]="selectedGulfCountry() === country.code"
@@ -474,9 +477,9 @@
                       [class.text-text-secondary]="selectedGulfCountry() !== country.code"
                       [class.hover:text-text-primary]="selectedGulfCountry() !== country.code"
                     >
-                      <span>{{ country.flagEmoji }}</span>
-                      <span class="sm:hidden">{{ langService.isArabic() ? getGulfCountryShortNameAr(country.code) : country.code }}</span>
-                      <span class="hidden sm:inline">{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
+                      <span class="shrink-0">{{ country.flagEmoji }}</span>
+                      <span class="sm:hidden truncate">{{ langService.isArabic() ? getGulfCountryShortNameAr(country.code) : country.code }}</span>
+                      <span class="hidden sm:inline truncate">{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
                     </button>
                   }
                 </div>
@@ -486,7 +489,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -499,7 +502,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -512,7 +515,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -525,7 +528,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                    class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"

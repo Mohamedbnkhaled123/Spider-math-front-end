@@ -405,7 +405,7 @@ code,
   }
 }
 
-// Router Outlet Container Page Mount Animation (Fallback & Cross-Browser 0.5s)
+// Router Outlet Container Page Mount Animation (Pure Opacity to avoid trapping position:fixed modal descendants)
 .page-route-container {
   animation: pageFadeIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -413,11 +413,9 @@ code,
 @keyframes pageFadeIn05 {
   0% {
     opacity: 0;
-    transform: translateY(6px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -431,7 +429,7 @@ code,
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
