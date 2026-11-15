@@ -14,6 +14,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { timeout, Subscription } from 'rxjs';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
@@ -127,6 +128,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly assessmentsList = signal<AssessmentItem[]>([]);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
+  private autoPersistSub: Subscription | null = null;
 
   // Active Grades & Tracks State
   readonly activeGrades = signal<string[]>([]);
@@ -618,7 +620,9 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.activeAssessment.set(updatedAsm);
     this.syncAssessmentInMemoryList(updatedAsm);
     this.triggerDraftAutoSave(true);
-    this.autoPersistAssessmentToBackend(updatedAsm);
+    if (!this.isSaving()) {
+      this.autoPersistAssessmentToBackend(updatedAsm);
+    }
 
     this.toastTriggered.emit({
       text: this.langService.isArabic()
@@ -841,6 +845,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
    * even if the teacher closes the modal or refreshes without clicking the bottom Save button.
    */
   autoPersistAssessmentToBackend(asm: AssessmentItem): void {
+    if (this.isSaving()) return;
     if (!asm || !asm.id || asm.id === 'new_assessment_draft') return;
     const rawTitle = (asm.titleAr || asm.titleEn || '').trim();
     if (!rawTitle) return;
@@ -861,14 +866,32 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (this.autoPersistSub) {
+      this.autoPersistSub.unsubscribe();
+      this.autoPersistSub = null;
+    }
+
+    let fromIso: string | null = null;
+    let untilIso: string | null = null;
+    try {
+      if (asm.isScheduled && asm.availableFrom) {
+        const d = new Date(asm.availableFrom);
+        fromIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+      if (asm.isScheduled && asm.availableUntil) {
+        const d = new Date(asm.availableUntil);
+        untilIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+    } catch {}
+
     const payload = {
       title_ar: rawTitle,
       title_en: (asm.titleEn || rawTitle).trim(),
       curriculum: asm.curriculum,
       grade_level: asm.gradeLevel,
       academic_term: asm.term,
-      unit_package_id: asm.unitId !== undefined ? (asm.unitId || null) : undefined,
-      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
+      unit_package_id: asm.unitId && /^[0-9a-fA-F]{24}$/.test(asm.unitId) ? asm.unitId : null,
+      lecture_id: asm.lectureId && /^[0-9a-fA-F]{24}$/.test(asm.lectureId) ? asm.lectureId : null,
       calculator_mode: asm.calculatorType,
       graph_calculator: asm.calculatorType,
       reference_sheet_url: asm.referenceSheetUrl || null,
@@ -879,8 +902,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       module_2_time_minutes: asm.isMultiModule ? (Number(asm.module2TimeMinutes) || 35) : null,
       pass_percentage: asm.passPercentage,
       max_attempts: asm.maxAttempts || 1,
-      available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
-      available_until: asm.isScheduled && asm.availableUntil ? new Date(asm.availableUntil).toISOString() : null,
+      available_from: fromIso,
+      available_until: untilIso,
       is_placement_test: !!asm.isPlacementTest,
       requires_teacher_review: asm.questions.some(q => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO')
         ? true
@@ -889,34 +912,53 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
         const isInputText = q.type === 'INPUT_TEXT';
         const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
+        const validId = q.id && /^[0-9a-fA-F]{24}$/.test(q.id) ? q.id : undefined;
         return {
-          _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
+          _id: validId,
           order: q.order || idx + 1,
           question_type: qType,
-          question_text: q.textAr || 'مسألة رياضية',
+          question_text: (q.textAr || '').trim() || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
           question_image_url: q.questionImageUrl || null,
-          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => o.trim()),
-          correct_option_index: (isEssay || isInputText) ? 0 : Number(q.correctOptionIndex ?? 0),
-          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => a.trim()).filter(Boolean) : undefined,
-          points: Number(q.points || 1),
+          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => (o || '').trim()),
+          correct_option_index: (isEssay || isInputText) ? 0 : Math.max(0, Number(q.correctOptionIndex ?? 0)),
+          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean) : undefined,
+          points: Math.max(1, Math.min(50, Number(q.points || 1))),
           module_index: q.moduleIndex === 2 ? 2 : 1,
-          model_answer_text: q.explanationAr || '',
-          youtube_solution_url: q.youtubeSolutionUrl || null
+          model_answer_text: (q.explanationAr || '').trim(),
+          youtube_solution_url: (q.youtubeSolutionUrl || '').trim() || null
         };
       })
     };
 
-    this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
-      next: async () => {
+    this.autoPersistSub = this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
+      next: (res) => {
+        this.autoPersistSub = null;
         this.draftService.lastSavedTimestamp.set(Date.now());
+        if (res?.data?.questions && Array.isArray(res.data.questions)) {
+          const currentAsm = this.activeAssessment();
+          if (currentAsm && currentAsm.id === asm.id) {
+            const serverQuestions = res.data.questions;
+            const updatedQuestions = currentAsm.questions.map((q, idx) => {
+              const matched = serverQuestions.find((sq: any) => sq.order === q.order) || serverQuestions[idx];
+              if (matched && (matched._id || matched.id)) {
+                return { ...q, id: (matched._id || matched.id).toString() };
+              }
+              return q;
+            });
+            const refreshedAsm = { ...currentAsm, questions: updatedQuestions };
+            this.activeAssessment.set(refreshedAsm);
+            this.syncAssessmentInMemoryList(refreshedAsm);
+          }
+        }
         if (!this.hasUnsavedComposerInput()) {
-          await this.draftService.deleteDraft(asm.id);
+          this.draftService.deleteDraft(asm.id).catch(() => {});
           if (this.pendingDraft()?.draftId === asm.id || this.pendingDraft()?.assessmentId === asm.id) {
             this.pendingDraft.set(null);
           }
         }
       },
       error: () => {
+        this.autoPersistSub = null;
         // Keep local draft in Dexie + localStorage so nothing is ever lost on network failure
       }
     });
@@ -1010,6 +1052,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.autoPersistSub) {
+      this.autoPersistSub.unsubscribe();
+      this.autoPersistSub = null;
+    }
     this.uiLayoutService.restoreFooter();
     this.isQuestionDrawerOpen.set(false);
     this.isExamOptionsOpen.set(false);
@@ -1051,6 +1097,66 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     });
   }
 
+  mapDocToAssessmentItem(a: any): AssessmentItem {
+    let fromIso: string | null = null;
+    let untilIso: string | null = null;
+    try {
+      if (a.available_from) {
+        const d = new Date(a.available_from);
+        fromIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+      if (a.available_until) {
+        const d = new Date(a.available_until);
+        untilIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+    } catch {}
+
+    return {
+      id: a._id ? a._id.toString() : (a.id || ''),
+      unitId: a.unit_package_id ? (a.unit_package_id._id || a.unit_package_id).toString() : null,
+      lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : null,
+      unitTitle: (typeof a.unit_package_id === 'object' && a.unit_package_id) ? (a.unit_package_id.title_ar || a.unit_package_id.title_en || null) : null,
+      lectureTitle: (typeof a.lecture_id === 'object' && a.lecture_id) ? (a.lecture_id.lecture_title_ar || a.lecture_id.lecture_title_en || null) : null,
+      titleAr: a.title_ar || a.titleAr || a.title_en || a.titleEn || a.title || '',
+      titleEn: a.title_en || a.titleEn || a.title_ar || a.titleAr || a.title || '',
+      curriculum: a.curriculum,
+      gradeLevel: a.grade_level || a.gradeLevel,
+      term: a.academic_term || a.term || 'TERM_1',
+      calculatorType: (a.graph_calculator === 'DESMOS' || a.calculator_mode === 'DESMOS' || a.calculatorType === 'DESMOS') ? 'DESMOS' : 'NONE',
+      referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
+      durationMinutes: a.time_limit_minutes || a.duration_minutes || a.durationMinutes || 45,
+      isMultiModule: !!(a.is_multi_module ?? a.isMultiModule),
+      module1TimeMinutes: a.module_1_time_minutes ?? a.module1TimeMinutes ?? 35,
+      module2TimeMinutes: a.module_2_time_minutes ?? a.module2TimeMinutes ?? 35,
+      passPercentage: a.pass_percentage ?? a.passPercentage ?? 60,
+      maxAttempts: a.max_attempts ?? a.maxAttempts ?? 1,
+      availableFrom: fromIso,
+      availableUntil: untilIso,
+      isScheduled: !!(fromIso || untilIso),
+      totalPoints: a.total_points || (a.questions?.length ? a.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
+      isPublished: !!a.is_published,
+      isPlacementTest: !!a.is_placement_test,
+      assessmentType: a.assessment_type || a.assessmentType || 'QUIZ',
+      isFree: !!(a.is_free ?? a.isFree),
+      requiresTeacherReview: !!(a.requires_teacher_review ?? a.requiresTeacherReview),
+      submissionsCount: a.submissions_count || 0,
+      questions: (a.questions || []).map((q: any, idx: number) => ({
+        id: q._id ? q._id.toString() : (q.id || `q_${idx}`),
+        order: q.order || idx + 1,
+        type: q.question_type || q.type || 'MCQ',
+        textAr: q.question_text || q.text_ar || q.textAr || '',
+        questionImageUrl: q.question_image_url || null,
+        options: (q.options || []).map((o: any) => (o || '').toString()),
+        correctOptionIndex: q.correct_option_index ?? 0,
+        acceptedAnswers: (q.accepted_answers || q.acceptedAnswers || []).map((ans: any) => (ans || '').toString()),
+        points: q.points || 5,
+        moduleIndex: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
+        explanationAr: q.model_answer_text || q.explanation_ar || '',
+        youtubeSolutionUrl: q.youtube_solution_url || q.youtubeSolutionUrl || null
+      }))
+    };
+  }
+
   loadAssessments(forceRefresh = false): void {
     const curr = this.selectedCurriculum();
     const gr = this.selectedGrade();
@@ -1089,60 +1195,15 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.isLoading.set(false);
         const raw = Array.isArray(res?.data) ? res.data : [];
-        const items: AssessmentItem[] = raw.map((a: any): AssessmentItem => {
-          const fromIso = a.available_from ? new Date(a.available_from).toISOString() : null;
-          const untilIso = a.available_until ? new Date(a.available_until).toISOString() : null;
-          return {
-            id: a._id || a.id,
-            unitId: a.unit_package_id ? (a.unit_package_id._id || a.unit_package_id).toString() : null,
-            lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : null,
-            unitTitle: (typeof a.unit_package_id === 'object' && a.unit_package_id) ? (a.unit_package_id.title_ar || a.unit_package_id.title_en || null) : null,
-            lectureTitle: (typeof a.lecture_id === 'object' && a.lecture_id) ? (a.lecture_id.lecture_title_ar || a.lecture_id.lecture_title_en || null) : null,
-            titleAr: a.title_ar || a.titleAr || a.title_en || a.titleEn || a.title || '',
-            titleEn: a.title_en || a.titleEn || a.title_ar || a.titleAr || a.title || '',
-            curriculum: a.curriculum,
-            gradeLevel: a.grade_level || a.gradeLevel,
-            term: a.academic_term || a.term || 'TERM_1',
-            calculatorType: (a.graph_calculator === 'DESMOS' || a.calculator_mode === 'DESMOS' || a.calculatorType === 'DESMOS') ? 'DESMOS' : 'NONE',
-            referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
-            durationMinutes: a.time_limit_minutes || a.duration_minutes || a.durationMinutes || 45,
-            isMultiModule: !!(a.is_multi_module ?? a.isMultiModule),
-            module1TimeMinutes: a.module_1_time_minutes ?? a.module1TimeMinutes ?? 35,
-            module2TimeMinutes: a.module_2_time_minutes ?? a.module2TimeMinutes ?? 35,
-            passPercentage: a.pass_percentage ?? a.passPercentage ?? 60,
-            maxAttempts: a.max_attempts ?? a.maxAttempts ?? 1,
-            availableFrom: fromIso,
-            availableUntil: untilIso,
-            isScheduled: !!(fromIso || untilIso),
-            totalPoints: a.total_points || (a.questions?.length ? a.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
-            isPublished: !!a.is_published,
-            isPlacementTest: !!a.is_placement_test,
-            assessmentType: a.assessment_type || a.assessmentType || 'QUIZ',
-            isFree: !!(a.is_free ?? a.isFree),
-            requiresTeacherReview: !!(a.requires_teacher_review ?? a.requiresTeacherReview),
-            submissionsCount: a.submissions_count || 0,
-            questions: (a.questions || []).map((q: any, idx: number) => ({
-              id: q._id || `q_${idx}`,
-              order: q.order || idx + 1,
-              type: q.question_type || q.type || 'MCQ',
-              textAr: q.question_text || q.text_ar || q.textAr || '',
-              questionImageUrl: q.question_image_url || null,
-              options: q.options || [],
-              correctOptionIndex: q.correct_option_index ?? 0,
-              acceptedAnswers: q.accepted_answers || q.acceptedAnswers || [],
-              points: q.points || 5,
-              moduleIndex: (q.module_index === 2 || q.moduleIndex === 2) ? 2 : 1,
-              explanationAr: q.model_answer_text || q.explanation_ar || '',
-              youtubeSolutionUrl: q.youtube_solution_url || q.youtubeSolutionUrl || null
-            }))
-          };
-        }).map((item: AssessmentItem) => {
-          const localDraft = this.draftService.getDraftSync(item.id);
-          if (localDraft && Array.isArray(localDraft.questions) && localDraft.questions.length > 0) {
-            return this.applyDraftToAssessmentItem(item, localDraft);
-          }
-          return item;
-        });
+        const items: AssessmentItem[] = raw
+          .map((a: any) => this.mapDocToAssessmentItem(a))
+          .map((item: AssessmentItem) => {
+            const localDraft = this.draftService.getDraftSync(item.id);
+            if (localDraft && Array.isArray(localDraft.questions) && localDraft.questions.length > 0) {
+              return this.applyDraftToAssessmentItem(item, localDraft);
+            }
+            return item;
+          });
         this.assessmentsList.set(items);
         ASSESSMENTS_MEMORY_CACHE.set(cacheKey, { items, timestamp: Date.now() });
         this.swrCache.set(persistentKey, items);
@@ -1784,18 +1845,18 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveQuestion(): void {
+  saveQuestion(autoPersist = true): boolean {
     if (this.editingQuestionId()) {
-      this.updateExistingQuestion();
+      return this.updateExistingQuestion(autoPersist);
     } else {
-      this.addQuestion();
+      return this.addQuestion(autoPersist);
     }
   }
 
-  updateExistingQuestion(): void {
+  updateExistingQuestion(autoPersist = true): boolean {
     const asm = this.activeAssessment();
     const editId = this.editingQuestionId();
-    if (!asm || !editId) return;
+    if (!asm || !editId) return false;
 
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
@@ -1805,7 +1866,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           : 'Enter question text or image',
         type: 'error'
       });
-      return;
+      return false;
     }
 
     if (this.newQuestionType() === 'MCQ') {
@@ -1820,7 +1881,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Fill all 4 options',
           type: 'error'
         });
-        return;
+        return false;
       }
 
       // 2. Check for duplicate options (CRITICAL REQUIREMENT)
@@ -1832,7 +1893,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Options must be unique',
           type: 'error'
         });
-        return;
+        return false;
       }
     } else if (this.newQuestionType() === 'INPUT_TEXT') {
       const validAccepted = this.newQuestionAcceptedAnswers().map((a) => (a || '').trim()).filter(Boolean);
@@ -1843,14 +1904,14 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Add accepted answer',
           type: 'error'
         });
-        return;
+        return false;
       }
     }
 
     const questionIndex = asm.questions.findIndex((q) => q.id === editId);
     if (questionIndex === -1) {
       this.resetQuestionForm();
-      return;
+      return false;
     }
 
     const existingQ = asm.questions[questionIndex];
@@ -1884,7 +1945,9 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.syncAssessmentInMemoryList(updatedAsm);
     this.resetQuestionForm();
     this.triggerDraftAutoSave(true);
-    this.autoPersistAssessmentToBackend(updatedAsm);
+    if (autoPersist && !this.isSaving()) {
+      this.autoPersistAssessmentToBackend(updatedAsm);
+    }
 
     if (asm.submissionsCount > 0) {
       this.autoRegradeWarning.set(true);
@@ -1894,16 +1957,16 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       text: this.langService.isArabic() ? 'تم حفظ السؤال' : 'Question saved',
       type: 'success'
     });
+    return true;
   }
 
-  addQuestion(): void {
+  addQuestion(autoPersist = true): boolean {
     if (this.editingQuestionId()) {
-      this.updateExistingQuestion();
-      return;
+      return this.updateExistingQuestion(autoPersist);
     }
 
     const asm = this.activeAssessment();
-    if (!asm) return;
+    if (!asm) return false;
 
     const text = this.newQuestionTextAr().trim();
     if (!text && !this.newQuestionImageUrl()) {
@@ -1913,7 +1976,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           : 'Enter question text or image',
         type: 'error'
       });
-      return;
+      return false;
     }
 
     if (this.newQuestionType() === 'MCQ') {
@@ -1928,7 +1991,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Fill all 4 options',
           type: 'error'
         });
-        return;
+        return false;
       }
 
       // 2. Check for duplicate options (CRITICAL REQUIREMENT)
@@ -1940,7 +2003,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Options must be unique',
           type: 'error'
         });
-        return;
+        return false;
       }
     } else if (this.newQuestionType() === 'INPUT_TEXT') {
       const validAccepted = this.newQuestionAcceptedAnswers().map((a) => (a || '').trim()).filter(Boolean);
@@ -1951,7 +2014,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             : 'Add accepted answer',
           type: 'error'
         });
-        return;
+        return false;
       }
     }
 
@@ -1984,12 +2047,15 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.syncAssessmentInMemoryList(updatedAsm);
     this.resetQuestionForm();
     this.triggerDraftAutoSave(true);
-    this.autoPersistAssessmentToBackend(updatedAsm);
+    if (autoPersist && !this.isSaving()) {
+      this.autoPersistAssessmentToBackend(updatedAsm);
+    }
 
     this.toastTriggered.emit({
       text: this.langService.isArabic() ? 'تمت إضافة السؤال' : 'Question added',
       type: 'success'
     });
+    return true;
   }
 
   deleteQuestion(order: number): void {
@@ -2042,8 +2108,28 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   saveAssessmentEditor(): void {
+    if (this.isSaving()) return;
+
     const asm = this.activeAssessment();
     if (!asm) return;
+
+    // Cancel any background auto-persist so it does not conflict with explicit user save
+    if (this.autoPersistSub) {
+      this.autoPersistSub.unsubscribe();
+      this.autoPersistSub = null;
+    }
+
+    // 1. If user is composing or editing a question in the Questions tab, commit it first
+    if (this.editingQuestionId() || this.hasUnsavedComposerInput()) {
+      const committed = this.saveQuestion(false);
+      if (!committed) {
+        // Validation failed on current question composer; error already shown via toast
+        return;
+      }
+    }
+
+    const currentAsm = this.activeAssessment();
+    if (!currentAsm) return;
 
     this.isQuestionDrawerOpen.set(false);
     this.isExamOptionsOpen.set(false);
@@ -2051,33 +2137,39 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);
 
-    const rawTitle = (asm.titleAr || asm.titleEn || '').trim();
+    const rawTitle = (currentAsm.titleAr || currentAsm.titleEn || '').trim();
     if (!rawTitle) {
       this.showEditorError(this.langService.isArabic() ? 'أدخل عنوان الامتحان' : 'Enter assessment title', 'SETTINGS');
       return;
     }
 
-    if (asm.isScheduled) {
-      if (!asm.availableFrom && !asm.availableUntil) {
+    if (currentAsm.isScheduled) {
+      if (!currentAsm.availableFrom && !currentAsm.availableUntil) {
         this.showEditorError('اضبط موعد الجدولة.', 'SETTINGS');
         return;
       }
-      if (asm.availableFrom && asm.availableUntil) {
-        if (new Date(asm.availableUntil) <= new Date(asm.availableFrom)) {
+      if (currentAsm.availableFrom && currentAsm.availableUntil) {
+        const fromDate = new Date(currentAsm.availableFrom);
+        const untilDate = new Date(currentAsm.availableUntil);
+        if (isNaN(fromDate.getTime()) || isNaN(untilDate.getTime())) {
+          this.showEditorError(this.langService.isArabic() ? 'تاريخ الجدولة غير صالح' : 'Invalid schedule date', 'SETTINGS');
+          return;
+        }
+        if (untilDate <= fromDate) {
           this.showEditorError('يجب أن يلي الإغلاق البدء.', 'SETTINGS');
           return;
         }
       }
     }
 
-    if (!asm.questions || asm.questions.length === 0) {
-      this.showEditorError('أضف سؤالاً واحداً على الأقل', 'QUESTIONS');
+    if (!currentAsm.questions || currentAsm.questions.length === 0) {
+      this.showEditorError(this.langService.isArabic() ? 'أضف سؤالاً واحداً على الأقل' : 'Add at least one question', 'QUESTIONS');
       return;
     }
 
     // Pre-flight validation on all questions in this assessment
-    for (let i = 0; i < asm.questions.length; i++) {
-      const q = asm.questions[i];
+    for (let i = 0; i < currentAsm.questions.length; i++) {
+      const q = currentAsm.questions[i];
       if (q.type === 'MCQ') {
         const opts = (q.options || []).map((o) => (o || '').trim());
         if (opts.length < 2) {
@@ -2112,85 +2204,127 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       }
     }
 
+    let payload: any;
+    try {
+      let fromIso: string | null = null;
+      let untilIso: string | null = null;
+      if (currentAsm.isScheduled && currentAsm.availableFrom) {
+        const d = new Date(currentAsm.availableFrom);
+        fromIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+      if (currentAsm.isScheduled && currentAsm.availableUntil) {
+        const d = new Date(currentAsm.availableUntil);
+        untilIso = !isNaN(d.getTime()) ? d.toISOString() : null;
+      }
+
+      payload = {
+        title_ar: rawTitle,
+        title_en: (currentAsm.titleEn || rawTitle).trim(),
+        curriculum: currentAsm.curriculum,
+        grade_level: currentAsm.gradeLevel,
+        academic_term: currentAsm.term,
+        unit_package_id: currentAsm.unitId && /^[0-9a-fA-F]{24}$/.test(currentAsm.unitId) ? currentAsm.unitId : null,
+        lecture_id: currentAsm.lectureId && /^[0-9a-fA-F]{24}$/.test(currentAsm.lectureId) ? currentAsm.lectureId : null,
+        calculator_mode: currentAsm.calculatorType,
+        graph_calculator: currentAsm.calculatorType,
+        reference_sheet_url: currentAsm.referenceSheetUrl || null,
+        duration_minutes: currentAsm.isMultiModule
+          ? ((Number(currentAsm.module1TimeMinutes) || 35) + (Number(currentAsm.module2TimeMinutes) || 35))
+          : currentAsm.durationMinutes,
+        time_limit_minutes: currentAsm.isMultiModule
+          ? ((Number(currentAsm.module1TimeMinutes) || 35) + (Number(currentAsm.module2TimeMinutes) || 35))
+          : currentAsm.durationMinutes,
+        is_multi_module: !!currentAsm.isMultiModule,
+        module_1_time_minutes: currentAsm.isMultiModule ? (Number(currentAsm.module1TimeMinutes) || 35) : null,
+        module_2_time_minutes: currentAsm.isMultiModule ? (Number(currentAsm.module2TimeMinutes) || 35) : null,
+        pass_percentage: currentAsm.passPercentage,
+        max_attempts: currentAsm.maxAttempts || 1,
+        available_from: fromIso,
+        available_until: untilIso,
+        is_placement_test: !!currentAsm.isPlacementTest,
+        requires_teacher_review: currentAsm.questions.some(q => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO')
+          ? true
+          : !!currentAsm.requiresTeacherReview,
+        questions: currentAsm.questions.map((q, idx) => {
+          const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
+          const isInputText = q.type === 'INPUT_TEXT';
+          const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
+          const validId = q.id && /^[0-9a-fA-F]{24}$/.test(q.id) ? q.id : undefined;
+          return {
+            _id: validId,
+            order: q.order || idx + 1,
+            question_type: qType,
+            question_text: (q.textAr || '').trim() || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
+            question_image_url: q.questionImageUrl || null,
+            options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => (o || '').trim()),
+            correct_option_index: (isEssay || isInputText) ? 0 : Math.max(0, Number(q.correctOptionIndex ?? 0)),
+            accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean) : undefined,
+            points: Math.max(1, Math.min(50, Number(q.points || 1))),
+            module_index: q.moduleIndex === 2 ? 2 : 1,
+            model_answer_text: (q.explanationAr || '').trim(),
+            youtube_solution_url: (q.youtubeSolutionUrl || '').trim() || null
+          };
+        })
+      };
+    } catch (err: any) {
+      console.error('Failed to construct save payload:', err);
+      this.showEditorError(this.langService.isArabic() ? 'خطأ في معالجة بيانات الامتحان' : 'Failed to process assessment data');
+      return;
+    }
+
     this.isSaving.set(true);
 
-    // Transform full assessment settings & questions into normalized schema for backend
-    const payload = {
-      title_ar: rawTitle,
-      title_en: (asm.titleEn || rawTitle).trim(),
-      curriculum: asm.curriculum,
-      grade_level: asm.gradeLevel,
-      academic_term: asm.term,
-      unit_package_id: asm.unitId !== undefined ? (asm.unitId || null) : undefined,
-      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
-      calculator_mode: asm.calculatorType,
-      graph_calculator: asm.calculatorType,
-      reference_sheet_url: asm.referenceSheetUrl || null,
-      duration_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
-      time_limit_minutes: asm.isMultiModule ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35)) : asm.durationMinutes,
-      is_multi_module: !!asm.isMultiModule,
-      module_1_time_minutes: asm.isMultiModule ? (Number(asm.module1TimeMinutes) || 35) : null,
-      module_2_time_minutes: asm.isMultiModule ? (Number(asm.module2TimeMinutes) || 35) : null,
-      pass_percentage: asm.passPercentage,
-      max_attempts: asm.maxAttempts || 1,
-      available_from: asm.isScheduled && asm.availableFrom ? new Date(asm.availableFrom).toISOString() : null,
-      available_until: asm.isScheduled && asm.availableUntil ? new Date(asm.availableUntil).toISOString() : null,
-      is_placement_test: !!asm.isPlacementTest,
-      requires_teacher_review: asm.questions.some(q => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO') ? true : !!asm.requiresTeacherReview,
-      questions: asm.questions.map((q, idx) => {
-        const isEssay = q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO';
-        const isInputText = q.type === 'INPUT_TEXT';
-        const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
-        return {
-          _id: q.id && !q.id.startsWith('q_') ? q.id : undefined,
-          order: q.order || idx + 1,
-          question_type: qType,
-          question_text: q.textAr || 'مسألة رياضية',
-          question_image_url: q.questionImageUrl || null,
-          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => o.trim()),
-          correct_option_index: (isEssay || isInputText) ? 0 : Number(q.correctOptionIndex ?? 0),
-          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => a.trim()).filter(Boolean) : undefined,
-          points: Number(q.points || 1),
-          module_index: q.moduleIndex === 2 ? 2 : 1,
-          model_answer_text: q.explanationAr || '',
-          youtube_solution_url: q.youtubeSolutionUrl || null
-        };
-      })
-    };
+    this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/assessments/${currentAsm.id}`, payload)
+      .pipe(timeout(25000))
+      .subscribe({
+        next: (res) => {
+          this.isSaving.set(false);
+          this.closeEditor();
+          this.loadAssessments(true);
+          this.pendingDraft.set(null);
+          ASSESSMENTS_MEMORY_CACHE.clear();
 
-    this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
-      next: async () => {
-        // R2: Guaranteed complete deletion of draft from Dexie upon successful save/publish
-        await this.draftService.deleteDraft(asm.id);
-        this.pendingDraft.set(null);
+          if (res?.data && (res.data._id || res.data.id)) {
+            const updatedItem = this.mapDocToAssessmentItem(res.data);
+            this.assessmentsList.update((list) =>
+              list.map((a) => (a.id === currentAsm.id ? updatedItem : a))
+            );
+          } else {
+            this.assessmentsList.update((list) =>
+              list.map((a) => (a.id === currentAsm.id ? currentAsm : a))
+            );
+          }
 
-        this.isSaving.set(false);
-        ASSESSMENTS_MEMORY_CACHE.clear();
-        this.assessmentsList.update((list) =>
-          list.map((a) => (a.id === asm.id ? asm : a))
-        );
-        this.closeEditor();
-        this.loadAssessments(true);
-        this.toastTriggered.emit({
-          text: this.autoRegradeWarning()
-            ? 'تم الحفظ وتفعيل إعادة التصحيح'
-            : 'تم حفظ الامتحان',
-          type: 'success'
-        });
-      },
-      error: (err) => {
-        this.isSaving.set(false);
-        let errorMsg = err?.error?.error?.message || err?.error?.message;
-        if (err?.error?.error?.details && Array.isArray(err.error.error.details)) {
-          const first = err.error.error.details[0];
-          if (first?.message) errorMsg = first.message;
+          this.toastTriggered.emit({
+            text: this.autoRegradeWarning()
+              ? (this.langService.isArabic() ? 'تم الحفظ وتفعيل إعادة التصحيح' : 'Saved and regrading triggered')
+              : (this.langService.isArabic() ? 'تم حفظ الامتحان' : 'Assessment saved successfully'),
+            type: 'success'
+          });
+
+          // R2: Guaranteed complete deletion of draft from Dexie upon successful save/publish (non-blocking)
+          this.draftService.deleteDraft(currentAsm.id).catch((cleanupErr) => {
+            console.warn('Error during post-save cleanup:', cleanupErr);
+          });
+        },
+        error: (err) => {
+          this.isSaving.set(false);
+          let errorMsg = err?.error?.error?.message || err?.error?.message;
+          if (err?.error?.error?.details && Array.isArray(err.error.error.details)) {
+            const first = err.error.error.details[0];
+            if (first?.message) errorMsg = first.message;
+          }
+          if (err?.name === 'TimeoutError') {
+            errorMsg = this.langService.isArabic()
+              ? 'انتهت مهلة حفظ الامتحان، يرجى التحقق من الاتصال والمحاولة مرة أخرى.'
+              : 'Save request timed out. Please check your connection and try again.';
+          }
+          if (!errorMsg) {
+            errorMsg = this.langService.isArabic() ? 'تعذر الحفظ. راجع البيانات.' : 'Failed to save. Check data.';
+          }
+          this.showEditorError(errorMsg);
         }
-        if (!errorMsg) {
-          errorMsg = 'تعذر الحفظ. راجع البيانات.';
-        }
-        this.showEditorError(errorMsg);
-      }
-    });
+      });
   }
 
   hasEssayQuestions(asm: AssessmentItem | null | undefined): boolean {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AssessmentStudioComponent } from './assessment-studio.component';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
+import { of, throwError, TimeoutError } from 'rxjs';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem } from './assessment-studio.models';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
@@ -80,6 +80,13 @@ describe('AssessmentStudioComponent', () => {
   };
 
   beforeEach(async () => {
+    mockHttpClient.patch.calls.reset();
+    mockHttpClient.patch.and.returnValue(of({ success: true, data: sampleAssessment }));
+    mockHttpClient.post.calls.reset();
+    mockHttpClient.post.and.returnValue(of({ success: true, data: {} }));
+    mockHttpClient.delete.calls.reset();
+    mockHttpClient.delete.and.returnValue(of({ success: true, data: {} }));
+
     await TestBed.configureTestingModule({
       imports: [AssessmentStudioComponent],
       providers: [
@@ -743,6 +750,199 @@ describe('AssessmentStudioComponent', () => {
       spyOn(component, 'openPreviewModal');
       drawerPreviewBtn?.click();
       expect(component.openPreviewModal).toHaveBeenCalled();
+    });
+  });
+
+  describe('Assessment Save & Question Composer Fixes', () => {
+    it('should automatically commit unsaved composer question with uploaded image when saveAssessmentEditor is triggered', async () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      expect(component.activeAssessment()?.questions.length).toBe(2);
+
+      // Simulate teacher uploading question image and filling choices in composer without clicking Add Question
+      component.newQuestionType.set('MCQ');
+      component.newQuestionImageUrl.set('https://storage.googleapis.com/spider-math-bucket/questions/uploaded_crop.webp');
+      component.newQuestionOptions.set(['خيار 1', 'خيار 2', 'خيار 3', 'خيار 4']);
+      component.newQuestionCorrectIndex.set(1);
+      component.newQuestionPoints.set(5);
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+      await Promise.resolve();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      const patchArgs = mockHttpClient.patch.calls.mostRecent().args;
+      const patchUrl = patchArgs[0];
+      const patchPayload = patchArgs[1];
+
+      expect(patchUrl).toBe(`/api/v1/admin/assessments/${sampleAssessment.id}`);
+      expect(patchPayload.questions.length).toBe(3);
+
+      const addedQ = patchPayload.questions[2];
+      expect(addedQ.question_image_url).toBe('https://storage.googleapis.com/spider-math-bucket/questions/uploaded_crop.webp');
+      expect(addedQ.options).toEqual(['خيار 1', 'خيار 2', 'خيار 3', 'خيار 4']);
+      expect(addedQ.correct_option_index).toBe(1);
+      expect(addedQ.points).toBe(5);
+      expect(component.isSaving()).toBeFalse();
+    });
+
+    it('should update existing question if editingQuestionId is active when saveAssessmentEditor is clicked', async () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      const targetQ = sampleAssessment.questions[0];
+      component.editQuestion(targetQ);
+
+      // Modify question text and options in composer
+      component.newQuestionTextAr.set('تعديل نص السؤال رقم 1');
+      component.newQuestionOptions.set(['10', '20', '30', '40']);
+      component.newQuestionCorrectIndex.set(2);
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+      await Promise.resolve();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      const patchPayload = mockHttpClient.patch.calls.mostRecent().args[1];
+      const editedQ = patchPayload.questions.find((q: any) => q.order === targetQ.order);
+
+      expect(editedQ.question_text).toBe('تعديل نص السؤال رقم 1');
+      expect(editedQ.options).toEqual(['10', '20', '30', '40']);
+      expect(editedQ.correct_option_index).toBe(2);
+      expect(component.isSaving()).toBeFalse();
+    });
+
+    it('should abort save and never set isSaving to true if composer validation fails', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+
+      // Invalid composer state: empty options for MCQ
+      component.newQuestionTextAr.set('سؤال بدون خيارات صحيحة');
+      component.newQuestionOptions.set(['', '', '', '']);
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+
+      expect(mockHttpClient.patch).not.toHaveBeenCalled();
+      expect(component.isSaving()).toBeFalse();
+    });
+
+    it('should reliably reset isSaving to false and show error message if HTTP patch fails', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+
+      mockHttpClient.patch.and.returnValue(
+        throwError(() => ({
+          error: { message: 'فشل حفظ الامتحان في الخادم' }
+        }))
+      );
+
+      component.saveAssessmentEditor();
+
+      expect(component.isSaving()).toBeFalse();
+      expect(component.editorErrorMessage()).toBe('فشل حفظ الامتحان في الخادم');
+    });
+
+    it('should reset isSaving to false on request timeout error', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+
+      const timeoutErr = new TimeoutError();
+      mockHttpClient.patch.and.returnValue(throwError(() => timeoutErr));
+
+      component.saveAssessmentEditor();
+
+      expect(component.isSaving()).toBeFalse();
+      expect(component.editorErrorMessage()).toContain('انتهت مهلة حفظ الامتحان');
+    });
+
+    it('should reliably reset isSaving to false even if draftService.deleteDraft throws', async () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      mockHttpClient.patch.and.returnValue(of({ success: true, data: sampleAssessment }));
+      spyOn(component.draftService, 'deleteDraft').and.returnValue(Promise.reject(new Error('IndexedDB failure')));
+
+      component.saveAssessmentEditor();
+      await Promise.resolve();
+
+      expect(component.isSaving()).toBeFalse();
+      expect(component.isEditorOpen()).toBeFalse();
+    });
+
+    it('should upload question image via onQuestionImageUploaded, auto-commit it, and save assessment cleanly', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      expect(component.activeAssessment()?.questions.length).toBe(2);
+
+      // Teacher uploads an image using the uploader callback
+      const uploadedUrl = 'https://storage.googleapis.com/spider-math-bucket/questions/geometry_crop_verified.webp';
+      component.onQuestionImageUploaded(uploadedUrl);
+      expect(component.newQuestionImageUrl()).toBe(uploadedUrl);
+
+      // Fill options for MCQ without text (visual math problem)
+      component.newQuestionType.set('MCQ');
+      component.newQuestionOptions.set(['12 سم', '24 سم', '36 سم', '48 سم']);
+      component.newQuestionCorrectIndex.set(2);
+      component.newQuestionPoints.set(10);
+
+      let toastEmitted: any = null;
+      component.toastTriggered.subscribe((t) => (toastEmitted = t));
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      const patchPayload = mockHttpClient.patch.calls.mostRecent().args[1];
+      expect(patchPayload.questions.length).toBe(3);
+
+      const uploadedQ = patchPayload.questions[2];
+      expect(uploadedQ.question_image_url).toBe(uploadedUrl);
+      expect(uploadedQ.question_text).toBe('مسألة رياضية مصورة');
+      expect(uploadedQ.options).toEqual(['12 سم', '24 سم', '36 سم', '48 سم']);
+      expect(uploadedQ.correct_option_index).toBe(2);
+      expect(uploadedQ.points).toBe(10);
+
+      expect(component.isSaving()).toBeFalse();
+      expect(component.isEditorOpen()).toBeFalse();
+      expect(toastEmitted?.type).toBe('success');
+    });
+
+    it('should shield against rapid double clicks by ignoring saveAssessmentEditor when isSaving is already true', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      component.isSaving.set(true);
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+
+      expect(mockHttpClient.patch).not.toHaveBeenCalled();
+    });
+
+    it('should cancel in-flight background autoPersistSub before executing explicit saveAssessmentEditor', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+
+      const mockSub = jasmine.createSpyObj('Subscription', ['unsubscribe']);
+      (component as any).autoPersistSub = mockSub;
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+
+      expect(mockSub.unsubscribe).toHaveBeenCalled();
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      expect(component.isSaving()).toBeFalse();
+    });
+
+    it('should successfully update an existing question with a newly uploaded question image and save', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      const targetQ = sampleAssessment.questions[1];
+      component.editQuestion(targetQ);
+
+      const replacementImageUrl = 'https://storage.googleapis.com/spider-math-bucket/questions/derivative_graph.webp';
+      component.onQuestionImageUploaded(replacementImageUrl);
+      component.newQuestionPoints.set(8);
+
+      mockHttpClient.patch.calls.reset();
+      component.saveAssessmentEditor();
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      const patchPayload = mockHttpClient.patch.calls.mostRecent().args[1];
+      const updatedQ = patchPayload.questions.find((q: any) => q.order === targetQ.order);
+
+      expect(updatedQ.question_image_url).toBe(replacementImageUrl);
+      expect(updatedQ.points).toBe(8);
+      expect(component.isSaving()).toBeFalse();
+      expect(component.isEditorOpen()).toBeFalse();
     });
   });
 });
