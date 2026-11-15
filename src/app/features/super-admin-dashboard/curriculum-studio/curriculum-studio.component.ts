@@ -30,6 +30,13 @@ import {
 } from '../../../core/constants/curriculum-tree.constant';
 import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
+import { AiQuestionExtractionModalComponent } from '../assessment-studio/ai-question-extraction-modal/ai-question-extraction-modal.component';
+import { ICachedFileSession } from '../assessment-studio/ai-question-extraction-modal/ai-question-extraction-modal.models';
+import { AssessmentQuestionItem } from '../assessment-studio/assessment-studio.models';
+import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
+import { ISliceResult } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
+import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
+import { stripLatexDelimiters } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import {
   AcademicTermCode,
   AssessmentAdminItem,
@@ -143,7 +150,10 @@ export function sortGradesDescending(grades: GradeOption[]): GradeOption[] {
     FormsModule,
     AppIconComponent,
     MathFormulaComponent,
-    ImageCompressorUploaderComponent
+    ImageCompressorUploaderComponent,
+    AiQuestionExtractionModalComponent,
+    ManualImageSlicerModalComponent,
+    MathVirtualKeyboardComponent
   ],
   templateUrl: './curriculum-studio.component.html',
   styleUrl: './curriculum-studio.component.scss',
@@ -850,12 +860,26 @@ export class CurriculumStudioComponent implements OnInit {
   readonly activeAssessment = signal<AssessmentAdminItem | null>(null);
   readonly autoRegradeWarning = signal<boolean>(false);
 
+  readonly stripLatexDelimiters = stripLatexDelimiters;
+
+  // Question Extraction & Slicing Signals
+  readonly isAiExtractionModalOpen = signal<boolean>(false);
+  readonly isManualSlicerOpen = signal<boolean>(false);
+  readonly cachedFileSession = signal<ICachedFileSession | null>(null);
+  readonly activeQuestionForSlicing = signal<QuestionAdminItem | null>(null);
+
+  // Math Keyboard & Exam Options Signals
+  readonly isMathKeyboardOpen = signal<boolean>(false);
+  readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  readonly isExamOptionsOpen = signal<boolean>(false);
+
   // New Question Form within Assessment Builder
-  readonly newQuestionType = signal<'MCQ' | 'ESSAY'>('MCQ');
+  readonly newQuestionType = signal<'MCQ' | 'INPUT_TEXT' | 'ESSAY'>('MCQ');
   readonly newQuestionTextAr = signal<string>('');
   readonly newQuestionImageUrl = signal<string | null>(null);
   readonly newQuestionOptions = signal<string[]>(['', '', '', '']);
   readonly newQuestionCorrectIndex = signal<number>(0);
+  readonly newQuestionAcceptedAnswers = signal<string[]>(['']);
   readonly newQuestionPoints = signal<number>(5);
 
   ngOnInit(): void {
@@ -2016,10 +2040,13 @@ export class CurriculumStudioComponent implements OnInit {
           questions: (created?.questions || []).map((q: any, idx: number) => ({
             id: q._id || `q_${idx}`,
             order: idx + 1,
-            type: q.question_type || (isHw ? 'ESSAY' : 'MCQ'),
+            type: (q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY')
+              ? 'ESSAY'
+              : (q.question_type === 'INPUT_TEXT' ? 'INPUT_TEXT' : (isHw ? 'ESSAY' : 'MCQ')),
             textAr: q.question_text || (isHw ? 'مسألة مقالية' : 'مسألة رياضية'),
             options: q.options || (isHw ? [] : ['أ', 'ب', 'ج', 'د']),
             correctOptionIndex: q.correct_option_index ?? 0,
+            acceptedAnswers: q.accepted_answers || [],
             points: q.points || 5
           }))
         };
@@ -2032,6 +2059,7 @@ export class CurriculumStudioComponent implements OnInit {
         this.isCreateAssessmentModalOpen.set(false);
         const successLabel = isHw ? 'تم إنشاء الواجب' : 'تم إنشاء التقييم';
         this.toastTriggered.emit({ text: successLabel, type: 'success' });
+        this.openAssessmentEditor(newAsm);
       },
       error: (err) => {
         const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر إضافة التقييم.';
@@ -2112,8 +2140,175 @@ export class CurriculumStudioComponent implements OnInit {
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
     this.newQuestionCorrectIndex.set(0);
+    this.newQuestionAcceptedAnswers.set(['']);
     this.newQuestionPoints.set(5);
+    this.newQuestionType.set('MCQ');
+    this.isExamOptionsOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
     this.isAssessmentEditorOpen.set(true);
+  }
+
+  // =========================================================================
+  // Question Extraction & Slicing Suite
+  // =========================================================================
+  openAiExtractionModal(): void {
+    this.isAiExtractionModalOpen.set(true);
+  }
+
+  onQuestionsExtracted(extractedQuestions: AssessmentQuestionItem[]): void {
+    const asm = this.activeAssessment();
+    if (!asm || extractedQuestions.length === 0) return;
+
+    const currentQuestions = asm.questions || [];
+    const startOrder = currentQuestions.length;
+    const formattedNewQuestions: QuestionAdminItem[] = extractedQuestions.map((q, idx) => ({
+      id: q.id || `q_${Date.now()}_${idx}`,
+      order: startOrder + idx + 1,
+      type: (q.type === 'INPUT_TEXT' ? 'INPUT_TEXT' : (q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO' ? 'ESSAY' : 'MCQ')) as any,
+      textAr: q.textAr || 'مسألة رياضية',
+      questionImageUrl: q.questionImageUrl || null,
+      options: (q.type === 'MCQ' ? (q.options || []) : []).map((o) => (o || '').trim()),
+      correctOptionIndex: q.correctOptionIndex ?? 0,
+      acceptedAnswers: q.acceptedAnswers || [],
+      points: q.points || 5
+    }));
+
+    const updatedQuestions = [...currentQuestions, ...formattedNewQuestions];
+    const hasEssay = updatedQuestions.some(q => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
+    const updatedAsm: AssessmentAdminItem = {
+      ...asm,
+      questions: updatedQuestions,
+      requiresTeacherReview: hasEssay ? true : asm.requiresTeacherReview
+    };
+    this.activeAssessment.set(updatedAsm);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `تم استخراج وحفظ ${extractedQuestions.length} أسئلة بنجاح`
+        : `Successfully extracted and added ${extractedQuestions.length} questions`,
+      type: 'success'
+    });
+  }
+
+  onFileSessionCached(session: ICachedFileSession): void {
+    this.cachedFileSession.set(session);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `تم تجهيز صفحة ${session.pageNumber} للقص اليدوي.`
+        : `Page ${session.pageNumber} cached and ready for manual crop.`,
+      type: 'success'
+    });
+  }
+
+  onManualSlicingRequestedFromExtraction(session: ICachedFileSession): void {
+    this.cachedFileSession.set(session);
+    this.openManualSlicerForComposer();
+  }
+
+  openManualSlicerForExistingQuestion(q: QuestionAdminItem): void {
+    this.activeQuestionForSlicing.set(q);
+    this.isManualSlicerOpen.set(true);
+  }
+
+  openManualSlicerForComposer(): void {
+    this.activeQuestionForSlicing.set(null);
+    this.isManualSlicerOpen.set(true);
+  }
+
+  onManualSliceSaved(result: ISliceResult): void {
+    const q = this.activeQuestionForSlicing();
+    if (q) {
+      q.questionImageUrl = result.imageUrl;
+      const asm = this.activeAssessment();
+      if (asm) {
+        this.activeAssessment.set({ ...asm });
+      }
+    } else {
+      this.newQuestionImageUrl.set(result.imageUrl);
+    }
+    this.isManualSlicerOpen.set(false);
+    this.activeQuestionForSlicing.set(null);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم قص وحفظ صورة السؤال بنجاح' : 'Question cropped and saved successfully',
+      type: 'success'
+    });
+  }
+
+  toggleExamOptions(): void {
+    this.isExamOptionsOpen.update((v) => !v);
+  }
+
+  closeExamOptions(): void {
+    this.isExamOptionsOpen.set(false);
+  }
+
+  toggleMathKeyboard(target?: HTMLInputElement | HTMLTextAreaElement): void {
+    if (this.isMathKeyboardOpen()) {
+      this.isMathKeyboardOpen.set(false);
+      this.mathKeyboardTarget.set(null);
+    } else {
+      if (target) {
+        this.mathKeyboardTarget.set(target);
+      }
+      this.isMathKeyboardOpen.set(true);
+    }
+  }
+
+  openMathKeyboard(target: HTMLInputElement | HTMLTextAreaElement): void {
+    this.mathKeyboardTarget.set(target);
+    this.isMathKeyboardOpen.set(true);
+  }
+
+  onMathKeyboardValueChange(val: string): void {
+    const target = this.mathKeyboardTarget();
+    if (!target) return;
+    const visualVal = stripLatexDelimiters(val);
+    if (target.value !== visualVal) {
+      const pos = target.selectionStart ?? visualVal.length;
+      target.value = visualVal;
+      target.setSelectionRange(pos, pos);
+    }
+    if (target.tagName.toLowerCase() === 'textarea') {
+      this.newQuestionTextAr.set(visualVal);
+    } else {
+      const optIdx = target.getAttribute('data-opt-index');
+      if (optIdx !== null) {
+        const idx = Number(optIdx);
+        this.newQuestionOptions.update((opts) => {
+          const arr = [...opts];
+          arr[idx] = visualVal;
+          return arr;
+        });
+      }
+      const ansIdx = target.getAttribute('data-ans-index');
+      if (ansIdx !== null) {
+        const idx = Number(ansIdx);
+        this.newQuestionAcceptedAnswers.update((ans) => {
+          const arr = [...ans];
+          arr[idx] = visualVal;
+          return arr;
+        });
+      }
+    }
+  }
+
+  addAcceptedAnswerOption(): void {
+    this.newQuestionAcceptedAnswers.update((ans) => [...ans, '']);
+  }
+
+  removeAcceptedAnswerOption(idx: number): void {
+    this.newQuestionAcceptedAnswers.update((ans) => {
+      if (ans.length <= 1) return [''];
+      return ans.filter((_, i) => i !== idx);
+    });
+  }
+
+  updateAcceptedAnswer(idx: number, eventOrVal: Event | string): void {
+    const val = typeof eventOrVal === 'string' ? eventOrVal : (eventOrVal.target as HTMLInputElement)?.value || '';
+    this.newQuestionAcceptedAnswers.update((ans) => {
+      const arr = [...ans];
+      arr[idx] = val;
+      return arr;
+    });
   }
 
   onQuestionPromptUploaded(imageUrl: string): void {
@@ -2134,7 +2329,9 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
-    if (this.newQuestionType() === 'MCQ') {
+    const qType = this.newQuestionType();
+
+    if (qType === 'MCQ') {
       const rawOpts = this.newQuestionOptions();
       const trimmedOpts = rawOpts.map((o) => (o || '').trim());
 
@@ -2156,24 +2353,38 @@ export class CurriculumStudioComponent implements OnInit {
         });
         return;
       }
+    } else if (qType === 'INPUT_TEXT') {
+      const rawAns = this.newQuestionAcceptedAnswers();
+      const trimmedAns = rawAns.map((a) => (a || '').trim()).filter(Boolean);
+      if (trimmedAns.length === 0) {
+        this.toastTriggered.emit({
+          text: 'أدخل إجابة مقبولة واحدة على الأقل',
+          type: 'error'
+        });
+        return;
+      }
     }
 
-    const isMcq = this.newQuestionType() === 'MCQ';
+    const isMcq = qType === 'MCQ';
+    const isInputText = qType === 'INPUT_TEXT';
+    const isEssay = qType === 'ESSAY';
+
     const newQ: QuestionAdminItem = {
       id: `q_${Date.now()}`,
       order: asm.questions.length + 1,
-      type: isMcq ? 'MCQ' : 'ESSAY',
+      type: qType,
       textAr: text || 'مسألة رياضية مصورة',
       questionImageUrl: this.newQuestionImageUrl(),
       options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
       correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
+      acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
       points: this.newQuestionPoints()
     };
 
     const updatedAsm: AssessmentAdminItem = {
       ...asm,
       questions: [...asm.questions, newQ],
-      requiresTeacherReview: !isMcq ? true : asm.requiresTeacherReview
+      requiresTeacherReview: isEssay ? true : asm.requiresTeacherReview
     };
     this.activeAssessment.set(updatedAsm);
 
@@ -2182,6 +2393,7 @@ export class CurriculumStudioComponent implements OnInit {
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
     this.newQuestionCorrectIndex.set(0);
+    this.newQuestionAcceptedAnswers.set(['']);
     this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
   }
 
@@ -2263,6 +2475,15 @@ export class CurriculumStudioComponent implements OnInit {
           });
           return;
         }
+      } else if (q.type === 'INPUT_TEXT') {
+        const answers = (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean);
+        if (answers.length === 0) {
+          this.toastTriggered.emit({
+            text: `س${q.order}: أضف إجابة مقبولة واحدة على الأقل`,
+            type: 'error'
+          });
+          return;
+        }
       }
     }
 
@@ -2280,13 +2501,16 @@ export class CurriculumStudioComponent implements OnInit {
       requires_teacher_review: requiresTeacherReview,
       questions: asm.questions.map((q, idx) => {
         const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';
+        const isInputText = q.type === 'INPUT_TEXT';
+        const questionType = isEssay ? 'ESSAY_PHOTO' : (isInputText ? 'INPUT_TEXT' : 'MCQ');
         return {
           order: q.order || idx + 1,
-          question_type: isEssay ? 'ESSAY_PHOTO' : 'MCQ',
+          question_type: questionType,
           question_text: q.textAr || (isEssay ? 'مسألة مقالية' : 'مسألة رياضية'),
           question_image_url: q.questionImageUrl || null,
-          options: isEssay ? [] : (q.options || []).map((o) => (o || '').trim()),
-          correct_option_index: isEssay ? undefined : Math.max(0, q.correctOptionIndex ?? 0),
+          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => (o || '').trim()),
+          correct_option_index: (isEssay || isInputText) ? undefined : Math.max(0, q.correctOptionIndex ?? 0),
+          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean) : undefined,
           points: q.points || 5
         };
       })
@@ -2300,7 +2524,7 @@ export class CurriculumStudioComponent implements OnInit {
         this.toastTriggered.emit({
           text: this.autoRegradeWarning()
             ? 'تم الحفظ وتفعيل إعادة التصحيح'
-            : 'تم حفظ الامتحان',
+            : (asm.type === 'HOMEWORK' ? 'تم حفظ أسئلة الواجب' : 'تم حفظ الامتحان'),
           type: 'success'
         });
       },

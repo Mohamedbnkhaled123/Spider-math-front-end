@@ -408,11 +408,14 @@ export class SuperAdminDashboardComponent implements OnInit {
                               questions: (a.questions || []).map((q: any, idx: number) => ({
                                 id: q._id || `q_${idx}`,
                                 order: q.order_index || q.order || idx + 1,
-                                type: q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY' ? 'ESSAY' : 'MCQ',
+                                type: q.question_type === 'ESSAY_PHOTO' || q.question_type === 'ESSAY'
+                                  ? 'ESSAY'
+                                  : (q.question_type === 'INPUT_TEXT' ? 'INPUT_TEXT' : 'MCQ'),
                                 textAr: q.question_text || q.text_ar || q.textAr || '',
                                 questionImageUrl: q.question_image_url || q.questionImageUrl || null,
                                 options: q.options || [],
                                 correctOptionIndex: q.correct_option_index ?? 0,
+                                acceptedAnswers: q.accepted_answers || q.acceptedAnswers || [],
                                 points: q.points || 5
                               }))
                             }))

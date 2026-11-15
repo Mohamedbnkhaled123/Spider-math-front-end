@@ -47,7 +47,7 @@ export interface AssessmentItem {
   totalPoints: number;
   isPublished: boolean;
   isPlacementTest: boolean;
-  assessmentType?: string;
+  assessmentType?: 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' | string;
   isFree?: boolean;
   requiresTeacherReview?: boolean;
   submissionsCount: number;

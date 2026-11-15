@@ -214,6 +214,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   // Create Assessment Modal State
   readonly isCreateModalOpen = signal<boolean>(false);
   readonly createForm = signal<{
+    assessmentType: 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
     titleAr: string;
     titleEn: string;
     curriculum: CurriculumCode;
@@ -233,6 +234,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     isPlacementTest: boolean;
     requiresTeacherReview: boolean;
   }>({
+    assessmentType: 'QUIZ',
     titleAr: '',
     titleEn: '',
     curriculum: 'EGYPTIAN',
@@ -1120,6 +1122,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.createErrorMessage.set(null);
     this.isRefSheetActiveInCreate.set(false);
     this.createForm.set({
+      assessmentType: 'QUIZ',
       titleAr: '',
       titleEn: '',
       curriculum: this.selectedCurriculum(),
@@ -1140,6 +1143,16 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       requiresTeacherReview: false
     });
     this.isCreateModalOpen.set(true);
+  }
+
+  setCreateAssessmentType(type: 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM'): void {
+    this.createForm.update((prev) => ({
+      ...prev,
+      assessmentType: type,
+      durationMinutes: type === 'HOMEWORK' ? 60 : (type === 'COMPREHENSIVE_EXAM' ? 45 : 20),
+      maxAttempts: type === 'HOMEWORK' ? 5 : 1,
+      requiresTeacherReview: type === 'HOMEWORK' ? true : prev.requiresTeacherReview
+    }));
   }
 
   closeCreateModal(): void {
@@ -1202,13 +1215,18 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       ? ((Number(form.module1TimeMinutes) || 35) + (Number(form.module2TimeMinutes) || 35))
       : form.durationMinutes;
 
+    const isHw = form.assessmentType === 'HOMEWORK';
+    const computedType = isHw
+      ? 'HOMEWORK'
+      : (form.isPlacementTest ? 'COMPREHENSIVE_EXAM' : (form.assessmentType || 'QUIZ'));
+
     const payload = {
       title_ar: rawTitle,
       title_en: (form.titleEn || rawTitle).trim(),
       curriculum: form.curriculum,
       grade_level: form.gradeLevel,
       academic_term: form.term,
-      assessment_type: form.isPlacementTest ? 'COMPREHENSIVE_EXAM' : 'QUIZ',
+      assessment_type: computedType,
       calculator_mode: form.calculatorType,
       graph_calculator: form.calculatorType,
       reference_sheet_url: form.referenceSheetUrl || null,
@@ -1218,11 +1236,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       module_1_time_minutes: isMultiMod ? (Number(form.module1TimeMinutes) || 35) : null,
       module_2_time_minutes: isMultiMod ? (Number(form.module2TimeMinutes) || 35) : null,
       pass_percentage: form.passPercentage,
-      max_attempts: form.maxAttempts || 1,
+      max_attempts: form.maxAttempts || (isHw ? 5 : 1),
       available_from: form.isScheduled && form.availableFrom ? new Date(form.availableFrom).toISOString() : null,
       available_until: form.isScheduled && form.availableUntil ? new Date(form.availableUntil).toISOString() : null,
       is_placement_test: !!form.isPlacementTest,
-      requires_teacher_review: form.requiresTeacherReview ?? false,
+      requires_teacher_review: isHw ? true : (form.requiresTeacherReview ?? false),
       is_published: true,
       questions: []
     };
@@ -1240,8 +1258,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         ASSESSMENTS_MEMORY_CACHE.clear();
         this.closeCreateModal();
         this.loadAssessments(true);
+        const successLabel = isHw
+          ? (this.langService.isArabic() ? 'تم إنشاء الواجب المنزلي' : 'Homework Created')
+          : (this.langService.isArabic() ? 'تم إنشاء الامتحان' : 'Assessment Created');
         this.toastTriggered.emit({
-          text: `تم إنشاء الامتحان (${form.gradeLevel})`,
+          text: `${successLabel} (${form.gradeLevel})`,
           type: 'success'
         });
       },

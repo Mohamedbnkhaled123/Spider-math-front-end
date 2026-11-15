@@ -250,6 +250,12 @@
                       <span>{{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}</span>
                     </span>
                   }
+                  @if (item.assessmentType === 'HOMEWORK') {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 flex items-center gap-1" [title]="langService.isArabic() ? 'واجب منزلي' : 'Homework'">
+                      <app-icon name="edit" [size]="10" />
+                      <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                    </span>
+                  }
                   @if (item.assessmentType !== 'HOMEWORK') {
                     @if (item.isFree) {
                       <span
@@ -505,12 +511,84 @@
         </div>
 
         <div class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1 min-h-0">
+          <!-- Assessment Type Selection -->
+          <div>
+            <label class="font-bold text-text-primary block mb-1.5">{{ langService.isArabic() ? 'نوع التقييم المطلوب إنشاؤه:' : 'Select Assessment Type to Create:' }}</label>
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Quiz -->
+              <button
+                type="button"
+                (click)="setCreateAssessmentType('QUIZ')"
+                class="p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5"
+                [class.border-amber-500]="createForm().assessmentType === 'QUIZ'"
+                [class.bg-amber-500/10]="createForm().assessmentType === 'QUIZ'"
+                [class.text-amber-600]="createForm().assessmentType === 'QUIZ'"
+                [class.dark:text-amber-400]="createForm().assessmentType === 'QUIZ'"
+                [class.shadow-sm]="createForm().assessmentType === 'QUIZ'"
+                [class.border-surface-border]="createForm().assessmentType !== 'QUIZ'"
+                [class.bg-surface-bg]="createForm().assessmentType !== 'QUIZ'"
+                [class.text-text-secondary]="createForm().assessmentType !== 'QUIZ'"
+              >
+                <app-icon name="target" [size]="18" />
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'كويز تقييمي' : 'Interactive Quiz' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'اختبار تفاعلي سريع' : 'Fast Quiz' }}</span>
+              </button>
+
+              <!-- Homework -->
+              <button
+                type="button"
+                (click)="setCreateAssessmentType('HOMEWORK')"
+                class="p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5"
+                [class.border-purple-500]="createForm().assessmentType === 'HOMEWORK'"
+                [class.bg-purple-500/10]="createForm().assessmentType === 'HOMEWORK'"
+                [class.text-purple-600]="createForm().assessmentType === 'HOMEWORK'"
+                [class.dark:text-purple-400]="createForm().assessmentType === 'HOMEWORK'"
+                [class.shadow-sm]="createForm().assessmentType === 'HOMEWORK'"
+                [class.border-surface-border]="createForm().assessmentType !== 'HOMEWORK'"
+                [class.bg-surface-bg]="createForm().assessmentType !== 'HOMEWORK'"
+                [class.text-text-secondary]="createForm().assessmentType !== 'HOMEWORK'"
+              >
+                <app-icon name="edit" [size]="18" />
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'حل ورفع كشكول' : 'Handwritten Upload' }}</span>
+              </button>
+
+              <!-- Comprehensive Exam -->
+              <button
+                type="button"
+                (click)="setCreateAssessmentType('COMPREHENSIVE_EXAM')"
+                class="p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5"
+                [class.border-rose-500]="createForm().assessmentType === 'COMPREHENSIVE_EXAM'"
+                [class.bg-rose-500/10]="createForm().assessmentType === 'COMPREHENSIVE_EXAM'"
+                [class.text-rose-600]="createForm().assessmentType === 'COMPREHENSIVE_EXAM'"
+                [class.dark:text-rose-400]="createForm().assessmentType === 'COMPREHENSIVE_EXAM'"
+                [class.shadow-sm]="createForm().assessmentType === 'COMPREHENSIVE_EXAM'"
+                [class.border-surface-border]="createForm().assessmentType !== 'COMPREHENSIVE_EXAM'"
+                [class.bg-surface-bg]="createForm().assessmentType !== 'COMPREHENSIVE_EXAM'"
+                [class.text-text-secondary]="createForm().assessmentType !== 'COMPREHENSIVE_EXAM'"
+              >
+                <app-icon name="award" [size]="18" />
+                <span class="font-black text-xs">{{ langService.isArabic() ? 'امتحان شامل' : 'Comprehensive Exam' }}</span>
+                <span class="text-[10px] text-text-muted leading-tight">{{ langService.isArabic() ? 'شامل على المنهج' : 'Full Exam' }}</span>
+              </button>
+            </div>
+
+            @if (createForm().assessmentType === 'HOMEWORK') {
+              <div class="mt-2.5 p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in">
+                <app-icon name="edit" [size]="14" className="shrink-0 mt-0.5" />
+                <span>
+                  {{ langService.isArabic() ? 'ميزة الواجب المنزلي: يتيح للطلاب كتابة خطوات الحل يدوياً وتصويره ورفعه عبر كاميرا الهاتف، ويصلك في استوديو التصحيح لتصحيحه ووضع الدرجات والملاحظات.' : 'Homework Feature: Allows students to write steps by hand, take a photo via phone camera, and receive manual feedback in your grading studio.' }}
+                </span>
+              </div>
+            }
+          </div>
+
           <div>
             <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'إضافة عنوان' : 'Add Title' }}</label>
             <input
               type="text"
               [(ngModel)]="createForm().titleAr"
-              [placeholder]="langService.isArabic() ? 'أدخلي عنوان الامتحان (عربي أو إنجليزي)...' : 'Enter assessment title (Arabic or English)...'"
+              [placeholder]="createForm().assessmentType === 'HOMEWORK' ? (langService.isArabic() ? 'أدخلي عنوان الواجب المنزلي...' : 'Enter homework title...') : (langService.isArabic() ? 'أدخلي عنوان الامتحان (عربي أو إنجليزي)...' : 'Enter assessment title (Arabic or English)...')"
               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none"
             />
           </div>
@@ -969,8 +1047,14 @@
               <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-brand-primary text-white shadow-sm shrink-0">
                 {{ asm.gradeLevel }}
               </span>
+              @if (asm.assessmentType === 'HOMEWORK') {
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 flex items-center gap-1 shrink-0">
+                  <app-icon name="edit" [size]="11" />
+                  <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                </span>
+              }
               <h3 class="text-xs sm:text-base font-black text-text-primary truncate">
-                {{ langService.isArabic() ? ('تعديل الامتحان: ' + asm.titleAr) : ('Edit Assessment: ' + (asm.titleEn || asm.titleAr)) }}
+                {{ langService.isArabic() ? ((asm.assessmentType === 'HOMEWORK' ? 'تعديل الواجب: ' : 'تعديل الامتحان: ') + asm.titleAr) : ('Edit Assessment: ' + (asm.titleEn || asm.titleAr)) }}
               </h3>
             </div>
 
