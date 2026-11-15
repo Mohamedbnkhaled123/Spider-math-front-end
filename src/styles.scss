@@ -372,15 +372,15 @@ code,
 // ==============================================================================
 ::view-transition-group(root) {
   animation-duration: 0.5s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 ::view-transition-old(root) {
-  animation: 0.5s cubic-bezier(0.22, 1, 0.36, 1) both fadeOutPage;
+  animation: 0.5s cubic-bezier(0.16, 1, 0.3, 1) both fadeOutPage;
 }
 
 ::view-transition-new(root) {
-  animation: 0.5s cubic-bezier(0.22, 1, 0.36, 1) both fadeInPage;
+  animation: 0.5s cubic-bezier(0.16, 1, 0.3, 1) both fadeInPage;
 }
 
 @keyframes fadeOutPage {
@@ -397,35 +397,53 @@ code,
 @keyframes fadeInPage {
   from {
     opacity: 0;
-    transform: scale(1.01);
+    transform: scale(1.01) translateY(4px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Router Outlet Container Page Mount Animation (Fallback & Cross-Browser 0.5s)
+.page-route-container {
+  animation: pageFadeIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageFadeIn05 {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 // ==============================================================================
-// Standardized 0.5s Transitions for Interactive Elements (Modals, Drawers, Dropdowns - R6)
+// Standardized 0.5s Transitions for Interactive Elements (Modals, Steps, Drawers - R6)
 // ==============================================================================
 @keyframes fadeIn05 {
   from {
     opacity: 0;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .fadeIn05,
 .animate-fade-in {
-  animation: fadeIn05 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: fadeIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes modalScaleIn05 {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(8px);
+    transform: scale(0.96) translateY(10px);
   }
   to {
     opacity: 1;
@@ -437,6 +455,44 @@ code,
 .animate-scale-up,
 .animate-modal-in {
   animation: modalScaleIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+// 0.5s Smooth Step & View Transition Physics (Enter & Return)
+@keyframes stepTransition05 {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-step-transition {
+  animation: stepTransition05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stepBack05 {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-step-back {
+  animation: stepBack05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+// Universal 0.5s Transition Utility Classes
+.transition-smooth,
+.transition-smooth-500,
+.transition-all-500 {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 // ==============================================================================

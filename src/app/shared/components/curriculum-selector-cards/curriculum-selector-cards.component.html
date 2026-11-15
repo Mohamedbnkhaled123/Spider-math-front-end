@@ -305,7 +305,7 @@
           <button
             type="button"
             (click)="backToGrades()"
-            class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-gold hover:underline cursor-pointer transition-colors"
+            class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-gold hover:underline cursor-pointer transition-all duration-500"
           >
             <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
             <span>{{ langService.isArabic() ? 'الصفوف' : 'Grades' }}</span>
@@ -314,7 +314,7 @@
           <button
             type="button"
             (click)="closeTrackModal()"
-            class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-text-muted hover:text-brand-gold cursor-pointer transition-colors"
+            class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-text-muted hover:text-brand-gold cursor-pointer transition-all duration-500"
           >
             <app-icon [name]="langService.isArabic() ? 'arrow-right' : 'arrow-left'" [size]="16" />
             <span>{{ langService.isArabic() ? 'المناهج' : 'Curricula' }}</span>
@@ -325,7 +325,7 @@
         <button
           type="button"
           (click)="closeTrackModal()"
-          class="w-8 h-8 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 flex items-center justify-center text-text-muted hover:text-white transition-colors cursor-pointer"
+          class="w-8 h-8 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 flex items-center justify-center text-text-muted hover:text-white transition-all duration-500 cursor-pointer"
           [attr.aria-label]="langService.isArabic() ? 'إغلاق' : 'Close'"
         >
           <app-icon name="x" [size]="16" />
@@ -390,7 +390,7 @@
                     <button
                       type="button"
                       (click)="selectIntlDivision(div.code)"
-                      class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
+                      class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
                       [class.bg-brand-gold]="selectedIntlDivision() === div.code"
                       [class.text-slate-950]="selectedIntlDivision() === div.code"
                       [class.font-bold]="selectedIntlDivision() === div.code"
@@ -409,7 +409,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -422,7 +422,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -435,7 +435,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -448,7 +448,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -466,7 +466,7 @@
                     <button
                       type="button"
                       (click)="selectGulfCountry(country.code)"
-                      class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
+                      class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer flex items-center justify-center gap-1.5 text-center shrink-0"
                       [class.bg-brand-gold]="selectedGulfCountry() === country.code"
                       [class.text-slate-950]="selectedGulfCountry() === country.code"
                       [class.font-bold]="selectedGulfCountry() === country.code"
@@ -486,7 +486,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -499,7 +499,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -512,7 +512,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -525,7 +525,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -542,7 +542,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('ALL')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'ALL'"
                     [class.text-slate-950]="activeStageFilter() === 'ALL'"
                     [class.font-bold]="activeStageFilter() === 'ALL'"
@@ -555,7 +555,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PRIMARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PRIMARY'"
                     [class.text-slate-950]="activeStageFilter() === 'PRIMARY'"
                     [class.font-bold]="activeStageFilter() === 'PRIMARY'"
@@ -568,7 +568,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('PREPARATORY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'PREPARATORY'"
                     [class.text-slate-950]="activeStageFilter() === 'PREPARATORY'"
                     [class.font-bold]="activeStageFilter() === 'PREPARATORY'"
@@ -581,7 +581,7 @@
                   <button
                     type="button"
                     (click)="setStageFilter('SECONDARY')"
-                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center shrink-0"
+                    class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
                     [class.bg-brand-gold]="activeStageFilter() === 'SECONDARY'"
                     [class.text-slate-950]="activeStageFilter() === 'SECONDARY'"
                     [class.font-bold]="activeStageFilter() === 'SECONDARY'"
@@ -610,10 +610,11 @@
         </div>
       </div>
 
-      <!-- Body Content -->
-      <div>
+      <!-- Body Content (Generous bottom spacing so cards and units never touch the bottom separator line) -->
+      <div class="mb-8 sm:mb-12 pb-4">
         <!-- STEP 1: Grade Cards Grid (Exact Mockup Image 2) -->
         @if (modalStep() === 'GRADES') {
+          <div class="animate-step-transition">
           @if (selectedCurriculumCode() === 'INTERNATIONAL') {
             <!-- Grouped by stages of the active division (American or British) -->
             <div class="space-y-8">
@@ -776,11 +777,12 @@
               </div>
             </div>
           </ng-template>
+          </div>
         }
 
         <!-- STEP 2: UNITS & PACKAGES VIEW FOR SELECTED GRADE -->
         @if (modalStep() === 'UNITS') {
-          <div class="units-grade-container relative overflow-hidden rounded-3xl p-5 sm:p-7 border border-surface-border/70 bg-surface-card/40 backdrop-blur-xl shadow-xl">
+          <div class="units-grade-container animate-step-transition relative overflow-hidden rounded-3xl p-5 sm:p-7 border border-surface-border/70 bg-surface-card/40 backdrop-blur-xl shadow-xl">
             <!-- Grade Overview Bar -->
 
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-surface-border/60">
@@ -1168,8 +1170,8 @@
 
         </div>
 
-        <!-- Modal Bottom Bar -->
-        <div class="px-5 sm:px-8 py-4 border-t border-surface-border/60 bg-surface-card/60 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <!-- Modal Bottom Bar (Separated from cards with generous breathing room and 0.5s transition) -->
+        <div class="mt-8 sm:mt-12 pt-6 pb-2 border-t border-white/15 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 transition-all duration-500">
           <p class="text-xs text-text-muted text-center sm:text-start">
             {{ langService.isArabic() ? 'Spider Math • إشراف م/ هبة عبدالوهاب' : 'Spider Math • Supervised by Eng. Heba Abdel-Wahab' }}
           </p>
@@ -1177,7 +1179,7 @@
           <button
             type="button"
             (click)="startPlacementExamForCurrentGrade()"
-            class="w-full sm:w-auto text-xs font-bold text-gold-accent hover:underline flex items-center justify-center gap-1.5 cursor-pointer"
+            class="w-full sm:w-auto text-xs font-bold text-gold-accent hover:underline flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-300 hover:scale-[1.02]"
           >
             <span>{{ langService.isArabic() ? 'امتحان تحديد المستوى' : 'Placement Test' }}</span>
             <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="14" />

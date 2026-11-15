@@ -26,7 +26,7 @@
     @if (isRouteNavigating()) {
       <app-route-skeleton-loader [targetUrl]="navigatingUrl()" class="w-full"></app-route-skeleton-loader>
     }
-    <div [class.hidden]="isRouteNavigating()" class="flex-1 flex flex-col">
+    <div [class.hidden]="isRouteNavigating()" class="flex-1 flex flex-col page-route-container">
       <router-outlet></router-outlet>
     </div>
   </main>
