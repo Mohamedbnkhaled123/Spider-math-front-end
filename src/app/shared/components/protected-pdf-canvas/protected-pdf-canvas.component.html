@@ -94,6 +94,7 @@
 
   <!-- PDF Canvas Viewport with appPreventContextCopy -->
   <div
+    dir="ltr"
     class="pdf-canvas-container relative flex-1 p-4 sm:p-8 overflow-auto flex items-center justify-center bg-surface-secondary/40 min-h-[500px]"
     appPreventContextCopy
   >
@@ -124,8 +125,8 @@
     }
 
     <!-- HTML5 Native Canvas Page -->
-    <div class="canvas-sheet shadow-2xl rounded-lg overflow-hidden border border-surface-border bg-white" [class.hidden]="errorMessage()">
-      <canvas #pdfCanvas class="block max-w-full h-auto"></canvas>
+    <div dir="ltr" class="canvas-sheet shadow-2xl rounded-lg overflow-hidden border border-surface-border bg-white" [class.hidden]="errorMessage()">
+      <canvas #pdfCanvas dir="ltr" class="block h-auto transition-all duration-150"></canvas>
     </div>
   </div>
 

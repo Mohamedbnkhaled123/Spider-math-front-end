@@ -57,6 +57,7 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
   readonly currentPage = signal<number>(1);
   readonly totalPages = signal<number>(1);
   readonly zoomScale = signal<number>(1.25);
+  readonly scale = this.zoomScale;
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string | null>(null);
 
@@ -80,20 +81,29 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.currentRenderingTask) {
-      this.currentRenderingTask.cancel?.();
+      try {
+        this.currentRenderingTask.cancel?.();
+      } catch {}
     }
   }
 
   zoomIn(): void {
     if (this.zoomScale() < 2.5) {
-      this.zoomScale.update(s => Math.round((s + 0.25) * 100) / 100);
+      this.zoomScale.update(s => Math.min(2.5, Math.round((s + 0.25) * 100) / 100));
       this.renderCurrentPage();
     }
   }
 
   zoomOut(): void {
     if (this.zoomScale() > 0.75) {
-      this.zoomScale.update(s => Math.round((s - 0.25) * 100) / 100);
+      this.zoomScale.update(s => Math.max(0.75, Math.round((s - 0.25) * 100) / 100));
+      this.renderCurrentPage();
+    }
+  }
+
+  resetZoom(): void {
+    if (this.zoomScale() !== 1.25) {
+      this.zoomScale.set(1.25);
       this.renderCurrentPage();
     }
   }
@@ -172,6 +182,9 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
                 background: #ffffff;
                 width: 100%;
               }
+              #print-container, .print-page {
+                direction: ltr !important;
+              }
               .print-page {
                 page-break-after: always;
                 page-break-inside: avoid;
@@ -215,11 +228,14 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
         const viewport = page.getViewport({ scale });
 
         const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.setAttribute('dir', 'ltr');
+        offscreenCanvas.style.direction = 'ltr';
         offscreenCanvas.width = viewport.width;
         offscreenCanvas.height = viewport.height;
         const ctx = offscreenCanvas.getContext('2d');
 
         if (ctx) {
+          (ctx as CanvasRenderingContext2D).direction = 'ltr';
           await page.render({ canvasContext: ctx, viewport }).promise;
           this.stampCanvasWatermark(ctx, offscreenCanvas.width, offscreenCanvas.height);
 
@@ -348,35 +364,49 @@ export class ProtectedPdfCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  private renderCurrentPage(): void {
+  private async renderCurrentPage(): Promise<void> {
     const canvas = this.pdfCanvas()?.nativeElement;
     if (!canvas || !this.pdfDoc) return;
 
-    this.pdfDoc.getPage(this.currentPage()).then((page: any) => {
+    if (this.currentRenderingTask) {
+      try {
+        this.currentRenderingTask.cancel?.();
+      } catch {}
+      this.currentRenderingTask = null;
+    }
+
+    try {
+      const page = await this.pdfDoc.getPage(this.currentPage());
       const viewport = page.getViewport({ scale: this.zoomScale() });
       const context = canvas.getContext('2d');
       if (!context) return;
 
+      canvas.setAttribute('dir', 'ltr');
+      canvas.style.direction = 'ltr';
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
-      if (this.currentRenderingTask) {
-        this.currentRenderingTask.cancel?.();
-      }
+      (context as CanvasRenderingContext2D).direction = 'ltr';
 
       this.currentRenderingTask = page.render({
         canvasContext: context,
         viewport
       });
 
-      this.currentRenderingTask.promise.then(() => {
-        this.stampCanvasWatermark(context, canvas.width, canvas.height);
-        this.pageRendered.emit({
-          currentPage: this.currentPage(),
-          totalPages: this.totalPages()
-        });
+      await this.currentRenderingTask.promise;
+      this.currentRenderingTask = null;
+
+      this.stampCanvasWatermark(context, canvas.width, canvas.height);
+      this.pageRendered.emit({
+        currentPage: this.currentPage(),
+        totalPages: this.totalPages()
       });
-    });
+    } catch (err: any) {
+      if (err?.name === 'RenderingCancelledException') {
+        return; // Normal when switching pages or zoom quickly
+      }
+      console.error('PDF rendering failed:', err);
+    }
   }
 
   private stampCanvasWatermark(ctx: CanvasRenderingContext2D, width: number, height: number): void {

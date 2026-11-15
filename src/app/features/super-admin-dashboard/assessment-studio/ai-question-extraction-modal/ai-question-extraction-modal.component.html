@@ -421,8 +421,9 @@
 
             <!-- PDF Page Viewer Component -->
             @if (fileType() === 'pdf' && uploadedFile()) {
-              <div class="rounded-2xl border border-surface-border overflow-hidden bg-black/10">
+              <div dir="ltr" class="rounded-2xl border border-surface-border overflow-hidden bg-black/10">
                 <app-pdf-page-viewer
+                  dir="ltr"
                   [pdfSrc]="uploadedFile()"
                   [scale]="2.0"
                   (pageRendered)="onPdfPageRendered($event)"

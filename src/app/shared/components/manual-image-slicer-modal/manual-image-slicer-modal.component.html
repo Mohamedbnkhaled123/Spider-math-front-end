@@ -138,7 +138,7 @@
       </section>
 
       <!-- Cropper Viewport with Generous Padding to Never Clip Top or Bottom -->
-      <main class="cropper-viewport relative flex-1 w-full min-h-[380px] h-[66vh] sm:h-[72vh] overflow-hidden bg-[#0F0717] flex items-center justify-center p-3 sm:p-5">
+      <main dir="ltr" class="cropper-viewport relative flex-1 w-full min-h-[380px] h-[66vh] sm:h-[72vh] overflow-hidden bg-[#0F0717] flex items-center justify-center p-3 sm:p-5">
         @if (!isCropperReady()) {
           <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0F0717]/85 backdrop-blur-sm">
             <div class="w-8 h-8 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mb-2"></div>
@@ -154,10 +154,11 @@
         }
 
         <!-- Padded Stage Wrapper: Provides clear breathing margin around all document edges -->
-        <div class="cropper-stage-wrapper w-full h-full flex items-center justify-center p-2.5 sm:p-4 rounded-2xl border border-amber-500/20 bg-[#160D21]/60 shadow-inner overflow-hidden">
-          <div class="cropper-image-container w-full h-full relative flex items-center justify-center">
+        <div dir="ltr" class="cropper-stage-wrapper w-full h-full flex items-center justify-center p-2.5 sm:p-4 rounded-2xl border border-amber-500/20 bg-[#160D21]/60 shadow-inner overflow-hidden">
+          <div dir="ltr" class="cropper-image-container w-full h-full relative flex items-center justify-center">
             <img
               #cropperImage
+              dir="ltr"
               [src]="imageSrcUrl()"
               alt="Source for math question cropping"
               class="max-w-full max-h-full block opacity-0 transition-opacity"

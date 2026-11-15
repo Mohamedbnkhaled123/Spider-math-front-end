@@ -8,4 +8,4 @@ Disallow: /pending-device-approval
 Disallow: /inactive-student-portal
 Disallow: /complete-profile
 
-Sitemap: https://www.spider-math.com/sitemap.xml
+Sitemap: https://spider-math.com/sitemap.xml

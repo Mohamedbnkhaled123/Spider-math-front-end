@@ -210,11 +210,15 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
       const viewport = page.getViewport({ scale: totalScale });
 
       const canvas = canvasRef.nativeElement;
+      canvas.setAttribute('dir', 'ltr');
+      canvas.style.direction = 'ltr';
       canvas.width = viewport.width;
       canvas.height = viewport.height;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Cannot acquire canvas 2D context');
+
+      (ctx as CanvasRenderingContext2D).direction = 'ltr';
 
       // Clear previous frame
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -269,10 +273,13 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
         if (this.isDestroyed || genId !== this.currentThumbnailGenId) break;
         const viewport = page.getViewport({ scale: thumbScale });
         const offCanvas = document.createElement('canvas');
+        offCanvas.setAttribute('dir', 'ltr');
+        offCanvas.style.direction = 'ltr';
         offCanvas.width = viewport.width;
         offCanvas.height = viewport.height;
         const ctx = offCanvas.getContext('2d');
         if (ctx) {
+          (ctx as CanvasRenderingContext2D).direction = 'ltr';
           await page.render({ canvasContext: ctx, viewport }).promise;
           if (this.isDestroyed || genId !== this.currentThumbnailGenId) break;
           thumbs.push({

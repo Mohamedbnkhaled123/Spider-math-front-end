@@ -212,6 +212,24 @@ html[dir="ltr"] {
   display: inline-block;
 }
 
+// ==============================================================================
+// PDF Canvas & Image Slicing LTR Isolation Guard (Platform-Wide R5 Fix)
+// Ensures PDF.js glyph shaping and cropping never inherit RTL from <html dir="rtl">
+// ==============================================================================
+.pdf-canvas-container,
+.canvas-sheet,
+.viewer-canvas-viewport,
+.canvas-wrapper,
+.cropper-viewport,
+.cropper-stage-wrapper,
+.cropper-image-container,
+canvas.pdf-canvas,
+[data-pdf-canvas] {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left;
+}
+
 body {
   margin: 0;
   padding: 0;

@@ -87,4 +87,15 @@ describe('PdfPageViewerComponent', () => {
     expect(emittedError).toBeTruthy();
     expect(component.isLoading()).toBe(false);
   });
+
+  it('should enforce dir="ltr" on canvas viewport, wrapper, and main canvas', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const viewport = compiled.querySelector('.viewer-canvas-viewport') as HTMLElement;
+    const wrapper = compiled.querySelector('.canvas-wrapper') as HTMLElement;
+    const canvas = compiled.querySelector('canvas') as HTMLCanvasElement;
+
+    expect(viewport.getAttribute('dir')).toBe('ltr');
+    expect(wrapper.getAttribute('dir')).toBe('ltr');
+    expect(canvas.getAttribute('dir')).toBe('ltr');
+  });
 });

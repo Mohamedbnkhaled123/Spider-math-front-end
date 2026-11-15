@@ -5,11 +5,13 @@ import {
   computed,
   inject,
   OnInit,
+  OnDestroy,
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { ProtectedYoutubePlayerComponent } from '../../../shared/components/protected-youtube-player/protected-youtube-player.component';
 import { ProtectedPdfCanvasComponent } from '../../../shared/components/protected-pdf-canvas/protected-pdf-canvas.component';
@@ -45,7 +47,7 @@ import { SwrCacheService } from '../../../core/services/swr-cache.service';
   styleUrls: ['./unit-study-workspace.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UnitStudyWorkspaceComponent implements OnInit {
+export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -54,6 +56,8 @@ export class UnitStudyWorkspaceComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly swrCache = inject(SwrCacheService);
+  private querySub?: Subscription;
+  fallbackLectureId: string | null = null;
 
   // Active view tab: video lecture or PDF handout
   readonly activeTab = signal<'video' | 'pdf'>('video');
@@ -89,39 +93,92 @@ export class UnitStudyWorkspaceComponent implements OnInit {
     return list.find(l => l._id === currentId) ?? (list.length > 0 ? list[0] : null);
   });
 
+  sanitizeUnitIdAndExtractFallback(rawId: string | null): { unitId: string; fallbackLectureId: string | null } {
+    if (!rawId) {
+      return { unitId: '', fallbackLectureId: null };
+    }
+
+    let unitId = rawId;
+    let fallbackLectureId: string | null = null;
+
+    if (rawId.includes('?') || /%3f/i.test(rawId)) {
+      const matchIndex = rawId.includes('?') ? rawId.indexOf('?') : rawId.search(/%3f/i);
+      unitId = rawId.substring(0, matchIndex);
+      const rest = rawId.substring(matchIndex + (rawId[matchIndex] === '?' ? 1 : 3));
+
+      try {
+        const decoded = decodeURIComponent(rest);
+        const match = decoded.match(/(?:^|[&?])lectureId=([^&]+)/);
+        if (match && match[1]) {
+          fallbackLectureId = match[1];
+        }
+      } catch {
+        const match = rest.match(/lectureId(?:=|%3D)([^&%]+)/i);
+        if (match && match[1]) {
+          fallbackLectureId = match[1];
+        }
+      }
+    }
+
+    return { unitId, fallbackLectureId };
+  }
+
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    const unitId = this.route.snapshot.paramMap.get('id');
+
+    const rawId = this.route.snapshot.paramMap.get('id');
+    const { unitId, fallbackLectureId } = this.sanitizeUnitIdAndExtractFallback(rawId);
+    if (fallbackLectureId && !this.route.snapshot.queryParams['lectureId']) {
+      this.fallbackLectureId = fallbackLectureId;
+    }
+
+    // Subscribe to query parameters to handle navigation to a specific lecture
+    this.querySub = this.route.queryParams.subscribe((params) => {
+      const targetLecId = params['lectureId'] || this.fallbackLectureId;
+      if (targetLecId) {
+        const lectures = this.workspaceData().lectures;
+        if (lectures && lectures.length > 0) {
+          const found = lectures.find((l) => l._id === targetLecId);
+          if (found && this.selectedLectureId() !== found._id) {
+            this.selectLecture(found._id);
+          }
+        }
+      }
+    });
+
     if (unitId) {
       this.loadUnitCurriculum(unitId);
     }
   }
 
+  ngOnDestroy(): void {
+    this.querySub?.unsubscribe();
+  }
+
   loadUnitCurriculum(unitId: string): void {
-    const cacheKey = `unit_contents_${unitId}`;
+    const { unitId: cleanUnitId, fallbackLectureId } = this.sanitizeUnitIdAndExtractFallback(unitId);
+    if (fallbackLectureId && !this.route.snapshot.queryParams['lectureId'] && !this.fallbackLectureId) {
+      this.fallbackLectureId = fallbackLectureId;
+    }
+    const targetUnitId = cleanUnitId || unitId;
+
+    const cacheKey = `unit_contents_${targetUnitId}`;
     const cached = this.swrCache.get<UnitWorkspaceData>(cacheKey);
     if (cached) {
       this.workspaceData.set(cached);
       this.isLoading.set(false);
       if (cached.lectures?.length > 0) {
-        const first = cached.lectures[0];
-        this.selectedLectureId.set(first._id);
-        if (!first.encryptedVideoId && first.googleDrivePdfFileId) {
-          this.activeTab.set('pdf');
-        } else {
-          this.activeTab.set('video');
-        }
-        if (first.encryptedVideoId) {
-          this.playbackToken.set(first.encryptedVideoId);
-        }
+        const queryLecId = this.route.snapshot.queryParams['lectureId'] || this.fallbackLectureId;
+        const target = (queryLecId ? cached.lectures.find(l => l._id === queryLecId) : null) || cached.lectures[0];
+        this.selectLecture(target._id);
       }
     } else {
       this.isLoading.set(true);
     }
 
-    this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${unitId}/curriculum-contents`).subscribe({
+    this.http.get<{ success: boolean; data: any }>(`/api/v1/units/${targetUnitId}/curriculum-contents`).subscribe({
       next: (res) => {
         this.isLoading.set(false);
         const unit = res?.data?.unit;
@@ -180,7 +237,7 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         });
 
         const freshWorkspace: UnitWorkspaceData = {
-          unitId: unit?._id || unitId,
+          unitId: unit?._id || targetUnitId,
           titleAr: unit?.title_ar || '',
           titleEn: unit?.title_en || '',
           curriculum: unit?.curriculum || 'EGYPTIAN',
@@ -194,23 +251,14 @@ export class UnitStudyWorkspaceComponent implements OnInit {
         this.workspaceData.set(freshWorkspace);
         this.swrCache.set(cacheKey, freshWorkspace);
 
-        if (mappedLectures.length > 0 && !this.selectedLectureId()) {
-          const first = mappedLectures[0];
-          this.selectedLectureId.set(first._id);
-          if (!first.encryptedVideoId && first.googleDrivePdfFileId) {
-            this.activeTab.set('pdf');
-          } else {
-            this.activeTab.set('video');
-          }
-          if (first.isAccessible !== false) {
-            this.isLectureLocked.set(false);
-            if (first.encryptedVideoId) {
-              this.playbackToken.set(first.encryptedVideoId);
-            }
-            this.fetchPlaybackToken(first._id);
-          } else {
-            this.isLectureLocked.set(true);
-          }
+        if (mappedLectures.length > 0) {
+          const queryLecId = this.route.snapshot.queryParams['lectureId'] || this.fallbackLectureId;
+          const currentId = this.selectedLectureId();
+          const target = (queryLecId ? mappedLectures.find(l => l._id === queryLecId) : null)
+            || (currentId ? mappedLectures.find(l => l._id === currentId) : null)
+            || mappedLectures[0];
+
+          this.selectLecture(target._id);
         }
       },
       error: () => {

@@ -74,7 +74,7 @@
   </header>
 
   <!-- Main Canvas Viewport Area -->
-  <main class="viewer-canvas-viewport relative flex-1 w-full min-h-[380px] overflow-auto flex items-center justify-center p-4 bg-slate-950/90">
+  <main dir="ltr" class="viewer-canvas-viewport relative flex-1 w-full min-h-[380px] overflow-auto flex items-center justify-center p-4 bg-slate-950/90">
     <!-- Loading State Overlay -->
     @if (isLoading() || isRendering()) {
       <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-opacity">
@@ -103,8 +103,8 @@
     }
 
     <!-- The Active Page Canvas -->
-    <div class="canvas-wrapper relative flex items-center justify-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/60 bg-white">
-      <canvas #mainCanvas class="block max-w-full h-auto object-contain"></canvas>
+    <div dir="ltr" class="canvas-wrapper relative flex items-center justify-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/60 bg-white">
+      <canvas #mainCanvas dir="ltr" class="block max-w-full h-auto object-contain"></canvas>
     </div>
   </main>
 

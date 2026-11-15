@@ -87,6 +87,8 @@ export async function cropBoundingBoxToBlob(
   const h = Math.max(1, Math.min(sourceHeight - y, rawH));
 
   const offscreen = document.createElement('canvas');
+  offscreen.setAttribute('dir', 'ltr');
+  offscreen.style.direction = 'ltr';
   offscreen.width = w;
   offscreen.height = h;
   const ctx = offscreen.getContext('2d');
@@ -95,6 +97,7 @@ export async function cropBoundingBoxToBlob(
     throw new Error('Failed to acquire 2D canvas context');
   }
 
+  (ctx as CanvasRenderingContext2D).direction = 'ltr';
   ctx.drawImage(source, x, y, w, h, 0, 0, w, h);
 
   // Iterative WebP compression to strictly honor <= 150KB budget

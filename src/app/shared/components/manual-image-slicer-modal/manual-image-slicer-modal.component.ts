@@ -263,6 +263,13 @@ export class ManualImageSlicerModalComponent implements OnDestroy {
         throw new Error('Could not retrieve cropped canvas');
       }
 
+      croppedCanvas.setAttribute('dir', 'ltr');
+      croppedCanvas.style.direction = 'ltr';
+      const ctx = croppedCanvas.getContext('2d');
+      if (ctx) {
+        (ctx as CanvasRenderingContext2D).direction = 'ltr';
+      }
+
       // Step-down quality compression to enforce <= 90KB budget
       let quality = 0.80;
       let blob: Blob | null = null;

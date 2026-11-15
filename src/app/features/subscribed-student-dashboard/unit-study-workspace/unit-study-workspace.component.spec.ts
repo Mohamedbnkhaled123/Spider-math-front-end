@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { UnitStudyWorkspaceComponent } from './unit-study-workspace.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -8,6 +8,7 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 describe('UnitStudyWorkspaceComponent', () => {
   let component: UnitStudyWorkspaceComponent;
   let fixture: ComponentFixture<UnitStudyWorkspaceComponent>;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -26,6 +27,7 @@ describe('UnitStudyWorkspaceComponent', () => {
       ]
     }).compileComponents();
 
+    httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(UnitStudyWorkspaceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -62,5 +64,107 @@ describe('UnitStudyWorkspaceComponent', () => {
     component.selectLecture('lec_diff_1');
     expect(component.selectedLectureId()).toBe('lec_diff_1');
     expect(component.activeLecture()?.order).toBe(1);
+  });
+
+  it('should select target lecture and activate pdf tab if files-only', () => {
+    const mockLectures = [
+      {
+        _id: 'lec_1',
+        titleAr: 'المحاضرة 1',
+        titleEn: 'Lecture 1',
+        order: 1,
+        durationMinutes: 30,
+        encryptedVideoId: 'video_1',
+        isPrintAllowed: false,
+        watchPercentage: 0,
+        isCompleted: false,
+        hasAssessment: false
+      },
+      {
+        _id: 'lec_2',
+        titleAr: 'المحاضرة 2 (ملزمة فقط)',
+        titleEn: 'Lecture 2 (Handout only)',
+        order: 2,
+        durationMinutes: 0,
+        encryptedVideoId: '',
+        googleDrivePdfFileId: 'pdf_file_2',
+        isPrintAllowed: true,
+        watchPercentage: 0,
+        isCompleted: false,
+        hasAssessment: false
+      }
+    ];
+
+    component.workspaceData.update(w => ({ ...w, lectures: mockLectures }));
+    component.selectLecture('lec_2');
+
+    expect(component.selectedLectureId()).toBe('lec_2');
+    expect(component.activeTab()).toBe('pdf');
+  });
+
+  it('should activate video tab if target lecture has video', () => {
+    const mockLectures = [
+      {
+        _id: 'lec_video',
+        titleAr: 'محاضرة فيديو',
+        titleEn: 'Video Lecture',
+        order: 1,
+        durationMinutes: 45,
+        encryptedVideoId: 'yt_vid_123',
+        googleDrivePdfFileId: 'pdf_123',
+        isPrintAllowed: false,
+        watchPercentage: 10,
+        isCompleted: false,
+        hasAssessment: false
+      }
+    ];
+    component.workspaceData.update(w => ({ ...w, lectures: mockLectures }));
+    component.selectLecture('lec_video');
+    expect(component.selectedLectureId()).toBe('lec_video');
+    expect(component.activeTab()).toBe('video');
+  });
+
+  it('should sanitize raw id with ?lectureId= and extract fallback lecture ID', () => {
+    const result = component.sanitizeUnitIdAndExtractFallback('unit_abc_123?lectureId=lec_xyz_456');
+    expect(result.unitId).toBe('unit_abc_123');
+    expect(result.fallbackLectureId).toBe('lec_xyz_456');
+  });
+
+  it('should sanitize percent-encoded raw id with %3FlectureId%3D and extract fallback lecture ID', () => {
+    const result = component.sanitizeUnitIdAndExtractFallback('unit_abc_123%3FlectureId%3Dlec_xyz_789');
+    expect(result.unitId).toBe('unit_abc_123');
+    expect(result.fallbackLectureId).toBe('lec_xyz_789');
+  });
+
+  it('should sanitize raw id with multiple query params and extract fallback lecture ID', () => {
+    const result = component.sanitizeUnitIdAndExtractFallback('unit_abc_123?foo=bar&lectureId=lec_multi_999&baz=qux');
+    expect(result.unitId).toBe('unit_abc_123');
+    expect(result.fallbackLectureId).toBe('lec_multi_999');
+  });
+
+  it('should sanitize raw unit id during loadUnitCurriculum and select fallback lecture', () => {
+    component.loadUnitCurriculum('unit_corr_99?lectureId=lec_target');
+
+    const req = httpMock.expectOne('/api/v1/units/unit_corr_99/curriculum-contents');
+    expect(req.request.method).toBe('GET');
+
+    req.flush({
+      success: true,
+      data: {
+        unit: { _id: 'unit_corr_99', title_ar: 'الوحدة' },
+        isSubscribed: true,
+        lectures: [
+          { _id: 'lec_first', lecture_title_ar: 'المحاضرة الأولى', order_index: 1 },
+          { _id: 'lec_target', lecture_title_ar: 'المحاضرة المستهدفة', order_index: 2, youtube_video_id: 'vid_123' }
+        ],
+        assessments: []
+      }
+    });
+
+    expect(component.selectedLectureId()).toBe('lec_target');
+    expect(component.activeTab()).toBe('video');
+
+    const tokenReq = httpMock.expectOne('/api/v1/lectures/lec_target/secure-playback');
+    tokenReq.flush({ success: true, data: { token: 'mock_token' } });
   });
 });

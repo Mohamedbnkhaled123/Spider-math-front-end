@@ -1,3 +1,11 @@
+.pdf-canvas-container,
+.canvas-sheet,
+canvas {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
 .canvas-sheet {
   box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25);
 }

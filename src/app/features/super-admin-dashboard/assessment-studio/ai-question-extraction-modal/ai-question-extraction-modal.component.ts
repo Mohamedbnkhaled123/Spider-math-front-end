@@ -234,10 +234,13 @@ export class AiQuestionExtractionModalComponent {
       });
 
       const canvas = document.createElement('canvas');
+      canvas.setAttribute('dir', 'ltr');
+      canvas.style.direction = 'ltr';
       canvas.width = img.naturalWidth || img.width;
       canvas.height = img.naturalHeight || img.height;
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        (ctx as CanvasRenderingContext2D).direction = 'ltr';
         ctx.drawImage(img, 0, 0);
       }
 

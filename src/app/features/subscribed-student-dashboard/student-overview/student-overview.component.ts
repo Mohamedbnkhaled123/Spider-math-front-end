@@ -472,8 +472,9 @@ export class StudentOverviewComponent implements OnInit {
                     ? Math.max(1, Math.round(lec.video_duration_sec / 60))
                     : 0) : 0;
 
+                  const lecId = (lec._id || lec.id)?.toString();
                   const item = {
-                    id: lec._id,
+                    id: lecId,
                     order: lec.order_index ?? idx + 1,
                     unitId: u._id,
                     unitTitleAr: u.titleAr,
@@ -483,7 +484,7 @@ export class StudentOverviewComponent implements OnInit {
                     isWatched: !!lec.isCompleted,
                     watchProgressPercentage: hasVideo ? (lec.watchPercentage || 0) : 0,
                     xpReward: lec.xp_reward_on_complete || 50,
-                    actionUrl: `/student/units/${u._id}`
+                    actionUrl: lecId ? `/student/units/${u._id}?lectureId=${lecId}` : `/student/units/${u._id}`
                   };
                   allLectures.push(item);
                   return item;

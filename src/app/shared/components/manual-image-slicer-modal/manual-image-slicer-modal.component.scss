@@ -10,6 +10,15 @@
   animation: scaleUp 0.15s ease-out;
 }
 
+.cropper-viewport,
+.cropper-stage-wrapper,
+.cropper-image-container,
+:host ::ng-deep .cropper-container {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
 .cropper-viewport {
   background-image: radial-gradient(rgba(212, 175, 106, 0.12) 1px, transparent 1px);
   background-size: 20px 20px;

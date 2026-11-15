@@ -431,7 +431,7 @@
                               {{ lec.order }}
                             </span>
                             <div class="min-w-0">
-                              <a [routerLink]="lec.actionUrl" class="font-bold text-text-primary hover:text-brand-accent transition-colors block truncate">
+                              <a [routerLink]="['/student/units', unit._id]" [queryParams]="lec.id ? { lectureId: lec.id } : null" class="font-bold text-text-primary hover:text-brand-accent transition-colors block truncate">
                                 {{ lec.titleAr }}
                               </a>
                               <span class="text-[10px] text-text-muted font-numeric">{{ formatDuration(lec.videoDurationSec) }}</span>
@@ -450,7 +450,8 @@
                               </span>
                             }
                             <a
-                              [routerLink]="lec.actionUrl"
+                              [routerLink]="['/student/units', unit._id]"
+                              [queryParams]="lec.id ? { lectureId: lec.id } : null"
                               class="p-1.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary dark:text-brand-accent transition-colors cursor-pointer"
                               [title]="langService.isArabic() ? 'الانتقال للمحاضرة' : 'Go to lecture'"
                             >
@@ -569,7 +570,8 @@
             </div>
 
             <a
-              [routerLink]="lec.actionUrl"
+              [routerLink]="['/student/units', lec.unitId]"
+              [queryParams]="lec.id ? { lectureId: lec.id } : null"
               class="w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               [class.bg-surface-card]="lec.isWatched"
               [class.border]="lec.isWatched"

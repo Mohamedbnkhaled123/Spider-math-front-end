@@ -8,6 +8,14 @@
   min-height: 480px;
 }
 
+.viewer-canvas-viewport,
+.canvas-wrapper,
+canvas {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
 .viewer-canvas-viewport {
   // Patterned math background for deep luxury aesthetic
   background-image: radial-gradient(rgba(196, 154, 69, 0.08) 1px, transparent 1px);
