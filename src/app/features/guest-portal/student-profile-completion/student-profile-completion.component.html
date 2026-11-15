@@ -184,43 +184,6 @@
             </select>
           </div>
 
-          <!-- Academic Term (When applicable) -->
-          @if (hasTerms()) {
-            <div class="animate-fade-in">
-              <label class="block text-xs font-bold text-text-secondary mb-1.5">
-                {{ langService.isArabic() ? 'الفصل الدراسي:' : 'Academic Term:' }}
-              </label>
-              <div class="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  (click)="academicTerm.set('TERM_1')"
-                  class="p-2 rounded-xl border text-center transition-all duration-200 cursor-pointer"
-                  [ngClass]="{
-                    'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
-                      academicTerm() === 'TERM_1',
-                    'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
-                      academicTerm() !== 'TERM_1'
-                  }"
-                >
-                  <span class="text-xs font-bold">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</span>
-                </button>
-                <button
-                  type="button"
-                  (click)="academicTerm.set('TERM_2')"
-                  class="p-2 rounded-xl border text-center transition-all duration-200 cursor-pointer"
-                  [ngClass]="{
-                    'border-brand-gold bg-brand-gold/15 text-brand-gold font-black shadow-sm':
-                      academicTerm() === 'TERM_2',
-                    'border-surface-border bg-surface-bg text-text-secondary hover:border-brand-secondary':
-                      academicTerm() !== 'TERM_2'
-                  }"
-                >
-                  <span class="text-xs font-bold">{{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}</span>
-                </button>
-              </div>
-            </div>
-          }
-
           <!-- Country Selection & Conditional Governorate -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

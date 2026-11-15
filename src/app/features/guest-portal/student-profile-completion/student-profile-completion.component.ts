@@ -102,6 +102,11 @@ export class StudentProfileCompletionComponent implements OnInit {
 
   ngOnInit(): void {
     this.discoveryService.loadActiveGradesAndTracks().subscribe();
+    this.discoveryService.getLandingData().subscribe(data => {
+      if (data?.activeAcademicTerm) {
+        this.academicTerm.set(data.activeAcademicTerm);
+      }
+    });
     const user = this.authService.currentUser();
     if (user?.full_name && !this.fullName()) {
       this.fullName.set(user.full_name);

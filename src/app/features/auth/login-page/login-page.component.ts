@@ -134,6 +134,11 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.discoveryService.loadActiveGradesAndTracks().subscribe();
+    this.discoveryService.getLandingData().subscribe(data => {
+      if (data?.activeAcademicTerm) {
+        this.regAcademicTerm.set(data.activeAcademicTerm);
+      }
+    });
     if (isPlatformBrowser(this.platformId)) {
       this.ensureGoogleScriptLoaded().catch(() => {});
     }
