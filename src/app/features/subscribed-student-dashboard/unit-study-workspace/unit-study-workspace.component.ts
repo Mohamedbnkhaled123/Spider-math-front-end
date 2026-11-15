@@ -136,17 +136,20 @@ export class UnitStudyWorkspaceComponent implements OnInit {
             (a.lectureId && a.lectureId.toString() === l._id?.toString())
           );
           const assessmentId = l.linked_assessment_id || l.assessmentId || (linkedAsm ? (linkedAsm._id || linkedAsm.id) : undefined);
+          const hasVideo = !!(l.youtube_video_id || l.youtube_encrypted_id || l.youtube_url || l.encryptedVideoId || l.youtubeUrl);
+          const durMinutes = hasVideo ? (l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 0)) : 0;
+          const durSec = hasVideo ? (l.video_duration_sec || (durMinutes ? durMinutes * 60 : 0)) : 0;
           return {
             _id: l._id,
             order: l.order_index ?? idx + 1,
             titleAr: l.lecture_title_ar || l.title_ar,
             titleEn: l.lecture_title_en || l.title_en || '',
-            durationMinutes: l.video_duration_sec ? Math.max(1, Math.round(l.video_duration_sec / 60)) : (l.duration_minutes || 5),
-            videoDurationSec: l.video_duration_sec || (l.duration_minutes ? l.duration_minutes * 60 : 105),
-            encryptedVideoId: l.youtube_video_id || l.youtube_encrypted_id || '',
+            durationMinutes: durMinutes,
+            videoDurationSec: durSec,
+            encryptedVideoId: hasVideo ? (l.youtube_video_id || l.youtube_encrypted_id || l.encryptedVideoId || '') : '',
             googleDrivePdfFileId: l.google_drive_pdf_id || l.pdf_materials?.[0]?.storage_file_id || l.pdf_materials?.[0]?._id?.toString() || '',
             isPrintAllowed: l.is_print_allowed !== undefined ? !!l.is_print_allowed : !!l.pdf_materials?.[0]?.is_print_allowed,
-            watchPercentage: l.watchPercentage || 0,
+            watchPercentage: hasVideo ? (l.watchPercentage || 0) : 0,
             isCompleted: !!l.isCompleted,
             hasAssessment: !!assessmentId,
             assessmentId,

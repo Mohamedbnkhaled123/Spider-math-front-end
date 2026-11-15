@@ -467,9 +467,10 @@ export class StudentOverviewComponent implements OnInit {
                 const rawLectures: any[] = cRes.data.lectures || [];
 
                 const unitLectures = rawLectures.map((lec: any, idx: number) => {
-                  const durMinutes = lec.video_duration_sec
+                  const hasVideo = !!(lec.youtube_video_id || lec.youtube_encrypted_id || lec.youtube_url || lec.youtubeUrl || lec.encryptedVideoId);
+                  const durMinutes = hasVideo ? (lec.video_duration_sec
                     ? Math.max(1, Math.round(lec.video_duration_sec / 60))
-                    : 5;
+                    : 0) : 0;
 
                   const item = {
                     id: lec._id,
@@ -478,9 +479,9 @@ export class StudentOverviewComponent implements OnInit {
                     unitTitleAr: u.titleAr,
                     titleAr: lec.lecture_title_ar || lec.title_ar,
                     durationMinutes: durMinutes,
-                    videoDurationSec: lec.video_duration_sec || (durMinutes * 60),
+                    videoDurationSec: hasVideo ? (lec.video_duration_sec || (durMinutes * 60)) : 0,
                     isWatched: !!lec.isCompleted,
-                    watchProgressPercentage: lec.watchPercentage || 0,
+                    watchProgressPercentage: hasVideo ? (lec.watchPercentage || 0) : 0,
                     xpReward: lec.xp_reward_on_complete || 50,
                     actionUrl: `/student/units/${u._id}`
                   };

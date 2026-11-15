@@ -263,16 +263,21 @@ export class ChildAcademicMonitorComponent {
           totalLectures: u.totalLectures ?? 0,
           subscriptionExpiresAt: u.expiresAt ? new Date(u.expiresAt).toLocaleDateString('ar-EG') : (u.subscriptionExpiresAt || 'ساري'),
           isExpired: u.isExpired ?? (u.daysRemaining !== undefined ? u.daysRemaining <= 0 : false),
-          lectures: Array.isArray(u.lectures) ? u.lectures.map((lec: any) => ({
-            lectureId: lec.lectureId || lec._id,
-            order: lec.order || 1,
-            titleAr: lec.titleAr || lec.lecture_title_ar || 'محاضرة',
-            titleEn: lec.titleEn || lec.lecture_title_en || '',
-            durationMinutes: lec.video_duration_sec ? Math.max(1, Math.round(lec.video_duration_sec / 60)) : (lec.durationMinutes || 5),
-            videoDurationSec: lec.video_duration_sec || (lec.durationMinutes ? lec.durationMinutes * 60 : 105),
-            isCompleted: !!lec.isCompleted,
-            watchPercentage: lec.watchPercentage ?? 0
-          })) : []
+          lectures: Array.isArray(u.lectures) ? u.lectures.map((lec: any) => {
+            const hasVideo = !!(lec.encryptedVideoId || lec.youtube_video_id || lec.youtube_url || lec.youtubeUrl || lec.video_duration_sec);
+            const durMinutes = hasVideo ? (lec.video_duration_sec ? Math.max(1, Math.round(lec.video_duration_sec / 60)) : (lec.durationMinutes || 0)) : 0;
+            const durSec = hasVideo ? (lec.video_duration_sec || (durMinutes ? durMinutes * 60 : 0)) : 0;
+            return {
+              lectureId: lec.lectureId || lec._id,
+              order: lec.order || 1,
+              titleAr: lec.titleAr || lec.lecture_title_ar || 'محاضرة',
+              titleEn: lec.titleEn || lec.lecture_title_en || '',
+              durationMinutes: durMinutes,
+              videoDurationSec: durSec,
+              isCompleted: !!lec.isCompleted,
+              watchPercentage: hasVideo ? (lec.watchPercentage ?? 0) : 0
+            };
+          }) : []
         }));
 
         const isOnline = !!data.presence?.isOnline;

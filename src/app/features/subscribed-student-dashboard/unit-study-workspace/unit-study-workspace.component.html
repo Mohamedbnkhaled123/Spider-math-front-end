@@ -144,9 +144,16 @@
             </button>
           </div>
 
-          <span class="text-[11px] font-bold text-text-muted px-3 hidden sm:inline font-numeric">
-            {{ formatDuration(lec.videoDurationSec) }}
-          </span>
+          @if (lec.videoDurationSec && lec.videoDurationSec > 0) {
+            <span class="text-[11px] font-bold text-text-muted px-3 hidden sm:inline font-numeric">
+              {{ formatDuration(lec.videoDurationSec) }}
+            </span>
+          } @else if (lec.googleDrivePdfFileId) {
+            <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 items-center gap-1.5 hidden sm:inline-flex">
+              <app-icon name="file-text" [size]="12" />
+              <span>{{ langService.isArabic() ? 'محتوى ملفات فقط' : 'Files Only (PDF)' }}</span>
+            </span>
+          }
         </div>
 
         <!-- Content Viewer Container -->
@@ -379,9 +386,9 @@
                       {{ formatDuration(item.videoDurationSec) }}
                     </span>
                   } @else if (item.googleDrivePdfFileId) {
-                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center gap-1">
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center gap-1">
                       <app-icon name="file-text" [size]="9" />
-                      <span>{{ langService.isArabic() ? 'ملف' : 'PDF' }}</span>
+                      <span>{{ langService.isArabic() ? 'ملف PDF' : 'PDF' }}</span>
                     </span>
                   }
                   @if (item.isCompleted) {
@@ -396,13 +403,15 @@
                 {{ item.titleAr }}
               </h4>
 
-              <!-- Mini Progress Bar -->
-              <div class="w-full h-1.5 rounded-full bg-surface-border overflow-hidden mt-1">
-                <div
-                  class="h-full bg-brand-primary transition-all duration-300"
-                  [style.width.%]="item.watchPercentage"
-                ></div>
-              </div>
+              <!-- Mini Progress Bar (Only for video lectures) -->
+              @if (item.videoDurationSec && item.videoDurationSec > 0) {
+                <div class="w-full h-1.5 rounded-full bg-surface-border overflow-hidden mt-1">
+                  <div
+                    class="h-full bg-brand-primary transition-all duration-300"
+                    [style.width.%]="item.watchPercentage"
+                  ></div>
+                </div>
+              }
 
               <!-- Lesson Action: Start Assessment / Quiz -->
               @if (item.hasAssessment) {
