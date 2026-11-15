@@ -11,6 +11,7 @@ import {
   HostListener,
   ViewChild,
   ElementRef,
+  OnInit,
   OnDestroy
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -42,7 +43,7 @@ import {
   styleUrls: ['./graph-calculator-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GraphCalculatorModalComponent implements OnDestroy {
+export class GraphCalculatorModalComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   readonly langService = inject(LangService);
 
@@ -55,7 +56,7 @@ export class GraphCalculatorModalComponent implements OnDestroy {
   // State Signals
   readonly isCollapsed = signal<boolean>(false);
   readonly isMaximized = signal<boolean>(false);
-  readonly position = signal<CalculatorCoordinates>({ x: 40, y: 80 });
+  readonly position = signal<CalculatorCoordinates>({ x: 20, y: 70 });
   readonly isDragging = signal<boolean>(false);
   readonly isEngineLoading = signal<boolean>(false);
   readonly copiedNotification = signal<string | null>(null);
@@ -96,6 +97,19 @@ export class GraphCalculatorModalComponent implements OnDestroy {
     { labelAr: 'معادلة خطية', labelEn: 'Linear', latex: 'y=2x+1' },
     { labelAr: 'دالة لوغاريتمية', labelEn: 'Logarithmic', latex: 'y=\\ln(x)' }
   ];
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const w = window.innerWidth;
+      if (w < 640) {
+        this.position.set({ x: 8, y: 64 });
+      } else if (w < 1024) {
+        this.position.set({ x: 16, y: 70 });
+      } else {
+        this.position.set({ x: Math.max(20, Math.floor((w - 860) / 2)), y: 75 });
+      }
+    }
+  }
 
   ngOnDestroy(): void {
     if (this.calculatorInstance) {
@@ -175,6 +189,10 @@ export class GraphCalculatorModalComponent implements OnDestroy {
    */
   startDrag(event: MouseEvent | TouchEvent): void {
     if (this.isMaximized()) return;
+    const target = event.target as HTMLElement | null;
+    if (target && target.closest('button, a, input, select, textarea')) {
+      return;
+    }
     this.isDragging.set(true);
 
     const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
@@ -184,8 +202,6 @@ export class GraphCalculatorModalComponent implements OnDestroy {
     this.dragStartY = clientY;
     this.initialPosX = this.position().x;
     this.initialPosY = this.position().y;
-
-    event.preventDefault();
   }
 
   @HostListener('window:mousemove', ['$event'])
@@ -199,8 +215,13 @@ export class GraphCalculatorModalComponent implements OnDestroy {
     const deltaX = clientX - this.dragStartX;
     const deltaY = clientY - this.dragStartY;
 
-    const newX = Math.max(10, Math.min(window.innerWidth - 360, this.initialPosX + deltaX));
-    const newY = Math.max(60, Math.min(window.innerHeight - 150, this.initialPosY + deltaY));
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    const modalW = screenW < 640 ? screenW - 16 : Math.min(860, screenW - 20);
+    const minX = 4;
+    const maxX = Math.max(4, screenW - modalW - 4);
+    const newX = Math.max(minX, Math.min(maxX, this.initialPosX + deltaX));
+    const newY = Math.max(50, Math.min(screenH - 100, this.initialPosY + deltaY));
 
     this.position.set({ x: newX, y: newY });
   }

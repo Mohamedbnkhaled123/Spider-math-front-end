@@ -154,6 +154,7 @@
 .z-layer-slicer { z-index: 1300; }        // Manual Image Slicer Modal
 .z-layer-keyboard { z-index: 1350; }      // Math Virtual Keyboard (Above modals & slicers)
 .z-layer-preview-submodal { z-index: 1400; } // Preview Submodals (Formula sheet, video solution)
+.z-layer-calculator { z-index: 1450; }    // Desmos Graphing Calculator Modal (Above previews, modals & slicers)
 .z-layer-dialog { z-index: 1500; }        // Confirmation Dialogs (Topmost)
 // ==============================================================================
 // Global Typography & Direction Resets

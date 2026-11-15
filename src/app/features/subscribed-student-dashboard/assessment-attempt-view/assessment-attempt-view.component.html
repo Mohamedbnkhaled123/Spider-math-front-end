@@ -450,7 +450,7 @@
                 type="button"
                 (click)="submitAssessment()"
                 [disabled]="isSubmitting() || unansweredCount() > 0"
-                class="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-sm btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                class="w-full sm:w-auto h-11 px-6 rounded-xl font-black text-xs sm:text-sm btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
                 [title]="unansweredCount() > 0 ? (langService.isArabic() ? 'أجب عن جميع الأسئلة' : 'Answer all questions') : (langService.isArabic() ? 'تسليم التقييم' : 'Submit Assessment')"
               >
                 @if (isSubmitting()) {

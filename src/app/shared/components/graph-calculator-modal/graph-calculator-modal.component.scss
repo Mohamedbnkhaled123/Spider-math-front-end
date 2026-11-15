@@ -1,13 +1,11 @@
 .graph-modal-wrapper {
   width: 860px;
-  max-width: calc(100vw - 20px);
-  touch-action: none;
+  max-width: calc(100vw - 16px);
   transition: box-shadow 0.2s ease, opacity 0.15s ease;
-  z-index: 60;
+  z-index: 1450; // Above previews, submodals & test runners
 
   &.dragging {
-    opacity: 0.95;
-    cursor: grabbing;
+    opacity: 0.98;
     user-select: none;
 
     .modal-header {
@@ -38,7 +36,7 @@
     }
 
     .modal-header {
-      background: var(--surface-bg-card, #110d29) !important;
+      background: #241935 !important;
       position: relative;
       z-index: 20;
     }
@@ -55,42 +53,46 @@
   }
 
   &.collapsed {
-    width: 380px;
+    width: 320px;
+    max-width: calc(100vw - 16px);
 
     .calculator-embed-container,
     .presets-toolbar,
     .modal-footer {
-      display: none;
+      display: none !important;
     }
   }
 }
 
+// Solid 100% Opaque Glass-Free Window (Prevents Ghost Text Bleed-Through)
 .calculator-window {
-  background: var(--surface-bg-card, #ffffff);
-  border-color: var(--surface-border-subtle, rgba(226, 232, 240, 0.8));
+  background: #1d142b !important; // 100% solid deep chalkboard purple
+  border: 1.5px solid rgba(212, 175, 106, 0.45) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.92), 0 0 25px rgba(212, 175, 106, 0.18) !important;
   transition: all 0.2s ease;
 }
 
-.calculator-embed-container {
-  height: 520px;
-  min-height: 420px;
-  position: relative;
-  direction: ltr !important;
-  text-align: left !important;
-  unicode-bidi: isolate !important;
+:host-context([data-theme='light']) .calculator-window,
+:host-context(.light) .calculator-window {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(158, 111, 24, 0.35) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.25) !important;
 }
 
-.desmos-host {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  direction: ltr !important;
-  text-align: left !important;
-  unicode-bidi: isolate !important;
+.modal-header {
+  background: #251a36 !important;
+  border-bottom: 1px solid rgba(212, 175, 106, 0.25) !important;
+}
+
+:host-context([data-theme='light']) .modal-header,
+:host-context(.light) .modal-header {
+  background: #f8fafc !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
 }
 
 .presets-toolbar {
+  background: #181024 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   scrollbar-width: thin;
 
   &::-webkit-scrollbar {
@@ -103,13 +105,62 @@
   }
 }
 
-@media (max-width: 900px) {
+:host-context([data-theme='light']) .presets-toolbar,
+:host-context(.light) .presets-toolbar {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.modal-footer {
+  background: #251a36 !important;
+  border-top: 1px solid rgba(212, 175, 106, 0.2) !important;
+}
+
+:host-context([data-theme='light']) .modal-footer,
+:host-context(.light) .modal-footer {
+  background: #f8fafc !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.calculator-embed-container {
+  height: 500px;
+  min-height: 400px;
+  position: relative;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+  background: #ffffff !important;
+}
+
+.desmos-host {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+@media (max-width: 899px) {
   .graph-modal-wrapper:not(.maximized) {
     width: calc(100vw - 16px) !important;
     left: 8px !important;
 
     .calculator-embed-container {
-      height: 460px;
+      height: 420px;
+    }
+  }
+}
+
+@media (max-width: 639px) {
+  .graph-modal-wrapper:not(.maximized) {
+    width: calc(100vw - 16px) !important;
+    left: 8px !important;
+
+    .calculator-embed-container {
+      height: 360px !important;
+      min-height: 260px !important;
     }
   }
 }

@@ -1,46 +1,51 @@
 @if (isOpen() && config().isSupported) {
   <div
-    class="graph-modal-wrapper fixed z-layer-modal"
+    class="graph-modal-wrapper fixed z-layer-calculator"
     [class.maximized]="isMaximized()"
     [class.collapsed]="isCollapsed()"
     [class.dragging]="isDragging()"
     [style.left.px]="isMaximized() ? 0 : position().x"
     [style.top.px]="isMaximized() ? 0 : position().y"
   >
-    <!-- Modal Window Container -->
-    <div class="calculator-window rounded-2xl border border-surface-border glass-panel shadow-glass overflow-hidden flex flex-col">
+    <!-- Modal Window Container (100% Solid, Non-Translucent) -->
+    <div class="calculator-window rounded-2xl border overflow-hidden flex flex-col">
       
       <!-- Draggable Header Bar -->
-      <div
-        class="modal-header h-12 px-4 flex items-center justify-between border-b border-surface-border bg-surface-card/90 select-none cursor-move"
-        (mousedown)="startDrag($event)"
-        (touchstart)="startDrag($event)"
-      >
-        <!-- Title & Brand Badge -->
-        <div class="flex items-center gap-2.5">
-          <div class="text-text-muted hover:text-brand-accent transition-colors">
+      <div class="modal-header h-12 px-3 sm:px-4 flex items-center justify-between border-b select-none">
+        
+        <!-- Draggable Title & Mascot / Grip Area -->
+        <div
+          class="flex items-center gap-2.5 flex-1 cursor-move py-2 min-w-0"
+          (mousedown)="startDrag($event)"
+          (touchstart)="startDrag($event)"
+        >
+          <div class="text-text-muted hover:text-brand-accent transition-colors shrink-0">
             <app-icon name="grid" [size]="16" />
           </div>
           
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-black text-brand-primary dark:text-brand-accent tracking-tight">
+          <div class="flex items-center gap-2 truncate">
+            <span class="text-xs font-black text-brand-primary dark:text-brand-accent tracking-tight shrink-0">
               DESMOS
             </span>
-            <span class="text-xs font-bold text-text-primary hidden sm:inline">
+            <span class="text-xs font-bold text-text-primary hidden sm:inline truncate">
               | {{ langService.isArabic() ? 'حاسبة ديسموس' : 'Desmos' }}
             </span>
           </div>
 
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 hidden md:inline-flex">
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 hidden md:inline-flex shrink-0">
             {{ langService.isArabic() ? 'معادلات' : 'Expressions' }}
           </span>
         </div>
 
-        <!-- Action Controls (Minimize, Maximize, Close) -->
-        <div class="flex items-center gap-1">
+        <!-- Action Controls (Minimize, Maximize, Close - Touch/Click Isolated from Drag Handle) -->
+        <div
+          class="flex items-center gap-1 shrink-0"
+          (mousedown)="$event.stopPropagation()"
+          (touchstart)="$event.stopPropagation()"
+        >
           <!-- Quick Feedback Notification Toast -->
           @if (copiedNotification(); as toast) {
-            <span class="text-[11px] font-bold text-emerald-500 mr-2 animate-fade-in truncate max-w-[180px]">
+            <span class="text-[11px] font-bold text-emerald-500 mr-2 animate-fade-in truncate max-w-[120px] sm:max-w-[180px]">
               {{ toast }}
             </span>
           }
@@ -49,28 +54,34 @@
           <button
             type="button"
             (click)="toggleCollapse()"
-            class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors"
+            (touchend)="$event.stopPropagation(); toggleCollapse()"
+            class="p-2 sm:p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary active:scale-90 transition-all cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
             [title]="isCollapsed() ? (langService.isArabic() ? 'توسيع' : 'Expand') : (langService.isArabic() ? 'طي' : 'Collapse')"
+            aria-label="Collapse"
           >
-            <app-icon [name]="isCollapsed() ? 'chevron-down' : 'minus'" [size]="14" />
+            <app-icon [name]="isCollapsed() ? 'chevron-down' : 'minus'" [size]="15" />
           </button>
 
           <!-- Maximize / Restore Button -->
           <button
             type="button"
             (click)="toggleMaximize()"
-            class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors hidden sm:inline-flex"
+            (touchend)="$event.stopPropagation(); toggleMaximize()"
+            class="p-2 sm:p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary active:scale-90 transition-all cursor-pointer min-w-[36px] min-h-[36px] hidden sm:inline-flex items-center justify-center"
             [title]="isMaximized() ? (langService.isArabic() ? 'استعادة' : 'Restore') : (langService.isArabic() ? 'تكبير' : 'Maximize')"
+            aria-label="Maximize"
           >
-            <app-icon [name]="isMaximized() ? 'minimize' : 'maximize'" [size]="14" />
+            <app-icon [name]="isMaximized() ? 'minimize' : 'maximize'" [size]="15" />
           </button>
 
           <!-- Close Modal Button -->
           <button
             type="button"
             (click)="closeModal()"
-            class="p-1.5 rounded-lg text-text-muted hover:text-feedback-danger hover:bg-feedback-danger/10 transition-colors"
+            (touchend)="$event.stopPropagation(); closeModal()"
+            class="p-2 sm:p-1.5 rounded-lg text-text-muted hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
             [title]="langService.isArabic() ? 'إغلاق' : 'Close'"
+            aria-label="Close"
           >
             <app-icon name="x" [size]="16" />
           </button>
@@ -80,7 +91,7 @@
       <!-- Collapsible Body Section -->
       @if (!isCollapsed()) {
         <!-- Mathematical Function Presets Bar -->
-        <div class="presets-toolbar px-3 py-2 bg-surface-bg/70 border-b border-surface-border/50 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
+        <div class="presets-toolbar px-3 py-2 border-b flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
           <span class="text-[11px] font-bold text-text-muted whitespace-nowrap">
             {{ langService.isArabic() ? 'دوال:' : 'Plots:' }}
           </span>
@@ -113,8 +124,8 @@
           ></div>
           
           @if (isEngineLoading()) {
-            <div class="absolute inset-0 flex items-center justify-center bg-surface-card/90 backdrop-blur-sm z-20">
-              <div class="flex items-center gap-2.5 text-xs font-bold text-brand-primary dark:text-brand-accent p-4 rounded-2xl border border-surface-border glass-panel">
+            <div class="absolute inset-0 flex items-center justify-center bg-surface-card/95 backdrop-blur-sm z-20">
+              <div class="flex items-center gap-2.5 text-xs font-bold text-brand-primary dark:text-brand-accent p-4 rounded-2xl border border-surface-border bg-surface-card shadow-lg">
                 <app-icon name="loader" [size]="20" className="animate-spin text-brand-accent" />
                 <span>{{ langService.isArabic() ? 'تحميل ديسموس...' : 'Loading Desmos...' }}</span>
               </div>
@@ -123,7 +134,7 @@
         </div>
 
         <!-- Footer Hint -->
-        <div class="modal-footer px-3 py-1.5 bg-surface-card/90 border-t border-surface-border/50 flex items-center justify-between text-[11px] text-text-muted">
+        <div class="modal-footer px-3 py-1.5 border-t flex items-center justify-between text-[11px] text-text-muted">
           <span>{{ langService.isArabic() ? 'اسحب للتحريك' : 'Drag to move' }}</span>
           <span class="font-numeric font-bold text-brand-secondary">Spider Math • Desmos Official Engine</span>
         </div>
