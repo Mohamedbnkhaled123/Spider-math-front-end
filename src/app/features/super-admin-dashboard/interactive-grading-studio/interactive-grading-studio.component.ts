@@ -627,7 +627,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
   gradeEssayQuestionInModal(
     sub: AllQuizSubmissionItem,
     q: QuestionAnswerDetail,
-    decision: 'FULL' | 'HALF' | 'ZERO'
+    decision: 'FULL' | 'HALF' | 'ZERO' | 'CUSTOM',
+    customScore?: number
   ): void {
     const prevDecision = q.gradingDecision;
     const prevPoints = q.pointsEarned;
@@ -638,8 +639,11 @@ export class InteractiveGradingStudioComponent implements OnInit {
       pointsAwarded = q.points;
     } else if (decision === 'HALF') {
       pointsAwarded = Math.round((q.points / 2) * 10) / 10;
-    } else {
+    } else if (decision === 'ZERO') {
       pointsAwarded = 0;
+    } else if (decision === 'CUSTOM') {
+      const raw = typeof customScore === 'number' && !isNaN(customScore) ? customScore : Number(q.pointsEarned ?? 0);
+      pointsAwarded = Math.max(0, Math.min(q.points, Math.round(raw * 10) / 10));
     }
 
     q.gradingDecision = decision;
@@ -694,7 +698,9 @@ export class InteractiveGradingStudioComponent implements OnInit {
             ? (this.langService.isArabic() ? 'درجة كاملة' : 'Full Points')
             : decision === 'HALF'
             ? (this.langService.isArabic() ? 'نصف درجة' : 'Half Points')
-            : (this.langService.isArabic() ? 'صفر / إجابة غير صحيحة' : 'Zero Points');
+            : decision === 'ZERO'
+            ? (this.langService.isArabic() ? 'صفر / إجابة غير صحيحة' : 'Zero Points')
+            : (this.langService.isArabic() ? `درجة مخصصة (${pointsAwarded})` : `Custom (${pointsAwarded})`);
 
         this.toastTriggered.emit({
           text: this.langService.isArabic()
@@ -808,32 +814,6 @@ export class InteractiveGradingStudioComponent implements OnInit {
         });
       }
     });
-  }
-
-  // Open Canvas for grading
-  openGradingFromSubmission(sub: AllQuizSubmissionItem): void {
-    const essayMaxPoints = sub.answers
-      .filter((a) => a.questionType === 'ESSAY_PHOTO')
-      .reduce((sum, a) => sum + (a.points || 0), 0) || Math.max(0, sub.totalPoints - sub.mcqAutoScore);
-
-    const item: PendingEssayGrading = {
-      id: sub.id,
-      studentId: sub.studentId,
-      studentName: sub.studentName,
-      haCode: sub.haCode,
-      assessmentId: sub.assessmentId,
-      assessmentTitle: sub.assessmentTitle,
-      questionNumber: 1,
-      questionText: 'مسألة مقالية: الحل والخطوات اليدوية',
-      studentAnswerImageWebp: sub.homeworkImages?.[0]?.imageUrl || 'https://res.cloudinary.com/spider-math/image/upload/v1729000000/spider-math-questions/sample_curve_prompt.webp',
-      maxScore: essayMaxPoints,
-      awardedScore: sub.essayManualScore || 0,
-      generalTeacherNote: sub.teacherFeedbackNotes || '',
-      mistakes: [],
-      status: sub.status === 'PUBLISHED' ? 'PUBLISHED' : 'PENDING',
-      submittedAt: sub.submittedAt
-    };
-    this.openGrading(item);
   }
 
   openGrading(item: PendingEssayGrading): void {

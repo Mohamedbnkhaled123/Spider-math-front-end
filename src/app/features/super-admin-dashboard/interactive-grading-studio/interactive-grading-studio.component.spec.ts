@@ -169,7 +169,7 @@ describe('InteractiveGradingStudioComponent', () => {
     expect(multiSubmission.finalTotalScore).toBe(12.5); // 5 + 5 + 2.5
   });
 
-  it('should configure canvas grading item with essay points only, not total assessment points', () => {
+  it('should allow teacher to freely set custom grade or presets for essay questions', () => {
     const testSub: any = {
       id: 'sub_test_points',
       studentName: 'Mohammed Khaled',
@@ -189,11 +189,17 @@ describe('InteractiveGradingStudioComponent', () => {
       homeworkImages: [{ imageUrl: 'https://example.com/step.webp' }]
     };
 
-    component.openGradingFromSubmission(testSub);
-    const gradingItem = component.currentGradingItem();
-    expect(gradingItem).toBeTruthy();
-    expect(gradingItem?.maxScore).toBe(5); // Essay points only, NOT 15!
-    expect(gradingItem?.awardedScore).toBe(0); // Starts at essayManualScore (0), NOT finalTotalScore (10)!
+    const essayQ = testSub.answers[2];
+    // Test custom score setting (e.g. 3.5 out of 5)
+    component.gradeEssayQuestionInModal(testSub, essayQ, 'CUSTOM', 3.5);
+    expect(essayQ.pointsEarned).toBe(3.5);
+    expect(essayQ.gradingDecision).toBe('CUSTOM');
+    expect(testSub.finalTotalScore).toBe(13.5);
+
+    const req = httpMock.expectOne('/api/v1/admin/submissions/sub_test_points/grade');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.essay_manual_score).toBe(3.5);
+    req.flush({ success: true, data: {} });
   });
 
   it('should manage approval confirmation flow before publishing', () => {

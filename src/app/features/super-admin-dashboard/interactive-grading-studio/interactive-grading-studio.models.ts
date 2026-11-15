@@ -28,7 +28,7 @@ export interface QuestionAnswerDetail {
   modelAnswerText?: string;
   // ESSAY / PHOTO fields
   isPendingManualGrading?: boolean;
-  gradingDecision?: 'FULL' | 'HALF' | 'ZERO' | null;
+  gradingDecision?: 'FULL' | 'HALF' | 'ZERO' | 'CUSTOM' | null;
   studentSolutionImages?: Array<{ imageUrl: string; rotation?: number }>;
   imageUrl?: string | null;
   uploadedImageUrl?: string | null;
@@ -58,7 +58,7 @@ export interface AllQuizSubmissionItem {
   isSuspiciousFastSolve: boolean;
   clockTamperDetected: boolean;
   answers: QuestionAnswerDetail[];
-  essayAnswers?: Array<{ question_id: string; points_earned: number; decision?: 'FULL' | 'HALF' | 'ZERO' }>;
+  essayAnswers?: Array<{ question_id: string; points_earned: number; decision?: 'FULL' | 'HALF' | 'ZERO' | 'CUSTOM' }>;
   homeworkImages?: Array<{ imageUrl: string; rotation?: number }>;
   teacherFeedbackNotes?: string;
 }

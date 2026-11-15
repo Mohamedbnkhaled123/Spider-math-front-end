@@ -361,39 +361,29 @@
                           </div>
                         </div>
 
-                        <!-- Quiz Actions -->
-                        <div class="flex items-center gap-2 self-end md:self-center">
+                        <!-- Quiz Actions (Only 2 concise buttons: Approve & Answer Details) -->
+                        <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
                           @if (quiz.status === 'PENDING') {
                             <button
                               type="button"
                               (click)="confirmAndApproveSubmission(quiz)"
                               [disabled]="isApprovingId() === quiz.id"
-                              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                              [title]="langService.isArabic() ? 'اعتماد ونشر النتيجة فوراً' : 'Approve and publish result'"
                             >
-                              <app-icon name="check-circle" [size]="14" />
-                              <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة' : 'Approve & Publish' }}</span>
+                              <app-icon name="check-circle" [size]="13" />
+                              <span>{{ langService.isArabic() ? 'اعتماد' : 'Approve' }}</span>
                             </button>
                           }
 
                           <button
                             type="button"
                             (click)="openAnswersInspector(quiz)"
-                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
                           >
-                            <app-icon name="file-text" [size]="14" />
-                            <span>{{ langService.isArabic() ? 'عرض تفاصيل الإجابات' : 'View Answer Details' }}</span>
+                            <app-icon name="file-text" [size]="13" />
+                            <span>{{ langService.isArabic() ? 'تفاصيل الإجابات' : 'Answer Details' }}</span>
                           </button>
-
-                          @if (quiz.hasEssayQuestions || (quiz.homeworkImages && quiz.homeworkImages.length > 0)) {
-                            <button
-                              type="button"
-                              (click)="openGradingFromSubmission(quiz)"
-                              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <app-icon name="edit" [size]="14" />
-                              <span>{{ langService.isArabic() ? 'تصحيح مقالي (Canvas)' : 'Grade Essay' }}</span>
-                            </button>
-                          }
                         </div>
                       </div>
                     }
@@ -508,41 +498,29 @@
                 {{ sub.status === 'PUBLISHED' ? (langService.isArabic() ? 'تم اعتماد ونشر النتيجة' : 'Approved & Published') : (sub.status === 'PENDING' ? (langService.isArabic() ? 'بانتظار اعتماد المعلمة' : 'Pending Review') : (langService.isArabic() ? 'قيد الحل الآن' : 'In Progress')) }}
               </span>
 
-              <!-- Action: Direct Teacher Approval Button if Pending -->
+              <!-- Action 1: Direct Teacher Approval Button if Pending (Compact) -->
               @if (sub.status === 'PENDING') {
                 <button
                   type="button"
                   (click)="confirmAndApproveSubmission(sub)"
                   [disabled]="isApprovingId() === sub.id"
-                  class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   [title]="langService.isArabic() ? 'اعتماد ونشر النتيجة فوراً' : 'Approve and publish result'"
                 >
-                  <app-icon name="check-circle" [size]="14" />
-                  <span>{{ langService.isArabic() ? 'اعتماد ونشر النتيجة' : 'Approve & Publish' }}</span>
+                  <app-icon name="check-circle" [size]="13" />
+                  <span>{{ langService.isArabic() ? 'اعتماد' : 'Approve' }}</span>
                 </button>
               }
 
-              <!-- Action: View Detailed Answers -->
+              <!-- Action 2: View Detailed Answers & Grading -->
               <button
                 type="button"
                 (click)="openAnswersInspector(sub)"
-                class="px-4 py-2 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
-                <app-icon name="file-text" [size]="14" />
-                <span>{{ langService.isArabic() ? 'عرض تفاصيل الإجابات' : 'View Answer Details' }}</span>
+                <app-icon name="file-text" [size]="13" />
+                <span>{{ langService.isArabic() ? 'تفاصيل الإجابات' : 'Answer Details' }}</span>
               </button>
-
-              <!-- Action: Grade Essay via Canvas if applicable -->
-              @if (sub.hasEssayQuestions || (sub.homeworkImages && sub.homeworkImages.length > 0)) {
-                <button
-                  type="button"
-                  (click)="openGradingFromSubmission(sub)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold text-white btn-gold-metallic shadow-gold-glow hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <app-icon name="award" [size]="14" />
-                  <span>{{ langService.isArabic() ? 'تصحيح يدوي' : 'Grade Canvas' }}</span>
-                </button>
-              }
             </div>
           </div>
         </div>
@@ -944,73 +922,110 @@
                     }
                   </div>
 
-                  <!-- Teacher Direct Grading Action Buttons -->
+                  <!-- Teacher Direct Grading Action Controls (Full Freedom Grade Selection + Quick Presets) -->
                   <div class="pt-3 border-t border-surface-border">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
                       <div class="space-y-0.5">
-                        <span class="text-xs font-black text-text-primary block flex items-center gap-1.5">
+                        <span class="text-xs font-black text-text-primary flex items-center gap-1.5">
                           <app-icon name="award" [size]="14" className="text-brand-accent" />
-                          <span>{{ langService.isArabic() ? 'تصحيح المعلمة لهذا السؤال المقالي:' : 'Teacher Direct Grading Decision:' }}</span>
+                          <span>{{ langService.isArabic() ? 'رصد درجة السؤال المقالي:' : 'Grade Essay Question:' }}</span>
+                          @if (!q.isPendingManualGrading) {
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-numeric bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                              {{ langService.isArabic() ? ('المرصود: ' + q.pointsEarned + ' / ' + q.points) : ('Awarded: ' + q.pointsEarned + ' / ' + q.points) }}
+                            </span>
+                          }
                         </span>
                         <span class="text-[11px] text-text-muted">
-                          {{ langService.isArabic() ? 'اختر التقييم ليتم تحديث مجموع درجات الطالب واعتماده فورياً:' : 'Select grade to update and persist total score instantly:' }}
+                          {{ langService.isArabic() ? 'حددي درجة الطالب بحرية، أو اختاري من الأزرار السريعة:' : 'Set student score freely or select a quick preset:' }}
                         </span>
                       </div>
 
-                      <div class="flex items-center gap-2">
-                        <!-- Full Mark Button -->
-                        <button
-                          type="button"
-                          (click)="gradeEssayQuestionInModal(item, q, 'FULL')"
-                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
-                          [class.bg-emerald-600]="q.gradingDecision === 'FULL'"
-                          [class.text-white]="q.gradingDecision === 'FULL'"
-                          [class.shadow-brand-glow]="q.gradingDecision === 'FULL'"
-                          [class.border-emerald-600]="q.gradingDecision === 'FULL'"
-                          [class.bg-surface-bg]="q.gradingDecision !== 'FULL'"
-                          [class.text-emerald-700]="q.gradingDecision !== 'FULL'"
-                          [class.border-emerald-500/30]="q.gradingDecision !== 'FULL'"
-                          [class.hover:bg-emerald-500/10]="q.gradingDecision !== 'FULL'"
-                        >
-                          <app-icon name="check-circle" [size]="13" />
-                          <span>{{ langService.isArabic() ? ('صح (درجة كاملة: ' + q.points + ')') : ('Correct (Full: ' + q.points + ')') }}</span>
-                        </button>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <!-- Custom Score Direct Input -->
+                        <div class="flex items-center gap-1.5 bg-surface-bg p-1 rounded-xl border border-surface-border focus-within:border-brand-primary transition-colors">
+                          <label class="text-[11px] font-bold text-text-secondary px-1">
+                            {{ langService.isArabic() ? 'الدرجة:' : 'Score:' }}
+                          </label>
+                          <input
+                            type="number"
+                            [min]="0"
+                            [max]="q.points"
+                            step="0.5"
+                            [value]="q.pointsEarned"
+                            #customScoreInput
+                            (keydown.enter)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
+                            class="w-14 sm:w-16 px-2 py-1 rounded-lg bg-surface-card border border-surface-border text-center font-mono font-bold text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+                          />
+                          <span class="text-xs font-mono font-bold text-text-muted">/ {{ q.points }}</span>
+                          <button
+                            type="button"
+                            (click)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
+                            class="px-2.5 py-1 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-[11px] font-black transition-all cursor-pointer shadow-xs active:scale-95"
+                            [title]="langService.isArabic() ? 'اعتماد الدرجة المكتوبة' : 'Save score'"
+                          >
+                            {{ langService.isArabic() ? 'رصد' : 'Set' }}
+                          </button>
+                        </div>
 
-                        <!-- Half Mark Button -->
-                        <button
-                          type="button"
-                          (click)="gradeEssayQuestionInModal(item, q, 'HALF')"
-                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
-                          [class.bg-blue-600]="q.gradingDecision === 'HALF'"
-                          [class.text-white]="q.gradingDecision === 'HALF'"
-                          [class.shadow-md]="q.gradingDecision === 'HALF'"
-                          [class.border-blue-600]="q.gradingDecision === 'HALF'"
-                          [class.bg-surface-bg]="q.gradingDecision !== 'HALF'"
-                          [class.text-blue-700]="q.gradingDecision !== 'HALF'"
-                          [class.border-blue-500/30]="q.gradingDecision !== 'HALF'"
-                          [class.hover:bg-blue-500/10]="q.gradingDecision !== 'HALF'"
-                        >
-                          <app-icon name="star" [size]="13" />
-                          <span>{{ langService.isArabic() ? ('نصف الدرجة (' + (q.points / 2) + ')') : ('Half Points (' + (q.points / 2) + ')') }}</span>
-                        </button>
+                        <!-- Quick Presets -->
+                        <div class="flex items-center gap-1.5">
+                          <!-- Full Mark Preset -->
+                          <button
+                            type="button"
+                            (click)="customScoreInput.value = '' + q.points; gradeEssayQuestionInModal(item, q, 'FULL')"
+                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
+                            [class.bg-emerald-600]="q.gradingDecision === 'FULL'"
+                            [class.text-white]="q.gradingDecision === 'FULL'"
+                            [class.shadow-brand-glow]="q.gradingDecision === 'FULL'"
+                            [class.border-emerald-600]="q.gradingDecision === 'FULL'"
+                            [class.bg-surface-bg]="q.gradingDecision !== 'FULL'"
+                            [class.text-emerald-700]="q.gradingDecision !== 'FULL'"
+                            [class.border-emerald-500/30]="q.gradingDecision !== 'FULL'"
+                            [class.hover:bg-emerald-500/10]="q.gradingDecision !== 'FULL'"
+                            [title]="langService.isArabic() ? 'درجة كاملة' : 'Full score'"
+                          >
+                            <app-icon name="check-circle" [size]="12" />
+                            <span>{{ langService.isArabic() ? ('كاملة (' + q.points + ')') : ('Full (' + q.points + ')') }}</span>
+                          </button>
 
-                        <!-- Zero Mark Button -->
-                        <button
-                          type="button"
-                          (click)="gradeEssayQuestionInModal(item, q, 'ZERO')"
-                          class="px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5"
-                          [class.bg-rose-600]="q.gradingDecision === 'ZERO'"
-                          [class.text-white]="q.gradingDecision === 'ZERO'"
-                          [class.shadow-md]="q.gradingDecision === 'ZERO'"
-                          [class.border-rose-600]="q.gradingDecision === 'ZERO'"
-                          [class.bg-surface-bg]="q.gradingDecision !== 'ZERO'"
-                          [class.text-rose-700]="q.gradingDecision !== 'ZERO'"
-                          [class.border-rose-500/30]="q.gradingDecision !== 'ZERO'"
-                          [class.hover:bg-rose-500/10]="q.gradingDecision !== 'ZERO'"
-                        >
-                          <app-icon name="x" [size]="13" />
-                          <span>{{ langService.isArabic() ? 'خطأ (صفر)' : 'Wrong (Zero)' }}</span>
-                        </button>
+                          <!-- Half Mark Preset -->
+                          <button
+                            type="button"
+                            (click)="customScoreInput.value = '' + (q.points / 2); gradeEssayQuestionInModal(item, q, 'HALF')"
+                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
+                            [class.bg-blue-600]="q.gradingDecision === 'HALF'"
+                            [class.text-white]="q.gradingDecision === 'HALF'"
+                            [class.shadow-md]="q.gradingDecision === 'HALF'"
+                            [class.border-blue-600]="q.gradingDecision === 'HALF'"
+                            [class.bg-surface-bg]="q.gradingDecision !== 'HALF'"
+                            [class.text-blue-700]="q.gradingDecision !== 'HALF'"
+                            [class.border-blue-500/30]="q.gradingDecision !== 'HALF'"
+                            [class.hover:bg-blue-500/10]="q.gradingDecision !== 'HALF'"
+                            [title]="langService.isArabic() ? 'نصف الدرجة' : 'Half score'"
+                          >
+                            <app-icon name="star" [size]="12" />
+                            <span>{{ langService.isArabic() ? ('نصف (' + (q.points / 2) + ')') : ('Half (' + (q.points / 2) + ')') }}</span>
+                          </button>
+
+                          <!-- Zero Mark Preset -->
+                          <button
+                            type="button"
+                            (click)="customScoreInput.value = '0'; gradeEssayQuestionInModal(item, q, 'ZERO')"
+                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1"
+                            [class.bg-rose-600]="q.gradingDecision === 'ZERO'"
+                            [class.text-white]="q.gradingDecision === 'ZERO'"
+                            [class.shadow-md]="q.gradingDecision === 'ZERO'"
+                            [class.border-rose-600]="q.gradingDecision === 'ZERO'"
+                            [class.bg-surface-bg]="q.gradingDecision !== 'ZERO'"
+                            [class.text-rose-700]="q.gradingDecision !== 'ZERO'"
+                            [class.border-rose-500/30]="q.gradingDecision !== 'ZERO'"
+                            [class.hover:bg-rose-500/10]="q.gradingDecision !== 'ZERO'"
+                            [title]="langService.isArabic() ? 'صفر / خطأ' : 'Zero'"
+                          >
+                            <app-icon name="x" [size]="12" />
+                            <span>{{ langService.isArabic() ? 'صفر' : 'Zero' }}</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
