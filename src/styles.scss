@@ -418,6 +418,20 @@ code,
 @keyframes fadeIn05 {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn05,
+.animate-fade-in {
+  animation: fadeIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeSlideUp05 {
+  from {
+    opacity: 0;
     transform: translateY(6px);
   }
   to {
@@ -426,9 +440,8 @@ code,
   }
 }
 
-.fadeIn05,
-.animate-fade-in {
-  animation: fadeIn05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+.animate-fade-slide-up {
+  animation: fadeSlideUp05 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes modalScaleIn05 {
