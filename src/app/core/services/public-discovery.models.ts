@@ -11,6 +11,12 @@ export interface IGradeLevelTreeItem {
   gradeLevel: string;
   titleAr?: string;
   titleEn?: string;
+  stageCode?: string;
+  stageAr?: string;
+  stageEn?: string;
+  countryCode?: string;
+  divisionCode?: string;
+  isCustom?: boolean;
   terms: ITermTreeItem[];
   hasPublishedUnits: boolean;
   totalPublishedUnitsCount: number;
@@ -25,6 +31,11 @@ export interface IGradeItemData {
   titleEn?: string;
   shortLabelAr?: string;
   shortLabelEn?: string;
+  stageCode?: string;
+  stageAr?: string;
+  stageEn?: string;
+  countryCode?: string;
+  divisionCode?: string;
   isCustom?: boolean;
 }
 

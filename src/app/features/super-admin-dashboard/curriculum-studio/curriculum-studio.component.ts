@@ -258,18 +258,20 @@ export class CurriculumStudioComponent implements OnInit {
     if (track.code === 'GULF') {
       const countryData = findGulfCountry(this.modalGulfCountry());
       if (countryData) {
-        return track.grades.map(g => {
-          if (g.isCustom) {
-            return g;
-          }
-          const countryGrade = countryData.grades.find(cg => cg.code === g.code);
-          return {
-            code: g.code,
-            titleAr: countryGrade ? countryGrade.titleAr : g.titleAr,
-            titleEn: countryGrade ? (countryGrade.titleEn || countryGrade.titleAr) : (g.titleEn || g.titleAr),
-            isCustom: false
-          };
-        });
+        return track.grades
+          .filter((g) => !g.isCustom || !g.countryCode || g.countryCode === countryData.code)
+          .map((g) => {
+            if (g.isCustom) {
+              return g;
+            }
+            const countryGrade = countryData.grades.find((cg) => cg.code === g.code);
+            return {
+              code: g.code,
+              titleAr: countryGrade ? countryGrade.titleAr : g.titleAr,
+              titleEn: countryGrade ? (countryGrade.titleEn || countryGrade.titleAr) : (g.titleEn || g.titleAr),
+              isCustom: false
+            };
+          });
       }
     }
     return track.grades;
@@ -289,7 +291,11 @@ export class CurriculumStudioComponent implements OnInit {
     const country = findGulfCountry(this.modalGulfCountry());
     if (!country) return [];
     const allStageGradeCodes = new Set(country.stages.flatMap((s) => s.gradeCodes));
-    return this.getDisplayedGradesForTrack(track).filter((g) => !allStageGradeCodes.has(g.code));
+    return this.getDisplayedGradesForTrack(track).filter((g) => {
+      if (allStageGradeCodes.has(g.code)) return false;
+      if (g.countryCode && g.countryCode !== country.code) return false;
+      return true;
+    });
   }
 
   getGulfStagesForFilter(): readonly IGulfStageDefinition[] {
@@ -426,7 +432,16 @@ export class CurriculumStudioComponent implements OnInit {
 
   getOtherIntlGradesForFilter(): GradeOption[] {
     const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
-    return track ? this.getOtherIntlGrades(track) : [];
+    if (!track) return [];
+    const activeDivCode = this.selectedIntlDivision();
+    const allStageCodes = new Set(
+      INTERNATIONAL_DIVISIONS_DATA.flatMap((d) => d.stages.flatMap((s) => s.gradeCodes))
+    );
+    return track.grades.filter((g) => {
+      if (allStageCodes.has(g.code)) return false;
+      if (g.divisionCode && g.divisionCode !== activeDivCode) return false;
+      return true;
+    });
   }
 
   getIntlDivisionsForAddModal(): CurriculumDivisionItem[] {
@@ -474,10 +489,15 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   getOtherIntlGrades(track: CurriculumTrackItem): GradeOption[] {
+    const activeDivCode = this.modalIntlDivision();
     const allStageCodes = new Set(
       INTERNATIONAL_DIVISIONS_DATA.flatMap((d) => d.stages.flatMap((s) => s.gradeCodes))
     );
-    return track.grades.filter((g) => !allStageCodes.has(g.code));
+    return track.grades.filter((g) => {
+      if (allStageCodes.has(g.code)) return false;
+      if (g.divisionCode && g.divisionCode !== activeDivCode) return false;
+      return true;
+    });
   }
 
   readonly intlDivisionsData = INTERNATIONAL_DIVISIONS_DATA;
@@ -722,11 +742,17 @@ export class CurriculumStudioComponent implements OnInit {
     if (curr === 'GULF') {
       const countryData = findGulfCountry(this.selectedGulfCountry());
       if (countryData) {
-        return countryData.grades.map(g => ({
+        const canonical = countryData.grades.map(g => ({
           code: g.code,
           titleAr: g.titleAr,
-          titleEn: g.titleEn
+          titleEn: g.titleEn,
+          isCustom: false
         }));
+        const track = this.allCurriculaTracks().find((t) => t.code === curr);
+        const customForCountry = (track?.grades || []).filter(
+          g => g.isCustom && (!g.countryCode || g.countryCode === countryData.code)
+        );
+        return [...canonical, ...customForCountry];
       }
     }
     if (curr === 'INTERNATIONAL') {
@@ -734,15 +760,19 @@ export class CurriculumStudioComponent implements OnInit {
       if (divData) {
         const divGradeCodes = new Set(divData.stages.flatMap(s => s.gradeCodes));
         const track = this.allCurriculaTracks().find((t) => t.code === curr);
+        const customForDiv = (track?.grades || []).filter(
+          g => g.isCustom && (!g.divisionCode || g.divisionCode === this.selectedIntlDivision())
+        );
         if (track) {
           const filtered = track.grades.filter(g => divGradeCodes.has(g.code));
-          if (filtered.length > 0) return filtered;
+          if (filtered.length > 0) return [...filtered, ...customForDiv];
         }
-        return divData.grades.map(g => ({
+        return [...divData.grades.map(g => ({
           code: g.code,
           titleAr: g.titleAr,
-          titleEn: g.titleEn
-        }));
+          titleEn: g.titleEn,
+          isCustom: false
+        })), ...customForDiv];
       }
     }
     const track = this.allCurriculaTracks().find((t) => t.code === curr);
@@ -1151,11 +1181,23 @@ export class CurriculumStudioComponent implements OnInit {
       return;
     }
 
+    const isGulf = gm.trackCode === 'GULF';
+    const isIntl = gm.trackCode === 'INTERNATIONAL';
+    const existingTrack = this.allCurriculaTracks().find((t) => t.code === gm.trackCode);
+    const existingGrade = existingTrack?.grades.find((g) => g.code === (gm.mode === 'edit' ? gm.originalCode : cleanCode));
+
     const newGrade: GradeOption = {
       code: cleanCode,
       titleAr: cleanTitleAr,
       titleEn: cleanTitleEn,
-      isCustom: true
+      isCustom: true,
+      countryCode: isGulf ? (existingGrade?.countryCode || this.modalAddGradeCountry()) : undefined,
+      divisionCode: isIntl ? (existingGrade?.divisionCode || this.modalAddGradeIntlDivision()) : undefined,
+      stageCode: existingGrade?.stageCode || 'OTHER',
+      stageAr: existingGrade?.stageAr || (isIntl ? 'صفوف دراسية دولية أخرى' : 'صفوف دراسية أخرى'),
+      stageEn: existingGrade?.stageEn || (isIntl ? 'Other International Grade Levels' : 'Other Grade Levels'),
+      shortLabelAr: existingGrade?.shortLabelAr || cleanTitleAr,
+      shortLabelEn: existingGrade?.shortLabelEn || cleanTitleEn
     };
 
     let updatedExisting = false;

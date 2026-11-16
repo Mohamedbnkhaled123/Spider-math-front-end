@@ -77,27 +77,10 @@ export class StudentProfileCompletionComponent implements OnInit {
 
   readonly availableGrades = computed(() => {
     const curr = this.curriculum();
-    if (curr === 'GULF') {
-      const countryData = findGulfCountry(this.country()) || GULF_COUNTRIES_DATA[0];
-      return countryData.grades.map(g => ({
-        code: g.code,
-        titleAr: g.titleAr,
-        titleEn: g.titleEn,
-        shortLabelAr: g.shortLabelAr || g.titleAr,
-        shortLabelEn: g.shortLabelEn || g.titleEn
-      }));
-    }
-    if (curr === 'INTERNATIONAL') {
-      const divData = findInternationalDivision(this.selectedIntlDivision()) || INTERNATIONAL_DIVISIONS_DATA[0];
-      return divData.grades.map(g => ({
-        code: g.code,
-        titleAr: g.titleAr,
-        titleEn: g.titleEn,
-        shortLabelAr: g.shortLabelAr || g.titleAr,
-        shortLabelEn: g.shortLabelEn || g.titleEn
-      }));
-    }
-    return this.discoveryService.getAvailableGradesForCurriculum(curr, true);
+    const subFilter = curr === 'GULF'
+      ? this.country()
+      : (curr === 'INTERNATIONAL' ? this.selectedIntlDivision() : undefined);
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true, subFilter);
   });
 
   ngOnInit(): void {

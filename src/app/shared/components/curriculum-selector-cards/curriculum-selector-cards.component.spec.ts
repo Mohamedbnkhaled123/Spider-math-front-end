@@ -321,4 +321,150 @@ describe('CurriculumSelectorCardsComponent', () => {
       expect(ks1Grades.map((g) => g.code)).toEqual(['IGCSE_YEAR_1', 'IGCSE_YEAR_2']);
     });
   });
+
+  describe('Dynamic Custom Stages & Other Grade Levels (QODORAT / GAT)', () => {
+    let discoveryService: PublicDiscoveryService;
+
+    beforeEach(() => {
+      discoveryService = TestBed.inject(PublicDiscoveryService);
+      // Simulate CMS track configuration returning custom grades under OTHER stage
+      discoveryService.curriculaTracks.set([
+        {
+          code: 'GULF',
+          nameAr: 'المنهج الخليجي',
+          nameEn: 'Gulf Curriculum',
+          isActive: true,
+          grades: [
+            {
+              code: 'QODORAT',
+              titleAr: 'قدرات عامة',
+              titleEn: 'General Abilities Test (GAT)',
+              shortLabelAr: 'قدرات',
+              shortLabelEn: 'GAT',
+              stageCode: 'OTHER',
+              stageAr: 'صفوف دراسية أخرى',
+              stageEn: 'Other Grade Levels',
+              countryCode: 'SA',
+              isCustom: true,
+              isActive: true,
+              isAvailable: true
+            }
+          ]
+        } as any,
+        {
+          code: 'INTERNATIONAL',
+          nameAr: 'المنهج الدولي',
+          nameEn: 'International Curriculum',
+          isActive: true,
+          grades: [
+            {
+              code: 'INTL_ACT',
+              titleAr: 'اختبار ACT الأمريكي',
+              titleEn: 'American ACT Test',
+              shortLabelAr: 'ACT',
+              shortLabelEn: 'ACT',
+              stageCode: 'OTHER',
+              divisionCode: 'AMERICAN_CURRICULUM',
+              isCustom: true,
+              isActive: true,
+              isAvailable: true
+            }
+          ]
+        } as any
+      ]);
+      discoveryService.activeGrades.set(['QODORAT', 'INTL_ACT', 'SA_GRADE_1', 'US_GRADE_1']);
+    });
+
+    it('should surface custom active grades (QODORAT) for Saudi Arabia in getOtherGulfGrades', () => {
+      component.openTrackModal('GULF');
+      component.selectGulfCountry('SA');
+
+      expect(component.hasOtherGulfGrades()).toBeTrue();
+      const otherGrades = component.getOtherGulfGrades();
+      expect(otherGrades.length).toBeGreaterThanOrEqual(1);
+      const qodorat = otherGrades.find(g => g.code === 'QODORAT');
+      expect(qodorat).toBeDefined();
+      expect(qodorat?.shortLabelAr).toBe('قدرات');
+      expect(qodorat?.countryCode).toBe('SA');
+      expect(qodorat?.isCustom).toBeTrue();
+    });
+
+    it('should NOT surface Saudi Arabia custom grades when Kuwait is selected', () => {
+      component.openTrackModal('GULF');
+      component.selectGulfCountry('KW');
+
+      const otherGrades = component.getOtherGulfGrades();
+      const qodorat = otherGrades.find(g => g.code === 'QODORAT');
+      expect(qodorat).toBeUndefined();
+    });
+
+    it('should filter out standard stage grades when activeStageFilter is OTHER', () => {
+      component.openTrackModal('GULF');
+      component.selectGulfCountry('SA');
+
+      component.setStageFilter('OTHER');
+      expect(component.activeStageFilter()).toBe('OTHER');
+
+      const saCountry = component.activeGulfCountry();
+      const primaryStage = saCountry.stages[0];
+      const stageGrades = component.getGulfStageGrades(primaryStage);
+      expect(stageGrades.length).toBe(0);
+
+      const otherGrades = component.getOtherGulfGrades();
+      expect(otherGrades.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should reset activeStageFilter to ALL when switching to a country without other grades', () => {
+      component.openTrackModal('GULF');
+      component.selectGulfCountry('SA');
+      component.setStageFilter('OTHER');
+      expect(component.activeStageFilter()).toBe('OTHER');
+
+      // Kuwait has no custom grades in this setup
+      component.selectGulfCountry('KW');
+      expect(component.activeStageFilter()).toBe('ALL');
+    });
+
+    it('should support custom tracks for International curriculum in getOtherIntlGrades', () => {
+      component.openTrackModal('INTERNATIONAL');
+      component.selectIntlDivision('AMERICAN_CURRICULUM');
+
+      expect(component.hasOtherIntlGrades()).toBeTrue();
+      const otherGrades = component.getOtherIntlGrades();
+      const act = otherGrades.find(g => g.code === 'INTL_ACT');
+      expect(act).toBeDefined();
+      expect(act?.divisionCode).toBe('AMERICAN_CURRICULUM');
+
+      // Switch to British curriculum - ACT should not appear
+      component.selectIntlDivision('BRITISH_CURRICULUM');
+      const britishOther = component.getOtherIntlGrades();
+      expect(britishOther.find(g => g.code === 'INTL_ACT')).toBeUndefined();
+    });
+
+    it('should dynamically return custom stage label when configured', () => {
+      component.openTrackModal('GULF');
+      component.selectGulfCountry('SA');
+
+      // SA has QODORAT which has stageAr configured
+      const labelAr = component.getOtherGulfStageLabel(true);
+      const labelEn = component.getOtherGulfStageLabel(false);
+      expect(labelAr).toBeDefined();
+      expect(labelEn).toBeDefined();
+
+      const intlLabelAr = component.getOtherIntlStageLabel(true);
+      const intlLabelEn = component.getOtherIntlStageLabel(false);
+      expect(intlLabelAr).toBeDefined();
+      expect(intlLabelEn).toBeDefined();
+    });
+
+    it('should preserve all canonical grades when custom grades are present', () => {
+      const gulfCard = component.curriculumCards().find(c => c.code === 'GULF');
+      expect(gulfCard).toBeDefined();
+      // Canonical grade 1 to 12 should be preserved
+      expect(gulfCard?.availableGrades.some(g => g.code === 'GRADE_1')).toBeTrue();
+      expect(gulfCard?.availableGrades.some(g => g.code === 'GRADE_12')).toBeTrue();
+      // And custom grade QODORAT should also be present
+      expect(gulfCard?.availableGrades.some(g => g.code === 'QODORAT')).toBeTrue();
+    });
+  });
 });

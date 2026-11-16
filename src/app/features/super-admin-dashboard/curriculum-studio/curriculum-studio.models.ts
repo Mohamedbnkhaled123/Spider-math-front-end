@@ -12,6 +12,13 @@ export interface GradeOption {
   code: string;
   titleAr: string;
   titleEn: string;
+  shortLabelAr?: string;
+  shortLabelEn?: string;
+  stageCode?: string;
+  stageAr?: string;
+  stageEn?: string;
+  countryCode?: string;
+  divisionCode?: string;
   isCustom?: boolean;
 }
 
@@ -19,6 +26,7 @@ export interface CurriculumStageItem {
   code: string;
   nameAr: string;
   nameEn?: string;
+  gradeCodes?: string[];
 }
 
 export interface CurriculumDivisionItem {

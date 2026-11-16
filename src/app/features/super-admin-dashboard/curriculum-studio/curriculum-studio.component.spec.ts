@@ -350,6 +350,30 @@ describe('CurriculumStudioComponent', () => {
       expect(other[0].code).toBe('CUSTOM_INTL_AP');
     });
 
+    it('should filter custom Gulf grades by countryCode in getOtherGulfGrades', () => {
+      const gulfTrack = component.allCurriculaTracks().find((t) => t.code === 'GULF')!;
+      component.modalGulfCountry.set('SA');
+
+      const updatedTrack = {
+        ...gulfTrack,
+        grades: [
+          ...gulfTrack.grades,
+          { code: 'CUSTOM_SA_QUDURAT', titleAr: 'قدرات', titleEn: 'Abilities', isCustom: true, countryCode: 'SA' },
+          { code: 'CUSTOM_KW_OTHER', titleAr: 'مادة كويتية', titleEn: 'Kuwait Subject', isCustom: true, countryCode: 'KW' }
+        ]
+      };
+
+      const saOther = component.getOtherGulfGrades(updatedTrack);
+      expect(saOther.some((g) => g.code === 'CUSTOM_SA_QUDURAT')).toBeTrue();
+      expect(saOther.some((g) => g.code === 'CUSTOM_KW_OTHER')).toBeFalse();
+
+      // Switch modal to Kuwait - SA grade should not appear
+      component.modalGulfCountry.set('KW');
+      const kwOther = component.getOtherGulfGrades(updatedTrack);
+      expect(kwOther.some((g) => g.code === 'CUSTOM_SA_QUDURAT')).toBeFalse();
+      expect(kwOther.some((g) => g.code === 'CUSTOM_KW_OTHER')).toBeTrue();
+    });
+
     it('should support dynamic title editing for Track name', () => {
       component.openEditTrackName('INTERNATIONAL');
       expect(component.titleEditModal().isOpen).toBeTrue();

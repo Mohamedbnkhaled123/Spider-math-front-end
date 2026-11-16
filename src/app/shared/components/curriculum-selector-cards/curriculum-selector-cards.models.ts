@@ -12,6 +12,9 @@ export interface IGradeLevelAvailability extends IGradeLevelMeta {
   hasPublishedUnits: boolean;
   hasPlacementTest?: boolean;
   isActive?: boolean;
+  countryCode?: string;
+  divisionCode?: string;
+  isCustom?: boolean;
 }
 
 export interface ICurriculumUiCard extends ICurriculumNode {

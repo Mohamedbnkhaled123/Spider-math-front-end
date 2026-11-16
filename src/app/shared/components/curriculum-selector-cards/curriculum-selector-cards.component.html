@@ -467,6 +467,21 @@
                     <span class="sm:hidden">{{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}</span>
                     <span class="hidden sm:inline">{{ langService.isArabic() ? (selectedIntlDivision() === 'AMERICAN_CURRICULUM' ? 'الثانوية (High School)' : 'الثانوية / IGCSE') : 'Secondary' }}</span>
                   </button>
+                  @if (hasOtherIntlGrades()) {
+                    <button
+                      type="button"
+                      (click)="setStageFilter('OTHER')"
+                      class="px-2 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
+                      [class.bg-brand-gold]="activeStageFilter() === 'OTHER'"
+                      [class.text-slate-950]="activeStageFilter() === 'OTHER'"
+                      [class.font-bold]="activeStageFilter() === 'OTHER'"
+                      [class.shadow-sm]="activeStageFilter() === 'OTHER'"
+                      [class.text-text-secondary]="activeStageFilter() !== 'OTHER'"
+                      [class.hover:text-text-primary]="activeStageFilter() !== 'OTHER'"
+                    >
+                      <span>{{ getOtherIntlStageLabel(langService.isArabic()) }}</span>
+                    </button>
+                  }
                 </div>
               } @else if (selectedCurriculumCode() === 'GULF') {
                 <!-- Gulf Country Switcher (Saudi Arabia, Qatar, UAE, Kuwait) -->
@@ -544,6 +559,21 @@
                   >
                     {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
                   </button>
+                  @if (hasOtherGulfGrades()) {
+                    <button
+                      type="button"
+                      (click)="setStageFilter('OTHER')"
+                      class="px-2 sm:px-3 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center w-full sm:w-auto min-w-0 truncate"
+                      [class.bg-brand-gold]="activeStageFilter() === 'OTHER'"
+                      [class.text-slate-950]="activeStageFilter() === 'OTHER'"
+                      [class.font-bold]="activeStageFilter() === 'OTHER'"
+                      [class.shadow-sm]="activeStageFilter() === 'OTHER'"
+                      [class.text-text-secondary]="activeStageFilter() !== 'OTHER'"
+                      [class.hover:text-text-primary]="activeStageFilter() !== 'OTHER'"
+                    >
+                      {{ getOtherGulfStageLabel(langService.isArabic()) }}
+                    </button>
+                  }
                 </div>
               } @else {
                 <!-- Egyptian & General Stage Filter -->
@@ -600,6 +630,21 @@
                   >
                     {{ langService.isArabic() ? 'الثانوية' : 'Secondary' }}
                   </button>
+                  @if (hasOtherEgyptianGrades()) {
+                    <button
+                      type="button"
+                      (click)="setStageFilter('OTHER')"
+                      class="px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-all duration-500 cursor-pointer text-center shrink-0"
+                      [class.bg-brand-gold]="activeStageFilter() === 'OTHER'"
+                      [class.text-slate-950]="activeStageFilter() === 'OTHER'"
+                      [class.font-bold]="activeStageFilter() === 'OTHER'"
+                      [class.shadow-sm]="activeStageFilter() === 'OTHER'"
+                      [class.text-text-secondary]="activeStageFilter() !== 'OTHER'"
+                      [class.hover:text-text-primary]="activeStageFilter() !== 'OTHER'"
+                    >
+                      {{ getOtherEgyptianStageLabel(langService.isArabic()) }}
+                    </button>
+                  }
                 </div>
               }
             </div>
@@ -650,6 +695,27 @@
                   </div>
                 }
               }
+
+              <!-- Other International Grades (e.g. custom subjects / other tracks) -->
+              @if (getOtherIntlGrades().length > 0) {
+                <div class="space-y-3.5">
+                  <div class="flex items-center gap-3 px-1">
+                    <span class="inline-flex items-center gap-2 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border shadow-sm text-amber-400 bg-amber-500/10 border-amber-500/20">
+                      <span>{{ getOtherIntlStageLabel(langService.isArabic()) }}</span>
+                    </span>
+                    <span class="h-px flex-1 bg-surface-border/70"></span>
+                    <span class="text-xs font-bold text-text-muted">
+                      {{ getOtherIntlGrades().length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                    @for (grade of getOtherIntlGrades(); track grade.code) {
+                      <ng-container *ngTemplateOutlet="gradeCardTemplate; context: { grade: grade }"></ng-container>
+                    }
+                  </div>
+                </div>
+              }
             </div>
           } @else if (selectedCurriculumCode() === 'GULF') {
             <!-- Grouped by stages of the active Gulf country -->
@@ -676,6 +742,27 @@
                     </div>
                   </div>
                 }
+              }
+
+              <!-- Other Gulf Grades (e.g. Qodorat / GAT / Custom Stages) -->
+              @if (getOtherGulfGrades().length > 0) {
+                <div class="space-y-3.5">
+                  <div class="flex items-center gap-3 px-1">
+                    <span class="inline-flex items-center gap-2 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border shadow-sm text-amber-400 bg-amber-500/10 border-amber-500/20">
+                      <span>{{ getOtherGulfStageLabel(langService.isArabic()) }}</span>
+                    </span>
+                    <span class="h-px flex-1 bg-surface-border/70"></span>
+                    <span class="text-xs font-bold text-text-muted">
+                      {{ getOtherGulfGrades().length }} {{ langService.isArabic() ? 'صفوف' : 'Grades' }}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                    @for (grade of getOtherGulfGrades(); track grade.code) {
+                      <ng-container *ngTemplateOutlet="gradeCardTemplate; context: { grade: grade }"></ng-container>
+                    }
+                  </div>
+                </div>
               }
             </div>
           } @else {

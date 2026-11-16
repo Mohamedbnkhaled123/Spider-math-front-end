@@ -109,27 +109,10 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
   readonly regAvailableGrades = computed(() => {
     const curr = this.regCurriculum();
-    if (curr === 'GULF') {
-      const countryData = findGulfCountry(this.regCountry()) || GULF_COUNTRIES_DATA[0];
-      return countryData.grades.map(g => ({
-        code: g.code,
-        titleAr: g.titleAr,
-        titleEn: g.titleEn,
-        shortLabelAr: g.shortLabelAr || g.titleAr,
-        shortLabelEn: g.shortLabelEn || g.titleEn
-      }));
-    }
-    if (curr === 'INTERNATIONAL') {
-      const divData = findInternationalDivision(this.regSelectedIntlDivision()) || INTERNATIONAL_DIVISIONS_DATA[0];
-      return divData.grades.map(g => ({
-        code: g.code,
-        titleAr: g.titleAr,
-        titleEn: g.titleEn,
-        shortLabelAr: g.shortLabelAr || g.titleAr,
-        shortLabelEn: g.shortLabelEn || g.titleEn
-      }));
-    }
-    return this.discoveryService.getAvailableGradesForCurriculum(curr, true);
+    const subFilter = curr === 'GULF'
+      ? this.regCountry()
+      : (curr === 'INTERNATIONAL' ? this.regSelectedIntlDivision() : undefined);
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true, subFilter);
   });
 
   ngOnInit(): void {

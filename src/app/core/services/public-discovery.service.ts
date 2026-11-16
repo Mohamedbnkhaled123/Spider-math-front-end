@@ -20,7 +20,11 @@ import {
 import {
   CANONICAL_CURRICULUM_TREE,
   CurriculumCode,
-  AcademicTermCode
+  AcademicTermCode,
+  findGulfCountry,
+  GULF_COUNTRIES_DATA,
+  findInternationalDivision,
+  INTERNATIONAL_DIVISIONS_DATA
 } from '../constants/curriculum-tree.constant';
 import { optimizeCloudinaryUrl } from '../../shared/utils/box2d-cropper.util';
 import { SwrCacheService } from './swr-cache.service';
@@ -327,22 +331,119 @@ export class PublicDiscoveryService {
     return this.activeGrades().includes(code);
   }
 
-  getAvailableGradesForCurriculum(curr: CurriculumCode, activeOnly = true): IGradeItemData[] {
+  getAvailableGradesForCurriculum(curr: CurriculumCode, activeOnly = true, subFilter?: string): IGradeItemData[] {
     const tracks = this.curriculaTracks();
     const track = tracks.find(t => t.code === curr);
     const canonicalNode = CANONICAL_CURRICULUM_TREE.find(c => c.code === curr);
-    const rawGrades = (track?.grades && track.grades.length > 0)
-      ? track.grades
-      : (canonicalNode?.grades || []);
+
+    if (curr === 'GULF') {
+      const countryData = findGulfCountry(subFilter || 'SA') || GULF_COUNTRIES_DATA[0];
+      const standardCodes = new Set(countryData.grades.map(g => g.code));
+
+      // 1. Standard country grades (localized to this country)
+      const countryGrades: IGradeItemData[] = countryData.grades.map(g => {
+        const configured = track?.grades.find(cg => cg.code === g.code);
+        return {
+          code: g.code,
+          titleAr: configured?.titleAr || g.titleAr,
+          titleEn: configured?.titleEn || g.titleEn || g.titleAr,
+          shortLabelAr: g.shortLabelAr || g.titleAr,
+          shortLabelEn: g.shortLabelEn || g.titleEn || g.titleAr,
+          stageAr: g.stageAr,
+          stageEn: g.stageEn,
+          countryCode: countryData.code,
+          isCustom: false
+        };
+      });
+
+      // 2. Custom/Other Gulf grades in configured track (e.g. QODORAT / GAT / custom sections)
+      const customGrades: IGradeItemData[] = (track?.grades || [])
+        .filter(g => {
+          if (standardCodes.has(g.code)) return false;
+          const anyG = g as any;
+          if (anyG.countryCode && anyG.countryCode !== countryData.code) return false;
+          return true;
+        })
+        .map(g => ({
+          code: g.code,
+          titleAr: g.titleAr,
+          titleEn: g.titleEn || g.titleAr,
+          shortLabelAr: g.shortLabelAr || g.titleAr,
+          shortLabelEn: g.shortLabelEn || g.titleEn || g.titleAr,
+          stageAr: g.stageAr || 'صفوف دراسية أخرى',
+          stageEn: g.stageEn || 'Other Grade Levels',
+          countryCode: (g as any).countryCode || countryData.code,
+          isCustom: true
+        }));
+
+      const combined = [...countryGrades, ...customGrades];
+      return activeOnly ? combined.filter(g => this.isGradeActive(g.code)) : combined;
+    }
+
+    if (curr === 'INTERNATIONAL') {
+      const divData = findInternationalDivision(subFilter || 'AMERICAN_CURRICULUM') || INTERNATIONAL_DIVISIONS_DATA[0];
+      const standardCodes = new Set(divData.grades.map(g => g.code));
+
+      const divGrades: IGradeItemData[] = divData.grades.map(g => {
+        const configured = track?.grades.find(cg => cg.code === g.code);
+        return {
+          code: g.code,
+          titleAr: configured?.titleAr || g.titleAr,
+          titleEn: configured?.titleEn || g.titleEn || g.titleAr,
+          shortLabelAr: g.shortLabelAr || g.titleAr,
+          shortLabelEn: g.shortLabelEn || g.titleEn || g.titleAr,
+          stageAr: g.stageAr,
+          stageEn: g.stageEn,
+          divisionCode: divData.code,
+          isCustom: false
+        };
+      });
+
+      const customGrades: IGradeItemData[] = (track?.grades || [])
+        .filter(g => {
+          if (standardCodes.has(g.code)) return false;
+          const anyG = g as any;
+          if (anyG.divisionCode && anyG.divisionCode !== divData.code) return false;
+          return true;
+        })
+        .map(g => ({
+          code: g.code,
+          titleAr: g.titleAr,
+          titleEn: g.titleEn || g.titleAr,
+          shortLabelAr: g.shortLabelAr || g.titleAr,
+          shortLabelEn: g.shortLabelEn || g.titleEn || g.titleAr,
+          stageAr: g.stageAr || 'صفوف دراسية دولية أخرى',
+          stageEn: g.stageEn || 'Other International Grade Levels',
+          divisionCode: (g as any).divisionCode || divData.code,
+          isCustom: true
+        }));
+
+      const combined = [...divGrades, ...customGrades];
+      return activeOnly ? combined.filter(g => this.isGradeActive(g.code)) : combined;
+    }
+
+    // Egyptian, American, or any generic/custom curriculum track
+    const canonicalList = canonicalNode?.grades || [];
+    const canonicalCodes = new Set(canonicalList.map(c => c.code));
+    const configuredMap = new Map((track?.grades || []).map(g => [g.code, g]));
+    const canonicalMerged = canonicalList.map(cg => {
+      const conf = configuredMap.get(cg.code);
+      return conf ? { ...cg, ...conf } : cg;
+    });
+    const extraCustom = (track?.grades || []).filter(g => !canonicalCodes.has(g.code));
+    const rawGrades = [...canonicalMerged, ...extraCustom];
 
     const grades: IGradeItemData[] = rawGrades.map(g => {
       const canonical = canonicalNode?.grades.find(c => c.code === g.code);
       return {
         code: g.code,
         titleAr: g.titleAr,
-        titleEn: g.titleEn,
+        titleEn: g.titleEn || g.titleAr,
         shortLabelAr: g.shortLabelAr || canonical?.shortLabelAr || g.titleAr,
-        shortLabelEn: g.shortLabelEn || canonical?.shortLabelEn || g.titleEn || g.titleAr
+        shortLabelEn: g.shortLabelEn || canonical?.shortLabelEn || g.titleEn || g.titleAr,
+        stageAr: (g as any).stageAr || canonical?.stageAr || 'صفوف دراسية أخرى',
+        stageEn: (g as any).stageEn || canonical?.stageEn || 'Other Grade Levels',
+        isCustom: (g as any).isCustom ?? !canonical
       };
     });
 
@@ -355,8 +456,16 @@ export class PublicDiscoveryService {
   getGradeTitle(curr: CurriculumCode, gradeCode: string, isAr: boolean): string {
     const grades = this.getAvailableGradesForCurriculum(curr, false);
     const grade = grades.find(g => g.code === gradeCode);
-    if (!grade) return gradeCode;
-    return isAr ? grade.titleAr : (grade.titleEn || grade.titleAr);
+    if (grade) {
+      return isAr ? grade.titleAr : (grade.titleEn || grade.titleAr);
+    }
+    for (const track of this.curriculaTracks()) {
+      const match = track.grades?.find(g => g.code === gradeCode);
+      if (match) {
+        return isAr ? match.titleAr : (match.titleEn || match.titleAr);
+      }
+    }
+    return gradeCode;
   }
 
   /**

@@ -54,7 +54,7 @@ import {
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
-export type StageFilterType = 'ALL' | 'PRIMARY' | 'PREPARATORY' | 'SECONDARY';
+export type StageFilterType = 'ALL' | 'PRIMARY' | 'PREPARATORY' | 'SECONDARY' | 'OTHER';
 
 @Component({
   selector: 'app-curriculum-selector-cards',
@@ -193,10 +193,14 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
     return CANONICAL_CURRICULUM_TREE.map(node => {
       const serverCurriculum = rawTree.find(c => c.curriculum === node.code);
       const configuredTrack = tracks.find(t => t.code === node.code);
-      const isLegacyIntl = node.code === 'INTERNATIONAL' && configuredTrack && (!configuredTrack.grades || configuredTrack.grades.length <= 4);
-      const gradesToMap = (configuredTrack?.grades && configuredTrack.grades.length > 0 && !isLegacyIntl)
-        ? configuredTrack.grades
-        : node.grades;
+      const canonicalCodes = new Set(node.grades.map(g => g.code));
+      const configuredMap = new Map((configuredTrack?.grades || []).map(g => [g.code, g]));
+      const canonicalMerged = node.grades.map(cg => {
+        const conf = configuredMap.get(cg.code);
+        return conf ? { ...cg, ...conf } : cg;
+      });
+      const extraCustomGrades = (configuredTrack?.grades || []).filter(g => !canonicalCodes.has(g.code));
+      const gradesToMap = [...canonicalMerged, ...extraCustomGrades];
 
       const availableGrades: IGradeLevelAvailability[] = gradesToMap.map(configuredGrade => {
         const canonicalMeta = node.grades.find(g => g.code === configuredGrade.code);
@@ -207,8 +211,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         const isActive = this.discoveryService.isGradeActive(configuredGrade.code);
         const isAvail = serverGrade ? (serverGrade.isAvailable || hasPlacement) : false;
 
-        let stageAr = canonicalMeta?.stageAr || 'المرحلة الدراسية';
-        let stageEn = canonicalMeta?.stageEn || 'Academic Stage';
+        let stageAr = canonicalMeta?.stageAr || (configuredGrade as any).stageAr || (node.code === 'INTERNATIONAL' ? 'صفوف دراسية دولية أخرى' : 'صفوف دراسية أخرى');
+        let stageEn = canonicalMeta?.stageEn || (configuredGrade as any).stageEn || (node.code === 'INTERNATIONAL' ? 'Other International Grade Levels' : 'Other Grade Levels');
         if (node.code === 'INTERNATIONAL' && configuredTrack?.divisions) {
           for (const div of configuredTrack.divisions) {
             const canonDiv = INTERNATIONAL_DIVISIONS_DATA.find((cd) => cd.code === div.code);
@@ -226,8 +230,8 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           code: configuredGrade.code,
           titleAr: configuredGrade.titleAr || canonicalMeta?.titleAr || configuredGrade.code,
           titleEn: configuredGrade.titleEn || canonicalMeta?.titleEn || configuredGrade.code,
-          shortLabelAr: canonicalMeta?.shortLabelAr || configuredGrade.titleAr || configuredGrade.code,
-          shortLabelEn: canonicalMeta?.shortLabelEn || configuredGrade.titleEn || configuredGrade.code,
+          shortLabelAr: (configuredGrade as any).shortLabelAr || canonicalMeta?.shortLabelAr || configuredGrade.titleAr || configuredGrade.code,
+          shortLabelEn: (configuredGrade as any).shortLabelEn || canonicalMeta?.shortLabelEn || configuredGrade.titleEn || configuredGrade.code,
           stageAr,
           stageEn,
           subjectAr: canonicalMeta?.subjectAr,
@@ -239,7 +243,10 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           isActive,
           hasPublishedUnits: hasPublished,
           publishedUnitsCount: count,
-          hasPlacementTest: hasPlacement
+          hasPlacementTest: hasPlacement,
+          countryCode: (configuredGrade as any).countryCode,
+          divisionCode: (configuredGrade as any).divisionCode,
+          isCustom: (configuredGrade as any).isCustom ?? !canonicalMeta
         };
       });
 
@@ -356,6 +363,61 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           ['GRADE_9', 'GRADE_10', 'GRADE_11', 'GRADE_12'].includes(code)
         );
       }
+      if (filter === 'OTHER') {
+        const isStandardPrimary =
+          stageEn.includes('primary') ||
+          stageEn.includes('elementary') ||
+          code.startsWith('PRI') ||
+          code.startsWith('US_GRADE_1') ||
+          code.startsWith('US_GRADE_2') ||
+          code.startsWith('US_GRADE_3') ||
+          code.startsWith('US_GRADE_4') ||
+          code.startsWith('US_GRADE_5') ||
+          ['GRADE_1', 'GRADE_2', 'GRADE_3', 'GRADE_4', 'GRADE_5', 'GRADE_6'].includes(code) ||
+          code.startsWith('IGCSE_YEAR_1') ||
+          code.startsWith('IGCSE_YEAR_2') ||
+          code.startsWith('IGCSE_YEAR_3') ||
+          code.startsWith('IGCSE_YEAR_4') ||
+          code.startsWith('IGCSE_YEAR_5') ||
+          code.startsWith('IGCSE_YEAR_6');
+        const isStandardPrep =
+          stageEn.includes('prep') ||
+          stageEn.includes('middle') ||
+          code.startsWith('PREP') ||
+          code === 'US_GRADE_6' ||
+          code === 'US_GRADE_7' ||
+          code === 'US_GRADE_8' ||
+          code === 'GRADE_7' ||
+          code === 'GRADE_8' ||
+          code === 'GRADE_9' ||
+          code === 'IGCSE_YEAR_7' ||
+          code === 'IGCSE_YEAR_8' ||
+          code === 'IGCSE_YEAR_9';
+        const isStandardSec =
+          stageEn.includes('second') ||
+          stageEn.includes('high') ||
+          stageEn.includes('entrance') ||
+          stageEn.includes('bacc') ||
+          code.startsWith('SEC') ||
+          code.startsWith('BACC') ||
+          code === 'SAT' ||
+          code.startsWith('SAT') ||
+          code.startsWith('EST') ||
+          code.startsWith('ACT') ||
+          code.startsWith('US_GRADE_9') ||
+          code.startsWith('US_GRADE_10') ||
+          code.startsWith('US_GRADE_11') ||
+          code.startsWith('US_GRADE_12') ||
+          code.startsWith('IGCSE_YEAR_10') ||
+          code.startsWith('IGCSE_YEAR_11') ||
+          code.startsWith('IGCSE_YEAR_12') ||
+          code.startsWith('IGCSE_YEAR_13') ||
+          code.startsWith('IGCSE_OL') ||
+          code.startsWith('IGCSE_AS') ||
+          code.startsWith('IGCSE_AL') ||
+          ['GRADE_9', 'GRADE_10', 'GRADE_11', 'GRADE_12'].includes(code);
+        return (!isStandardPrimary && !isStandardPrep && !isStandardSec) || g.isCustom === true;
+      }
       return true;
     });
   });
@@ -389,6 +451,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   selectIntlDivision(code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
     this.selectedIntlDivision.set(code);
+    if (this.activeStageFilter() === 'OTHER' && !this.hasOtherIntlGrades()) {
+      this.activeStageFilter.set('ALL');
+    }
   }
 
   readonly activeGulfCountry = computed<IGulfCountryData>(() => {
@@ -397,6 +462,9 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   selectGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
     this.selectedGulfCountry.set(code);
+    if (this.activeStageFilter() === 'OTHER' && !this.hasOtherGulfGrades()) {
+      this.activeStageFilter.set('ALL');
+    }
   }
 
   getGulfCountryShortNameAr(code: string): string {
@@ -419,6 +487,7 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   }
 
   getIntlStageGrades(stage: IInternationalStageDefinition): IGradeLevelAvailability[] {
+    if (this.activeStageFilter() === 'OTHER') return [];
     const filtered = this.filteredGradesForModal();
     return stage.gradeCodes
       .map(code => filtered.find(g => g.code === code))
@@ -449,12 +518,15 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
           isActive,
           hasPublishedUnits: availGrade?.hasPublishedUnits ?? false,
           publishedUnitsCount: availGrade?.publishedUnitsCount ?? 0,
-          hasPlacementTest: availGrade?.hasPlacementTest ?? false
+          hasPlacementTest: availGrade?.hasPlacementTest ?? false,
+          countryCode: country.code,
+          isCustom: false
         };
         return gradeItem;
       })
       .filter(grade => {
         if (!grade.isActive) return false;
+        if (filter === 'OTHER') return false;
         if (filter === 'ALL') return true;
         const sCode = stage.code;
         if (filter === 'PRIMARY') return sCode === 'PRIMARY' || sCode === 'CYCLE_1';
@@ -462,6 +534,125 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
         if (filter === 'SECONDARY') return sCode === 'SECONDARY' || sCode === 'CYCLE_3';
         return true;
       });
+  }
+
+  getOtherGulfGrades(): IGradeLevelAvailability[] {
+    const curr = this.selectedCurriculum();
+    if (curr?.code !== 'GULF') return [];
+    const country = this.activeGulfCountry();
+    const allStageGradeCodes = new Set(country.stages.flatMap(s => s.gradeCodes));
+    const filter = this.activeStageFilter();
+
+    if (filter !== 'ALL' && filter !== 'OTHER') {
+      return [];
+    }
+
+    return curr.availableGrades.filter(g => {
+      const isActive = g.isActive ?? this.discoveryService.isGradeActive(g.code);
+      if (!isActive) return false;
+      if (allStageGradeCodes.has(g.code)) return false;
+      if (g.countryCode && g.countryCode !== country.code) return false;
+      return true;
+    }).map(g => ({
+      ...g,
+      stageAr: g.stageAr && g.stageAr !== 'المرحلة الدراسية' ? g.stageAr : (this.langService.isArabic() ? 'صفوف دراسية أخرى' : 'Other Grade Levels'),
+      stageEn: g.stageEn && g.stageEn !== 'Academic Stage' ? g.stageEn : 'Other Grade Levels'
+    }));
+  }
+
+  hasOtherGulfGrades(): boolean {
+    const curr = this.selectedCurriculum();
+    if (curr?.code !== 'GULF') return false;
+    const country = this.activeGulfCountry();
+    const allStageGradeCodes = new Set(country.stages.flatMap(s => s.gradeCodes));
+    return curr.availableGrades.some(g => {
+      const isActive = g.isActive ?? this.discoveryService.isGradeActive(g.code);
+      if (!isActive) return false;
+      if (allStageGradeCodes.has(g.code)) return false;
+      if (g.countryCode && g.countryCode !== country.code) return false;
+      return true;
+    });
+  }
+
+  getOtherIntlGrades(): IGradeLevelAvailability[] {
+    const curr = this.selectedCurriculum();
+    if (curr?.code !== 'INTERNATIONAL') return [];
+    const div = this.activeIntlDivision();
+    const allStageGradeCodes = new Set(div.stages.flatMap(s => s.gradeCodes));
+    const filter = this.activeStageFilter();
+
+    if (filter !== 'ALL' && filter !== 'OTHER') {
+      return [];
+    }
+
+    return curr.availableGrades.filter(g => {
+      const isActive = g.isActive ?? this.discoveryService.isGradeActive(g.code);
+      if (!isActive) return false;
+      if (allStageGradeCodes.has(g.code)) return false;
+      if (g.divisionCode && g.divisionCode !== div.code) return false;
+      return true;
+    }).map(g => ({
+      ...g,
+      stageAr: g.stageAr && g.stageAr !== 'المرحلة الدراسية' ? g.stageAr : (this.langService.isArabic() ? 'صفوف دراسية دولية أخرى' : 'Other International Grade Levels'),
+      stageEn: g.stageEn && g.stageEn !== 'Academic Stage' ? g.stageEn : 'Other International Grade Levels'
+    }));
+  }
+
+  hasOtherIntlGrades(): boolean {
+    const curr = this.selectedCurriculum();
+    if (curr?.code !== 'INTERNATIONAL') return false;
+    const div = this.activeIntlDivision();
+    const allStageGradeCodes = new Set(div.stages.flatMap(s => s.gradeCodes));
+    return curr.availableGrades.some(g => {
+      const isActive = g.isActive ?? this.discoveryService.isGradeActive(g.code);
+      if (!isActive) return false;
+      if (allStageGradeCodes.has(g.code)) return false;
+      if (g.divisionCode && g.divisionCode !== div.code) return false;
+      return true;
+    });
+  }
+
+  hasOtherEgyptianGrades(): boolean {
+    const curr = this.selectedCurriculum();
+    if (!curr || curr.code === 'GULF' || curr.code === 'INTERNATIONAL') return false;
+    const standardCodes = new Set(CANONICAL_CURRICULUM_TREE.find(c => c.code === curr.code)?.grades.map(g => g.code) || []);
+    return curr.availableGrades.some(g => {
+      const isActive = g.isActive ?? this.discoveryService.isGradeActive(g.code);
+      return isActive && (!standardCodes.has(g.code) || g.isCustom === true);
+    });
+  }
+
+  getOtherGulfStageLabel(isAr: boolean): string {
+    const grades = this.getOtherGulfGrades();
+    const firstCustom = grades.find((g) => g.stageAr && g.stageAr !== 'المرحلة الدراسية' && g.stageAr !== 'صفوف دراسية أخرى');
+    if (firstCustom) {
+      return isAr ? (firstCustom.stageAr || 'صفوف دراسية أخرى') : (firstCustom.stageEn || 'Other Stages');
+    }
+    return isAr ? 'صفوف دراسية أخرى' : 'Other Stages';
+  }
+
+  getOtherIntlStageLabel(isAr: boolean): string {
+    const grades = this.getOtherIntlGrades();
+    const firstCustom = grades.find((g) => g.stageAr && g.stageAr !== 'المرحلة الدراسية' && g.stageAr !== 'صفوف دراسية دولية أخرى');
+    if (firstCustom) {
+      return isAr ? (firstCustom.stageAr || 'صفوف دراسية دولية أخرى') : (firstCustom.stageEn || 'Other Stages');
+    }
+    return isAr ? 'صفوف دراسية دولية أخرى' : 'Other Stages';
+  }
+
+  getOtherEgyptianStageLabel(isAr: boolean): string {
+    const curr = this.selectedCurriculum();
+    if (curr) {
+      const standardCodes = new Set(CANONICAL_CURRICULUM_TREE.find((c) => c.code === curr.code)?.grades.map((g) => g.code) || []);
+      const customGrades = curr.availableGrades.filter(
+        (g) => (g.isActive ?? this.discoveryService.isGradeActive(g.code)) && (!standardCodes.has(g.code) || g.isCustom === true)
+      );
+      const firstCustom = customGrades.find((g) => g.stageAr && g.stageAr !== 'المرحلة الدراسية' && g.stageAr !== 'صفوف دراسية أخرى');
+      if (firstCustom) {
+        return isAr ? (firstCustom.stageAr || 'صفوف دراسية أخرى') : (firstCustom.stageEn || 'Other Stages');
+      }
+    }
+    return isAr ? 'صفوف دراسية أخرى' : 'Other Stages';
   }
 
   // Computed: Selected Grade Object
