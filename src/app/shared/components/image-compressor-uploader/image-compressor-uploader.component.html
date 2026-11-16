@@ -144,8 +144,8 @@
     </div>
   }
 
-  <!-- List of Selected / Compressed Files (Only rendered in full dropzone mode, omitted in compact mode to prevent duplicate previews) -->
-  @if (!compact() && items().length > 0) {
+  <!-- List of Selected / Compressed Files (Only rendered in full dropzone mode, omitted in compact mode or when showItemList is false) -->
+  @if (!compact() && showItemList() && items().length > 0) {
     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
       @for (item of items(); track item.id; let idx = $index) {
         <div class="p-3 rounded-xl border border-surface-border bg-surface-card flex items-center gap-3">
@@ -174,7 +174,7 @@
 
             <!-- Compression Stats (e.g., 4.2 MB -> 125 KB) -->
             <p class="text-[11px] text-text-secondary mt-1 font-numeric">
-              {{ langService.isArabic() ? 'الحجم: ' : 'Size: ' }}{{ item.originalSizeKb }} KB ➔ <span class="font-bold text-emerald-600">{{ item.compressedSizeKb }} KB</span>
+              {{ langService.isArabic() ? 'الحجم: ' : 'Size: ' }}{{ item.originalSizeKb }} KB -> <span class="font-bold text-emerald-600">{{ item.compressedSizeKb }} KB</span>
             </p>
 
             <!-- Status Badge -->

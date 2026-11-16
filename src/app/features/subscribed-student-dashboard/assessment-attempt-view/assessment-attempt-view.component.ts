@@ -306,14 +306,36 @@ export class AssessmentAttemptViewComponent implements OnInit {
   }
 
   onQuestionHomeworkUploaded(questionId: string, urls: string[]): void {
-    const items = urls.map(url => ({
+    const currQuestion = this.bundle().questions.find(q => q._id === questionId) || this.currentQuestion();
+    const isMcq = currQuestion?.type === 'MCQ';
+
+    const newItems = urls.map(url => ({
       questionId,
       imageUrl: url,
       rotation: 0,
       sizeKb: 120
     }));
+
+    let allItems: Array<{ questionId: string; imageUrl: string; rotation: number; sizeKb: number }>;
+    if (isMcq) {
+      // For MCQ questions, only keep the latest single solution photo
+      allItems = newItems.slice(-1);
+    } else {
+      // For Essay questions, preserve previous photos up to 2 total (e.g. page 1 + page 2)
+      const existing = this.getQuestionImages(questionId);
+      const existingFiltered = existing
+        .filter(ex => !urls.includes(ex.imageUrl))
+        .map(ex => ({
+          questionId,
+          imageUrl: ex.imageUrl,
+          rotation: ex.rotation || 0,
+          sizeKb: ex.sizeKb || 120
+        }));
+      allItems = [...existingFiltered, ...newItems].slice(-2);
+    }
+
     this.submissionWarning.set('');
-    this.quizCache.recordHomeworkImages(items, questionId);
+    this.quizCache.recordHomeworkImages(allItems, questionId);
   }
 
   removeQuestionImage(questionId: string, imageUrl: string): void {

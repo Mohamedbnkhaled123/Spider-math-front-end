@@ -273,7 +273,7 @@
             @if (getQuestionImages(q._id); as qImgs) {
               @if (qImgs.length > 0) {
                 <div class="mb-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-3">
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 flex-wrap">
                     @for (img of qImgs; track img.imageUrl) {
                       <div class="relative group">
                         <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" loading="lazy" decoding="async" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
@@ -303,6 +303,9 @@
 
             <app-image-compressor-uploader
               uploadTarget="homework"
+              [clearOnSuccess]="true"
+              [showItemList]="false"
+              [buttonLabel]="langService.isArabic() ? 'صورة خطوات الحل' : 'Solution steps photo'"
               (homeworkUploaded)="onQuestionHomeworkUploaded(q._id, $event)"
             />
           </div>
@@ -353,7 +356,7 @@
             @if (getQuestionImages(q._id); as qImgs) {
               @if (qImgs.length > 0) {
                 <div class="mb-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-3">
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 flex-wrap">
                     @for (img of qImgs; track img.imageUrl) {
                       <div class="relative group">
                         <img [src]="img.imageUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" loading="lazy" decoding="async" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/30" />
@@ -372,9 +375,15 @@
                         <app-icon name="check" [size]="16" />
                         <span>{{ langService.isArabic() ? 'تم حفظ صورة الحل' : 'Photo saved' }}</span>
                       </span>
-                      <span class="text-[10px] text-text-muted">
-                        {{ langService.isArabic() ? 'صفحة إضافية متاحة.' : '2nd page available.' }}
-                      </span>
+                      @if (qImgs.length < 2) {
+                        <span class="text-[10px] text-text-muted">
+                          {{ langService.isArabic() ? 'صفحة إضافية متاحة.' : '2nd page available.' }}
+                        </span>
+                      } @else {
+                        <span class="text-[10px] text-text-muted">
+                          {{ langService.isArabic() ? 'تم حفظ صفحتين (الحد الأقصى).' : '2 pages saved (maximum).' }}
+                        </span>
+                      }
                     </div>
                   </div>
                 </div>
@@ -383,6 +392,9 @@
 
             <app-image-compressor-uploader
               uploadTarget="homework"
+              [clearOnSuccess]="true"
+              [showItemList]="false"
+              [buttonLabel]="langService.isArabic() ? 'صورة الحل اليدوي' : 'Handwritten solution photo'"
               (homeworkUploaded)="onQuestionHomeworkUploaded(q._id, $event)"
             />
           </div>

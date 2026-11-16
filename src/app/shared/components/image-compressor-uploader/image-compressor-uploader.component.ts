@@ -58,6 +58,8 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   readonly existingImageUrl = input<string | null>(null);
   readonly buttonLabel = input<string>();
   readonly compact = input<boolean>(false);
+  readonly clearOnSuccess = input<boolean>(true);
+  readonly showItemList = input<boolean>(true);
 
   // Outputs
   readonly imageUploaded = output<string>(); // Emits question_image_url
@@ -132,6 +134,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
       }
     }
     this.items.set([]);
+    this.uploadProgress.set(0);
     this.errorMessage.set(null);
   }
 
@@ -287,6 +290,15 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
     }
 
     this.isProcessing.set(true);
+
+    // Revoke any previous object URLs to prevent memory leak
+    if (isPlatformBrowser(this.platformId)) {
+      for (const item of this.items()) {
+        if (item.previewUrl && item.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      }
+    }
 
     try {
       const processedItems: CompressedImageItem[] = [];
@@ -552,6 +564,10 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
         this.imageUploaded.emit(uploadedUrls[0]);
       } else {
         this.homeworkUploaded.emit(uploadedUrls);
+      }
+
+      if (this.clearOnSuccess()) {
+        this.clearItems();
       }
     } catch (err: any) {
       console.error('Direct Cloudinary upload failed:', err);

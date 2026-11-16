@@ -60,4 +60,42 @@ describe('SubmissionFeedbackViewerComponent', () => {
     expect(component.scorePercentage()).toBe(100);
     expect(component.isFullMark()).toBeTrue();
   });
+
+  describe('Mobile Responsiveness and Layout Contract', () => {
+    it('should configure top navigation bar with responsive stacking and flex wrap classes', () => {
+      component.feedback.update((f) => ({
+        ...f,
+        assessmentId: 'asm_test_1',
+        unitTitleAr: 'الوحدة الأولى: الجبر والهندسة الفراغية',
+        maxAttempts: 3,
+        completedAttemptsCount: 1,
+        resultVisibility: 'HIDDEN_PENDING_TEACHER'
+      }));
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const topBar = hostEl.querySelector('.feedback-viewer-root > div:first-child');
+      expect(topBar).toBeTruthy();
+      expect(topBar?.classList.contains('flex')).toBeTrue();
+      expect(topBar?.classList.contains('flex-col')).toBeTrue();
+      expect(topBar?.classList.contains('sm:flex-row')).toBeTrue();
+      expect(topBar?.classList.contains('sm:items-center')).toBeTrue();
+      expect(topBar?.classList.contains('justify-between')).toBeTrue();
+
+      // Actions container should wrap on narrow viewports
+      const actionsContainer = topBar?.querySelector('div:last-child');
+      expect(actionsContainer).toBeTruthy();
+      expect(actionsContainer?.classList.contains('flex-wrap')).toBeTrue();
+
+      // Breadcrumb title should have min-w-0 and truncate to prevent horizontal collision
+      const unitTitle = topBar?.querySelector('.truncate');
+      expect(unitTitle).toBeTruthy();
+      expect(unitTitle?.classList.contains('min-w-0')).toBeTrue();
+    });
+
+    it('should contain zero Unicode emojis in rendered template', () => {
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
+  });
 });

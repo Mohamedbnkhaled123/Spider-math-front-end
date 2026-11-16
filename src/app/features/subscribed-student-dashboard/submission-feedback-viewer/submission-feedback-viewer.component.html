@@ -3,25 +3,27 @@
   <!-- ========================================================================= -->
   <!-- Top Navigation Bar                                                        -->
   <!-- ========================================================================= -->
-  <div class="flex items-center justify-between pb-4 mb-8 border-b border-surface-border">
-    <div class="flex items-center gap-3">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 mb-6 sm:mb-8 border-b border-surface-border">
+    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
       <a
         [routerLink]="returnToHome() ? '/' : '/student'"
-        class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm"
+        class="px-3.5 py-1.5 rounded-xl border border-surface-border bg-surface-card hover:border-brand-accent text-xs font-bold text-text-primary transition-all flex items-center gap-1.5 shadow-sm shrink-0"
       >
         <app-icon name="arrow-right" [size]="14" />
         <span>{{ returnToHome() ? (langService.isArabic() ? 'الرئيسية' : 'Home') : (langService.isArabic() ? 'لوحة الطالب' : 'Dashboard') }}</span>
       </a>
 
-      <span class="text-xs text-text-muted">|</span>
-      <span class="text-xs font-bold text-brand-secondary">{{ feedback().unitTitleAr }}</span>
+      @if (feedback().unitTitleAr) {
+        <span class="text-xs text-text-muted shrink-0">|</span>
+        <span class="text-xs font-bold text-brand-secondary truncate min-w-0 max-w-[200px] sm:max-w-xs md:max-w-md">{{ feedback().unitTitleAr }}</span>
+      }
     </div>
 
-    <div class="flex items-center gap-2.5">
+    <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
       @if (canRetake()) {
         <a
           [routerLink]="['/student/assessments', feedback().assessmentId]"
-          class="px-3.5 py-1.5 rounded-xl btn-gold-metallic text-slate-950 text-xs font-black shadow-gold-glow flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl btn-gold-metallic text-slate-950 text-xs font-black shadow-gold-glow flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 cursor-pointer shrink-0"
         >
           <app-icon name="rotate-ccw" [size]="14" />
           <span>{{ langService.isArabic() ? ('إعادة الامتحان (متبقي ' + remainingAttempts() + ' محاولات)') : ('Retake Exam (' + remainingAttempts() + ' left)') }}</span>
@@ -29,7 +31,7 @@
       }
 
       <span
-        class="px-3 py-1 rounded-lg text-xs font-bold border"
+        class="px-3 py-1 rounded-lg text-xs font-bold border whitespace-nowrap shrink-0"
         [ngClass]="isPublished() ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'"
       >
         {{ isPublished() ? (langService.isArabic() ? 'النتيجة معتمدة' : 'Result Published') : (langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review') }}
