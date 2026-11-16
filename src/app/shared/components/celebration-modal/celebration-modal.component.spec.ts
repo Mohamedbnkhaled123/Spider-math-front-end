@@ -208,4 +208,101 @@ describe('CelebrationModalComponent', () => {
       expect(skipTriggered).toBeTrue();
     });
   });
+
+  describe('Low Score (< 70%) Celebration Suppression and XP Line Removal', () => {
+    it('should strictly remove the progress line/bar under experience points (XP)', () => {
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('score', 20);
+      fixture.componentRef.setInput('totalScore', 20);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const xpChip = hostEl.querySelector('.chip.c3.xp');
+      expect(xpChip).toBeTruthy();
+
+      // Ensure the unwanted horizontal line (.bar) is completely removed from the DOM
+      const barElem = hostEl.querySelector('.chip.c3.xp .bar');
+      expect(barElem).toBeNull();
+      const anyBarElem = hostEl.querySelector('.chip .bar');
+      expect(anyBarElem).toBeNull();
+    });
+
+    it('should accurately calculate percentage for 5 / 15 as 33% and strictly suppress celebration', () => {
+      fixture.componentRef.setInput('score', 5);
+      fixture.componentRef.setInput('totalScore', 15);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.computedPercentage()).toBe(33);
+      expect(component.isCelebrationEligible()).toBeFalse();
+      expect(component.isAboveAverage()).toBeFalse();
+      expect(component.computedRank()).toBeNull();
+      expect(component.computedRankTitle()).toBe('محاولة تدريبية');
+      expect(component.ribbons().length).toBe(0);
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      expect(hostEl.querySelector('.celebration-backdrop')).toBeNull();
+      expect(hostEl.querySelector('[data-testid="lottie-fireworks-layer"]')).toBeNull();
+    });
+
+    it('should ignore forced Rank 1 inputs if computed score is below 70%', () => {
+      fixture.componentRef.setInput('score', 5);
+      fixture.componentRef.setInput('totalScore', 15);
+      fixture.componentRef.setInput('rank', 1);
+      fixture.componentRef.setInput('rankTitle', 'المركز الأول • العلامة الكاملة');
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.computedPercentage()).toBe(33);
+      expect(component.computedRank()).toBeNull();
+      expect(component.computedRankTitle()).toBe('محاولة تدريبية');
+      expect(component.isCelebrationEligible()).toBeFalse();
+      expect(fixture.nativeElement.querySelector('.celebration-backdrop')).toBeNull();
+    });
+
+    it('should strictly override a forced 100% percentage input when score is 5 / 15 (33%)', () => {
+      fixture.componentRef.setInput('score', 5);
+      fixture.componentRef.setInput('totalScore', 15);
+      fixture.componentRef.setInput('percentage', 100);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      // Mathematically verified ratio (33%) must override fraudulent 100% input
+      expect(component.computedPercentage()).toBe(33);
+      expect(component.isCelebrationEligible()).toBeFalse();
+      expect(fixture.nativeElement.querySelector('.celebration-backdrop')).toBeNull();
+    });
+
+    it('should reserve "المركز الأول • العلامة الكاملة" strictly for 100% and not for 90%', () => {
+      fixture.componentRef.setInput('score', 18);
+      fixture.componentRef.setInput('totalScore', 20); // 90%
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.computedPercentage()).toBe(90);
+      expect(component.isCelebrationEligible()).toBeTrue();
+      expect(component.computedRank()).toBe(1);
+      expect(component.computedRankTitle()).toBe('المركز الأول • تفوق باهر');
+      expect(component.computedRankTitle()).not.toContain('العلامة الكاملة');
+
+      // Now set to true 100%
+      fixture.componentRef.setInput('score', 20);
+      fixture.detectChanges();
+      expect(component.computedPercentage()).toBe(100);
+      expect(component.computedRankTitle()).toBe('المركز الأول • العلامة الكاملة');
+    });
+
+    it('should suppress custom rank titles claiming "العلامة الكاملة" if score is less than 100%', () => {
+      fixture.componentRef.setInput('score', 16);
+      fixture.componentRef.setInput('totalScore', 20); // 80%
+      fixture.componentRef.setInput('rankTitle', 'المركز الأول • العلامة الكاملة');
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.computedPercentage()).toBe(80);
+      // Falsely passed "العلامة الكاملة" is stripped
+      expect(component.computedRankTitle()).not.toContain('العلامة الكاملة');
+      expect(component.computedRankTitle()).toBe('المركز الثاني • أداء متميز');
+    });
+  });
 });

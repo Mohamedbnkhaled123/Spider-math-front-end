@@ -17,6 +17,7 @@ import { LeadGateModalComponent } from '../lead-gate-modal/lead-gate-modal.compo
 import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { CelebrationModalComponent } from '../../../shared/components/celebration-modal/celebration-modal.component';
+import { getRandomCelebrationPhrase } from '../../../shared/components/celebration-modal/celebration-messages.data';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
   IPlacementQuestion,
@@ -86,6 +87,12 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     totalQuestions: number;
   } | null>(null);
   readonly isCelebrationOpen = signal<boolean>(false);
+
+  readonly encouragingPhrase = computed<string>(() => {
+    const p = this.studentFinalResult()?.percentage ?? 0;
+    const isAr = this.langService ? this.langService.isArabic() : true;
+    return getRandomCelebrationPhrase(p, isAr);
+  });
 
   // Available grades for the currently selected curriculum (for guest selector)
   readonly availableGradesForCurriculum = computed(() => {
@@ -334,7 +341,9 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
           // Logged in student: Direct Instant Score Report without lead gate!
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(result);
-          this.isCelebrationOpen.set(true);
+          if (result.percentage >= 70) {
+            this.isCelebrationOpen.set(true);
+          }
         } else {
           // Guest: open lead gate to claim report and start onboarding
           this.submissionResult.set(result);
@@ -356,7 +365,9 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
         if (this.authService.isAuthenticated()) {
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(fallback);
-          this.isCelebrationOpen.set(true);
+          if (fallback.percentage >= 70) {
+            this.isCelebrationOpen.set(true);
+          }
         } else {
           this.submissionResult.set(fallback);
           this.isLeadGateOpen.set(true);
@@ -366,7 +377,9 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   openCelebration(): void {
-    this.isCelebrationOpen.set(true);
+    if ((this.studentFinalResult()?.percentage ?? 0) >= 70) {
+      this.isCelebrationOpen.set(true);
+    }
   }
 
   closeCelebration(): void {

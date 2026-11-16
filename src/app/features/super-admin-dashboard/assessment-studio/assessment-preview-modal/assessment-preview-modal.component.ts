@@ -18,6 +18,7 @@ import { AppIconComponent } from '../../../../shared/components/app-icon/app-ico
 import { MathFormulaComponent } from '../../../../shared/components/math-formula/math-formula.component';
 import { GraphCalculatorModalComponent } from '../../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { CelebrationModalComponent } from '../../../../shared/components/celebration-modal/celebration-modal.component';
+import { getRandomCelebrationPhrase } from '../../../../shared/components/celebration-modal/celebration-messages.data';
 import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem, AssessmentQuestionItem } from '../assessment-studio.models';
 import {
@@ -310,20 +311,39 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     return selected === q.correctOptionIndex ? Number(q.points || 1) : 0;
   }
 
+  readonly isCelebrationEligible = computed<boolean>(() => {
+    const s = this.scoringSummary();
+    if (s.totalPoints <= 0) return false;
+    const overallPct = Math.round((s.autoEarnedPoints / s.totalPoints) * 100);
+    // Strict requirement: celebration only if both auto percentage >= 70 AND overall assessment points >= 70.
+    // For assessments with essay questions where confirmed score is < 70% of total points (e.g. 5 / 15 = 33%),
+    // celebration MUST NEVER trigger.
+    return overallPct >= 70 && s.percentage >= 70;
+  });
+
+  readonly encouragingPhrase = computed<string>(() => {
+    const p = this.scoringSummary().percentage;
+    const isAr = this.langService ? this.langService.isArabic() : true;
+    return getRandomCelebrationPhrase(p, isAr);
+  });
+
   // Simulation Lifecycle Actions
   finishPreview(): void {
     this.isResultsMode.set(true);
     this.stopTimer();
 
-    // Trigger celebration when the teacher achieves full score (100%) in the simulation
-    const summary = this.scoringSummary();
-    if (summary.percentage === 100) {
+    // Trigger celebration strictly for eligible scores (>= 70%) in the simulation
+    if (this.isCelebrationEligible()) {
       this.isCelebrationOpen.set(true);
+    } else {
+      this.isCelebrationOpen.set(false);
     }
   }
 
   openCelebrationPreview(): void {
-    this.isCelebrationOpen.set(true);
+    if (this.isCelebrationEligible()) {
+      this.isCelebrationOpen.set(true);
+    }
   }
 
   closeCelebration(): void {

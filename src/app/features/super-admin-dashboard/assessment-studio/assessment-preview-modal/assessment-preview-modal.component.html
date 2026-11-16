@@ -370,7 +370,7 @@
                   <span class="text-xs font-bold text-text-muted">
                     {{ langService.isArabic() ? 'نتيجة المحاكاة' : 'Simulation Result' }}
                   </span>
-                  @if (scoringSummary().percentage === 100) {
+                  @if (scoringSummary().percentage === 100 && (!scoringSummary().hasEssayQuestions || scoringSummary().autoEarnedPoints === scoringSummary().totalPoints)) {
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center gap-1" data-testid="perfect-score-badge">
                       <app-icon name="award" [size]="12" />
                       <span>{{ langService.isArabic() ? 'الدرجة النهائية' : 'Perfect Score' }}</span>
@@ -401,17 +401,19 @@
               </div>
 
               <div class="flex flex-col sm:flex-row items-center gap-2.5 flex-wrap">
-                <!-- Preview Celebration Button -->
-                <button
-                  type="button"
-                  (click)="openCelebrationPreview()"
-                  class="px-4 py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-500 flex items-center gap-2 cursor-pointer transition-all shadow-sm"
-                  data-testid="preview-celebration-btn"
-                  [title]="langService.isArabic() ? 'معاينة شاشة الاحتفال للطلاب المتفوقين' : 'Preview celebration modal'"
-                >
-                  <app-icon name="award" [size]="14" />
-                  <span>{{ langService.isArabic() ? 'معاينة شاشة الاحتفال' : 'Preview Celebration' }}</span>
-                </button>
+                <!-- Preview Celebration Button (Strictly >= 70% and eligible) -->
+                @if (isCelebrationEligible()) {
+                  <button
+                    type="button"
+                    (click)="openCelebrationPreview()"
+                    class="px-4 py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-500 flex items-center gap-2 cursor-pointer transition-all shadow-sm"
+                    data-testid="preview-celebration-btn"
+                    [title]="langService.isArabic() ? 'معاينة شاشة الاحتفال للطلاب المتفوقين' : 'Preview celebration modal'"
+                  >
+                    <app-icon name="award" [size]="14" />
+                    <span>{{ langService.isArabic() ? 'معاينة شاشة الاحتفال' : 'Preview Celebration' }}</span>
+                  </button>
+                }
 
                 <button
                   type="button"
@@ -433,6 +435,24 @@
                 </button>
               </div>
             </div>
+
+            <!-- Below 70% Encouraging Phrase Card (No celebration, only encouraging phrase) -->
+            @if (!isCelebrationEligible()) {
+              <div
+                class="p-5 sm:p-6 rounded-3xl border border-sky-500/30 bg-sky-500/10 text-center shadow-sm space-y-2.5 animate-fade-in"
+                data-testid="preview-encouraging-banner"
+              >
+                <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-500 flex items-center justify-center mx-auto shadow-xs">
+                  <app-icon name="sparkles" [size]="24" />
+                </div>
+                <p class="text-sm sm:text-base font-black text-text-primary max-w-xl mx-auto leading-relaxed">
+                  "{{ encouragingPhrase() }}"
+                </p>
+                <p class="text-[11px] text-text-muted font-bold">
+                  {{ langService.isArabic() ? 'مستوى الانطلاق - راجع الأسئلة ونموذج الحل بالأسفل لتستعد وتتفوق!' : 'Review questions and model solutions below to prepare and excel!' }}
+                </p>
+              </div>
+            }
 
             <!-- Detailed Model Answers & Question Explanations -->
             <div class="space-y-4">
@@ -590,8 +610,14 @@
                             >
                               {{ textAnswers()[q.id] || (langService.isArabic() ? 'لم تسجل إجابة' : 'No Answer Typed') }}
                             </span>
-                            <span class="text-xs font-bold" [class.text-emerald-600]="isInputTextCorrect(q)" [class.text-rose-600]="!isInputTextCorrect(q)">
-                              {{ isInputTextCorrect(q) ? (langService.isArabic() ? '✓ متطابقة وتصححت تلقائياً' : '✓ Auto-Graded Correct') : (langService.isArabic() ? '✗ غير مطابقة' : '✗ Incorrect') }}
+                            <span class="text-xs font-bold inline-flex items-center gap-1" [class.text-emerald-600]="isInputTextCorrect(q)" [class.text-rose-600]="!isInputTextCorrect(q)">
+                              @if (isInputTextCorrect(q)) {
+                                <app-icon name="check" [size]="14" />
+                                <span>{{ langService.isArabic() ? 'متطابقة وتصححت تلقائياً' : 'Auto-Graded Correct' }}</span>
+                              } @else {
+                                <app-icon name="x" [size]="14" />
+                                <span>{{ langService.isArabic() ? 'غير مطابقة' : 'Incorrect' }}</span>
+                              }
                             </span>
                           </div>
                         </div>
@@ -827,18 +853,15 @@
   }
 
   <!-- ========================================================================= -->
-  <!-- Celebration Modal for 100% / Full-Score Simulation Preview                -->
+  <!-- Celebration Modal for High-Scoring Simulation Preview (>= 70%)            -->
   <!-- ========================================================================= -->
   <app-celebration-modal
     [isOpen]="isCelebrationOpen()"
-    [studentName]="langService.isArabic() ? 'معاينة المعلمة (العلامة الكاملة)' : 'Teacher Simulation Preview'"
-    [score]="scoringSummary().hasEssayQuestions ? scoringSummary().autoEarnedPoints : (scoringSummary().totalPoints || 20)"
-    [totalScore]="scoringSummary().hasEssayQuestions ? scoringSummary().autoTotalPoints : (scoringSummary().totalPoints || 20)"
-    [percentage]="100"
-    [rank]="1"
-    [rankTitle]="langService.isArabic() ? 'المركز الأول • العلامة الكاملة' : 'Rank 1 • Perfect Score'"
-    [message]="langService.isArabic() ? 'أداء استثنائي! أحسنت صنعاً في اجتياز الاختبار بدرجة ممتازة' : 'Outstanding achievement! Perfect score in this assessment'"
-    [xpEarned]="(asm.totalPoints || 10) * 10"
+    [studentName]="langService.isArabic() ? 'معاينة المعلمة' : 'Teacher Simulation Preview'"
+    [score]="scoringSummary().autoEarnedPoints"
+    [totalScore]="scoringSummary().hasEssayQuestions ? scoringSummary().autoTotalPoints : scoringSummary().totalPoints"
+    [percentage]="scoringSummary().percentage"
+    [xpEarned]="scoringSummary().autoEarnedPoints * 10"
     [returnLabel]="langService.isArabic() ? 'العودة للمعاينة' : 'Return to Preview'"
     [reviewLabel]="langService.isArabic() ? 'مراجعة نموذج الإجابات' : 'Review Model Answers'"
     [showReviewButton]="true"

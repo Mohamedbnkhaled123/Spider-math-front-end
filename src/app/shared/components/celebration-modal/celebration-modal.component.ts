@@ -88,7 +88,6 @@ export class CelebrationModalComponent implements OnDestroy {
   readonly displayedScore = signal<string>('0/20');
   readonly displayedPercentage = signal<string>('0%');
   readonly displayedXp = signal<string>('+0 XP');
-  readonly xpProgressPercent = signal<string>('0%');
   readonly isLevelUpVisible = signal<boolean>(false);
   readonly selectedCelebrationPhrase = signal<string>(
     getRandomCelebrationPhrase(100, true)
@@ -108,12 +107,27 @@ export class CelebrationModalComponent implements OnDestroy {
 
   // Computed Values
   readonly computedPercentage = computed<number>(() => {
+    const tot = this.totalScore();
+    const sc = this.score();
+    const derived = tot > 0 ? Math.min(100, Math.max(0, Math.round((sc / tot) * 100))) : 0;
     const custom = this.percentage();
+
     if (custom !== undefined && custom !== null && !isNaN(custom)) {
-      return Math.min(100, Math.max(0, Math.round(custom)));
+      const roundedCustom = Math.min(100, Math.max(0, Math.round(custom)));
+      if (tot > 0) {
+        // If derived score ratio is < 70%, custom input cannot bypass suppression (>= 70%)
+        if (derived < 70 && roundedCustom >= 70) {
+          return derived;
+        }
+        // If earned score is strictly less than total possible score, custom input cannot claim 100%
+        if (sc < tot && roundedCustom === 100) {
+          return derived;
+        }
+      }
+      return roundedCustom;
     }
-    const tot = Math.max(1, this.totalScore());
-    return Math.min(100, Math.max(0, Math.round((this.score() / tot) * 100)));
+
+    return derived;
   });
 
   // User Requirement: "من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة"
@@ -127,12 +141,13 @@ export class CelebrationModalComponent implements OnDestroy {
   });
 
   readonly computedRank = computed<1 | 2 | 3 | null>(() => {
+    if (this.computedPercentage() < 70) return null;
     const r = this.rank();
     if (r === 1 || r === 2 || r === 3) return r;
     const pct = this.computedPercentage();
     if (pct >= 90) return 1;
     if (pct >= 75) return 2;
-    if (pct >= 60) return 3;
+    if (pct >= 70) return 3;
     return null;
   });
 
@@ -144,17 +159,27 @@ export class CelebrationModalComponent implements OnDestroy {
   });
 
   readonly computedRankTitle = computed<string>(() => {
+    const pct = this.computedPercentage();
+    if (pct < 70) {
+      if (pct >= 50) return 'مستوى الانطلاق';
+      return 'محاولة تدريبية';
+    }
     const custom = this.rankTitle();
-    if (custom) return custom;
+    // Guard against custom titles falsely claiming Perfect Score ("العلامة الكاملة") when pct < 100
+    if (custom) {
+      if (pct < 100 && (custom.includes('العلامة الكاملة') || custom.includes('Perfect Score'))) {
+        // Suppress false 100% claim and compute appropriate title below
+      } else {
+        return custom;
+      }
+    }
     const r = this.computedRank();
-    if (r === 1) return 'المركز الأول • العلامة الكاملة';
+    if (pct === 100) return 'المركز الأول • العلامة الكاملة';
+    if (r === 1) return 'المركز الأول • تفوق باهر';
     if (r === 2) return 'المركز الثاني • أداء متميز';
     if (r === 3) return 'المركز الثالث • نتيجة رائعة';
-    const pct = this.computedPercentage();
     if (pct >= 85) return 'أداء متفوق';
-    if (pct >= 70) return 'نتيجة متميزة';
-    if (pct >= 50) return 'مستوى الانطلاق';
-    return 'محاولة تدريبية';
+    return 'نتيجة متميزة';
   });
 
   readonly computedMessage = computed<string>(() => {
@@ -233,10 +258,9 @@ export class CelebrationModalComponent implements OnDestroy {
     this.displayedScore.set(`0/${tot}`);
     this.displayedPercentage.set('0%');
     this.displayedXp.set('+0 XP');
-    this.xpProgressPercent.set(`${xp % 100 || (xp ? 100 : 0)}%`);
 
-    // Level up check
-    const levelUp = this.isLevelUp() !== undefined ? !!this.isLevelUp() : xp >= 100;
+    // Level up check: strictly suppressed for scores < 70%
+    const levelUp = pct >= 70 && (this.isLevelUp() !== undefined ? !!this.isLevelUp() : xp >= 100);
     this.isLevelUpVisible.set(levelUp);
 
     // Setup stars
@@ -263,6 +287,7 @@ export class CelebrationModalComponent implements OnDestroy {
     // Strictly ZERO celebration for scores < 70%
     if (pct < 70) {
       this.ribbons.set([]);
+      this.isLevelUpVisible.set(false);
       return;
     }
 

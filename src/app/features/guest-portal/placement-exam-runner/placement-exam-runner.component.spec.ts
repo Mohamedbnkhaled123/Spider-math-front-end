@@ -83,4 +83,63 @@ describe('PlacementExamRunnerComponent', () => {
     expect(selectOptionSpy).toHaveBeenCalledWith(0);
     expect(confirmSpy).not.toHaveBeenCalled();
   });
+
+  describe('Low Score (< 70%) Celebration Suppression and Encouraging Banner', () => {
+    it('should strictly suppress celebration and render encouraging banner for scores < 70%', () => {
+      // Simulate authenticated student finishing with 33% score
+      component.isLoading.set(false);
+      component.studentExamFinished.set(true);
+      component.studentFinalResult.set({
+        score: 5,
+        maxScore: 15,
+        percentage: 33,
+        passed: false,
+        correctAnswersCount: 1,
+        totalQuestions: 3
+      });
+      component.isCelebrationOpen.set(false);
+      fixture.detectChanges();
+
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      // Manual call to openCelebration must be ignored
+      component.openCelebration();
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      // Celebration button must NOT exist
+      const celebrationBtn = Array.from(hostEl.querySelectorAll('button')).find(b =>
+        b.textContent?.includes('احتفالية') || b.textContent?.includes('Celebration')
+      );
+      expect(celebrationBtn).toBeFalsy();
+
+      // Encouraging banner MUST exist
+      const encouragingBanner = hostEl.querySelector('[data-testid="placement-encouraging-banner"]');
+      expect(encouragingBanner).toBeTruthy();
+    });
+
+    it('should allow celebration button when score is >= 70%', () => {
+      component.isLoading.set(false);
+      component.studentExamFinished.set(true);
+      component.studentFinalResult.set({
+        score: 12,
+        maxScore: 15,
+        percentage: 80,
+        passed: true,
+        correctAnswersCount: 2,
+        totalQuestions: 3
+      });
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const celebrationBtn = Array.from(hostEl.querySelectorAll('button')).find(b =>
+        b.textContent?.includes('احتفالية') || b.textContent?.includes('Celebration')
+      );
+      expect(celebrationBtn).toBeTruthy();
+
+      // Encouraging banner must NOT exist
+      const encouragingBanner = hostEl.querySelector('[data-testid="placement-encouraging-banner"]');
+      expect(encouragingBanner).toBeNull();
+    });
+  });
 });

@@ -206,16 +206,36 @@
           </div>
         </div>
 
+        <!-- Below 70% Encouraging Phrase Card (User Requirement: no celebration, only encouraging phrase) -->
+        @if ((studentFinalResult()?.percentage ?? 0) < 70) {
+          <div
+            class="p-5 sm:p-6 rounded-3xl border border-sky-500/30 bg-sky-500/10 text-center shadow-sm space-y-2.5 max-w-2xl mx-auto mb-8 animate-fade-in"
+            data-testid="placement-encouraging-banner"
+          >
+            <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-500 flex items-center justify-center mx-auto shadow-xs">
+              <app-icon name="sparkles" [size]="24" />
+            </div>
+            <p class="text-sm sm:text-base font-black text-text-primary max-w-xl mx-auto leading-relaxed">
+              "{{ encouragingPhrase() }}"
+            </p>
+            <p class="text-[11px] text-text-muted font-bold">
+              {{ langService.isArabic() ? 'مستوى الانطلاق - راجع الأسئلة والدروس لتبدأ رحلة التفوق!' : 'Review questions and lessons to begin your journey to excellence!' }}
+            </p>
+          </div>
+        }
+
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            (click)="openCelebration()"
-            class="px-6 py-3.5 rounded-xl font-bold text-sm border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-          >
-            <app-icon name="award" [size]="16" />
-            <span>{{ langService.isArabic() ? 'احتفالية النتيجة 🏆' : 'Celebration 🏆' }}</span>
-          </button>
+          @if ((studentFinalResult()?.percentage ?? 0) >= 70) {
+            <button
+              type="button"
+              (click)="openCelebration()"
+              class="px-6 py-3.5 rounded-xl font-bold text-sm border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <app-icon name="award" [size]="16" />
+              <span>{{ langService.isArabic() ? 'احتفالية النتيجة' : 'Celebration' }}</span>
+            </button>
+          }
 
           <a
             routerLink="/student"

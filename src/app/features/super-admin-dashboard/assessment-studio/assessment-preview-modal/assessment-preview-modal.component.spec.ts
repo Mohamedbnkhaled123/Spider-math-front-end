@@ -492,8 +492,12 @@ describe('AssessmentPreviewModalComponent', () => {
       expect(component.isCelebrationOpen()).toBeFalse();
     });
 
-    it('should allow the teacher to manually open and preview celebration anytime in results mode', () => {
+    it('should allow the teacher to manually open celebration when score is >= 70%', () => {
+      // Answer questions to achieve 100% (>= 70%)
+      component.selectOption('q1', 1);
+      component.selectOption('q2', 0);
       component.finishPreview();
+      component.closeCelebration();
       fixture.detectChanges();
 
       expect(component.isCelebrationOpen()).toBeFalse();
@@ -507,14 +511,122 @@ describe('AssessmentPreviewModalComponent', () => {
       expect(component.isCelebrationOpen()).toBeFalse();
     });
 
-    it('should reset isCelebrationOpen when simulation is restarted or modal is closed', () => {
+    it('should strictly NOT open celebration modal when score is less than 70% (e.g. 5/15 = 33%)', () => {
+      // Create a 15-point assessment
+      const assessment15Pts: AssessmentItem = {
+        ...pureMcqAssessment,
+        id: 'asm_15_pts',
+        totalPoints: 15,
+        questions: [
+          { ...pureMcqAssessment.questions[0], id: 'q15_1', points: 5, correctOptionIndex: 1 },
+          { ...pureMcqAssessment.questions[1], id: 'q15_2', points: 5, correctOptionIndex: 0 },
+          { ...pureMcqAssessment.questions[0], id: 'q15_3', points: 5, correctOptionIndex: 2 }
+        ]
+      };
+      componentRef.setInput('assessment', assessment15Pts);
+      fixture.detectChanges();
+
+      // Answer only 1 question correctly: 5 points out of 15
+      component.selectOption('q15_1', 1);
+
+      expect(component.scoringSummary().autoEarnedPoints).toBe(5);
+      expect(component.scoringSummary().totalPoints).toBe(15);
+      expect(component.scoringSummary().percentage).toBe(33); // 5/15 = 33%, NEVER 100%!
+
+      component.finishPreview();
+      fixture.detectChanges();
+
+      expect(component.isResultsMode()).toBeTrue();
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      // Attempting to open celebration manually when score < 70% should be strictly rejected
       component.openCelebrationPreview();
+      fixture.detectChanges();
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      // Button for preview celebration must NOT be displayed
+      expect(hostEl.querySelector('[data-testid="preview-celebration-btn"]')).toBeNull();
+      // Encouraging phrase banner MUST be displayed
+      expect(hostEl.querySelector('[data-testid="preview-encouraging-banner"]')).toBeTruthy();
+
+      // Percentage displayed in result summary must be 33%, not 100%
+      const pctEl = hostEl.querySelector('[data-testid="preview-percentage"]');
+      expect(pctEl?.textContent?.trim()).toContain('33%');
+    });
+
+    it('should strictly suppress celebration in mixed assessment when auto score is 100% but overall score is 5 / 15 (33%)', () => {
+      // Mixed assessment: 1 MCQ of 5 points + 1 Essay of 10 points = 15 total points
+      const mixed15Pts: AssessmentItem = {
+        ...pureMcqAssessment,
+        id: 'asm_mixed_15_pts',
+        titleAr: 'تقييم تجريبي 15 درجة مختلط',
+        totalPoints: 15,
+        questions: [
+          {
+            ...pureMcqAssessment.questions[0],
+            id: 'q_mcq_5',
+            order: 1,
+            type: 'MCQ',
+            textAr: 'سؤال اختر',
+            options: ['أ', 'ب'],
+            correctOptionIndex: 0,
+            points: 5
+          },
+          {
+            ...pureMcqAssessment.questions[0],
+            id: 'q_essay_10',
+            order: 2,
+            type: 'ESSAY',
+            textAr: 'سؤال مقالي',
+            options: [],
+            correctOptionIndex: 0,
+            points: 10
+          }
+        ]
+      };
+      componentRef.setInput('assessment', mixed15Pts);
+      fixture.detectChanges();
+
+      // Answer the MCQ correctly: 5 points auto-earned
+      component.selectOption('q_mcq_5', 0);
+
+      const summary = component.scoringSummary();
+      expect(summary.hasEssayQuestions).toBeTrue();
+      expect(summary.autoEarnedPoints).toBe(5);
+      expect(summary.autoTotalPoints).toBe(5);
+      expect(summary.totalPoints).toBe(15);
+      // Auto-question percentage is 100%, BUT overall confirmed score is only 5/15 (33%)!
+      expect(summary.percentage).toBe(100);
+      expect(component.isCelebrationEligible()).toBeFalse();
+
+      component.finishPreview();
+      fixture.detectChanges();
+
+      // Modal must NOT open celebration
+      expect(component.isCelebrationOpen()).toBeFalse();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      // Perfect Score badge must NOT be displayed because total points (15) were not achieved
+      expect(hostEl.querySelector('[data-testid="perfect-score-badge"]')).toBeNull();
+      // Preview celebration button must NOT be displayed
+      expect(hostEl.querySelector('[data-testid="preview-celebration-btn"]')).toBeNull();
+      // Encouraging banner MUST be displayed
+      expect(hostEl.querySelector('[data-testid="preview-encouraging-banner"]')).toBeTruthy();
+    });
+
+    it('should reset isCelebrationOpen when simulation is restarted or modal is closed', () => {
+      component.selectOption('q1', 1);
+      component.selectOption('q2', 0);
+      component.finishPreview();
       expect(component.isCelebrationOpen()).toBeTrue();
 
       component.resetSimulation();
       expect(component.isCelebrationOpen()).toBeFalse();
 
-      component.openCelebrationPreview();
+      component.selectOption('q1', 1);
+      component.selectOption('q2', 0);
+      component.finishPreview();
       expect(component.isCelebrationOpen()).toBeTrue();
 
       component.closeModal();
@@ -566,6 +678,32 @@ describe('AssessmentPreviewModalComponent', () => {
       fixture.detectChanges();
       const resultsHtml = fixture.nativeElement.innerHTML;
       expect(emojiRegex.test(resultsHtml)).toBeFalse();
+    });
+
+    it('should contain zero Unicode emojis or dingbats in INPUT_TEXT results rendering', () => {
+      const inputTextAssessment: AssessmentItem = {
+        ...pureMcqAssessment,
+        id: 'asm_input_text_emoji_test',
+        questions: [
+          {
+            id: 'q_txt_1',
+            order: 1,
+            type: 'INPUT_TEXT',
+            textAr: 'ما قيمة x؟',
+            options: [],
+            correctOptionIndex: 0,
+            points: 5,
+            acceptedAnswers: ['5']
+          }
+        ]
+      };
+      componentRef.setInput('assessment', inputTextAssessment);
+      component.updateTextAnswer('q_txt_1', '5');
+      component.finishPreview();
+      fixture.detectChanges();
+
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
     });
   });
 });

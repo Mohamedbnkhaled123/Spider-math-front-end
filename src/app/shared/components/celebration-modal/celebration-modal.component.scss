@@ -369,24 +369,6 @@
   color: #ffd23f;
 }
 
-.chip .bar {
-  position: absolute;
-  bottom: 0.6cqw;
-  width: 70%;
-  height: 0.8cqw;
-  border-radius: 9cqw;
-  background: rgba(255, 255, 255, 0.15);
-  overflow: hidden;
-}
-
-.chip .bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: linear-gradient(90deg, #ffb300, #fff2a0);
-  transition: width 2.6s 3s ease-in-out;
-}
-
 .stage.go .chip {
   animation: fadeup 0.6s both;
 }
@@ -394,7 +376,6 @@
 .stage.go .c1 { animation-delay: 2.4s; }
 .stage.go .c2 { animation-delay: 2.6s; }
 .stage.go .c3 { animation-delay: 2.8s; }
-.stage.go .bar i { animation: fill 2.6s 3s ease-in-out both; }
 
 @keyframes fadeup {
   from {
@@ -404,12 +385,6 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes fill {
-  to {
-    width: var(--w);
   }
 }
 
