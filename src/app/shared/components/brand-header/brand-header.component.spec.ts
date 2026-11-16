@@ -73,6 +73,18 @@ describe('BrandHeaderComponent', () => {
       expect(notifDropdown).toBeTruthy();
       expect(notifDropdown?.classList.contains('z-layer-header-dropdown')).toBeTrue();
     });
+
+    it('should keep header visible when auth modal or simulation modal is opened', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+      component.openAuthModal();
+      fixture.detectChanges();
+
+      expect(component.isAuthModalOpen()).toBeTrue();
+      const headerEl: HTMLElement | null = fixture.nativeElement.querySelector('header');
+      expect(headerEl).toBeTruthy();
+      expect(headerEl?.classList.contains('z-layer-header')).toBeTrue();
+    });
   });
 
   describe('Zero-Emoji Compliance', () => {

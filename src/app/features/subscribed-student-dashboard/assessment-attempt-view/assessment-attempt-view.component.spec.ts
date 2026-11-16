@@ -60,8 +60,12 @@ describe('AssessmentAttemptViewComponent', () => {
       const hostEl: HTMLElement = fixture.nativeElement;
       const refModalBackdrop = hostEl.querySelector('.z-layer-modal');
       expect(refModalBackdrop).toBeTruthy();
+      expect(refModalBackdrop?.classList.contains('reference-sheet-backdrop')).toBeTrue();
       expect(refModalBackdrop?.classList.contains('pt-16')).toBeTrue();
       expect(refModalBackdrop?.classList.contains('sm:pt-20')).toBeTrue();
+      expect(refModalBackdrop?.classList.contains('md:inset-auto')).toBeTrue();
+      expect(refModalBackdrop?.classList.contains('md:bottom-6')).toBeTrue();
+      expect(refModalBackdrop?.classList.contains('md:left-6')).toBeTrue();
 
       const innerCard = refModalBackdrop?.querySelector('.rounded-3xl');
       expect(innerCard?.classList.contains('max-h-[calc(100dvh-5.5rem)]')).toBeTrue();

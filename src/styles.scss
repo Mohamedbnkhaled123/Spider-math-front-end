@@ -161,26 +161,56 @@
 .z-layer-dialog { z-index: 1000; }        // In-modal Confirmation Dialogs (Above modals, below navbar)
 
 // Global Navigation Bar & Elevated Dropdowns (>= 1200)
+app-brand-header {
+  display: block !important;
+  width: 100% !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1200 !important;
+}
+
 .z-layer-header { z-index: 1200 !important; }        // Sticky Navbar & Sync Banner (Crisp & visible above modal backdrops)
 .z-layer-header-dropdown { z-index: 1300 !important; } // Mobile Navigation Menu & Notifications Dropdowns (Above header)
 
-// Highest Lightbox Overlay (Always on top of all modals, submodals, slicers and dialogs)
-.z-layer-image-lightbox { z-index: 1500 !important; }
+// Highest Lightbox Overlay (Kept below top brand navbar so navbar remains visible & interactive)
+.z-layer-image-lightbox { z-index: 1100 !important; }
 
-// Universal Safe Viewport Clearance for Modal Overlays
-// Ensures modal dialogs never slide under or get covered by the sticky navbar on mobile (h-16 = 4rem) or desktop (h-20 = 5rem)
+// Universal Safe Viewport Clearance for Modal Overlays & Blurred Screen Backdrops
+// Ensures any modal, dialog, preview, slicer or backdrop div that creates screen blur
+// starts strictly BELOW the top brand navbar (top: 4rem / 64px on mobile, top: 5rem / 80px on desktop)
+// so the navbar remains completely visible, crisp, unblurred, and interactive across all screens.
 .modal-safe-clearance,
 .celebration-backdrop,
 .z-layer-modal.fixed.inset-0,
+.z-layer-modal .fixed.inset-0,
 .z-layer-submodal.fixed.inset-0,
+.z-layer-submodal .fixed.inset-0,
 .z-layer-preview.fixed.inset-0,
+.z-layer-preview .fixed.inset-0,
 .z-layer-preview-submodal.fixed.inset-0,
+.z-layer-preview-submodal .fixed.inset-0,
 .z-layer-slicer.fixed.inset-0,
+.z-layer-slicer .fixed.inset-0,
 .z-layer-dialog.fixed.inset-0,
-.z-layer-image-lightbox.fixed.inset-0 {
-  padding-top: 4rem;
+.z-layer-dialog .fixed.inset-0,
+.z-layer-image-lightbox.fixed.inset-0,
+.z-layer-image-lightbox .fixed.inset-0,
+[role="dialog"].fixed.inset-0,
+.fixed.inset-0[class*="backdrop-blur"],
+.fixed.inset-0[class*="bg-black/"],
+.fixed.inset-0[class*="bg-slate-950/"] {
+  top: 4rem !important;
+  height: calc(100vh - 4rem) !important;
+  height: calc(100dvh - 4rem) !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+
   @media (min-width: 640px) {
-    padding-top: 5rem;
+    top: 5rem !important;
+    height: calc(100vh - 5rem) !important;
+    height: calc(100dvh - 5rem) !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
   }
 }
 // ==============================================================================

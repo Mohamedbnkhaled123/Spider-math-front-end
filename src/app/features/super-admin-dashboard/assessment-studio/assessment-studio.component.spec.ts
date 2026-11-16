@@ -944,5 +944,18 @@ describe('AssessmentStudioComponent', () => {
       expect(component.isSaving()).toBeFalse();
       expect(component.isEditorOpen()).toBeFalse();
     });
+
+    it('should assign z-layer-modal and navbar safe clearance to edit assessment modal', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const modalBackdrop = hostEl.querySelector('.z-layer-modal');
+      expect(modalBackdrop).toBeTruthy();
+      expect(modalBackdrop?.classList.contains('fixed')).toBeTrue();
+      expect(modalBackdrop?.classList.contains('inset-0')).toBeTrue();
+      expect(modalBackdrop?.classList.contains('pt-16')).toBeTrue();
+      expect(modalBackdrop?.classList.contains('sm:pt-20')).toBeTrue();
+    });
   });
 });

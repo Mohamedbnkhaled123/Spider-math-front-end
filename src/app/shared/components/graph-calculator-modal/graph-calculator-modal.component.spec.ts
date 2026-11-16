@@ -62,6 +62,7 @@ describe('GraphCalculatorModalComponent & CalculatorModalFactory', () => {
       const wrapper: HTMLElement | null = fixture.nativeElement.querySelector('.graph-modal-wrapper');
       expect(wrapper).toBeTruthy();
       expect(wrapper?.classList.contains('z-layer-calculator')).toBeTrue();
+      expect(wrapper?.classList.contains('inset-0')).toBeFalse();
     });
 
     it('should clamp vertical dragging to remain safely below the sticky navbar', () => {

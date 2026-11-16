@@ -142,4 +142,16 @@ describe('PlacementExamRunnerComponent', () => {
       expect(encouragingBanner).toBeNull();
     });
   });
+
+  describe('Navbar Clearance Contract during Exam Execution', () => {
+    it('should place sticky exam runner sub-header strictly below platform brand navbar (top-16 sm:top-20)', () => {
+      const headerEl: HTMLElement | null = fixture.nativeElement.querySelector('header');
+      expect(headerEl).toBeTruthy();
+      expect(headerEl?.classList.contains('sticky')).toBeTrue();
+      expect(headerEl?.classList.contains('top-16')).toBeTrue();
+      expect(headerEl?.classList.contains('sm:top-20')).toBeTrue();
+      expect(headerEl?.classList.contains('top-0')).toBeFalse();
+      expect(headerEl?.classList.contains('z-layer-header')).toBeFalse();
+    });
+  });
 });

@@ -55,4 +55,26 @@ describe('AppComponent', () => {
     expect(app.isExamOrQuizPage()).toBe(true);
     expect(app.shouldRenderFooter()).toBe(false);
   });
+
+  it('should always render app-brand-header even on exam or quiz pages', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    app.isExamOrQuizPage.set(true);
+    fixture.detectChanges();
+
+    const brandHeader = fixture.nativeElement.querySelector('app-brand-header');
+    expect(brandHeader).toBeTruthy();
+    expect(brandHeader.classList.contains('sticky')).toBeTrue();
+    expect(brandHeader.classList.contains('z-layer-header')).toBeTrue();
+  });
+
+  it('should assign relative and z-1 to main view container for reliable stacking separation below header', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+
+    const mainEl: HTMLElement | null = fixture.nativeElement.querySelector('main');
+    expect(mainEl).toBeTruthy();
+    expect(mainEl?.classList.contains('relative')).toBeTrue();
+    expect(mainEl?.classList.contains('z-1')).toBeTrue();
+  });
 });
