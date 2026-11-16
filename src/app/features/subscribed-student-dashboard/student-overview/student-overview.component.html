@@ -778,7 +778,13 @@
                         class="flex-1 py-2 px-2.5 rounded-xl bg-surface-card hover:bg-surface-secondary text-text-primary border border-surface-border font-bold text-[11px] shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer truncate"
                       >
                         <app-icon name="check-circle" [size]="13" className="text-emerald-500 shrink-0" />
-                        <span class="truncate">{{ langService.isArabic() ? ('النتيجة: ' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة')) : ('Score: ' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Pending')) }}</span>
+                        <span class="truncate">
+                          @if (quiz.score !== null && quiz.score !== undefined && !quiz.isPending) {
+                            {{ langService.isArabic() ? ('النتيجة: ' + quiz.score + ' / ' + quiz.maxScore) : ('Score: ' + quiz.score + ' / ' + quiz.maxScore) }}
+                          } @else {
+                            {{ langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review' }}
+                          }
+                        </span>
                       </a>
                       <button
                         type="button"
@@ -795,7 +801,13 @@
                       class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <app-icon name="check-circle" [size]="14" />
-                      <span>{{ langService.isArabic() ? ('تم التسليم (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'قيد المراجعة') + ') — مراجعة') : ('Submitted (' + (quiz.score !== undefined ? (quiz.score + ' / ' + quiz.maxScore) : 'Under Review') + ') — Review') }}</span>
+                      <span>
+                        @if (quiz.score !== null && quiz.score !== undefined && !quiz.isPending) {
+                          {{ langService.isArabic() ? ('تم التسليم (' + quiz.score + ' / ' + quiz.maxScore + ') — مراجعة') : ('Submitted (' + quiz.score + ' / ' + quiz.maxScore + ') — Review') }}
+                        } @else {
+                          {{ langService.isArabic() ? 'تم التسليم (في انتظار التصحيح اليدوي) — مراجعة' : 'Submitted (Pending Manual Review) — Review' }}
+                        }
+                      </span>
                     </a>
                   }
                 } @else if (quiz.canStart !== false) {
@@ -855,8 +867,11 @@
               <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg hover:border-emerald-500/40 transition-all">
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="text-[11px] font-bold text-text-muted">{{ grade.unitTitleAr }}</span>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    {{ grade.gradeLabelAr }}
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-black border"
+                    [ngClass]="grade.score === null || grade.status === 'PENDING_REVIEW' || (grade && grade.isPending) ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'"
+                  >
+                    {{ grade.gradeLabelAr || (grade.score === null ? (langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review') : (langService.isArabic() ? 'معتمد' : 'Approved')) }}
                   </span>
                 </div>
 
@@ -865,10 +880,16 @@
                     {{ grade.titleAr }}
                   </h4>
                   <div class="text-left font-numeric">
-                    <span class="text-base font-black text-emerald-600 dark:text-emerald-400">
-                      {{ grade.score }}
-                    </span>
-                    <span class="text-xs text-text-muted"> / {{ grade.maxScore }}</span>
+                    @if (grade.score !== null && grade.score !== undefined && grade.status !== 'PENDING_REVIEW' && !(grade && grade.isPending)) {
+                      <span class="text-base font-black text-emerald-600 dark:text-emerald-400">
+                        {{ grade.score }}
+                      </span>
+                      <span class="text-xs text-text-muted"> / {{ grade.maxScore }}</span>
+                    } @else {
+                      <span class="text-xs font-bold text-amber-600 dark:text-amber-400">
+                        {{ langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review' }}
+                      </span>
+                    }
                   </div>
                 </div>
 

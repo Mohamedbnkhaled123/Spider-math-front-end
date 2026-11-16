@@ -5,7 +5,8 @@ import {
   computed,
   inject,
   OnInit,
-  PLATFORM_ID
+  PLATFORM_ID,
+  HostListener
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,6 +15,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { CelebrationModalComponent } from '../../../shared/components/celebration-modal/celebration-modal.component';
+import { getRandomCelebrationPhrase } from '../../../shared/components/celebration-modal/celebration-messages.data';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -58,7 +60,13 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   readonly studentName = computed(() => this.authService.currentUser()?.full_name || 'طالب متميز');
   readonly earnedXp = computed(() => {
     const f = this.feedback();
-    return Math.max(50, f.finalTotalScore * 10);
+    return Math.max(50, ((f.finalTotalScore ?? 0)) * 10);
+  });
+
+  readonly encouragingPhrase = computed(() => {
+    const p = this.scorePercentage();
+    const isAr = this.langService ? this.langService.isArabic() : true;
+    return getRandomCelebrationPhrase(p, isAr);
   });
 
   readonly feedback = signal<SubmissionFeedbackData>({
@@ -134,12 +142,13 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
 
   readonly scorePercentage = computed(() => {
     const f = this.feedback();
+    if (!this.isPublished() || f.finalTotalScore === null || f.finalTotalScore === undefined) return 0;
     return f.maxScore > 0 ? Math.round((f.finalTotalScore / f.maxScore) * 100) : 0;
   });
 
   readonly isFullMark = computed(() => {
     const f = this.feedback();
-    return this.isPublished() && f.finalTotalScore === f.maxScore && f.maxScore > 0;
+    return this.isPublished() && f.finalTotalScore !== null && f.finalTotalScore === f.maxScore && f.maxScore > 0;
   });
 
   readonly scoreColorClass = computed(() => {
@@ -247,8 +256,8 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
           });
           this.swrCache.set(cacheKey, this.feedback());
 
-          // Trigger Celebration when results appear published
-          if (this.isPublished() && isPlatformBrowser(this.platformId)) {
+          // Trigger Celebration ONLY when score >= 70% (User requirement: no celebration for score < 70%)
+          if (this.isPublished() && this.scorePercentage() >= 70 && isPlatformBrowser(this.platformId)) {
             try {
               const celebrationKey = `sm_celebration_shown_${id}`;
               if (!sessionStorage.getItem(celebrationKey)) {
@@ -270,8 +279,20 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     });
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapePressed(): void {
+    if (this.previewImageUrl()) {
+      this.closeImagePreview();
+    }
+    if (this.activeInPlatformSolution()) {
+      this.closeInPlatformSolution();
+    }
+  }
+
   openCelebration(): void {
-    this.isCelebrationOpen.set(true);
+    if (this.scorePercentage() >= 70) {
+      this.isCelebrationOpen.set(true);
+    }
   }
 
   closeCelebration(): void {

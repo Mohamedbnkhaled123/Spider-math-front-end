@@ -166,10 +166,17 @@ export class CelebrationModalComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const open = this.isOpen();
+      const eligible = this.isCelebrationEligible();
+      const pct = this.computedPercentage();
+      const isAr = this.langService ? this.langService.isArabic() : true;
+
       if (open) {
-        if (this.isBrowser) {
+        this.selectedCelebrationPhrase.set(getRandomCelebrationPhrase(pct, isAr));
+        if (eligible && this.isBrowser) {
           // Play celebration sequence
           this.playCelebration();
+        } else {
+          this.clearAnimationState();
         }
       } else {
         this.clearAnimationState();
@@ -204,6 +211,7 @@ export class CelebrationModalComponent implements OnDestroy {
       this.lottieAnim = null;
     }
 
+    this.ribbons.set([]);
     this.isAnimationActive.set(false);
   }
 
@@ -252,20 +260,25 @@ export class CelebrationModalComponent implements OnDestroy {
       this.activeTimers.push(timer);
     }
 
-    // Generate ribbons density scaled by score & rank:
-    // Strictly ZERO ribbons if below 70% ("من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة")
+    // Strictly ZERO celebration for scores < 70%
     if (pct < 70) {
       this.ribbons.set([]);
-    } else {
-      let ribbonCount = 25;
-      if (rank === 1 || pct >= 90) {
-        ribbonCount = 58; // High density for top achievers
-      } else if (rank === 2 || pct >= 80) {
-        ribbonCount = 40; // Medium-high density
-      }
+      return;
+    }
 
-      const generatedRibbons: RibbonItem[] = [];
-      for (let i = 0; i < ribbonCount; i++) {
+    // Generate ribbons density scaled by score:
+    // 95% - 100%: 65 ribbons (Maximum intensity)
+    // 85% - 94%:  40 ribbons (High intensity)
+    // 70% - 84%:  20 ribbons (Moderate intensity)
+    let ribbonCount = 20;
+    if (pct >= 95) {
+      ribbonCount = 65;
+    } else if (pct >= 85) {
+      ribbonCount = 40;
+    }
+
+    const generatedRibbons: RibbonItem[] = [];
+    for (let i = 0; i < ribbonCount; i++) {
         const colorGrad = RIBBON_GRADIENTS[i % RIBBON_GRADIENTS.length];
         const left = `${Math.random() * 96 + 2}%`;
         const width = `${(1.6 + Math.random() * 1.0).toFixed(2)}cqw`;
@@ -286,7 +299,6 @@ export class CelebrationModalComponent implements OnDestroy {
         });
       }
       this.ribbons.set(generatedRibbons);
-    }
 
     // Trigger stage animation
     setTimeout(() => {
@@ -361,54 +373,87 @@ export class CelebrationModalComponent implements OnDestroy {
     }
   }
 
-  private triggerConfetti(pct: number, rank: 1 | 2 | 3 | null): void {
+  private triggerConfetti(pct: number, _rank: 1 | 2 | 3 | null): void {
     if (!this.isBrowser) return;
 
-    // "من 50% إلى 69%: انطلاق المفروض ميظهرلهوش حاجة"
     // Strictly NO confetti for scores < 70%
     if (pct < 70) return;
 
     try {
-      if (pct >= 85 || rank === 1 || rank === 2) {
-        // High Achievers / Rank 1 & 2: Massive celebration burst + dual side cannons!
+      if (pct >= 95) {
+        // Maximum intensity (95% - 100%): Full celebratory burst + dual side cannons!
         confetti({
-          particleCount: 120,
-          spread: 90,
+          particleCount: 160,
+          spread: 100,
           origin: { y: 0.55 },
           colors: ['#ffe27a', '#ffd23f', '#e11d48', '#38bdf8', '#c084fc', '#34d399', '#ffffff'],
           zIndex: 2100
         });
 
-        // Continuous celebratory cannons
-        const end = Date.now() + 2600;
+        // Continuous celebratory cannons (3.5s duration)
+        const end = Date.now() + 3500;
         const interval = setInterval(() => {
           if (Date.now() > end) {
             clearInterval(interval);
             return;
           }
           confetti({
-            particleCount: 35,
+            particleCount: 40,
             angle: 60,
-            spread: 55,
+            spread: 60,
             origin: { x: 0.05, y: 0.7 },
             colors: ['#ffe27a', '#ffd23f', '#c084fc', '#38bdf8'],
             zIndex: 2100
           });
           confetti({
-            particleCount: 35,
+            particleCount: 40,
             angle: 120,
-            spread: 55,
+            spread: 60,
             origin: { x: 0.95, y: 0.7 },
             colors: ['#ffe27a', '#ffd23f', '#fb7185', '#34d399'],
+            zIndex: 2100
+          });
+        }, 280);
+        this.activeIntervals.push(interval);
+      } else if (pct >= 85) {
+        // High intensity (85% - 94%): Strong burst + side cannons (2.2s duration)
+        confetti({
+          particleCount: 110,
+          spread: 85,
+          origin: { y: 0.55 },
+          colors: ['#ffe27a', '#ffd23f', '#e11d48', '#38bdf8', '#c084fc', '#34d399'],
+          zIndex: 2100
+        });
+
+        const end = Date.now() + 2200;
+        const interval = setInterval(() => {
+          if (Date.now() > end) {
+            clearInterval(interval);
+            return;
+          }
+          confetti({
+            particleCount: 25,
+            angle: 60,
+            spread: 50,
+            origin: { x: 0.05, y: 0.7 },
+            colors: ['#ffe27a', '#ffd23f', '#38bdf8'],
+            zIndex: 2100
+          });
+          confetti({
+            particleCount: 25,
+            angle: 120,
+            spread: 50,
+            origin: { x: 0.95, y: 0.7 },
+            colors: ['#ffe27a', '#ffd23f', '#fb7185'],
             zIndex: 2100
           });
         }, 350);
         this.activeIntervals.push(interval);
       } else {
-        // Very Good (70% - 84%) / Rank 3: Medium-high density celebratory shower
+        // Moderate intensity (70% - 84%): Single shower, no continuous cannons
         confetti({
-          particleCount: 80,
-          spread: 75,
+          particleCount: 60,
+          spread: 65,
           origin: { y: 0.6 },
           colors: ['#ffe27a', '#d89a00', '#34d399', '#38bdf8', '#c084fc'],
           zIndex: 2100

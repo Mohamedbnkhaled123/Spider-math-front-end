@@ -49,11 +49,11 @@ export interface SubmissionFeedbackData {
   assessmentTitleEn: string;
   unitTitleAr: string;
   resultVisibility: 'HIDDEN_PENDING_TEACHER' | 'PUBLISHED_TO_STUDENT_AND_PARENT';
-  mcqAutoScore: number;
-  essayManualScore: number;
-  finalTotalScore: number;
+  mcqAutoScore?: number | null;
+  essayManualScore?: number | null;
+  finalTotalScore?: number | null;
   maxScore: number;
-  scorePercentage: number;
+  scorePercentage?: number | null;
   gradedAt?: string;
   hasEssayQuestions?: boolean;
   isReviewExpired?: boolean;

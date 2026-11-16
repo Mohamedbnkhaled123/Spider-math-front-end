@@ -940,7 +940,47 @@
                         </span>
                       </div>
 
-                      <div class="flex items-center gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <!-- Quick Decision Presets -->
+                        <div class="flex items-center gap-1 bg-surface-bg p-1 rounded-xl border border-surface-border">
+                          <button
+                            type="button"
+                            (click)="gradeEssayQuestionInModal(item, q, 'FULL')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                            [class.bg-emerald-500]="q.gradingDecision === 'FULL'"
+                            [class.text-white]="q.gradingDecision === 'FULL'"
+                            [class.hover:bg-emerald-500/15]="q.gradingDecision !== 'FULL'"
+                            [class.text-emerald-700]="q.gradingDecision !== 'FULL'"
+                            [title]="langService.isArabic() ? 'درجة كاملة' : 'Full points'"
+                          >
+                            {{ langService.isArabic() ? ('كاملة (' + q.points + ')') : ('Full (' + q.points + ')') }}
+                          </button>
+                          <button
+                            type="button"
+                            (click)="gradeEssayQuestionInModal(item, q, 'HALF')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                            [class.bg-amber-500]="q.gradingDecision === 'HALF'"
+                            [class.text-white]="q.gradingDecision === 'HALF'"
+                            [class.hover:bg-amber-500/15]="q.gradingDecision !== 'HALF'"
+                            [class.text-amber-700]="q.gradingDecision !== 'HALF'"
+                            [title]="langService.isArabic() ? 'نصف درجة' : 'Half points'"
+                          >
+                            {{ langService.isArabic() ? ('نصف (' + (q.points / 2) + ')') : ('Half (' + (q.points / 2) + ')') }}
+                          </button>
+                          <button
+                            type="button"
+                            (click)="gradeEssayQuestionInModal(item, q, 'ZERO')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                            [class.bg-rose-500]="q.gradingDecision === 'ZERO'"
+                            [class.text-white]="q.gradingDecision === 'ZERO'"
+                            [class.hover:bg-rose-500/15]="q.gradingDecision !== 'ZERO'"
+                            [class.text-rose-700]="q.gradingDecision !== 'ZERO'"
+                            [title]="langService.isArabic() ? 'صفر' : 'Zero points'"
+                          >
+                            {{ langService.isArabic() ? 'صفر (0)' : 'Zero (0)' }}
+                          </button>
+                        </div>
+
                         <!-- Custom Score Direct Input -->
                         <div class="flex items-center gap-1.5 bg-surface-bg p-1.5 rounded-xl border border-surface-border focus-within:border-brand-primary transition-colors shadow-xs">
                           <label class="text-xs font-bold text-text-secondary px-1">
@@ -953,6 +993,7 @@
                             step="0.5"
                             [value]="q.pointsEarned"
                             #customScoreInput
+                            (change)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
                             (keydown.enter)="gradeEssayQuestionInModal(item, q, 'CUSTOM', +customScoreInput.value)"
                             class="w-16 sm:w-20 px-2.5 py-1.5 rounded-lg bg-surface-card border border-surface-border text-center font-mono font-bold text-xs text-text-primary focus:outline-none focus:border-brand-primary"
                           />
@@ -1213,30 +1254,52 @@
   <!-- MODAL: Fullscreen Student Solution Image Lightbox Preview                 -->
   <!-- ========================================================================= -->
   @if (previewImageUrl(); as previewUrl) {
-    <div class="fixed inset-0 z-layer-preview bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in">
-      <!-- Toolbar -->
-      <div class="absolute top-18 sm:top-24 right-4 rtl:right-auto rtl:left-4 flex items-center gap-3 z-10">
-        <div class="flex items-center gap-1 bg-surface-card/90 border border-surface-border rounded-xl px-2 py-1 text-xs text-text-primary">
-          <button type="button" (click)="zoomOutPreview()" class="p-1 hover:text-brand-primary" [title]="langService.isArabic() ? 'تصغير' : 'Zoom Out'">-</button>
+    <div
+      (click)="closeImagePreview()"
+      class="fixed inset-0 z-layer-image-lightbox z-layer-preview bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Floating Action Toolbar -->
+      <div
+        (click)="$event.stopPropagation()"
+        class="absolute top-18 sm:top-24 right-4 rtl:right-auto rtl:left-4 flex items-center gap-2 z-20"
+      >
+        <div class="flex items-center gap-1 bg-surface-card/95 border border-surface-border rounded-xl px-2 py-1 text-xs text-text-primary shadow-lg backdrop-blur-sm">
+          <button type="button" (click)="zoomOutPreview()" class="p-1 hover:text-brand-primary cursor-pointer font-bold" [title]="langService.isArabic() ? 'تصغير (-)' : 'Zoom Out (-)'">-</button>
           <span class="px-2 font-numeric font-bold">{{ (previewImageZoom() * 100).toFixed(0) }}%</span>
-          <button type="button" (click)="zoomInPreview()" class="p-1 hover:text-brand-primary" [title]="langService.isArabic() ? 'تكبير' : 'Zoom In'">+</button>
+          <button type="button" (click)="zoomInPreview()" class="p-1 hover:text-brand-primary cursor-pointer font-bold" [title]="langService.isArabic() ? 'تكبير (+)' : 'Zoom In (+)'">+</button>
         </div>
 
-        <button type="button" (click)="rotatePreview()" class="p-2 rounded-xl bg-surface-card/90 border border-surface-border text-text-primary hover:text-brand-primary transition-all cursor-pointer">
+        <button
+          type="button"
+          (click)="rotatePreview()"
+          class="p-2 rounded-xl bg-surface-card/95 border border-surface-border text-text-primary hover:text-brand-primary transition-all cursor-pointer shadow-lg backdrop-blur-sm flex items-center gap-1 text-xs font-bold"
+          [title]="langService.isArabic() ? 'تدوير الصورة 90°' : 'Rotate 90°'"
+        >
           <app-icon name="rotate-cw" [size]="16" />
         </button>
 
-        <button type="button" (click)="closeImagePreview()" class="p-2 rounded-xl bg-surface-card/90 border border-surface-border text-text-primary hover:text-rose-500 transition-all cursor-pointer">
+        <!-- Prominent Close / Cancel Button with Icon & Label -->
+        <button
+          type="button"
+          (click)="closeImagePreview()"
+          class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xl transition-all cursor-pointer"
+        >
           <app-icon name="x" [size]="16" />
+          <span>{{ langService.isArabic() ? 'إلغاء / إغلاق' : 'Close / Cancel' }}</span>
         </button>
       </div>
 
       <!-- Image Viewport -->
-      <div class="max-w-4xl max-h-[calc(100dvh-7.5rem)] sm:max-h-[calc(100dvh-8.5rem)] overflow-auto flex items-center justify-center p-4">
+      <div
+        (click)="$event.stopPropagation()"
+        class="max-w-4xl max-h-[calc(100dvh-7.5rem)] sm:max-h-[calc(100dvh-8.5rem)] overflow-auto flex items-center justify-center p-4"
+      >
         <img
           [src]="previewUrl"
           [alt]="langService.isArabic() ? 'معاينة حل الطالب' : 'Student Solution Preview'"
-          class="max-w-full max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100dvh-9rem)] object-contain transition-transform duration-200"
+          class="max-w-full max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100dvh-9rem)] object-contain transition-transform duration-200 rounded-xl shadow-2xl"
           [style.transform]="'scale(' + previewImageZoom() + ') rotate(' + previewImageRotation() + 'deg)'"
         />
       </div>

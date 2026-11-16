@@ -182,5 +182,5 @@ export function getRandomCelebrationPhrase(percentage: number, isArabic: boolean
     pool = isArabic ? CELEBRATION_PHRASES_BELOW_70.ar : CELEBRATION_PHRASES_BELOW_70.en;
   }
   const idx = Math.floor(Math.random() * pool.length);
-  return pool[idx];
+  return pool[idx] || pool[0];
 }

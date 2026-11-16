@@ -6,7 +6,8 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  HostListener
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -528,7 +529,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
               isPendingManualGrading = false;
               pointsEarned = Number(essayAns.points_earned) || 0;
               gradingDecision = essayAns.decision || (pointsEarned >= points ? 'FULL' : pointsEarned > 0 ? 'HALF' : 'ZERO');
-            } else if (status === 'PUBLISHED' && s.essay_manual_score !== undefined && s.essay_manual_score !== null) {
+            } else if (s.essay_manual_score !== undefined && s.essay_manual_score !== null && Number(s.essay_manual_score) > 0) {
               isPendingManualGrading = false;
               if (totalEssay === 1) {
                 pointsEarned = Number(s.essay_manual_score) || 0;
@@ -553,16 +554,17 @@ export class InteractiveGradingStudioComponent implements OnInit {
             };
           });
 
-          // Score Calculation
+          // Score Calculation: cleanly sum auto questions + manual essay points
           const autoScore = mappedAnswers
             .filter((a) => a.questionType !== 'ESSAY_PHOTO')
             .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
 
-          const manualEssayScore = mappedAnswers
-            .filter((a) => a.questionType === 'ESSAY_PHOTO' && !a.isPendingManualGrading)
+          const manualEssayFromAnswers = mappedAnswers
+            .filter((a) => a.questionType === 'ESSAY_PHOTO')
             .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
 
-          const finalScore = autoScore + manualEssayScore;
+          const effectiveEssayScore = Math.max(manualEssayFromAnswers, Number(s.essay_manual_score) || 0);
+          const finalScore = autoScore + effectiveEssayScore;
           const scorePercentage = totalPoints > 0 ? Math.round((finalScore / totalPoints) * 100) : 0;
 
           return {
@@ -578,8 +580,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
             assessmentType: assessment.assessment_type || 'QUIZ',
             attemptNumber: s.attempt_number || 1,
             totalPoints,
-            mcqAutoScore: s.mcq_auto_score || 0,
-            essayManualScore: s.essay_manual_score || 0,
+            mcqAutoScore: autoScore || (s.mcq_auto_score || 0),
+            essayManualScore: effectiveEssayScore,
             finalTotalScore: finalScore,
             scorePercentage,
             status,
@@ -756,11 +758,33 @@ export class InteractiveGradingStudioComponent implements OnInit {
     this.previewImageRotation.update((r) => (r + 90) % 360);
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapePressed(): void {
+    if (this.previewImageUrl()) {
+      this.closeImagePreview();
+    }
+  }
+
   // Direct Teacher Approval (MCQ & General Assessments)
   confirmAndApproveSubmission(sub: AllQuizSubmissionItem): void {
     if (sub.status === 'PUBLISHED') {
       return;
     }
+
+    // Ensure all scores are freshly recalculated before showing confirmation
+    const autoScore = (sub.answers || [])
+      .filter((a) => a.questionType !== 'ESSAY_PHOTO')
+      .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
+    const essayAnswersScore = (sub.answers || [])
+      .filter((a) => a.questionType === 'ESSAY_PHOTO')
+      .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
+    const effectiveEssay = Math.max(essayAnswersScore, sub.essayManualScore || 0);
+    const freshTotal = autoScore + effectiveEssay;
+    sub.mcqAutoScore = autoScore;
+    sub.essayManualScore = effectiveEssay;
+    sub.finalTotalScore = freshTotal;
+    sub.scorePercentage = sub.totalPoints > 0 ? Math.round((freshTotal / sub.totalPoints) * 100) : 0;
+
     this.pendingApprovalSubmission.set(sub);
   }
 

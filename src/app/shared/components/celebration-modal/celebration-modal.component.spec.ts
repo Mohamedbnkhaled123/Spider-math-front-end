@@ -57,20 +57,42 @@ describe('CelebrationModalComponent', () => {
   });
 
   it('should scale ribbons and fireworks for >= 70% and strictly hide for scores < 70% (including 50%-69%)', () => {
-    // 1. High score (>= 90%): 58 ribbons, fireworks visible
+    // 1. Tier 1: Maximum intensity (>= 95%): 65 ribbons, fireworks visible
     fixture.componentRef.setInput('isOpen', true);
-    fixture.componentRef.setInput('score', 19);
+    fixture.componentRef.setInput('score', 20); // 100%
     fixture.componentRef.setInput('totalScore', 20);
     fixture.detectChanges();
 
-    expect(component.ribbons().length).toBe(58);
+    expect(component.ribbons().length).toBe(65);
     expect(component.isAboveAverage()).toBeTrue();
     expect(component.isCelebrationEligible()).toBeTrue();
 
     const hostEl: HTMLElement = fixture.nativeElement;
     expect(hostEl.querySelector('[data-testid="lottie-fireworks-layer"]')).toBeTruthy();
 
-    // 2. Score between 50% and 69% ("انطلاق"): STRICTLY ZERO ribbons & fireworks suppressed!
+    // 1b. Tier 2: High intensity (85% - 94%): 40 ribbons
+    fixture.componentRef.setInput('isOpen', false);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('score', 18); // 90%
+    fixture.componentRef.setInput('totalScore', 20);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.detectChanges();
+
+    expect(component.ribbons().length).toBe(40);
+    expect(component.isCelebrationEligible()).toBeTrue();
+
+    // 1c. Tier 3: Moderate intensity (70% - 84%): 20 ribbons
+    fixture.componentRef.setInput('isOpen', false);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('score', 15); // 75%
+    fixture.componentRef.setInput('totalScore', 20);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.detectChanges();
+
+    expect(component.ribbons().length).toBe(20);
+    expect(component.isCelebrationEligible()).toBeTrue();
+
+    // 2. Score between 50% and 69% ("انطلاق"): STRICTLY ZERO ribbons & celebration modal not rendered!
     fixture.componentRef.setInput('isOpen', false);
     fixture.detectChanges();
     fixture.componentRef.setInput('score', 12); // 60%
@@ -82,9 +104,10 @@ describe('CelebrationModalComponent', () => {
     expect(component.isAboveAverage()).toBeFalse();
     expect(component.isCelebrationEligible()).toBeFalse();
     expect(component.ribbons().length).toBe(0);
+    expect(hostEl.querySelector('.celebration-backdrop')).toBeNull();
     expect(hostEl.querySelector('[data-testid="lottie-fireworks-layer"]')).toBeNull();
 
-    // 3. Below 50% score (e.g. 40%): STRICTLY ZERO ribbons & fireworks suppressed!
+    // 3. Below 50% score (e.g. 40%): STRICTLY ZERO ribbons & celebration modal not rendered!
     fixture.componentRef.setInput('isOpen', false);
     fixture.detectChanges();
     fixture.componentRef.setInput('score', 8); // 40%
@@ -96,6 +119,7 @@ describe('CelebrationModalComponent', () => {
     expect(component.isAboveAverage()).toBeFalse();
     expect(component.isCelebrationEligible()).toBeFalse();
     expect(component.ribbons().length).toBe(0);
+    expect(hostEl.querySelector('.celebration-backdrop')).toBeNull();
     expect(hostEl.querySelector('[data-testid="lottie-fireworks-layer"]')).toBeNull();
   });
 
@@ -168,6 +192,8 @@ describe('CelebrationModalComponent', () => {
   describe('Navbar Clearance and Layering Contract', () => {
     it('should layer celebration backdrop below sticky header and render skip button cleanly', () => {
       fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('score', 20);
+      fixture.componentRef.setInput('totalScore', 20);
       fixture.detectChanges();
 
       const backdrop: HTMLElement | null = fixture.nativeElement.querySelector('.celebration-backdrop');

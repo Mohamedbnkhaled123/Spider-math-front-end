@@ -113,8 +113,8 @@ export class StudentOverviewComponent implements OnInit {
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد!`
-      : `⏳ Coming Soon — "${title}" is being prepared!`;
+      ? `قريباً — محتوى "${title}" قيد الإعداد!`
+      : `Coming Soon — "${title}" is being prepared!`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {
@@ -280,12 +280,12 @@ export class StudentOverviewComponent implements OnInit {
   // =========================================================================
   readonly completedGrades = signal<StudentCompletedGradeItem[]>([]);
 
-  // Average Quiz Score
+  // Average Quiz Score (excludes pending review / unscored submissions)
   readonly averageScorePercentage = computed(() => {
-    const list = this.completedGrades();
+    const list = this.completedGrades().filter(g => g.score !== null && g.score !== undefined && g.status !== 'PENDING_REVIEW' && !(g as any).isPending);
     if (list.length === 0) return 0;
-    const totalAchieved = list.reduce((acc, g) => acc + g.score, 0);
-    const totalPossible = list.reduce((acc, g) => acc + g.maxScore, 0);
+    const totalAchieved = list.reduce((acc, g) => acc + (g.score || 0), 0);
+    const totalPossible = list.reduce((acc, g) => acc + (g.maxScore || 0), 0);
     return totalPossible > 0 ? Math.min(100, Math.round((totalAchieved / totalPossible) * 100)) : 0;
   });
 
@@ -631,8 +631,8 @@ export class StudentOverviewComponent implements OnInit {
         dueDateAr = canRetake
           ? `متاح إعادة المحاولة (${completedAttemptsCount} / ${maxAttempts})`
           : 'تم التسليم بنجاح';
-        statusNote = match.status === 'PENDING_REVIEW'
-          ? 'تم التسليم — قيد مراجعة وتصحيح المعلمة'
+        statusNote = (match.status === 'PENDING_REVIEW' || match.score === null || match.score === undefined || (match as any).isPending)
+          ? 'تم التسليم — في انتظار التصحيح اليدوي'
           : `تم التسليم — الدرجة: ${match.score} / ${match.maxScore}`;
       } else {
         if (asm.available_until) {
@@ -702,6 +702,7 @@ export class StudentOverviewComponent implements OnInit {
         isCompleted: !!match,
         submissionId: match ? (match.submissionId || match.id) : undefined,
         score: match ? match.score : undefined,
+        isPending: match ? (match.isPending || match.status === 'PENDING_REVIEW' || match.score === null) : false,
         maxScore: match ? match.maxScore : undefined,
         feedbackUrl: match ? (match.feedbackUrl || `/student/submissions/${match.submissionId || match.id}/feedback`) : undefined,
         maxAttempts,

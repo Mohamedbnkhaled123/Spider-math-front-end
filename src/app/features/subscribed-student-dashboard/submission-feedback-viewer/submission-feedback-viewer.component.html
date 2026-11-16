@@ -32,7 +32,7 @@
         class="px-3 py-1 rounded-lg text-xs font-bold border"
         [ngClass]="isPublished() ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'"
       >
-        {{ isPublished() ? (langService.isArabic() ? 'النتيجة معتمدة' : 'Result Published') : (langService.isArabic() ? 'بانتظار التصحيح' : 'Awaiting Grading') }}
+        {{ isPublished() ? (langService.isArabic() ? 'النتيجة معتمدة' : 'Result Published') : (langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review') }}
       </span>
     </div>
   </div>
@@ -98,7 +98,7 @@
           </div>
 
           <h2 class="text-xl font-black text-text-primary mb-2">
-            {{ langService.isArabic() ? 'قيد التصحيح والاعتماد' : 'Under Review' }}
+            {{ langService.isArabic() ? 'في انتظار التصحيح اليدوي' : 'Pending Manual Review' }}
           </h2>
           <p class="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
             {{ langService.isArabic() ? 'تم الاستلام وجاري التصحيح.' : 'Answers received. Grading in progress.' }}
@@ -229,14 +229,16 @@
             }
 
             <div class="mt-3 flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                (click)="openCelebration()"
-                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border border-amber-500/30 text-amber-500 hover:border-amber-400 hover:bg-amber-500/20 text-xs font-black transition-all shadow-sm active:scale-95 cursor-pointer"
-              >
-                <app-icon name="award" [size]="14" />
-                <span>{{ langService.isArabic() ? 'احتفالية النتيجة' : 'Celebration' }}</span>
-              </button>
+              @if (scorePercentage() >= 70) {
+                <button
+                  type="button"
+                  (click)="openCelebration()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border border-amber-500/30 text-amber-500 hover:border-amber-400 hover:bg-amber-500/20 text-xs font-black transition-all shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <app-icon name="award" [size]="14" />
+                  <span>{{ langService.isArabic() ? 'احتفالية النتيجة' : 'Celebration' }}</span>
+                </button>
+              }
 
               @if (canRetake()) {
                 <a
@@ -255,18 +257,33 @@
             <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
               <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'تصحيح تلقائي' : 'Auto-Graded' }}</span>
               <span class="text-base font-black font-numeric text-text-primary">
-                {{ feedback().mcqAutoScore }}
+                {{ feedback().mcqAutoScore ?? 0 }}
               </span>
             </div>
 
             <div class="p-3 sm:p-4 rounded-2xl bg-surface-bg border border-surface-border text-center">
               <span class="text-[10px] font-bold text-text-muted block mb-1">{{ langService.isArabic() ? 'تصحيح يدوي (مقالي)' : 'Manual Essay' }}</span>
               <span class="text-base font-black font-numeric text-brand-primary dark:text-brand-accent">
-                {{ feedback().essayManualScore }}
+                {{ feedback().essayManualScore ?? 0 }}
               </span>
             </div>
           </div>
         </div>
+
+        <!-- Below 70% Encouraging Phrase Card (User Requirement: no celebration, only encouraging phrase) -->
+        @if (scorePercentage() < 70) {
+          <div class="p-6 sm:p-8 rounded-3xl border border-sky-500/30 bg-sky-500/10 text-center shadow-sm space-y-3 animate-fade-in">
+            <div class="w-14 h-14 rounded-2xl bg-sky-500/20 text-sky-500 flex items-center justify-center mx-auto shadow-xs">
+              <app-icon name="sparkles" [size]="28" />
+            </div>
+            <p class="text-base sm:text-lg font-black text-text-primary max-w-xl mx-auto leading-relaxed">
+              "{{ encouragingPhrase() }}"
+            </p>
+            <p class="text-xs text-text-muted">
+              {{ langService.isArabic() ? 'راجع الأسئلة وإجاباتك النموذجية بالأسفل لتستعد للمحاولة القادمة وتتفوق!' : 'Review the questions and model answers below to prepare for your next attempt!' }}
+            </p>
+          </div>
+        }
 
         <!-- Full Mark Congratulations -->
         @if (isFullMark()) {
@@ -742,7 +759,9 @@
   @if (previewImageUrl(); as pUrl) {
     <div
       (click)="closeImagePreview()"
-      class="fixed inset-0 z-layer-modal bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
+      class="fixed inset-0 z-layer-image-lightbox bg-black/90 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
     >
       <div
         (click)="$event.stopPropagation()"
@@ -751,17 +770,18 @@
         <div class="p-4 bg-surface-bg border-b border-surface-border flex items-center justify-between">
           <span class="text-xs font-bold text-text-primary flex items-center gap-2">
             <app-icon name="image" [size]="16" className="text-brand-primary" />
-            <span>{{ langService.isArabic() ? 'معاينة الصورة' : 'Image Preview' }}</span>
+            <span>{{ langService.isArabic() ? 'معاينة صورة الحل' : 'Solution Image Preview' }}</span>
           </span>
           <button
             type="button"
             (click)="closeImagePreview()"
-            class="p-1.5 rounded-xl bg-surface-card hover:bg-surface-border text-text-muted hover:text-text-primary transition-all cursor-pointer"
+            class="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
           >
-            <app-icon name="x" [size]="16" />
+            <app-icon name="x" [size]="15" />
+            <span>{{ langService.isArabic() ? 'إلغاء / إغلاق' : 'Close / Cancel' }}</span>
           </button>
         </div>
-        <div class="p-4 overflow-auto flex items-center justify-center bg-black/20">
+        <div class="p-4 overflow-auto flex items-center justify-center bg-black/30">
           <img [src]="pUrl" [alt]="langService.isArabic() ? 'معاينة الصورة' : 'Image Preview'" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow-md" />
         </div>
       </div>
@@ -862,7 +882,7 @@
   <app-celebration-modal
     [isOpen]="isCelebrationOpen()"
     [studentName]="studentName()"
-    [score]="feedback().finalTotalScore"
+    [score]="feedback().finalTotalScore ?? 0"
     [totalScore]="feedback().maxScore"
     [percentage]="scorePercentage()"
     [xpEarned]="earnedXp()"

@@ -522,7 +522,7 @@
               @if (sub.isPendingReview) {
                 <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1.5">
                   <app-icon name="clock" [size]="14" />
-                  <span>{{ langService.isArabic() ? 'تم التسليم — بانتظار التصحيح' : 'Submitted — Awaiting Grading' }}</span>
+                  <span>{{ langService.isArabic() ? 'تم التسليم — في انتظار التصحيح اليدوي' : 'Submitted — Pending Manual Review' }}</span>
                 </span>
               } @else if (sub.isInProgress) {
                 <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1.5">

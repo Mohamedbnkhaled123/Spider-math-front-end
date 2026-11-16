@@ -88,8 +88,10 @@ export interface StudentDueQuizItem {
   assessmentUrl: string;
   isCompleted?: boolean;
   submissionId?: string;
-  score?: number;
+  score?: number | null;
   maxScore?: number;
+  status?: string;
+  isPending?: boolean;
   feedbackUrl?: string;
   maxAttempts?: number;
   completedAttemptsCount?: number;
@@ -104,11 +106,12 @@ export interface StudentCompletedGradeItem {
   attemptNumber?: number;
   titleAr: string;
   unitTitleAr: string;
-  score: number;
+  score: number | null;
   maxScore: number;
-  percentage: number;
+  percentage: number | null;
   gradeLabelAr: string;
   status?: string;
+  isPending?: boolean;
   gradedBy: string;
   gradedDateAr: string;
   feedbackUrl: string;

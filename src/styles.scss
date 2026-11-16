@@ -164,6 +164,9 @@
 .z-layer-header { z-index: 1200 !important; }        // Sticky Navbar & Sync Banner (Crisp & visible above modal backdrops)
 .z-layer-header-dropdown { z-index: 1300 !important; } // Mobile Navigation Menu & Notifications Dropdowns (Above header)
 
+// Highest Lightbox Overlay (Always on top of all modals, submodals, slicers and dialogs)
+.z-layer-image-lightbox { z-index: 1500 !important; }
+
 // Universal Safe Viewport Clearance for Modal Overlays
 // Ensures modal dialogs never slide under or get covered by the sticky navbar on mobile (h-16 = 4rem) or desktop (h-20 = 5rem)
 .modal-safe-clearance,
@@ -173,7 +176,8 @@
 .z-layer-preview.fixed.inset-0,
 .z-layer-preview-submodal.fixed.inset-0,
 .z-layer-slicer.fixed.inset-0,
-.z-layer-dialog.fixed.inset-0 {
+.z-layer-dialog.fixed.inset-0,
+.z-layer-image-lightbox.fixed.inset-0 {
   padding-top: 4rem;
   @media (min-width: 640px) {
     padding-top: 5rem;
