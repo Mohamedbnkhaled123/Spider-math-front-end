@@ -495,5 +495,97 @@ describe('CurriculumStudioComponent', () => {
         type: 'warning'
       });
     });
+
+    it('should require confirmation before deleting a lecture', () => {
+      const unit: any = {
+        id: 'unit-123',
+        titleAr: 'وحدة تجريبية',
+        titleEn: 'Test Unit',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_1',
+        term: 'TERM_1',
+        type: 'STUDY_UNIT',
+        isPublished: true,
+        priceEgp: 200,
+        lectures: [
+          {
+            id: 'lec-456',
+            order: 2,
+            titleAr: 'محاضرة الجبر وحساب المثلثات',
+            titleEn: 'Algebra Lecture',
+            xpReward: 10,
+            isFree: false,
+            isPrintAllowed: true
+          }
+        ],
+        assessments: []
+      };
+
+      spyOn(component, 'openConfirm').and.callThrough();
+      const http = (component as any).http;
+      spyOn(http, 'delete').and.returnValue({
+        subscribe: (callbacks: any) => {
+          callbacks.next?.();
+        }
+      });
+
+      component.deleteLecture(unit, 'lec-456');
+
+      expect(component.openConfirm).toHaveBeenCalled();
+      expect(component.confirmDialog().isOpen).toBeTrue();
+      expect(component.confirmDialog().title).toBe('حذف المحاضرة');
+      expect(component.confirmDialog().message).toContain('محاضرة الجبر وحساب المثلثات');
+
+      // Now simulate user confirming deletion
+      component.proceedConfirm();
+
+      expect(http.delete).toHaveBeenCalledWith('/api/v1/admin/lectures/lec-456');
+    });
+
+    it('should require confirmation before deleting an assessment', () => {
+      const unit: any = {
+        id: 'unit-123',
+        titleAr: 'وحدة تجريبية',
+        titleEn: 'Test Unit',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_1',
+        term: 'TERM_1',
+        type: 'STUDY_UNIT',
+        isPublished: true,
+        priceEgp: 200,
+        lectures: [],
+        assessments: [
+          {
+            id: 'asm-789',
+            titleAr: 'امتحان منتصف الفصل',
+            titleEn: 'Midterm Exam',
+            type: 'COMPREHENSIVE_EXAM',
+            questions: [],
+            submissionsCount: 0,
+            calculatorType: 'DESMOS'
+          }
+        ]
+      };
+
+      spyOn(component, 'openConfirm').and.callThrough();
+      const http = (component as any).http;
+      spyOn(http, 'delete').and.returnValue({
+        subscribe: (callbacks: any) => {
+          callbacks.next?.();
+        }
+      });
+
+      component.deleteAssessment(unit, 'asm-789');
+
+      expect(component.openConfirm).toHaveBeenCalled();
+      expect(component.confirmDialog().isOpen).toBeTrue();
+      expect(component.confirmDialog().title).toBe('حذف التقييم');
+      expect(component.confirmDialog().message).toContain('امتحان منتصف الفصل');
+
+      // Now simulate user confirming deletion
+      component.proceedConfirm();
+
+      expect(http.delete).toHaveBeenCalledWith('/api/v1/admin/assessments/asm-789');
+    });
   });
 });

@@ -1872,32 +1872,43 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   deleteLecture(unit: UnitPackageAdminItem, lectureId: string): void {
-    this.http.delete(`/api/v1/admin/lectures/${lectureId}`).subscribe({
-      next: () => {
-        const updatedAssessments = (unit.assessments || []).map((a) =>
-          a.lectureId === lectureId ? { ...a, lectureId: null } : a
-        );
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          lectures: unit.lectures.filter((l) => l.id !== lectureId),
-          assessments: updatedAssessments
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف المحاضرة', type: 'warning' });
+    const lec = unit.lectures.find((l) => l.id === lectureId);
+    const lecTitle = lec ? ((this.langService.isArabic() ? lec.titleAr : lec.titleEn) || `محاضرة ${lec.order || 1}`) : '';
+    const title = this.langService.isArabic() ? 'حذف المحاضرة' : 'Delete Lecture';
+    const message = this.langService.isArabic()
+      ? `هل أنتِ متأكدة من حذف المحاضرة "${lecTitle}" نهائياً؟ سيتم فك ارتباط أي كويز أو واجب مرتبط بها.`
+      : `Are you sure you want to permanently delete lecture "${lecTitle}"? Any linked quizzes or homework will be unlinked.`;
+
+    this.openConfirm(
+      title,
+      message,
+      () => {
+        this.http.delete(`/api/v1/admin/lectures/${lectureId}`).subscribe({
+          next: () => {
+            const updatedAssessments = (unit.assessments || []).map((a) =>
+              a.lectureId === lectureId ? { ...a, lectureId: null } : a
+            );
+            const updatedUnit: UnitPackageAdminItem = {
+              ...unit,
+              lectures: unit.lectures.filter((l) => l.id !== lectureId),
+              assessments: updatedAssessments
+            };
+            this.unitUpdated.emit(updatedUnit);
+            this.toastTriggered.emit({
+              text: this.langService.isArabic() ? 'تم حذف المحاضرة بنجاح' : 'Lecture deleted successfully',
+              type: 'warning'
+            });
+          },
+          error: (err) => {
+            const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر حذف المحاضرة' : 'Failed to delete lecture');
+            this.toastTriggered.emit({ text: errMsg, type: 'error' });
+          }
+        });
       },
-      error: () => {
-        const updatedAssessments = (unit.assessments || []).map((a) =>
-          a.lectureId === lectureId ? { ...a, lectureId: null } : a
-        );
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          lectures: unit.lectures.filter((l) => l.id !== lectureId),
-          assessments: updatedAssessments
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف المحاضرة!', type: 'warning' });
-      }
-    });
+      true,
+      this.langService.isArabic() ? 'نعم، احذف المحاضرة' : 'Yes, Delete',
+      this.langService.isArabic() ? 'إلغاء' : 'Cancel'
+    );
   }
 
   toggleLectureFree(unit: UnitPackageAdminItem, lec: LectureAdminItem, event?: Event): void {
@@ -2131,32 +2142,43 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   deleteAssessment(unit: UnitPackageAdminItem, assessmentId: string): void {
-    this.http.delete(`/api/v1/admin/assessments/${assessmentId}`).subscribe({
-      next: () => {
-        const updatedLectures = (unit.lectures || []).map((l) =>
-          l.assessmentId === assessmentId ? { ...l, hasAssessment: false, assessmentId: undefined } : l
-        );
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          lectures: updatedLectures,
-          assessments: unit.assessments.filter((a) => a.id !== assessmentId)
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف الامتحان', type: 'warning' });
+    const asm = unit.assessments.find((a) => a.id === assessmentId);
+    const asmTitle = asm ? asm.titleAr : '';
+    const title = this.langService.isArabic() ? 'حذف التقييم' : 'Delete Assessment';
+    const message = this.langService.isArabic()
+      ? `هل أنتِ متأكدة من حذف "${asmTitle}" نهائياً؟ سيتم حذف جميع الأسئلة والتسليمات المرتبطة به.`
+      : `Are you sure you want to permanently delete "${asmTitle}"? All questions and submissions will be removed.`;
+
+    this.openConfirm(
+      title,
+      message,
+      () => {
+        this.http.delete(`/api/v1/admin/assessments/${assessmentId}`).subscribe({
+          next: () => {
+            const updatedLectures = (unit.lectures || []).map((l) =>
+              l.assessmentId === assessmentId ? { ...l, hasAssessment: false, assessmentId: undefined } : l
+            );
+            const updatedUnit: UnitPackageAdminItem = {
+              ...unit,
+              lectures: updatedLectures,
+              assessments: unit.assessments.filter((a) => a.id !== assessmentId)
+            };
+            this.unitUpdated.emit(updatedUnit);
+            this.toastTriggered.emit({
+              text: this.langService.isArabic() ? 'تم حذف التقييم بنجاح' : 'Assessment deleted successfully',
+              type: 'warning'
+            });
+          },
+          error: (err) => {
+            const errMsg = err?.error?.error?.message || err?.error?.message || (this.langService.isArabic() ? 'تعذر حذف التقييم' : 'Failed to delete assessment');
+            this.toastTriggered.emit({ text: errMsg, type: 'error' });
+          }
+        });
       },
-      error: () => {
-        const updatedLectures = (unit.lectures || []).map((l) =>
-          l.assessmentId === assessmentId ? { ...l, hasAssessment: false, assessmentId: undefined } : l
-        );
-        const updatedUnit: UnitPackageAdminItem = {
-          ...unit,
-          lectures: updatedLectures,
-          assessments: unit.assessments.filter((a) => a.id !== assessmentId)
-        };
-        this.unitUpdated.emit(updatedUnit);
-        this.toastTriggered.emit({ text: 'تم حذف الامتحان!', type: 'warning' });
-      }
-    });
+      true,
+      this.langService.isArabic() ? 'نعم، احذف التقييم' : 'Yes, Delete',
+      this.langService.isArabic() ? 'إلغاء' : 'Cancel'
+    );
   }
 
   // =========================================================================
