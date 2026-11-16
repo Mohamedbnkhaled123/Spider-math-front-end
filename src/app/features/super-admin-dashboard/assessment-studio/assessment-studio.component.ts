@@ -527,15 +527,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     );
   });
 
-  constructor() {
-    effect(() => {
-      const modalOpen = this.isAnyModalOpen();
-      if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
-        document.body.style.overflow = modalOpen ? 'hidden' : '';
-        document.documentElement.style.overflow = modalOpen ? 'hidden' : '';
-      }
-    });
-  }
+  constructor() {}
 
   toggleMathKeyboard(fallbackTarget?: HTMLInputElement | HTMLTextAreaElement): void {
     if (this.isMathKeyboardOpen()) {
@@ -1061,10 +1053,6 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
-    if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
   }
 
   loadTracksAndActiveGrades(): void {

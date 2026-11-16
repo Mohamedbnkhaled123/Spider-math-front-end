@@ -51,7 +51,7 @@
     <main class="flex-1 w-full min-w-0">
 
       <!-- Desktop Permanent Top Workspace Navigation Bar (>= 1024px) -->
-      <div class="hidden lg:flex items-center justify-between flex-wrap xl:flex-nowrap gap-3 p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card border border-surface-border animate-fade-in relative z-20">
+      <div class="hidden lg:flex items-center justify-between flex-wrap xl:flex-nowrap gap-3 p-3.5 mb-6 rounded-2xl spider-rim-glass-card shadow-glass bg-surface-card/95 border border-surface-border animate-fade-in sticky top-20 z-layer-header backdrop-blur-xl">
         <div class="flex items-center gap-2.5 min-w-0 shrink-0">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
           <h1 class="text-sm font-bold text-text-primary font-academic-serif truncate">
@@ -520,7 +520,7 @@
   <!-- MODAL: Confirm Purge Old Term Homework Photos                              -->
   <!-- ========================================================================= -->
   @if (showPurgeConfirmModal()) {
-    <div class="fixed inset-0 z-layer-modal bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20">
+    <div class="fixed inset-0 z-layer-modal bg-black/35 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20">
       <div class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-surface-border bg-surface-card p-6 shadow-2xl space-y-4 animate-fade-in text-xs text-right rtl:text-right">
         <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
           <app-icon name="trash" [size]="28" />

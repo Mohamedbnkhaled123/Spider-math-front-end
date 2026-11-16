@@ -761,7 +761,7 @@
   @if (previewImageUrl(); as pUrl) {
     <div
       (click)="closeImagePreview()"
-      class="fixed inset-0 z-layer-image-lightbox bg-black/90 backdrop-blur-md flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
+      class="fixed inset-0 z-layer-image-lightbox bg-black/35 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
@@ -792,7 +792,7 @@
 
   <!-- In-Platform Embedded YouTube Solution Modal (Video or Community Post) -->
   @if (activeInPlatformSolution(); as sol) {
-    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md animate-fade-in" (click)="closeInPlatformSolution()">
+    <div class="fixed inset-0 z-layer-modal flex items-center justify-center p-4 pt-16 sm:pt-20 bg-black/35 backdrop-blur-sm animate-fade-in" (click)="closeInPlatformSolution()">
       <div class="spider-rim-glass-card rounded-3xl p-5 sm:p-7 max-w-3xl w-full border border-brand-gold/40 shadow-2xl space-y-4 max-h-[calc(100dvh-5.5rem)] overflow-y-auto" (click)="$event.stopPropagation()">
         
         <!-- Modal Header -->

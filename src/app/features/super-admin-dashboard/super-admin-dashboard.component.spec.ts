@@ -53,4 +53,14 @@ describe('SuperAdminDashboardComponent', () => {
     expect(component.isDesktopToolsOpen()).toBeFalse();
     expect(component.isDesktopNotificationsOpen()).toBeFalse();
   });
+
+  it('should render desktop workspace navigation bar as sticky with z-layer-header and backdrop blur', () => {
+    const hostEl: HTMLElement = fixture.nativeElement;
+    const desktopBar = hostEl.querySelector('.spider-rim-glass-card.sticky');
+    expect(desktopBar).toBeTruthy();
+    expect(desktopBar?.classList.contains('sticky')).toBeTrue();
+    expect(desktopBar?.classList.contains('top-20')).toBeTrue();
+    expect(desktopBar?.classList.contains('z-layer-header')).toBeTrue();
+    expect(desktopBar?.classList.contains('backdrop-blur-xl')).toBeTrue();
+  });
 });

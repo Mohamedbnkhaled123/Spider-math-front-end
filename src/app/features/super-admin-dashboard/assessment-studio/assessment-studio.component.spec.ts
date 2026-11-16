@@ -957,5 +957,37 @@ describe('AssessmentStudioComponent', () => {
       expect(modalBackdrop?.classList.contains('pt-16')).toBeTrue();
       expect(modalBackdrop?.classList.contains('sm:pt-20')).toBeTrue();
     });
+
+    it('should use clean translucent frosted glass backdrop and preserve documentElement scroll context', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const modalBackdrop = hostEl.querySelector('.z-layer-modal');
+      expect(modalBackdrop).toBeTruthy();
+      expect(modalBackdrop?.classList.contains('bg-black/35')).toBeTrue();
+      expect(modalBackdrop?.classList.contains('backdrop-blur-sm')).toBeTrue();
+      expect(modalBackdrop?.classList.contains('bg-black/85')).toBeFalse();
+
+      // documentElement overflow must NOT be locked to hidden, preserving sticky navbar
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+
+    it('should configure inner scrollable container to eliminate double scrolling', () => {
+      component.openEditor(sampleAssessment, 'QUESTIONS');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const modalContainer = hostEl.querySelector('.z-layer-modal > div');
+      expect(modalContainer).toBeTruthy();
+      expect(modalContainer?.classList.contains('overflow-hidden')).toBeTrue();
+      expect(modalContainer?.classList.contains('lg:h-[calc(100dvh-10.5rem)]')).toBeTrue();
+      expect(modalContainer?.classList.contains('lg:max-h-[calc(100dvh-10.5rem)]')).toBeTrue();
+
+      const innerBody = modalContainer?.querySelector('.overflow-y-auto');
+      expect(innerBody).toBeTruthy();
+      expect(innerBody?.classList.contains('flex-1')).toBeTrue();
+      expect(innerBody?.classList.contains('min-h-0')).toBeTrue();
+    });
   });
 });
