@@ -528,17 +528,15 @@
   animation: stepBack 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-// Verlet Silk Canvas Container
-.silk-canvas-container {
-  canvas {
-    image-rendering: auto;
-  }
-}
-
-// Respect user preference for reduced motion
 @media (prefers-reduced-motion: reduce) {
   .curriculum-card-watermark .curriculum-card-watermark-img {
     transition: none !important;
     transform: none !important;
   }
 }
+
+.sat-banner-img {
+  object-position: top center !important;
+  transform-origin: top center !important;
+}
+

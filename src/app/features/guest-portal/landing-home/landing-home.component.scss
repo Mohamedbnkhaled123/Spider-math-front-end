@@ -558,3 +558,118 @@ $axis-blue: #0284C7;
   letter-spacing: 0;
   font-size: 0.78rem;
 }
+
+// ------------------------------------------------------------------------------
+// About Section — Video Ambient Lighting
+// Warm Sunburst for Light Mode, Luminous Violet & Gold for Dark Mode
+// ------------------------------------------------------------------------------
+.video-ambient-glow {
+  // Light Mode default: Warm golden amber sunburst / soft warm illumination (NO purple)
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.45) 0%, rgba(251, 191, 36, 0.35) 45%, rgba(249, 115, 22, 0.20) 70%, transparent 100%);
+  opacity: 0.85;
+}
+
+:host-context([data-theme='light']) .video-ambient-glow,
+:host-context(.light) .video-ambient-glow {
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.45) 0%, rgba(251, 191, 36, 0.35) 45%, rgba(249, 115, 22, 0.20) 70%, transparent 100%);
+  opacity: 0.85;
+}
+
+:host-context([data-theme='dark']) .video-ambient-glow,
+:host-context(.dark) .video-ambient-glow,
+.dark .video-ambient-glow,
+[data-theme='dark'] .video-ambient-glow {
+  // Dark Mode: Luminous Violet & Gold Ambient Glow
+  background: linear-gradient(135deg, rgba(91, 31, 158, 0.60) 0%, rgba(147, 51, 234, 0.40) 50%, rgba(234, 179, 8, 0.35) 100%);
+  opacity: 0.90;
+}
+
+// ------------------------------------------------------------------------------
+// Placement Test Section — Enhanced Multi-Layered Shadows & Ambient Auras
+// ------------------------------------------------------------------------------
+.placement-card-aura {
+  // Light Mode default: Warm honey-gold & soft amber sunburst
+  background: radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.32) 0%, rgba(251, 191, 36, 0.22) 40%, rgba(249, 115, 22, 0.08) 70%, transparent 100%);
+  opacity: 0.85;
+}
+
+:host-context([data-theme='light']) .placement-card-aura,
+:host-context(.light) .placement-card-aura {
+  background: radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.32) 0%, rgba(251, 191, 36, 0.22) 40%, rgba(249, 115, 22, 0.08) 70%, transparent 100%);
+  opacity: 0.85;
+}
+
+:host-context([data-theme='dark']) .placement-card-aura,
+:host-context(.dark) .placement-card-aura,
+.dark .placement-card-aura,
+[data-theme='dark'] .placement-card-aura {
+  // Dark Mode: Luminous violet and golden aura
+  background: radial-gradient(ellipse at 50% 50%, rgba(139, 60, 224, 0.45) 0%, rgba(234, 179, 8, 0.30) 45%, rgba(91, 31, 158, 0.15) 75%, transparent 100%);
+  opacity: 0.95;
+}
+
+// Placement Test Card Shadow
+.placement-test-card {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+
+  // Dark Mode default (platform root standard is dark)
+  border-color: rgba(234, 179, 8, 0.35) !important;
+  box-shadow:
+    0 25px 60px -15px rgba(91, 31, 158, 0.55),
+    0 12px 36px -6px rgba(234, 179, 8, 0.38),
+    0 0 90px 4px rgba(139, 60, 224, 0.28),
+    0 0 0 1px rgba(234, 179, 8, 0.35) !important;
+
+  &:hover {
+    box-shadow:
+      0 30px 72px -15px rgba(91, 31, 158, 0.65),
+      0 16px 48px -6px rgba(234, 179, 8, 0.48),
+      0 0 115px 6px rgba(139, 60, 224, 0.38),
+      0 0 0 1px rgba(234, 179, 8, 0.48) !important;
+  }
+}
+
+:host-context([data-theme='dark']) .placement-test-card,
+:host-context(.dark) .placement-test-card,
+.dark .placement-test-card,
+[data-theme='dark'] .placement-test-card {
+  border-color: rgba(234, 179, 8, 0.35) !important;
+  box-shadow:
+    0 25px 60px -15px rgba(91, 31, 158, 0.55),
+    0 12px 36px -6px rgba(234, 179, 8, 0.38),
+    0 0 90px 4px rgba(139, 60, 224, 0.28),
+    0 0 0 1px rgba(234, 179, 8, 0.35) !important;
+
+  &:hover {
+    box-shadow:
+      0 30px 72px -15px rgba(91, 31, 158, 0.65),
+      0 16px 48px -6px rgba(234, 179, 8, 0.48),
+      0 0 115px 6px rgba(139, 60, 224, 0.38),
+      0 0 0 1px rgba(234, 179, 8, 0.48) !important;
+  }
+}
+
+// Light Mode distinct shadow: Soft, elegant, premium layered shadow/glow without muddy dark artifacts
+:host-context([data-theme='light']) .placement-test-card,
+:host-context(.light) .placement-test-card,
+.light .placement-test-card,
+[data-theme='light'] .placement-test-card {
+  border-color: rgba(217, 119, 6, 0.28) !important;
+  box-shadow:
+    0 24px 50px -12px rgba(217, 119, 6, 0.26),
+    0 14px 34px -8px rgba(99, 102, 241, 0.16),
+    0 4px 16px -2px rgba(15, 23, 42, 0.08),
+    0 0 65px 2px rgba(245, 158, 11, 0.22),
+    0 0 0 1px rgba(217, 119, 6, 0.25) !important;
+
+  &:hover {
+    box-shadow:
+      0 30px 62px -12px rgba(217, 119, 6, 0.32),
+      0 18px 42px -8px rgba(99, 102, 241, 0.20),
+      0 6px 20px -2px rgba(15, 23, 42, 0.10),
+      0 0 85px 4px rgba(245, 158, 11, 0.28),
+      0 0 0 1px rgba(217, 119, 6, 0.35) !important;
+  }
+}
+

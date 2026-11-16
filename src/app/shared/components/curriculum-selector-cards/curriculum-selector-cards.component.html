@@ -55,6 +55,8 @@
               loading="lazy"
               decoding="async"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              [class.!object-top]="curriculum.code === 'AMERICAN'"
+              [class.sat-banner-img]="curriculum.code === 'AMERICAN'"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
           </div>
@@ -122,6 +124,8 @@
                 loading="lazy"
                 decoding="async"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                [class.!object-top]="curriculum.code === 'AMERICAN'"
+                [class.sat-banner-img]="curriculum.code === 'AMERICAN'"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
             </div>
@@ -185,6 +189,8 @@
                 loading="lazy"
                 decoding="async"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                [class.!object-top]="curriculum.code === 'AMERICAN'"
+                [class.sat-banner-img]="curriculum.code === 'AMERICAN'"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"></div>
             </div>

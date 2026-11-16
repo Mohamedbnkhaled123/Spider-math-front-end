@@ -227,8 +227,8 @@
 
         <div class="lg:col-span-6 flex justify-center w-full">
           <div class="relative w-full max-w-xl lg:max-w-none">
-            <!-- Ambient Luminous Glow behind Video (Violet & Gold) -->
-            <div class="absolute -inset-4 sm:-inset-6 rounded-[2.5rem] bg-gradient-to-tr from-brand-violet/60 via-purple-600/40 to-brand-gold/35 blur-3xl opacity-90 pointer-events-none"></div>
+            <!-- Ambient Luminous Glow behind Video (Warm Gold/Amber Sunburst in Light Mode, Violet & Gold in Dark Mode) -->
+            <div class="video-ambient-glow absolute -inset-4 sm:-inset-6 rounded-[2.5rem] blur-3xl pointer-events-none transition-all duration-300"></div>
 
             <!-- Double-Rimmed Frosted Glass Card Container with Custom Video Player (Exact Match to Lecture Videos) -->
             <div class="relative rounded-3xl spider-rim-glass-card p-2 sm:p-3 shadow-2xl overflow-hidden border border-white/20 dark:border-white/10 bg-surface-card/90 dark:bg-surface-card/85 backdrop-blur-2xl">
@@ -256,57 +256,62 @@
   <!-- ========================================================================= -->
 
   <section id="placement-test-section" class="w-full min-w-0 max-w-full py-20 sm:py-28 border-b border-surface-border relative overflow-hidden scroll-mt-20 sm:scroll-mt-24">
-    <!-- Ambient Specular Spotlights -->
-    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
-    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
+    <!-- Ambient Specular Spotlights (Warm Gold/Amber Sunburst in Light Mode, Violet & Gold in Dark Mode) -->
+    <div class="absolute top-1/2 left-1/2 sm:left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-[550px] max-w-full h-64 sm:h-[380px] bg-amber-400/20 dark:bg-brand-secondary/30 rounded-full blur-[60px] sm:blur-[90px] pointer-events-none"></div>
+    <div class="hidden sm:block absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] max-w-full h-[380px] bg-brand-gold/25 dark:bg-brand-gold/30 rounded-full blur-[90px] pointer-events-none"></div>
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <!-- Luxury Floating Glass Card -->
-      <div class="spider-rim-glass-card rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 relative overflow-hidden">
-        <!-- Specular Edge Glows -->
-        <div class="hidden sm:block absolute -top-10 -left-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-secondary/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
-        <div class="hidden sm:block absolute -bottom-10 -right-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-gold/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
+      <div class="relative w-full">
+        <!-- Enhanced Ambient Aura Backdrop for Placement Test Card -->
+        <div class="placement-card-aura absolute -inset-3 sm:-inset-6 lg:-inset-8 rounded-[2.5rem] sm:rounded-[3rem] pointer-events-none -z-10 blur-2xl sm:blur-3xl transition-all duration-500"></div>
 
-        <!-- Free Ribbon on Corner -->
-        <div class="placement-corner-ribbon-wrapper" [class.is-rtl]="langService.isArabic()" aria-hidden="true">
-          <div class="placement-corner-ribbon" [class.is-rtl]="langService.isArabic()">
-            <span class="ribbon-sparkle">✦</span>
-            <span>{{ langService.isArabic() ? 'مجاني' : 'Free' }}</span>
-          </div>
-        </div>
+        <!-- Luxury Floating Glass Card -->
+        <div class="spider-rim-glass-card placement-test-card rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 relative overflow-hidden">
+          <!-- Specular Edge Glows -->
+          <div class="hidden sm:block absolute -top-10 -left-10 w-36 sm:w-72 h-36 sm:h-72 bg-amber-400/20 dark:bg-brand-secondary/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
+          <div class="hidden sm:block absolute -bottom-10 -right-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-gold/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
 
-        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 lg:gap-12">
-          <!-- Left Column: Content -->
-          <div class="w-full lg:max-w-2xl space-y-3 sm:space-y-4 text-start">
-            <!-- Headline with Academic Serif & Gold Accent -->
-            <h2 class="font-academic-serif text-xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight leading-snug sm:leading-tight lg:leading-[1.2]">
-              @if (langService.isArabic()) {
-                اكتشف <span class="text-gold-accent">مستواك</span> في <span class="text-gold-accent">5 دقائق</span>
-              } @else {
-                Discover Your <span class="text-gold-accent">Level</span> in <span class="text-gold-accent">5 Minutes</span>
-              }
-            </h2>
-
-            <!-- Subtitle -->
-            <p class="text-xs sm:text-sm lg:text-base text-text-secondary leading-relaxed font-normal max-w-xl">
-              {{ placementSection().subtitle }}
-            </p>
+          <!-- Free Ribbon on Corner -->
+          <div class="placement-corner-ribbon-wrapper" [class.is-rtl]="langService.isArabic()" aria-hidden="true">
+            <div class="placement-corner-ribbon" [class.is-rtl]="langService.isArabic()">
+              <span class="ribbon-sparkle">✦</span>
+              <span>{{ langService.isArabic() ? 'مجاني' : 'Free' }}</span>
+            </div>
           </div>
 
-          <!-- Right Column: Glowing Gold Metallic Button -->
-          <div class="flex-shrink-0 flex items-center justify-start lg:justify-end pt-2 lg:pt-0">
-            <div class="relative group w-fit">
-              <!-- Warm Golden Aura behind button -->
-              <div class="absolute inset-0 rounded-xl bg-brand-gold/30 blur-lg opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+          <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 lg:gap-12">
+            <!-- Left Column: Content -->
+            <div class="w-full lg:max-w-2xl space-y-3 sm:space-y-4 text-start">
+              <!-- Headline with Academic Serif & Gold Accent -->
+              <h2 class="font-academic-serif text-xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight leading-snug sm:leading-tight lg:leading-[1.2]">
+                @if (langService.isArabic()) {
+                  اكتشف <span class="text-gold-accent">مستواك</span> في <span class="text-gold-accent">5 دقائق</span>
+                } @else {
+                  Discover Your <span class="text-gold-accent">Level</span> in <span class="text-gold-accent">5 Minutes</span>
+                }
+              </h2>
 
-              <button
-                type="button"
-                (click)="openPlacementModal()"
-                class="btn-gold-metallic relative w-auto inline-flex items-center justify-center px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base gap-2 sm:gap-2.5 shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
-              >
-                <span>{{ langService.isArabic() ? 'ابدأ الآن' : 'Start now' }}</span>
-                <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
-              </button>
+              <!-- Subtitle -->
+              <p class="text-xs sm:text-sm lg:text-base text-text-secondary leading-relaxed font-normal max-w-xl">
+                {{ placementSection().subtitle }}
+              </p>
+            </div>
+
+            <!-- Right Column: Glowing Gold Metallic Button -->
+            <div class="flex-shrink-0 flex items-center justify-start lg:justify-end pt-2 lg:pt-0">
+              <div class="relative group w-fit">
+                <!-- Warm Golden Aura behind button -->
+                <div class="absolute inset-0 rounded-xl bg-brand-gold/30 blur-lg opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
+                <button
+                  type="button"
+                  (click)="openPlacementModal()"
+                  class="btn-gold-metallic relative w-auto inline-flex items-center justify-center px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base gap-2 sm:gap-2.5 shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>{{ langService.isArabic() ? 'ابدأ الآن' : 'Start now' }}</span>
+                  <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -936,7 +941,7 @@
                 <!-- Card Header: Rank Number & Pill Badge -->
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-2xl font-black font-numeric text-text-primary/90">#{{ topThree()[1].rank || 2 }}</span>
-                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 dark:bg-white/10 text-text-secondary border border-white/20 shadow-sm">
+                  <span class="px-3 pt-1.5 pb-1 rounded-full text-xs font-bold bg-white/10 dark:bg-white/10 text-text-secondary border border-white/20 shadow-sm inline-flex items-center justify-center leading-normal">
                     {{ (langService.isArabic() ? topThree()[1].badgeAr : topThree()[1].badgeEn) || (langService.isArabic() ? 'المركز الثاني' : '2nd') }}
                   </span>
                 </div>
@@ -1005,7 +1010,7 @@
                 <!-- Card Header: Rank Number & Pill Badge -->
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-3xl font-black font-numeric text-brand-gold">#{{ topThree()[0].rank || 1 }}</span>
-                  <span class="px-3.5 py-1 rounded-full text-xs font-black bg-brand-gold/20 text-brand-gold border border-brand-gold/50 shadow-sm">
+                  <span class="px-3.5 pt-1.5 pb-1 rounded-full text-xs font-black bg-brand-gold/20 text-brand-gold border border-brand-gold/50 shadow-sm inline-flex items-center justify-center leading-normal">
                     {{ (langService.isArabic() ? topThree()[0].badgeAr : topThree()[0].badgeEn) || (langService.isArabic() ? 'المركز الأول' : '1st') }}
                   </span>
                 </div>
@@ -1061,7 +1066,7 @@
                 <!-- Card Header: Rank Number & Pill Badge -->
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-2xl font-black font-numeric text-amber-700 dark:text-amber-500">#{{ topThree()[2].rank || 3 }}</span>
-                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-600/15 text-amber-700 dark:text-amber-400 border border-amber-600/30 shadow-sm">
+                  <span class="px-3 pt-1.5 pb-1 rounded-full text-xs font-bold bg-amber-600/15 text-amber-700 dark:text-amber-400 border border-amber-600/30 shadow-sm inline-flex items-center justify-center leading-normal">
                     {{ (langService.isArabic() ? topThree()[2].badgeAr : topThree()[2].badgeEn) || (langService.isArabic() ? 'المركز الثالث' : '3rd') }}
                   </span>
                 </div>

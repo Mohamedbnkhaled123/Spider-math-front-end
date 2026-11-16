@@ -34,7 +34,7 @@
               <button
                 type="button"
                 (click)="onCurriculumSelected(c.code)"
-                class="px-2.5 py-1 rounded-lg font-bold transition-all text-[11px]"
+                class="px-2.5 py-1 rounded-lg font-bold transition-all text-[11px] leading-normal inline-flex items-center justify-center"
                 [ngClass]="curriculum() === c.code ? 'bg-brand-gold text-slate-950 font-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
               >
                 {{ langService.isArabic() ? c.badgeTextAr : c.badgeTextEn }}

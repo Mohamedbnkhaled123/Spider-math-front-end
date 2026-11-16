@@ -214,35 +214,6 @@ app-brand-header {
   }
 }
 
-// Dedicated desktop clearance in Super Admin Dashboard to accommodate sticky workspace navigation bar
-@media (min-width: 1024px) {
-  .super-admin-studio-root {
-    .modal-safe-clearance,
-    .celebration-backdrop,
-    .z-layer-modal.fixed.inset-0,
-    .z-layer-modal .fixed.inset-0,
-    .z-layer-submodal.fixed.inset-0,
-    .z-layer-submodal .fixed.inset-0,
-    .z-layer-preview.fixed.inset-0,
-    .z-layer-preview .fixed.inset-0,
-    .z-layer-preview-submodal.fixed.inset-0,
-    .z-layer-preview-submodal .fixed.inset-0,
-    .z-layer-slicer.fixed.inset-0,
-    .z-layer-slicer .fixed.inset-0,
-    .z-layer-dialog.fixed.inset-0,
-    .z-layer-dialog .fixed.inset-0,
-    .z-layer-image-lightbox.fixed.inset-0,
-    .z-layer-image-lightbox .fixed.inset-0,
-    [role="dialog"].fixed.inset-0,
-    .fixed.inset-0[class*="backdrop-blur"],
-    .fixed.inset-0[class*="bg-black/"],
-    .fixed.inset-0[class*="bg-slate-950/"] {
-      padding-top: 4.75rem !important;
-      padding-bottom: 0.75rem !important;
-    }
-  }
-}
-
 // Clean Translucent Frosted Glass Modal Backdrops (Replacing pitch-black heavy curtains)
 .z-layer-modal.fixed.inset-0,
 .z-layer-modal .fixed.inset-0,
