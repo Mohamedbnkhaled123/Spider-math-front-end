@@ -353,24 +353,28 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?${params}`).subscribe({
       next: (res) => {
         if (res?.data && Array.isArray(res.data)) {
+          const currentUnits = this.unitsList();
           const mapped: UnitPackageAdminItem[] = res.data
-            .map((u: any, idx: number) => ({
-              id: u._id,
-              order: u.order_index ?? (idx + 1),
-              titleAr: u.title_ar,
-              titleEn: u.title_en || '',
-              curriculum: u.curriculum,
-              gradeLevel: u.grade_level,
-              term: u.academic_term || u.term || 'TERM_1',
-              type: u.package_type || 'STUDY_UNIT',
-              isPublished: !!u.is_published,
-              priceEgp: u.price_egp || 0,
-              originalPriceEgp: u.original_price_egp || null,
-              discountPercentage: u.discount_percentage || null,
-              isDiscounted: !!(u.is_discounted || (u.original_price_egp && u.original_price_egp > u.price_egp)),
-              lectures: [],
-              assessments: []
-            }))
+            .map((u: any, idx: number) => {
+              const existing = currentUnits.find((curr) => curr.id === u._id) || cached?.find((c) => c.id === u._id);
+              return {
+                id: u._id,
+                order: u.order_index ?? (idx + 1),
+                titleAr: u.title_ar,
+                titleEn: u.title_en || '',
+                curriculum: u.curriculum,
+                gradeLevel: u.grade_level,
+                term: u.academic_term || u.term || 'TERM_1',
+                type: u.package_type || 'STUDY_UNIT',
+                isPublished: !!u.is_published,
+                priceEgp: u.price_egp || 0,
+                originalPriceEgp: u.original_price_egp || null,
+                discountPercentage: u.discount_percentage || null,
+                isDiscounted: !!(u.is_discounted || (u.original_price_egp && u.original_price_egp > u.price_egp)),
+                lectures: existing?.lectures || [],
+                assessments: existing?.assessments || []
+              };
+            })
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           this.unitsList.set(mapped);
           this.swrCache.set(unitsKey, mapped);
@@ -406,10 +410,11 @@ export class SuperAdminDashboardComponent implements OnInit {
                               lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : (a.lectureId || null),
                               titleAr: a.title_ar,
                               type: a.assessment_type || 'QUIZ',
-                              calculatorType: a.calculator_mode || a.calculatorType || 'NONE',
+                              calculatorType: a.graph_calculator || a.calculator_mode || a.calculatorType || 'NONE',
                               durationMinutes: a.time_limit_minutes || a.duration_minutes || 20,
                               xpReward: a.xp_reward ?? null,
                               referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
+                              requiresTeacherReview: !!(a.requires_teacher_review ?? a.requiresTeacherReview),
                               submissionsCount: a.submissions_count || 0,
                               questions: (a.questions || []).map((q: any, idx: number) => ({
                                 id: q._id || `q_${idx}`,
@@ -746,9 +751,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   onAssessmentSaved(asm: AssessmentAdminItem): void {
-    this.unitsList.update((list) =>
-      list.map((u) => {
-        const updatedAssessments = u.assessments.map((a) => (a.id === asm.id ? asm : a));
+    this.unitsList.update((list) => {
+      const updated = list.map((u) => {
+        const exists = (u.assessments || []).some((a) => a.id === asm.id);
+        const updatedAssessments = exists
+          ? u.assessments.map((a) => (a.id === asm.id ? asm : a))
+          : (u.id === asm.unitId ? [...(u.assessments || []), asm] : (u.assessments || []));
         const updatedLectures = (u.lectures || []).map((l) => {
           const hasThisAsm = updatedAssessments.find((a) => a.lectureId === l.id);
           return {
@@ -762,8 +770,11 @@ export class SuperAdminDashboardComponent implements OnInit {
           lectures: updatedLectures,
           assessments: updatedAssessments
         };
-      })
-    );
+      });
+      const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+      this.swrCache.set(unitsKey, updated);
+      return updated;
+    });
   }
 
   // Grading Events

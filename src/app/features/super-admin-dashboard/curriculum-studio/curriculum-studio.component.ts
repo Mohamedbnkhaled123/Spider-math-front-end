@@ -3294,6 +3294,7 @@ export class CurriculumStudioComponent implements OnInit {
 
     // Transform questions into normalized schema for backend
     const payload = {
+      is_published: true,
       title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
       title_en: asm.titleAr ? asm.titleAr.trim() : undefined,
       calculator_mode: asm.calculatorType,
