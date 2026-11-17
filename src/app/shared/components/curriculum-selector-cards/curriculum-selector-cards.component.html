@@ -954,10 +954,6 @@
                                 <span class="px-2.5 py-1 rounded-lg bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[11px] font-bold">
                                   {{ unit.package_type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
                                 </span>
-                                <!-- Mathematical Branch Badge -->
-                                <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
-                                  {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
-                                </span>
                                 <!-- Promotional Discount Luxury Badge -->
                                 @if (hasDiscount(unit)) {
                                   <span class="unit-discount-luxury-badge">

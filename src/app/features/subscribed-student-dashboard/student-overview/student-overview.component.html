@@ -352,9 +352,6 @@
                   <h4 class="text-sm font-bold text-text-primary leading-snug group-hover:text-brand-gold transition-colors">
                     {{ unit.titleAr }}
                   </h4>
-                  <span class="inline-block mt-1 px-2 py-0.5 rounded-lg border text-[9px] font-mono font-bold" [class]="mathTheme.accentClass">
-                    {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
-                  </span>
                 </div>
                 <div class="flex items-center gap-1.5 flex-wrap shrink-0">
                   @if (isEmpty) {
@@ -976,11 +973,6 @@
                     [class.text-brand-magenta]="unit.type === 'FINAL_REVISION'"
                   >
                     {{ unit.type === 'FINAL_REVISION' ? (langService.isArabic() ? 'مراجعة نهائية' : 'Final Revision') : (langService.isArabic() ? 'وحدة دراسية' : 'Study Unit') }}
-                  </span>
-
-                  <!-- Mathematical Theme Tag -->
-                  <span class="px-2 py-0.5 rounded-lg border text-[10px] font-mono font-bold" [class]="mathTheme.accentClass">
-                    {{ mathTheme.badge }} • {{ langService.isArabic() ? mathTheme.tagAr : mathTheme.tagEn }}
                   </span>
 
                   @if (isEmpty) {

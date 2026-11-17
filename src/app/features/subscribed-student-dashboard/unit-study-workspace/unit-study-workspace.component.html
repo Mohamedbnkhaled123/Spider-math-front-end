@@ -41,9 +41,6 @@
     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="inline-flex items-center gap-2 mb-2">
-          <span class="px-2.5 py-0.5 rounded-lg border text-xs font-mono font-bold" [class]="mathTheme().accentClass">
-            {{ mathTheme().badge }} • {{ langService.isArabic() ? mathTheme().tagAr : mathTheme().tagEn }}
-          </span>
           <span class="text-xs text-brand-secondary font-bold">
             {{ workspaceData().curriculum }} • {{ workspaceData().gradeLevel }}
           </span>
