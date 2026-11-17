@@ -1058,4 +1058,51 @@ describe('AssessmentStudioComponent', () => {
       expect(component.createGulfCountry()).toBe('KW');
     });
   });
+
+  describe('Question 8 & Question 9 Image Isolation During Creation and Auto-Persist', () => {
+    it('should keep Question 8 and Question 9 images isolated and sync editingQuestionId on auto-persist _id update', () => {
+      component.openEditor({ ...sampleAssessment, questions: [] });
+
+      // Add Question 8 WITH an image
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('السؤال الثامن بالصورة');
+      component.newQuestionImageUrl.set('https://cdn.example.com/q8_diagram.webp');
+      component.newQuestionOptions.set(['1', '2', '3', '4']);
+      component.addQuestion(false);
+
+      // Composer image must reset so Question 9 starts clean
+      expect(component.newQuestionImageUrl()).toBeNull();
+
+      // Add Question 9 WITH its own distinct image
+      component.newQuestionTextAr.set('السؤال التاسع بالصورة');
+      component.newQuestionImageUrl.set('https://cdn.example.com/q9_diagram.webp');
+      component.newQuestionOptions.set(['5', '6', '7', '8']);
+      component.addQuestion(false);
+
+      const asm = component.activeAssessment()!;
+      expect(asm.questions.length).toBe(2);
+      expect(asm.questions[0].id).not.toBe(asm.questions[1].id);
+      expect(asm.questions[0].questionImageUrl).toBe('https://cdn.example.com/q8_diagram.webp');
+      expect(asm.questions[1].questionImageUrl).toBe('https://cdn.example.com/q9_diagram.webp');
+
+      // Simulate active edit session on temporary Question 8 while autoPersist resolves with server MongoDB _id
+      const tempQ8 = asm.questions[0];
+      component.editQuestion(tempQ8);
+      mockHttpClient.patch.and.returnValue(of({
+        success: true,
+        data: {
+          ...asm,
+          questions: [
+            { _id: '673000000000000000000008', order: 1 },
+            { _id: '673000000000000000000009', order: 2 }
+          ]
+        }
+      }));
+      component.autoPersistAssessmentToBackend(asm);
+
+      expect(component.editingQuestionId()).toBe('673000000000000000000008');
+      expect(component.activeAssessment()!.questions[0].questionImageUrl).toBe('https://cdn.example.com/q8_diagram.webp');
+      expect(component.activeAssessment()!.questions[1].questionImageUrl).toBe('https://cdn.example.com/q9_diagram.webp');
+    });
+  });
 });

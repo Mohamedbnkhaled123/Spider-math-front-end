@@ -512,22 +512,33 @@ export class PublicDiscoveryService {
           academic_term: d.academic_term || d.academicTerm || term,
           total_questions: d.questions.length,
           time_limit_minutes: d.time_limit_minutes || d.timeLimitMinutes || 15,
-          questions: d.questions.map((q: any, qIdx: number) => ({
-            question_id: q.question_id || q.id || `q_${qIdx}`,
-            question_text: q.question_text || q.questionText || '',
-            question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
-            points: q.points || 5,
-            has_desmos_calculator: q.has_desmos_calculator ?? (d.graphCalculator === 'DESMOS'),
-            options: (q.options || []).map((opt: any, optIdx: number) => {
-              if (typeof opt === 'string') {
-                return { option_id: `opt_${optIdx}`, option_text: opt };
-              }
-              return {
-                option_id: opt?.option_id || `opt_${optIdx}`,
-                option_text: opt?.option_text || opt?.text || String(opt)
-              };
-            })
-          }))
+          questions: d.questions.map((q: any, qIdx: number) => {
+            const rawType = String(q.question_type || q.questionType || q.type || '').toUpperCase();
+            const hasOpts = Array.isArray(q.options) && q.options.length > 0;
+            const questionType: 'MCQ' | 'INPUT_TEXT' | 'ESSAY_PHOTO' =
+              rawType === 'INPUT_TEXT' || rawType === 'SHORT_ANSWER'
+                ? 'INPUT_TEXT'
+                : rawType === 'ESSAY_PHOTO' || rawType === 'ESSAY' || !hasOpts
+                ? 'ESSAY_PHOTO'
+                : 'MCQ';
+            return {
+              question_id: q.question_id || q.id || `q_${qIdx}`,
+              question_type: questionType,
+              question_text: q.question_text || q.questionText || '',
+              question_image_url: optimizeCloudinaryUrl(q.question_image_url || q.questionImageUrl || null, 960),
+              points: q.points || 5,
+              has_desmos_calculator: q.has_desmos_calculator ?? (d.graphCalculator === 'DESMOS'),
+              options: (q.options || []).map((opt: any, optIdx: number) => {
+                if (typeof opt === 'string') {
+                  return { option_id: `opt_${optIdx}`, option_text: opt };
+                }
+                return {
+                  option_id: opt?.option_id || `opt_${optIdx}`,
+                  option_text: opt?.option_text || opt?.text || String(opt)
+                };
+              })
+            };
+          })
         };
         this.swrCache.set(cacheKey, parsedResult);
         return parsedResult;

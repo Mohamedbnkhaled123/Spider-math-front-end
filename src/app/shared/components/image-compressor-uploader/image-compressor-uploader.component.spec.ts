@@ -138,6 +138,31 @@ describe('ImageCompressorUploaderComponent', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:https://test/prev-blob-123');
   });
 
+  it('should clear stale items when existingImageUrl changes between questions', () => {
+    componentRef.setInput('uploadTarget', 'question');
+    componentRef.setInput('compact', true);
+    componentRef.setInput('existingImageUrl', 'https://cdn.example.com/q8.webp');
+    fixture.detectChanges();
+
+    component.items.set([
+      {
+        id: 'img_q8',
+        originalFile: new File([''], 'q8.png'),
+        compressedBlob: new Blob(),
+        previewUrl: 'blob:q8',
+        originalSizeKb: 50,
+        compressedSizeKb: 20,
+        rotationDeg: 0,
+        uploadStatus: 'SUCCESS'
+      }
+    ]);
+    expect(component.items().length).toBe(1);
+
+    componentRef.setInput('existingImageUrl', 'https://cdn.example.com/q9.webp');
+    fixture.detectChanges();
+    expect(component.items().length).toBe(0);
+  });
+
   it('should contain zero Unicode emojis in rendered template', () => {
     const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
     expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();

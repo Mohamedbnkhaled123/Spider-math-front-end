@@ -17,11 +17,13 @@ import { LeadGateModalComponent } from '../lead-gate-modal/lead-gate-modal.compo
 import { GraphCalculatorModalComponent } from '../../../shared/components/graph-calculator-modal/graph-calculator-modal.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { CelebrationModalComponent } from '../../../shared/components/celebration-modal/celebration-modal.component';
+import { ImageCompressorUploaderComponent } from '../../../shared/components/image-compressor-uploader/image-compressor-uploader.component';
 import { getRandomCelebrationPhrase } from '../../../shared/components/celebration-modal/celebration-messages.data';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import {
   IPlacementQuestion,
   IPlacementTestResponse,
+  ISubmitPlacementPayload,
   ISubmitPlacementResult,
   IUnlockPlacementResult
 } from '../../../core/services/public-discovery.models';
@@ -52,7 +54,8 @@ import { SwrCacheService } from '../../../core/services/swr-cache.service';
     LeadGateModalComponent,
     GraphCalculatorModalComponent,
     MathFormulaComponent,
-    CelebrationModalComponent
+    CelebrationModalComponent,
+    ImageCompressorUploaderComponent
   ],
   templateUrl: './placement-exam-runner.component.html',
   styleUrl: './placement-exam-runner.component.scss',
@@ -122,6 +125,8 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   readonly examData = signal<IPlacementTestResponse | null>(null);
   readonly currentQuestionIdx = signal<number>(0);
   readonly selectedAnswers = signal<Record<string, number>>({});
+  readonly textAnswers = signal<Record<string, string>>({});
+  readonly uploadedImages = signal<Record<string, string[]>>({});
   readonly timeRemainingSec = signal<number>(15 * 60);
   readonly isLoading = signal<boolean>(true);
   readonly isSubmitting = signal<boolean>(false);
@@ -152,8 +157,55 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   });
 
   readonly answeredQuestionsCount = computed<number>(() => {
-    return Object.keys(this.selectedAnswers()).length;
+    const questions = this.examData()?.questions ?? [];
+    if (questions.length > 0) {
+      return questions.filter(q => this.isQuestionAnswered(q)).length;
+    }
+    const mcqKeys = Object.keys(this.selectedAnswers());
+    const textKeys = Object.entries(this.textAnswers()).filter(([, v]) => Boolean(v?.trim())).map(([k]) => k);
+    const imgKeys = Object.entries(this.uploadedImages()).filter(([, v]) => Array.isArray(v) && v.length > 0).map(([k]) => k);
+    return new Set([...mcqKeys, ...textKeys, ...imgKeys]).size;
   });
+
+  isQuestionAnswered(q: IPlacementQuestion): boolean {
+    const qType = q.question_type || (q.options && q.options.length > 0 ? 'MCQ' : 'ESSAY_PHOTO');
+    if (qType === 'INPUT_TEXT') {
+      return Boolean(this.textAnswers()[q.question_id]?.trim());
+    }
+    if (qType === 'ESSAY_PHOTO' || qType === 'ESSAY') {
+      return (this.uploadedImages()[q.question_id]?.length ?? 0) > 0 || Boolean(this.textAnswers()[q.question_id]?.trim());
+    }
+    return this.selectedAnswers()[q.question_id] !== undefined;
+  }
+
+  getTextAnswer(questionId: string): string {
+    return this.textAnswers()[questionId] ?? '';
+  }
+
+  onTextAnswerInput(questionId: string, event: Event): void {
+    const value = (event.target as HTMLInputElement | HTMLTextAreaElement)?.value ?? '';
+    this.textAnswers.update(prev => ({ ...prev, [questionId]: value }));
+  }
+
+  getQuestionImages(questionId: string): string[] {
+    return this.uploadedImages()[questionId] ?? [];
+  }
+
+  onHomeworkImagesUploaded(questionId: string, urls: string[]): void {
+    if (!urls || urls.length === 0) return;
+    this.uploadedImages.update(prev => {
+      const existing = prev[questionId] ?? [];
+      const merged = [...existing, ...urls.filter(u => !existing.includes(u))].slice(-2);
+      return { ...prev, [questionId]: merged };
+    });
+  }
+
+  removeQuestionImage(questionId: string, imageUrl: string): void {
+    this.uploadedImages.update(prev => ({
+      ...prev,
+      [questionId]: (prev[questionId] ?? []).filter(u => u !== imageUrl)
+    }));
+  }
 
   readonly progressPercentage = computed<number>(() => {
     const total = this.totalQuestionsCount();
@@ -270,6 +322,8 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
     const cached = this.swrCache.get<IPlacementTestResponse>(cacheKey);
 
     this.selectedAnswers.set({});
+    this.textAnswers.set({});
+    this.uploadedImages.set({});
     this.currentQuestionIdx.set(0);
     this.studentExamFinished.set(false);
     this.studentFinalResult.set(null);
@@ -353,15 +407,39 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   async submitExam(isAutoSubmit: boolean = false): Promise<void> {
-    const answersMap = this.selectedAnswers();
-    const answers = Object.entries(answersMap).map(([questionId, selectedOption]) => ({
-      questionId,
-      selectedOption
-    }));
+    const mcqMap = this.selectedAnswers();
+    const textMap = this.textAnswers();
+    const imagesMap = this.uploadedImages();
+    const questionIds = Array.from(
+      new Set([
+        ...Object.keys(mcqMap),
+        ...Object.entries(textMap).filter(([, v]) => Boolean(v?.trim())).map(([k]) => k),
+        ...Object.entries(imagesMap).filter(([, v]) => Array.isArray(v) && v.length > 0).map(([k]) => k)
+      ])
+    );
+
+    const answers = questionIds.map((questionId) => {
+      const entry: ISubmitPlacementPayload['answers'][number] = { questionId };
+      if (mcqMap[questionId] !== undefined) {
+        entry.selectedOption = mcqMap[questionId];
+      }
+      const trimmedText = textMap[questionId]?.trim();
+      if (trimmedText) {
+        entry.textAnswer = trimmedText;
+      }
+      const imgs = imagesMap[questionId];
+      if (imgs && imgs.length > 0) {
+        entry.uploadedImageUrls = imgs;
+      }
+      return entry;
+    });
 
     if (!isAutoSubmit) {
       if (answers.length === 0) {
-        this.selectOption(0);
+        const curr = this.currentQuestion();
+        if (!curr || !curr.question_type || curr.question_type === 'MCQ') {
+          this.selectOption(0);
+        }
         return;
       }
 

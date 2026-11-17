@@ -572,15 +572,15 @@
                     </div>
                   }
 
-                  <!-- Essay Solution Images (if essay question) -->
-                  @if (q.questionType === 'ESSAY_PHOTO' && feedback().essaySolutionImages.length > 0) {
+                  <!-- Essay Solution Images (Strictly per-question to prevent leaking Question 8 photos onto Question 9) -->
+                  @if ((q.studentSolutionImages?.length ?? 0) > 0) {
                     <div class="mt-4 p-4 rounded-2xl bg-surface-bg border border-surface-border space-y-3">
                       <span class="text-xs font-bold text-text-primary block flex items-center gap-1.5">
                         <app-icon name="image" [size]="14" className="text-brand-primary" />
                         <span>{{ langService.isArabic() ? 'صور خطوات الحل:' : 'Solution Steps:' }}</span>
                       </span>
                       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        @for (img of feedback().essaySolutionImages; track $index) {
+                        @for (img of q.studentSolutionImages; track img.imageUrl) {
                           <div
                             (click)="openImagePreview(img.imageUrl)"
                             class="group relative aspect-video rounded-xl overflow-hidden border border-surface-border bg-black/5 hover:border-brand-primary transition-all cursor-pointer shadow-sm"

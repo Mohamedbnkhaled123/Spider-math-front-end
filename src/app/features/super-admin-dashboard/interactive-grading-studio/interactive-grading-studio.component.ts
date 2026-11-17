@@ -441,6 +441,14 @@ export class InteractiveGradingStudioComponent implements OnInit {
             (s.essay_answers || []).map((a: any) => [a.question_id?.toString() || a.question_id, a])
           );
           const imagesList: Array<{ question_id?: string; image_url: string; rotation_deg?: number }> = s.uploaded_solution_imgs || [];
+          const totalEssayCount = questionsList.filter((x: any) => {
+            const rt = (x.question_type || x.type || x.questionType || '').toUpperCase();
+            const hasOpts = Array.isArray(x.options) && x.options.length > 0;
+            const hasAcc = (Array.isArray(x.accepted_answers) && x.accepted_answers.length > 0) ||
+                           (Array.isArray(x.acceptedAnswers) && x.acceptedAnswers.length > 0);
+            return rt === 'ESSAY_PHOTO' || rt === 'ESSAY' || (!hasOpts && !hasAcc && rt !== 'INPUT_TEXT' && rt !== 'SHORT_ANSWER');
+          }).length;
+          const hasAnyTaggedImage = imagesList.some((img) => Boolean(img.question_id));
 
           const mappedAnswers: QuestionAnswerDetail[] = questionsList.map((q: any, idx: number) => {
             const qId = q._id?.toString() || q._id || `q_${idx}`;
@@ -513,9 +521,14 @@ export class InteractiveGradingStudioComponent implements OnInit {
               };
             }
 
-            // ESSAY_PHOTO
+            // ESSAY_PHOTO: strict per-question image isolation (never leak Question 8's image to Question 9)
             const matchingImages = imagesList
-              .filter((img) => !img.question_id || img.question_id.toString() === qId || imagesList.length === 1)
+              .filter((img) => {
+                if (img.question_id) {
+                  return img.question_id.toString() === qId;
+                }
+                return !hasAnyTaggedImage && totalEssayCount === 1;
+              })
               .map((img) => ({ imageUrl: img.image_url, rotation: img.rotation_deg || 0 }));
 
             const essayAns = essayLookup.get(qId);
@@ -548,7 +561,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
               isCorrect: pointsEarned > 0,
               isPendingManualGrading,
               gradingDecision,
-              studentSolutionImages: matchingImages.length > 0 ? matchingImages : (s.homeworkImages || []),
+              studentSolutionImages: matchingImages,
               imageUrl: q.question_image_url || null,
               uploadedImageUrl: matchingImages[0]?.imageUrl || null
             };
@@ -559,12 +572,17 @@ export class InteractiveGradingStudioComponent implements OnInit {
             .filter((a) => a.questionType !== 'ESSAY_PHOTO')
             .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
 
+          const hasGradedEssayAnswer = mappedAnswers.some(
+            (a) => a.questionType === 'ESSAY_PHOTO' && !a.isPendingManualGrading
+          );
           const manualEssayFromAnswers = mappedAnswers
             .filter((a) => a.questionType === 'ESSAY_PHOTO')
             .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
 
-          const effectiveEssayScore = Math.max(manualEssayFromAnswers, Number(s.essay_manual_score) || 0);
-          const finalScore = autoScore + effectiveEssayScore;
+          const effectiveEssayScore = hasGradedEssayAnswer
+            ? Math.round(manualEssayFromAnswers * 100) / 100
+            : Math.round((Number(s.essay_manual_score) || 0) * 100) / 100;
+          const finalScore = Math.round((autoScore + effectiveEssayScore) * 100) / 100;
           const scorePercentage = totalPoints > 0 ? Math.round((finalScore / totalPoints) * 100) : 0;
 
           return {
@@ -775,11 +793,16 @@ export class InteractiveGradingStudioComponent implements OnInit {
     const autoScore = (sub.answers || [])
       .filter((a) => a.questionType !== 'ESSAY_PHOTO')
       .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
+    const hasGradedEssay = (sub.answers || []).some(
+      (a) => a.questionType === 'ESSAY_PHOTO' && !a.isPendingManualGrading
+    );
     const essayAnswersScore = (sub.answers || [])
       .filter((a) => a.questionType === 'ESSAY_PHOTO')
       .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
-    const effectiveEssay = Math.max(essayAnswersScore, sub.essayManualScore || 0);
-    const freshTotal = autoScore + effectiveEssay;
+    const effectiveEssay = hasGradedEssay
+      ? Math.round(essayAnswersScore * 100) / 100
+      : Math.round((Number(sub.essayManualScore) || 0) * 100) / 100;
+    const freshTotal = Math.round((autoScore + effectiveEssay) * 100) / 100;
     sub.mcqAutoScore = autoScore;
     sub.essayManualScore = effectiveEssay;
     sub.finalTotalScore = freshTotal;

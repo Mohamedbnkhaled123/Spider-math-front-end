@@ -235,6 +235,7 @@ export interface IPlacementQuestionOption {
 
 export interface IPlacementQuestion {
   question_id: string;
+  question_type?: 'MCQ' | 'INPUT_TEXT' | 'ESSAY_PHOTO' | 'ESSAY';
   question_text: string;
   question_image_url?: string | null;
   options: IPlacementQuestionOption[];
@@ -278,7 +279,9 @@ export interface ISubmitPlacementPayload {
   academicTerm: AcademicTermCode;
   answers: Array<{
     questionId: string;
-    selectedOption: number;
+    selectedOption?: number;
+    textAnswer?: string;
+    uploadedImageUrls?: string[];
   }>;
 }
 

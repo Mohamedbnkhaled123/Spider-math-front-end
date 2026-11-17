@@ -183,6 +183,7 @@
       <!-- ========================================================================= -->
       <!-- 4. Active Question Card (MCQ or Essay Homework)                           -->
       <!-- ========================================================================= -->
+      @for (activeKey of [q._id]; track activeKey) {
       <div class="question-container rounded-3xl spider-rim-glass-card p-6 sm:p-10 shadow-2xl relative">
         
         <!-- Question Meta Info -->
@@ -478,6 +479,7 @@
         </div>
 
       </div>
+      }
     }
   } @else {
     <!-- ========================================================================= -->

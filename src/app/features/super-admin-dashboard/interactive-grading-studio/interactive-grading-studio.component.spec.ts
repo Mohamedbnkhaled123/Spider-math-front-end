@@ -383,4 +383,59 @@ describe('InteractiveGradingStudioComponent', () => {
       expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
     });
   });
+
+  describe('Half-Point Preservation & Question Image Isolation', () => {
+    it('should isolate Question 8 and Question 9 images and preserve 0.5 half-point grades over stale essay_manual_score', () => {
+      component.fetchAllSubmissions(true);
+      const req = httpMock.expectOne('/api/v1/admin/submissions');
+      req.flush({
+        success: true,
+        data: {
+          submissions: [
+            {
+              _id: 'sub_iso_1',
+              result_visibility: 'PUBLISHED_TO_STUDENT_AND_PARENT',
+              sync_queue_status: 'SYNCED_ONLINE',
+              mcq_auto_score: 0,
+              essay_manual_score: 1, // stale higher value that used to override 0.5 via Math.max
+              final_total_score: 1.5,
+              student_id: { _id: 'stu_1', full_name: 'Student A', student_code: 'HA1' },
+              assessment_id: {
+                _id: 'asm_1',
+                title_ar: 'امتحان تجريبي',
+                total_points: 2,
+                questions: [
+                  { _id: 'q8_id', question_type: 'ESSAY_PHOTO', question_text: 'Question 8', points: 1 },
+                  { _id: 'q9_id', question_type: 'ESSAY_PHOTO', question_text: 'Question 9', points: 1 }
+                ]
+              },
+              uploaded_solution_imgs: [
+                { question_id: 'q8_id', image_url: 'https://cdn.example.com/q8_only.webp', rotation_deg: 0 }
+              ],
+              essay_answers: [
+                { question_id: 'q8_id', points_earned: 0.5, decision: 'HALF' },
+                { question_id: 'q9_id', points_earned: 0, decision: 'ZERO' }
+              ]
+            }
+          ],
+          stats: {}
+        }
+      });
+
+      const sub = component.allSubmissions()[0];
+      expect(sub).toBeTruthy();
+      expect(sub.essayManualScore).toBe(0.5);
+      expect(sub.finalTotalScore).toBe(0.5);
+
+      const q8 = sub.answers[0];
+      const q9 = sub.answers[1];
+      expect(q8.pointsEarned).toBe(0.5);
+      expect(q8.gradingDecision).toBe('HALF');
+      expect(q8.studentSolutionImages?.length).toBe(1);
+      expect(q8.studentSolutionImages?.[0].imageUrl).toBe('https://cdn.example.com/q8_only.webp');
+
+      // Question 9 has NO image uploaded and must NOT inherit Question 8 image
+      expect(q9.studentSolutionImages?.length).toBe(0);
+    });
+  });
 });

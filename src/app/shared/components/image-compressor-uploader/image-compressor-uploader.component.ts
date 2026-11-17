@@ -56,6 +56,7 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   // Input Target: 'question' or 'homework'
   readonly uploadTarget = input.required<UploadTarget>();
   readonly existingImageUrl = input<string | null>(null);
+  readonly signatureUrl = input<string | null>(null);
   readonly buttonLabel = input<string>();
   readonly compact = input<boolean>(false);
   readonly clearOnSuccess = input<boolean>(true);
@@ -90,14 +91,20 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
   readonly isCameraStarting = signal<boolean>(false);
   readonly cameraFacingMode = signal<'environment' | 'user'>('environment');
   private cameraMediaStream: MediaStream | null = null;
+  private lastObservedExistingUrl: string | null | undefined = undefined;
 
   constructor() {
     effect(() => {
       const existing = this.existingImageUrl();
       untracked(() => {
-        if (this.compact() && !existing && this.items().length > 0) {
+        if (this.lastObservedExistingUrl !== undefined && this.lastObservedExistingUrl !== existing) {
+          if (this.items().length > 0) {
+            this.clearItems();
+          }
+        } else if (this.compact() && !existing && this.items().length > 0) {
           this.clearItems();
         }
+        this.lastObservedExistingUrl = existing;
       });
     });
   }
@@ -504,10 +511,10 @@ export class ImageCompressorUploaderComponent implements OnDestroy {
 
     try {
       // 1. Fetch short-lived signed signature from backend
+      const resolvedSignatureUrl =
+        this.signatureUrl() || `${this.apiBase}/upload-signature?target=${this.uploadTarget()}`;
       const sigResponse = await firstValueFrom(
-        this.http.get<CloudinarySignatureResponse>(
-          `${this.apiBase}/upload-signature?target=${this.uploadTarget()}`
-        )
+        this.http.get<CloudinarySignatureResponse>(resolvedSignatureUrl)
       );
 
       const sigData = sigResponse.data;

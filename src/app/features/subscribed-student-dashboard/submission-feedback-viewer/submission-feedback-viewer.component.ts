@@ -200,6 +200,18 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
       next: (res) => {
         const data = res?.data || res;
         if (data) {
+          const mappedEssaySolutionImages = (data.essaySolutionImages || []).map((img: any) => ({
+            questionId: img.questionId || img.question_id || undefined,
+            imageUrl: img.imageUrl,
+            rotationDeg: img.rotationDeg || 0,
+            sizeKb: img.sizeKb
+          }));
+          const rawQuestionsReview: any[] = data.questionsReview || [];
+          const totalEssay = rawQuestionsReview.filter(
+            (q: any) => q.questionType === 'ESSAY_PHOTO' || q.questionType === 'ESSAY' || q.question_type === 'ESSAY_PHOTO'
+          ).length;
+          const hasTaggedImgs = mappedEssaySolutionImages.some((img: any) => Boolean(img.questionId));
+
           this.feedback.set({
             submissionId: data.submissionId || id,
             assessmentId: data.assessmentId || '',
@@ -231,28 +243,47 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
               errorNote: m.errorNote || '',
               youtubeSolutionUrl: m.youtubeSolutionUrl || null
             })),
-            questionsReview: (data.questionsReview || []).map((q: any, idx: number) => ({
-              questionId: q.questionId,
-              questionOrder: q.questionOrder ?? idx + 1,
-              questionType: q.questionType || q.question_type || q.type || 'MCQ',
-              questionText: q.questionText || '',
-              questionImageUrl: q.questionImageUrl || q.question_image_url || q.imageUrl || null,
-              options: q.options || [],
-              studentSelectedOptionIndex: q.studentSelectedOptionIndex,
-              studentAnswerText: q.studentAnswerText || '',
-              correctOptionIndex: q.correctOptionIndex,
-              correctAnswerText: q.correctAnswerText || '',
-              isCorrect: q.isCorrect,
-              points: q.points || 1,
-              awardedPoints: q.awardedPoints,
-              youtubeSolutionUrl: q.youtubeSolutionUrl || null,
-              teacherNote: q.teacherNote || null
-            })),
-            essaySolutionImages: (data.essaySolutionImages || []).map((img: any) => ({
-              imageUrl: img.imageUrl,
-              rotationDeg: img.rotationDeg || 0,
-              sizeKb: img.sizeKb
-            }))
+            questionsReview: rawQuestionsReview.map((q: any, idx: number) => {
+              const qType = q.questionType || q.question_type || q.type || 'MCQ';
+              const qIdStr = q.questionId ? String(q.questionId) : '';
+              const isEssay = qType === 'ESSAY_PHOTO' || qType === 'ESSAY';
+              const perQuestionImgs = Array.isArray(q.studentSolutionImages)
+                ? q.studentSolutionImages.map((img: any) => ({
+                    questionId: img.questionId || qIdStr,
+                    imageUrl: img.imageUrl,
+                    rotationDeg: img.rotationDeg || 0,
+                    sizeKb: img.sizeKb
+                  }))
+                : mappedEssaySolutionImages.filter((img: any) => {
+                    if (img.questionId) {
+                      return String(img.questionId) === qIdStr;
+                    }
+                    return !hasTaggedImgs && totalEssay === 1 && isEssay;
+                  });
+
+              return {
+                questionId: q.questionId,
+                questionOrder: q.questionOrder ?? idx + 1,
+                questionType: qType,
+                questionText: q.questionText || '',
+                questionImageUrl: q.questionImageUrl || q.question_image_url || q.imageUrl || null,
+                options: q.options || [],
+                studentSelectedOptionIndex: q.studentSelectedOptionIndex,
+                studentAnswerText: q.studentAnswerText || '',
+                correctOptionIndex: q.correctOptionIndex,
+                correctAnswerText: q.correctAnswerText || '',
+                isCorrect: q.isCorrect,
+                points: Number(q.points) || 1,
+                awardedPoints:
+                  q.awardedPoints !== undefined && q.awardedPoints !== null
+                    ? Number(q.awardedPoints)
+                    : undefined,
+                youtubeSolutionUrl: q.youtubeSolutionUrl || null,
+                teacherNote: q.teacherNote || null,
+                studentSolutionImages: perQuestionImgs
+              };
+            }),
+            essaySolutionImages: mappedEssaySolutionImages
           });
           this.swrCache.set(cacheKey, this.feedback());
 

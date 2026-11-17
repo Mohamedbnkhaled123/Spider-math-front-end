@@ -397,7 +397,7 @@ export class QuizCacheService implements OnDestroy {
     let updated: typeof existing;
     if (questionId) {
       updated = [
-        ...existing.filter(img => img.questionId !== questionId),
+        ...existing.filter(img => Boolean(img.questionId) && img.questionId !== questionId),
         ...images.map(img => ({ ...img, questionId }))
       ];
     } else {

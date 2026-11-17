@@ -30,9 +30,11 @@ export interface QuestionReviewItem {
   awardedPoints?: number;
   youtubeSolutionUrl?: string | null;
   teacherNote?: string | null;
+  studentSolutionImages?: EssaySolutionImageItem[];
 }
 
 export interface EssaySolutionImageItem {
+  questionId?: string;
   imageUrl: string;
   rotationDeg: number;
   sizeKb?: number;

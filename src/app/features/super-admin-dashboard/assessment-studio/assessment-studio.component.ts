@@ -881,9 +881,18 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     const q = this.activeQuestionForSlicing();
     if (q) {
       q.questionImageUrl = result.imageUrl;
+      if (this.editingQuestionId() === q.id) {
+        this.newQuestionImageUrl.set(result.imageUrl);
+      }
       const asm = this.activeAssessment();
       if (asm) {
-        this.activeAssessment.set({ ...asm });
+        const updatedQuestions = asm.questions.map((item) =>
+          item.id === q.id ? { ...item, questionImageUrl: result.imageUrl } : item
+        );
+        const updatedAsm: AssessmentItem = { ...asm, questions: updatedQuestions };
+        this.activeAssessment.set(updatedAsm);
+        this.syncAssessmentInMemoryList(updatedAsm);
+        this.autoPersistAssessmentToBackend(updatedAsm);
       }
     } else {
       this.newQuestionImageUrl.set(result.imageUrl);
@@ -1158,10 +1167,15 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
           const currentAsm = this.activeAssessment();
           if (currentAsm && currentAsm.id === asm.id) {
             const serverQuestions = res.data.questions;
+            const currentEditId = this.editingQuestionId();
             const updatedQuestions = currentAsm.questions.map((q, idx) => {
               const matched = serverQuestions.find((sq: any) => sq.order === q.order) || serverQuestions[idx];
               if (matched && (matched._id || matched.id)) {
-                return { ...q, id: (matched._id || matched.id).toString() };
+                const newId = (matched._id || matched.id).toString();
+                if (currentEditId === q.id && newId !== q.id) {
+                  this.editingQuestionId.set(newId);
+                }
+                return { ...q, id: newId };
               }
               return q;
             });
@@ -2367,7 +2381,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     const points = Math.max(1, Math.min(50, Number(this.newQuestionPoints()) || 5));
     const newQ: AssessmentQuestionItem = {
-      id: `q_${Date.now()}`,
+      id: `q_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       order: asm.questions.length + 1,
       type: this.newQuestionType(),
       textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),

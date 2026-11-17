@@ -350,8 +350,8 @@
                 class="w-8 h-8 rounded-lg text-xs font-bold font-numeric transition-all duration-200 border flex items-center justify-center cursor-pointer"
                 [ngClass]="{
                   'bg-brand-primary text-white border-brand-accent shadow-sm scale-105': currentQuestionIdx() === idx,
-                  'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400': currentQuestionIdx() !== idx && selectedAnswers()[q.question_id] !== undefined,
-                  'bg-surface-card border-surface-border text-text-muted hover:border-brand-primary/50': currentQuestionIdx() !== idx && selectedAnswers()[q.question_id] === undefined
+                  'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400': currentQuestionIdx() !== idx && isQuestionAnswered(q),
+                  'bg-surface-card border-surface-border text-text-muted hover:border-brand-primary/50': currentQuestionIdx() !== idx && !isQuestionAnswered(q)
                 }"
               >
                 {{ idx + 1 }}
@@ -367,6 +367,7 @@
 
       <!-- Current Question Card -->
       @if (currentQuestion(); as q) {
+        @for (activeQ of [q]; track activeQ.question_id) {
         <div class="question-container spider-rim-glass-card rounded-[2rem] p-6 sm:p-10 shadow-2xl backdrop-blur-2xl flex-1 flex flex-col justify-between mb-8">
           <div>
             <!-- Question Header: Number & Points Badge -->
@@ -376,20 +377,20 @@
               </span>
 
               <span class="text-xs font-bold text-text-muted font-numeric">
-                {{ q.points }} {{ langService.isArabic() ? 'درجات' : 'Points' }}
+                {{ activeQ.points }} {{ langService.isArabic() ? 'درجات' : 'Points' }}
               </span>
             </div>
 
             <!-- Question Stem Text -->
             <h2 class="font-academic-serif text-lg sm:text-2xl font-black text-text-primary leading-relaxed mb-6">
-              <app-math-formula [text]="q.question_text" />
+              <app-math-formula [text]="activeQ.question_text" />
             </h2>
 
             <!-- Optional Question Image -->
-            @if (q.question_image_url) {
+            @if (activeQ.question_image_url) {
               <div class="mb-6 rounded-2xl overflow-hidden border border-surface-border bg-surface-bg p-2 max-w-lg mx-auto">
                 <img
-                  [src]="q.question_image_url"
+                  [src]="activeQ.question_image_url"
                   alt="Question Diagram"
                   loading="lazy"
                   decoding="async"
@@ -398,45 +399,134 @@
               </div>
             }
 
-            <!-- MCQ Choices Grid -->
-            <div class="space-y-3.5 mt-4">
-              @for (opt of q.options; track opt.option_text; let optIdx = $index) {
-                <div
-                  (click)="selectOption(optIdx)"
-                  class="mcq-option p-4 rounded-2xl border-[3px] transition-all duration-200 cursor-pointer flex items-center gap-4 select-none"
-                  [ngClass]="{
-                    'mcq-option--selected border-brand-gold ring-2 ring-brand-gold/30 bg-brand-gold/10 shadow-gold-glow':
-                      selectedAnswers()[q.question_id] === optIdx,
-                    'border-surface-border bg-surface-bg hover:border-brand-secondary/60 hover:bg-surface-card':
-                      selectedAnswers()[q.question_id] !== optIdx
-                  }"
-                >
-                  <!-- Radio Node Indicator -->
-                  <div
-                    class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
-                    [ngClass]="{
-                      'border-brand-gold bg-brand-gold shadow-sm': selectedAnswers()[q.question_id] === optIdx,
-                      'border-surface-border bg-surface-card': selectedAnswers()[q.question_id] !== optIdx
-                    }"
-                  >
-                    @if (selectedAnswers()[q.question_id] === optIdx) {
-                      <div class="w-2.5 h-2.5 rounded-full bg-surface-card"></div>
-                    }
-                  </div>
-
-                  <!-- Option Text -->
-                  <span
-                    class="text-sm font-bold flex-1"
-                    [ngClass]="{
-                      'text-brand-gold font-black': selectedAnswers()[q.question_id] === optIdx,
-                      'text-text-primary': selectedAnswers()[q.question_id] !== optIdx
-                    }"
-                  >
-                    <app-math-formula [text]="opt.option_text" />
-                  </span>
+            <!-- Answer Area by Question Type (INPUT_TEXT / ESSAY_PHOTO / MCQ) -->
+            @if (activeQ.question_type === 'INPUT_TEXT') {
+              <div data-testid="placement-input-section" class="mt-4 p-6 sm:p-8 rounded-2xl border border-surface-border bg-surface-card/70 shadow-sm space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                  <label [for]="'placement-text-' + activeQ.question_id" class="block font-bold text-xs sm:text-sm text-text-primary">
+                    {{ langService.isArabic() ? 'اكتب إجابتك هنا:' : 'Write your answer here:' }}
+                  </label>
+                  @if (getTextAnswer(activeQ.question_id).trim()) {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <app-icon name="check" [size]="12" />
+                      <span>{{ langService.isArabic() ? 'تم حفظ الإجابة' : 'Answer Saved' }}</span>
+                    </span>
+                  }
                 </div>
-              }
-            </div>
+
+                <input
+                  [id]="'placement-text-' + activeQ.question_id"
+                  type="text"
+                  data-testid="placement-input-text"
+                  [value]="getTextAnswer(activeQ.question_id)"
+                  (input)="onTextAnswerInput(activeQ.question_id, $event)"
+                  [placeholder]="langService.isArabic() ? 'أدخل الإجابة النهائية...' : 'Enter your final answer...'"
+                  class="w-full px-4 py-3.5 rounded-xl border-2 border-surface-border bg-surface-bg text-text-primary text-base font-bold focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/25 outline-none transition-all shadow-sm"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            } @else if (activeQ.question_type === 'ESSAY_PHOTO' || activeQ.question_type === 'ESSAY' || !activeQ.options || activeQ.options.length === 0) {
+              <div data-testid="placement-essay-section" class="mt-4 p-6 rounded-2xl border border-surface-border bg-surface-bg/60 space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs sm:text-sm font-bold text-text-primary flex items-center gap-2">
+                    <app-icon name="camera" [size]="16" className="text-brand-gold" />
+                    <span>{{ langService.isArabic() ? 'أجب برفع صورة واضحة لخطوات الحل:' : 'Upload a clear photo of your solution steps:' }}</span>
+                  </span>
+                  @if (getQuestionImages(activeQ.question_id).length > 0) {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-numeric">
+                      <app-icon name="check" [size]="12" />
+                      <span>{{ getQuestionImages(activeQ.question_id).length }} / 2</span>
+                    </span>
+                  }
+                </div>
+
+                @if (getQuestionImages(activeQ.question_id); as qImgs) {
+                  @if (qImgs.length > 0) {
+                    <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center gap-3">
+                      @for (imgUrl of qImgs; track imgUrl) {
+                        <div class="relative group">
+                          <img [src]="imgUrl" [alt]="langService.isArabic() ? 'صورة إجابة الطالب' : 'Student answer photo'" loading="lazy" decoding="async" class="w-20 h-20 object-cover rounded-xl border border-emerald-500/30" />
+                          <button
+                            type="button"
+                            (click)="removeQuestionImage(activeQ.question_id, imgUrl)"
+                            class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-feedback-danger text-white flex items-center justify-center text-[10px] shadow cursor-pointer hover:scale-110 transition-transform"
+                            [title]="langService.isArabic() ? 'حذف' : 'Delete'"
+                          >
+                            <app-icon name="x" [size]="14" />
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+
+                <app-image-compressor-uploader
+                  uploadTarget="homework"
+                  [signatureUrl]="isStudentLoggedIn() ? null : '/api/v1/public/placement-test/upload-signature'"
+                  [clearOnSuccess]="true"
+                  [showItemList]="false"
+                  [buttonLabel]="langService.isArabic() ? 'رفع صورة خطوات الحل (1-2 صورة)' : 'Upload Solution Photo (1-2 images)'"
+                  (homeworkUploaded)="onHomeworkImagesUploaded(activeQ.question_id, $event)"
+                />
+
+                <div class="pt-3 border-t border-surface-border/60 space-y-2">
+                  <label [for]="'placement-essay-note-' + activeQ.question_id" class="block text-xs font-bold text-text-secondary">
+                    {{ langService.isArabic() ? 'أو اكتب الإجابة النهائية / ملاحظة اختيارية:' : 'Or type your final answer / optional note:' }}
+                  </label>
+                  <input
+                    [id]="'placement-essay-note-' + activeQ.question_id"
+                    type="text"
+                    data-testid="placement-essay-text"
+                    [value]="getTextAnswer(activeQ.question_id)"
+                    (input)="onTextAnswerInput(activeQ.question_id, $event)"
+                    [placeholder]="langService.isArabic() ? 'مثال: 6 سلال...' : 'e.g. 6 baskets...'"
+                    class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-card text-text-primary text-sm font-bold focus:border-brand-gold outline-none transition-all"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+            } @else {
+              <!-- MCQ Choices Grid -->
+              <div class="space-y-3.5 mt-4">
+                @for (opt of activeQ.options; track opt.option_text; let optIdx = $index) {
+                  <div
+                    (click)="selectOption(optIdx)"
+                    class="mcq-option p-4 rounded-2xl border-[3px] transition-all duration-200 cursor-pointer flex items-center gap-4 select-none"
+                    [ngClass]="{
+                      'mcq-option--selected border-brand-gold ring-2 ring-brand-gold/30 bg-brand-gold/10 shadow-gold-glow':
+                        selectedAnswers()[activeQ.question_id] === optIdx,
+                      'border-surface-border bg-surface-bg hover:border-brand-secondary/60 hover:bg-surface-card':
+                        selectedAnswers()[activeQ.question_id] !== optIdx
+                    }"
+                  >
+                    <!-- Radio Node Indicator -->
+                    <div
+                      class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+                      [ngClass]="{
+                        'border-brand-gold bg-brand-gold shadow-sm': selectedAnswers()[activeQ.question_id] === optIdx,
+                        'border-surface-border bg-surface-card': selectedAnswers()[activeQ.question_id] !== optIdx
+                      }"
+                    >
+                      @if (selectedAnswers()[activeQ.question_id] === optIdx) {
+                        <div class="w-2.5 h-2.5 rounded-full bg-surface-card"></div>
+                      }
+                    </div>
+
+                    <!-- Option Text -->
+                    <span
+                      class="text-sm font-bold flex-1"
+                      [ngClass]="{
+                        'text-brand-gold font-black': selectedAnswers()[activeQ.question_id] === optIdx,
+                        'text-text-primary': selectedAnswers()[activeQ.question_id] !== optIdx
+                      }"
+                    >
+                      <app-math-formula [text]="opt.option_text" />
+                    </span>
+                  </div>
+                }
+              </div>
+            }
           </div>
 
           <!-- Navigation Buttons Bar -->
@@ -478,6 +568,7 @@
             }
           </div>
         </div>
+        }
       }
     }
   </main>

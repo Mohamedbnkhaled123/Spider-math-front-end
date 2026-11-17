@@ -175,4 +175,80 @@ describe('PlacementExamRunnerComponent', () => {
       expect(component.selectedIntlDivision()).toBe('BRITISH_CURRICULUM');
     });
   });
+
+  describe('INPUT_TEXT and ESSAY_PHOTO Question Rendering & Submission', () => {
+    it('should render text input for INPUT_TEXT and photo uploader for ESSAY_PHOTO, and include both in submit payload', async () => {
+      const discoveryService = TestBed.inject(PublicDiscoveryService);
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      spyOn(confirmDialogService, 'confirm').and.resolveTo(true);
+      const submitSpy = spyOn(discoveryService, 'submitAnonymousPlacement').and.returnValue(of({
+        attemptId: 'att_multi',
+        score: 2,
+        maxScore: 2,
+        percentage: 100,
+        passed: true,
+        totalQuestions: 2,
+        correctAnswersCount: 2,
+        isUnlocked: false
+      }));
+
+      component.isLoading.set(false);
+      component.studentExamFinished.set(false);
+      component.examData.set({
+        assessment_id: 'asm_intl_1',
+        hasTest: true,
+        title: 'International Grade 1 Placement',
+        curriculum: 'INTERNATIONAL',
+        grade_level: 'US_GRADE_1',
+        academic_term: 'TERM_1',
+        total_questions: 2,
+        time_limit_minutes: 20,
+        questions: [
+          {
+            question_id: 'q7_input',
+            question_type: 'INPUT_TEXT',
+            question_text: 'Find GCF and LCM of 8 and 12',
+            options: [],
+            points: 1
+          },
+          {
+            question_id: 'q9_essay',
+            question_type: 'ESSAY_PHOTO',
+            question_text: 'Giovanni fruit baskets problem',
+            options: [],
+            points: 1
+          }
+        ]
+      });
+      component.currentQuestionIdx.set(0);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const textInput = hostEl.querySelector('[data-testid="placement-input-text"]') as HTMLInputElement;
+      expect(textInput).toBeTruthy();
+
+      textInput.value = '4 and 24';
+      textInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(component.answeredQuestionsCount()).toBe(1);
+
+      // Jump to Question 9 (ESSAY_PHOTO)
+      component.jumpToQuestion(1);
+      fixture.detectChanges();
+      const essaySection = hostEl.querySelector('[data-testid="placement-essay-section"]');
+      expect(essaySection).toBeTruthy();
+
+      component.onHomeworkImagesUploaded('q9_essay', ['https://cdn.example.com/spider-math-homework/q9.webp']);
+      fixture.detectChanges();
+      expect(component.answeredQuestionsCount()).toBe(2);
+
+      await component.submitExam(false);
+      expect(submitSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+        answers: [
+          { questionId: 'q7_input', textAnswer: '4 and 24' },
+          { questionId: 'q9_essay', uploadedImageUrls: ['https://cdn.example.com/spider-math-homework/q9.webp'] }
+        ]
+      }));
+    });
+  });
 });
