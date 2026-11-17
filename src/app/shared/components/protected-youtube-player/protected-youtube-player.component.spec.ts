@@ -36,43 +36,27 @@ describe('ProtectedYoutubePlayerComponent', () => {
     expect(component.progressPercentage()).toBe(50);
   });
 
-  describe('Universal Video Player UI Simplification (R3)', () => {
-    it('should display only play/pause button, progress scrubber, and audio icon in controls', () => {
+  describe('Interactive Video Player Controls & Seeking', () => {
+    it('should display play/pause, -5s/+5s skip, scrubber slider, mute, time display, speed, and fullscreen controls', () => {
       const controlsBar = fixture.debugElement.query(By.css('.player-controls-bar'));
       expect(controlsBar).toBeTruthy();
 
-      // Scrubber progress bar present
-      const scrubber = fixture.debugElement.query(By.css('.scrubber-thumb-orb'));
+      const scrubber = fixture.debugElement.query(By.css('[role="slider"]'));
       expect(scrubber).toBeTruthy();
+      expect(scrubber.nativeElement.getAttribute('dir')).toBe('ltr');
+      expect(fixture.debugElement.query(By.css('.scrubber-thumb-orb'))).toBeTruthy();
 
-      // Play button present
-      const playBtn = fixture.debugElement.query(By.css('button[aria-label="Play"]'));
-      expect(playBtn).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('button[aria-label="Play"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('[data-testid="skip-back-btn"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('[data-testid="skip-forward-btn"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('button[aria-label="Mute sound"], button[aria-label="Unmute sound"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('[data-testid="player-time-display"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('[data-testid="speed-toggle-btn"]')).nativeElement.textContent.trim()).toBe('1x');
+      expect(fixture.debugElement.query(By.css('[data-testid="fullscreen-toggle-btn"]'))).toBeTruthy();
 
-      // Audio button present
-      const audioBtn = fixture.debugElement.query(By.css('button[aria-label="Mute sound"], button[aria-label="Unmute sound"]'));
-      expect(audioBtn).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('input[type="range"]'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.glass-play-orb'))).toBeNull();
 
-      // NO volume slider
-      const volumeSlider = fixture.debugElement.query(By.css('input[type="range"]'));
-      expect(volumeSlider).toBeNull();
-
-      // NO speed buttons
-      const speedButtons = fixture.debugElement.queryAll(By.css('button')).filter(btn => {
-        const text = btn.nativeElement.textContent.trim();
-        return ['1x', '1.25x', '1.5x', '2x'].includes(text);
-      });
-      expect(speedButtons.length).toBe(0);
-
-      // NO fullscreen button
-      const fullscreenBtn = fixture.debugElement.query(By.css('button[aria-label*="Fullscreen"]'));
-      expect(fullscreenBtn).toBeNull();
-
-      // NO 90px glass play orb
-      const glassOrb = fixture.debugElement.query(By.css('.glass-play-orb'));
-      expect(glassOrb).toBeNull();
-
-      // NO medal (award) or lock icon in controls
       const icons = fixture.debugElement.queryAll(By.directive(AppIconComponent));
       const iconNames = icons.map(icon => icon.componentInstance.name());
       expect(iconNames).not.toContain('award');
@@ -144,9 +128,178 @@ describe('ProtectedYoutubePlayerComponent', () => {
       expect(component.chunkCompleted).toBeDefined();
       expect(component.progressUpdated).toBeDefined();
     });
+
+    it('should seek +5s on right-half double-tap and -5s on left-half double-tap without toggling play', () => {
+      let current = 20;
+      const mockPlayer = {
+        seekTo: jasmine.createSpy('seekTo').and.callFake((sec: number) => {
+          current = sec;
+        }),
+        getCurrentTime: () => current,
+        getDuration: () => 120,
+        playVideo: jasmine.createSpy('playVideo'),
+        pauseVideo: jasmine.createSpy('pauseVideo'),
+        getPlayerState: () => 1
+      };
+      (component as any).ytPlayer = mockPlayer;
+      component.hasStarted.set(true);
+      component.isPlaying.set(true);
+      component.duration.set(120);
+      component.currentTimeSec.set(20);
+      fixture.detectChanges();
+
+      const shield = fixture.nativeElement.querySelector('.yt-security-shield') as HTMLElement;
+      expect(shield).toBeTruthy();
+      spyOn(shield, 'getBoundingClientRect').and.returnValue({
+        left: 0,
+        right: 400,
+        width: 400,
+        top: 0,
+        bottom: 225,
+        height: 225,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      });
+
+      // Double-tap right half -> +5s
+      shield.dispatchEvent(new MouseEvent('click', { clientX: 320, bubbles: true }));
+      shield.dispatchEvent(new MouseEvent('click', { clientX: 320, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(25, true);
+      expect(component.currentTimeSec()).toBe(25);
+      expect(mockPlayer.pauseVideo).not.toHaveBeenCalled();
+      expect(component.seekFeedback()?.side).toBe('right');
+      const rightIndicator = fixture.nativeElement.querySelector('[data-testid="seek-feedback-indicator"]') as HTMLElement;
+      expect(rightIndicator.textContent).toContain('+5s');
+
+      // Double-tap left half -> -5s
+      shield.dispatchEvent(new MouseEvent('click', { clientX: 80, bubbles: true }));
+      shield.dispatchEvent(new MouseEvent('click', { clientX: 80, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(20, true);
+      expect(component.currentTimeSec()).toBe(20);
+      expect(component.seekFeedback()?.side).toBe('left');
+      const leftIndicator = fixture.nativeElement.querySelector('[data-testid="seek-feedback-indicator"]') as HTMLElement;
+      expect(leftIndicator.textContent).toContain('-5s');
+    });
+
+    it('should skip +5s and -5s via explicit skip buttons', () => {
+      let current = 30;
+      const mockPlayer = {
+        seekTo: jasmine.createSpy('seekTo').and.callFake((sec: number) => {
+          current = sec;
+        }),
+        getCurrentTime: () => current,
+        getDuration: () => 120
+      };
+      (component as any).ytPlayer = mockPlayer;
+      component.duration.set(120);
+      component.currentTimeSec.set(30);
+      fixture.detectChanges();
+
+      const forwardBtn = fixture.nativeElement.querySelector('[data-testid="skip-forward-btn"]') as HTMLButtonElement;
+      forwardBtn.click();
+      fixture.detectChanges();
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(35, true);
+
+      const backBtn = fixture.nativeElement.querySelector('[data-testid="skip-back-btn"]') as HTMLButtonElement;
+      backBtn.click();
+      fixture.detectChanges();
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(30, true);
+    });
+
+    it('should scrub smoothly across timeline on pointerdown/pointermove/pointerup even under RTL', () => {
+      const mockPlayer = {
+        seekTo: jasmine.createSpy('seekTo'),
+        getDuration: () => 100
+      };
+      (component as any).ytPlayer = mockPlayer;
+      component.hasStarted.set(true);
+      component.duration.set(100);
+      fixture.detectChanges();
+
+      const slider = fixture.nativeElement.querySelector('[role="slider"]') as HTMLElement;
+      spyOn(slider, 'getBoundingClientRect').and.returnValue({
+        left: 0,
+        right: 200,
+        width: 200,
+        top: 0,
+        bottom: 20,
+        height: 20,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      });
+
+      // Set ancestor RTL to verify scrubber stays LTR left-to-right
+      (fixture.nativeElement as HTMLElement).setAttribute('dir', 'rtl');
+      slider.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, bubbles: true }));
+      expect(component.isScrubbing()).toBeTrue();
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(25, true);
+
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 150, bubbles: true }));
+      expect(mockPlayer.seekTo).toHaveBeenCalledWith(75, true);
+      expect(component.currentTimeSec()).toBe(75);
+
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 150, bubbles: true }));
+      expect(component.isScrubbing()).toBeFalse();
+      (fixture.nativeElement as HTMLElement).removeAttribute('dir');
+    });
+
+    it('should open speed popover and update playbackRate', () => {
+      const mockPlayer = {
+        setPlaybackRate: jasmine.createSpy('setPlaybackRate'),
+        getAvailablePlaybackRates: () => [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+      };
+      (component as any).ytPlayer = mockPlayer;
+      fixture.detectChanges();
+
+      const speedToggle = fixture.nativeElement.querySelector('[data-testid="speed-toggle-btn"]') as HTMLButtonElement;
+      speedToggle.click();
+      fixture.detectChanges();
+
+      expect(component.isSpeedMenuOpen()).toBeTrue();
+      const speedMenuButtons = Array.from(
+        fixture.nativeElement.querySelectorAll('.speed-popover-menu button')
+      ) as HTMLButtonElement[];
+      expect(speedMenuButtons.length).toBe(6);
+
+      const rate15Btn = speedMenuButtons.find(b => b.textContent?.trim() === '1.5x') as HTMLButtonElement;
+      expect(rate15Btn).toBeTruthy();
+      rate15Btn.click();
+      fixture.detectChanges();
+
+      expect(mockPlayer.setPlaybackRate).toHaveBeenCalledWith(1.5);
+      expect(component.playbackRate()).toBe(1.5);
+      expect(component.isSpeedMenuOpen()).toBeFalse();
+      expect(speedToggle.textContent?.trim()).toBe('1.5x');
+    });
+
+    it('should fall back to CSS pseudo-fullscreen when native requestFullscreen is unavailable and exit on Escape', () => {
+      const containerEl = (component as any).playerContainer().nativeElement as HTMLElement;
+      Object.defineProperty(containerEl, 'requestFullscreen', { value: undefined, configurable: true });
+      Object.defineProperty(containerEl, 'webkitRequestFullscreen', { value: undefined, configurable: true });
+
+      const fsBtn = fixture.nativeElement.querySelector('[data-testid="fullscreen-toggle-btn"]') as HTMLButtonElement;
+      fsBtn.click();
+      fixture.detectChanges();
+
+      expect(component.isPseudoFullscreen()).toBeTrue();
+      expect(component.isEffectiveFullscreen()).toBeTrue();
+      expect(containerEl.classList.contains('player-pseudo-fullscreen')).toBeTrue();
+
+      containerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+
+      expect(component.isPseudoFullscreen()).toBeFalse();
+      expect(component.isEffectiveFullscreen()).toBeFalse();
+    });
   });
 
-  describe('Adversarial Viewport Immunity & Control Bar Integrity (M3 Challenger 1)', () => {
+  describe('Viewport Immunity & Control Bar Integrity (Responsive + RTL)', () => {
     let testHost: HTMLElement;
 
     beforeEach(() => {
@@ -181,39 +334,32 @@ describe('ProtectedYoutubePlayerComponent', () => {
 
         const controlsBar = fixture.nativeElement.querySelector('.player-controls-bar') as HTMLElement;
         expect(controlsBar).toBeTruthy();
-        // Controls bar must have zero horizontal overflow
         expect(controlsBar.scrollWidth).toBeLessThanOrEqual(controlsBar.clientWidth);
 
-        // Find the controls row containing the action buttons
-        const controlsRow = controlsBar.querySelector('.flex.items-center.text-white') as HTMLElement;
+        const controlsRow = controlsBar.querySelector('.player-controls-row') as HTMLElement;
         expect(controlsRow).toBeTruthy();
         expect(controlsRow.scrollWidth).toBeLessThanOrEqual(controlsRow.clientWidth);
 
         const buttons = Array.from(controlsRow.querySelectorAll('button'));
-        expect(buttons.length).toBe(2);
+        expect(buttons.length).toBe(6);
 
-        const [playBtn, audioBtn] = buttons;
-        expect(playBtn.offsetWidth).toBeGreaterThan(0);
-        expect(audioBtn.offsetWidth).toBeGreaterThan(0);
+        const firstRect = buttons[0].getBoundingClientRect();
+        for (const btn of buttons) {
+          expect(btn.offsetWidth).toBeGreaterThan(0);
+          expect(Math.abs(btn.getBoundingClientRect().top - firstRect.top)).toBeLessThan(5);
+        }
 
-        // Verify elements do NOT wrap onto multiple lines (same vertical plane)
-        const playRect = playBtn.getBoundingClientRect();
-        const audioRect = audioBtn.getBoundingClientRect();
-        expect(Math.abs(playRect.top - audioRect.top)).toBeLessThan(5);
-
-        // Verify scrubber bar width fits perfectly inside controlsBar without overflow
-        const scrubberTrack = controlsBar.querySelector('.relative.w-full.h-4') as HTMLElement;
+        const scrubberTrack = controlsBar.querySelector('[role="slider"]') as HTMLElement;
         expect(scrubberTrack).toBeTruthy();
         expect(scrubberTrack.scrollWidth).toBeLessThanOrEqual(scrubberTrack.clientWidth);
 
-        // Verify entire chassis has zero horizontal overflow
         const chassis = fixture.nativeElement.querySelector('.player-screen-chassis') as HTMLElement;
         expect(chassis).toBeTruthy();
         expect(chassis.scrollWidth).toBeLessThanOrEqual(chassis.clientWidth);
       });
     });
 
-    it('should maintain zero overflow and proper layout under RTL mode at 320px viewport', () => {
+    it('should maintain zero overflow and single-row layout under RTL mode at 320px viewport', () => {
       testHost.style.width = '320px';
       testHost.style.maxWidth = '320px';
       testHost.setAttribute('dir', 'rtl');
@@ -221,21 +367,22 @@ describe('ProtectedYoutubePlayerComponent', () => {
 
       const controlsBar = fixture.nativeElement.querySelector('.player-controls-bar') as HTMLElement;
       expect(controlsBar).toBeTruthy();
+      expect(controlsBar.getAttribute('dir')).toBe('ltr');
       expect(controlsBar.scrollWidth).toBeLessThanOrEqual(controlsBar.clientWidth);
 
-      const controlsRow = controlsBar.querySelector('.flex.items-center.text-white') as HTMLElement;
+      const controlsRow = controlsBar.querySelector('.player-controls-row') as HTMLElement;
       expect(controlsRow).toBeTruthy();
 
       const buttons = Array.from(controlsRow.querySelectorAll('button'));
-      expect(buttons.length).toBe(2);
+      expect(buttons.length).toBe(6);
 
-      const [playBtn, audioBtn] = buttons;
-      const playRect = playBtn.getBoundingClientRect();
-      const audioRect = audioBtn.getBoundingClientRect();
-      expect(Math.abs(playRect.top - audioRect.top)).toBeLessThan(5);
+      const firstRect = buttons[0].getBoundingClientRect();
+      for (const btn of buttons) {
+        expect(Math.abs(btn.getBoundingClientRect().top - firstRect.top)).toBeLessThan(5);
+      }
     });
 
-    it('should strictly exclude removed elements across all playback states', () => {
+    it('should retain required interactive controls across playback states', () => {
       const playbackStates = [
         { isPlaying: false, showControls: true },
         { isPlaying: true, showControls: true },
@@ -248,62 +395,13 @@ describe('ProtectedYoutubePlayerComponent', () => {
         fixture.detectChanges();
 
         const el = fixture.nativeElement as HTMLElement;
-
-        // 1. No volume slider range input
         expect(el.querySelector('input[type="range"]')).toBeNull();
-
-        // 2. No speed selector buttons (1x, 1.25x, 1.5x, 2x)
-        const allButtons = Array.from(el.querySelectorAll('button'));
-        const speedTexts = allButtons.map(b => (b.textContent || '').trim());
-        expect(speedTexts).not.toContain('1x');
-        expect(speedTexts).not.toContain('1.25x');
-        expect(speedTexts).not.toContain('1.5x');
-        expect(speedTexts).not.toContain('2x');
-
-        // 3. No fullscreen button
-        const fullscreenBtn = allButtons.find(b => {
-          const aria = b.getAttribute('aria-label') || '';
-          return aria.toLowerCase().includes('fullscreen');
-        });
-        expect(fullscreenBtn).toBeUndefined();
-
-        // 4. No 90px glass play orb
         expect(el.querySelector('.glass-play-orb')).toBeNull();
-
-        // 5. No medal icon (award) anywhere
-        const appIcons = Array.from(el.querySelectorAll('app-icon'));
-        const iconNames = appIcons.map(i => i.getAttribute('ng-reflect-name') || i.getAttribute('name'));
-        expect(iconNames).not.toContain('award');
-        expect(iconNames).not.toContain('lock');
-        expect(iconNames).not.toContain('target');
-
-        // 6. No watch percentage pill badge in controls
-        const controlsBar = el.querySelector('.player-controls-bar');
-        if (controlsBar) {
-          const barText = controlsBar.textContent || '';
-          expect(barText).not.toContain('% Completed');
-          expect(barText).not.toContain('% مكتمل');
-          expect(barText).not.toContain('00:');
-          expect(barText).not.toContain('18:');
-        }
+        expect(el.querySelector('[data-testid="speed-toggle-btn"]')).toBeTruthy();
+        expect(el.querySelector('[data-testid="fullscreen-toggle-btn"]')).toBeTruthy();
+        expect(el.querySelector('[data-testid="skip-back-btn"]')).toBeTruthy();
+        expect(el.querySelector('[data-testid="skip-forward-btn"]')).toBeTruthy();
       }
-    });
-
-    it('should strictly retain only the 3 required elements in the controls bar', () => {
-      const controlsBar = fixture.debugElement.query(By.css('.player-controls-bar'));
-      expect(controlsBar).toBeTruthy();
-
-      // Exactly 1 scrubber
-      const scrubbers = controlsBar.queryAll(By.css('.scrubber-thumb-orb'));
-      expect(scrubbers.length).toBe(1);
-
-      // Exactly 2 buttons in controls row (Play and Audio)
-      const buttons = controlsBar.queryAll(By.css('button'));
-      expect(buttons.length).toBe(2);
-
-      const ariaLabels = buttons.map(b => b.nativeElement.getAttribute('aria-label'));
-      expect(ariaLabels.some((l: string) => l === 'Play' || l === 'Pause')).toBeTrue();
-      expect(ariaLabels.some((l: string) => l === 'Mute sound' || l === 'Unmute sound')).toBeTrue();
     });
   });
 });

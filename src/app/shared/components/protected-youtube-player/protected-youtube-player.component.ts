@@ -67,11 +67,12 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly thresholdReached = output<number>();
   readonly tamperAlert = output<string>();
 
-  readonly availableSpeeds: PlaybackRate[] = [1, 1.25, 1.5, 2];
+  readonly availableSpeeds: PlaybackRate[] = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
   // View Containers
   readonly playerContainer = viewChild<ElementRef<HTMLElement>>('playerContainer');
   readonly iframeMount = viewChild<ElementRef<HTMLElement>>('iframeMount');
+  readonly scrubberTrack = viewChild<ElementRef<HTMLElement>>('scrubberTrack');
 
   // Playback Signals
   readonly isPlaying = signal<boolean>(false);
@@ -81,8 +82,13 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   readonly volume = signal<number>(100);
   readonly isMuted = signal<boolean>(false);
   readonly playbackRate = signal<PlaybackRate>(1);
+  readonly isSpeedMenuOpen = signal<boolean>(false);
   readonly isFullscreen = signal<boolean>(false);
+  readonly isPseudoFullscreen = signal<boolean>(false);
+  readonly isEffectiveFullscreen = computed<boolean>(() => this.isFullscreen() || this.isPseudoFullscreen());
+  readonly isScrubbing = signal<boolean>(false);
   readonly showControls = signal<boolean>(true);
+  readonly seekFeedback = signal<{ side: 'left' | 'right'; deltaSec: number } | null>(null);
 
   // Computed Thumbnail for Facade
   readonly thumbnailUrl = computed<string | null>(() => {
@@ -103,6 +109,13 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private hideControlsTimeout: ReturnType<typeof setTimeout> | null = null;
+  private singleTapTimer: ReturnType<typeof setTimeout> | null = null;
+  private seekFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastShieldTapTime = 0;
+  private lastShieldTapSide: 'left' | 'right' | null = null;
+  private lastDragSeekAt = 0;
+  private activeScrubMoveListener: ((ev: PointerEvent) => void) | null = null;
+  private activeScrubUpListener: ((ev: PointerEvent) => void) | null = null;
 
   // Computed Properties
   readonly watchPercentage = computed<number>(() => {
@@ -220,22 +233,203 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   seek(event: MouseEvent): void {
-    if (!this.ytPlayer) return;
-    const bar = event.currentTarget as HTMLElement;
-    const rect = bar.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
-    const targetSec = Math.round(ratio * this.duration());
+    const target = event.currentTarget as HTMLElement | null;
+    if (!target) return;
+    this.updateScrubFromClientX(event.clientX, target, true);
+  }
 
-    this.ytPlayer.seekTo?.(targetSec, true);
+  onScrubberPointerDown(event: PointerEvent): void {
+    if (event.button !== undefined && event.button !== 0 && event.pointerType === 'mouse') {
+      return;
+    }
+    const trackEl = this.scrubberTrack()?.nativeElement || (event.currentTarget as HTMLElement | null);
+    if (!trackEl) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.isScrubbing.set(true);
+    this.onMouseMove();
+    this.updateScrubFromClientX(event.clientX, trackEl, true);
+
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.detachScrubListeners();
+
+    const handleMove = (moveEvent: PointerEvent) => {
+      const now = Date.now();
+      const shouldCommit = now - this.lastDragSeekAt >= 120;
+      if (shouldCommit) {
+        this.lastDragSeekAt = now;
+      }
+      this.updateScrubFromClientX(moveEvent.clientX, trackEl, shouldCommit);
+    };
+
+    const handleUp = (upEvent: PointerEvent) => {
+      this.updateScrubFromClientX(upEvent.clientX, trackEl, true);
+      this.isScrubbing.set(false);
+      this.detachScrubListeners();
+    };
+
+    this.activeScrubMoveListener = handleMove;
+    this.activeScrubUpListener = handleUp;
+    document.addEventListener('pointermove', handleMove);
+    document.addEventListener('pointerup', handleUp);
+    document.addEventListener('pointercancel', handleUp);
+  }
+
+  private detachScrubListeners(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.activeScrubMoveListener) {
+      document.removeEventListener('pointermove', this.activeScrubMoveListener);
+      this.activeScrubMoveListener = null;
+    }
+    if (this.activeScrubUpListener) {
+      document.removeEventListener('pointerup', this.activeScrubUpListener);
+      document.removeEventListener('pointercancel', this.activeScrubUpListener);
+      this.activeScrubUpListener = null;
+    }
+  }
+
+  private resolveEffectiveDuration(): number {
+    let dur = this.duration();
+    if (dur <= 0 && this.ytPlayer?.getDuration) {
+      const liveDur = Math.round(Number(this.ytPlayer.getDuration()) || 0);
+      if (liveDur > 0) {
+        this.duration.set(liveDur);
+        dur = liveDur;
+      }
+    }
+    return dur;
+  }
+
+  private updateScrubFromClientX(clientX: number, trackEl: HTMLElement, commitPlayerSeek: boolean): void {
+    const dur = this.resolveEffectiveDuration();
+    if (dur <= 0) return;
+
+    const rect = trackEl.getBoundingClientRect();
+    if (rect.width <= 0) return;
+
+    // Video timelines always run left-to-right (0 -> duration)
+    const offset = clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, offset / rect.width));
+    const targetSec = Math.round(ratio * dur);
+
     this.currentTimeSec.set(targetSec);
+    if (commitPlayerSeek && this.ytPlayer?.seekTo) {
+      this.ytPlayer.seekTo(targetSec, true);
+    }
+  }
+
+  skipBy(deltaSec: number): void {
+    if (!this.hasStarted()) {
+      this.togglePlay();
+      return;
+    }
+    const dur = this.resolveEffectiveDuration();
+    const currentFromPlayer = this.ytPlayer?.getCurrentTime ? Number(this.ytPlayer.getCurrentTime()) : NaN;
+    const baseSec = Number.isFinite(currentFromPlayer) ? currentFromPlayer : this.currentTimeSec();
+    const rawTarget = Math.round(baseSec + deltaSec);
+    const clampedTarget = dur > 0
+      ? Math.max(0, Math.min(dur, rawTarget))
+      : Math.max(0, rawTarget);
+
+    this.currentTimeSec.set(clampedTarget);
+    if (this.ytPlayer?.seekTo) {
+      this.ytPlayer.seekTo(clampedTarget, true);
+    }
+    this.showControls.set(true);
+    this.onMouseMove();
+  }
+
+  onShieldClick(event: MouseEvent): void {
+    if (!this.hasStarted()) {
+      this.togglePlay();
+      return;
+    }
+
+    const shieldEl = event.currentTarget as HTMLElement | null;
+    let side: 'left' | 'right' = 'right';
+    if (shieldEl) {
+      const rect = shieldEl.getBoundingClientRect();
+      if (rect.width > 0) {
+        side = (event.clientX - rect.left) >= rect.width / 2 ? 'right' : 'left';
+      }
+    }
+
+    const now = Date.now();
+    const isRapidMultiTap = this.lastShieldTapSide === side && now - this.lastShieldTapTime < 300;
+    this.lastShieldTapTime = now;
+    this.lastShieldTapSide = side;
+
+    if (isRapidMultiTap) {
+      if (this.singleTapTimer) {
+        clearTimeout(this.singleTapTimer);
+        this.singleTapTimer = null;
+      }
+      const delta = side === 'right' ? 5 : -5;
+      this.skipBy(delta);
+      this.showSeekFeedbackIndicator(side, delta);
+      return;
+    }
+
+    if (this.singleTapTimer) {
+      clearTimeout(this.singleTapTimer);
+    }
+    this.singleTapTimer = setTimeout(() => {
+      this.singleTapTimer = null;
+      this.isSpeedMenuOpen.set(false);
+      this.togglePlay();
+    }, 230);
+  }
+
+  private showSeekFeedbackIndicator(side: 'left' | 'right', deltaSec: number): void {
+    const prev = this.seekFeedback();
+    const cumulative = prev && prev.side === side ? prev.deltaSec + deltaSec : deltaSec;
+    this.seekFeedback.set({ side, deltaSec: cumulative });
+    if (this.seekFeedbackTimer) {
+      clearTimeout(this.seekFeedbackTimer);
+    }
+    this.seekFeedbackTimer = setTimeout(() => {
+      this.seekFeedback.set(null);
+      this.seekFeedbackTimer = null;
+    }, 650);
+  }
+
+  onContainerKeyDown(event: KeyboardEvent): void {
+    const targetTag = (event.target as HTMLElement)?.tagName;
+    if (targetTag === 'INPUT' || targetTag === 'TEXTAREA') return;
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.skipBy(5);
+      this.showSeekFeedbackIndicator('right', 5);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.skipBy(-5);
+      this.showSeekFeedbackIndicator('left', -5);
+    } else if (event.key === ' ') {
+      event.preventDefault();
+      this.togglePlay();
+    } else if (event.key === 'f' || event.key === 'F') {
+      event.preventDefault();
+      this.toggleFullscreen();
+    } else if (event.key === 'Escape' && this.isPseudoFullscreen()) {
+      this.exitPseudoFullscreen();
+    }
+  }
+
+  toggleSpeedMenu(event: Event): void {
+    event.stopPropagation();
+    this.isSpeedMenuOpen.update((v) => !v);
+    this.onMouseMove();
   }
 
   setSpeed(speed: PlaybackRate | number): void {
     this.playbackRate.set(speed as PlaybackRate);
+    this.isSpeedMenuOpen.set(false);
     if (this.ytPlayer && this.ytPlayer.setPlaybackRate) {
       this.ytPlayer.setPlaybackRate(speed);
     }
+    this.onMouseMove();
   }
 
   toggleMute(): void {
@@ -263,17 +457,67 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
   }
 
   toggleFullscreen(): void {
-    const container = this.playerContainer()?.nativeElement;
+    const container = this.playerContainer()?.nativeElement as (HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | undefined;
     if (!container || !isPlatformBrowser(this.platformId)) return;
 
-    if (!document.fullscreenElement) {
-      container.requestFullscreen?.().then(() => {
-        this.isFullscreen.set(true);
-      });
+    const docAny = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+
+    if (this.isPseudoFullscreen()) {
+      this.exitPseudoFullscreen();
+      return;
+    }
+
+    if (!document.fullscreenElement && !docAny.webkitFullscreenElement) {
+      if (typeof container.requestFullscreen === 'function') {
+        container.requestFullscreen().then(() => {
+          this.isFullscreen.set(true);
+        }).catch(() => {
+          this.enterPseudoFullscreen();
+        });
+      } else if (typeof container.webkitRequestFullscreen === 'function') {
+        try {
+          const maybePromise = container.webkitRequestFullscreen();
+          if (maybePromise && typeof (maybePromise as Promise<void>).catch === 'function') {
+            (maybePromise as Promise<void>).then(() => this.isFullscreen.set(true)).catch(() => this.enterPseudoFullscreen());
+          } else {
+            this.isFullscreen.set(true);
+          }
+        } catch {
+          this.enterPseudoFullscreen();
+        }
+      } else {
+        this.enterPseudoFullscreen();
+      }
     } else {
-      document.exitFullscreen?.().then(() => {
+      if (typeof document.exitFullscreen === 'function') {
+        document.exitFullscreen().then(() => {
+          this.isFullscreen.set(false);
+        }).catch(() => {});
+      } else if (typeof docAny.webkitExitFullscreen === 'function') {
+        try {
+          docAny.webkitExitFullscreen();
+        } catch {}
         this.isFullscreen.set(false);
-      });
+      }
+    }
+  }
+
+  private enterPseudoFullscreen(): void {
+    this.isPseudoFullscreen.set(true);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  private exitPseudoFullscreen(): void {
+    this.isPseudoFullscreen.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
     }
   }
 
@@ -282,9 +526,11 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
     if (this.hideControlsTimeout) {
       clearTimeout(this.hideControlsTimeout);
     }
-    if (this.isPlaying()) {
+    if (this.isPlaying() && !this.isSpeedMenuOpen() && !this.isScrubbing()) {
       this.hideControlsTimeout = setTimeout(() => {
-        this.showControls.set(false);
+        if (!this.isSpeedMenuOpen() && !this.isScrubbing()) {
+          this.showControls.set(false);
+        }
       }, 3500);
     }
   }
@@ -364,6 +610,9 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           if (this.resumePositionSec() > 0) {
             e.target.seekTo(this.resumePositionSec(), true);
           }
+          if (this.playbackRate() !== 1 && e.target.setPlaybackRate) {
+            e.target.setPlaybackRate(this.playbackRate());
+          }
           if (autoPlay || this.pendingPlay) {
             this.pendingPlay = false;
             e.target.playVideo();
@@ -384,6 +633,9 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
           }
 
           if (e.data === 1) {
+            if (this.playbackRate() !== 1 && e.target?.setPlaybackRate) {
+              e.target.setPlaybackRate(this.playbackRate());
+            }
             this.isPlaying.set(true);
             this.startTracking();
           } else {
@@ -422,7 +674,7 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
     // 1-second interval for real-time player progress updates
     this.trackingInterval = setInterval(() => {
-      if (!this.ytPlayer || !this.isPlaying()) return;
+      if (!this.ytPlayer || !this.isPlaying() || this.isScrubbing()) return;
 
       const currentSec = Math.round(this.ytPlayer.getCurrentTime?.() || 0);
       this.currentTimeSec.set(currentSec);
@@ -531,6 +783,18 @@ export class ProtectedYoutubePlayerComponent implements OnInit, OnDestroy {
 
   private cleanup(): void {
     this.stopTracking();
+    this.detachScrubListeners();
+    if (this.isPseudoFullscreen()) {
+      this.exitPseudoFullscreen();
+    }
+    if (this.singleTapTimer) {
+      clearTimeout(this.singleTapTimer);
+      this.singleTapTimer = null;
+    }
+    if (this.seekFeedbackTimer) {
+      clearTimeout(this.seekFeedbackTimer);
+      this.seekFeedbackTimer = null;
+    }
     if (this.hideControlsTimeout) {
       clearTimeout(this.hideControlsTimeout);
     }
