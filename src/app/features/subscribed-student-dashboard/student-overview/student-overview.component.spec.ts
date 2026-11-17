@@ -139,4 +139,86 @@ describe('StudentOverviewComponent', () => {
     const footer = card.querySelector('.shrink-0.border-t') as HTMLElement;
     expect(footer).toBeTruthy();
   });
+
+  it('should format student track badge accurately including legacy AMERICAN US_GRADE_1 records', () => {
+    authService.setSession('test_token', {
+      _id: 'std_heba_c',
+      full_name: 'Heba c',
+      email: 'heba@spidermath.edu',
+      role: 'STUDENT',
+      curriculum: 'AMERICAN',
+      grade_level: 'US_GRADE_1'
+    });
+
+    component.langService.setLanguage('en');
+    const enLabel = component.getStudentTrackBadgeLabel();
+    expect(enLabel).toContain('International Curriculum');
+    expect(enLabel).toContain('Gr 1');
+
+    component.langService.setLanguage('ar');
+    const arLabel = component.getStudentTrackBadgeLabel();
+    expect(arLabel).toContain('المناهج الدولية');
+  });
+
+  it('should show subscribed active units even when grade has unsubscribed units', () => {
+    authService.setSession('test_token', {
+      _id: 'std_heba_c2',
+      full_name: 'Heba c',
+      email: 'heba2@spidermath.edu',
+      role: 'STUDENT',
+      curriculum: 'AMERICAN',
+      grade_level: 'US_GRADE_1'
+    });
+
+    component.fetchRealStudentData();
+    const reqs = httpMock.match((r) => r.url.startsWith('/api/v1/units'));
+    expect(reqs.length).toBeGreaterThan(0);
+
+    reqs[0].flush({
+      success: true,
+      data: [
+        {
+          _id: 'unit_numbers',
+          title_ar: 'Numbers',
+          title_en: 'Numbers',
+          curriculum: 'INTERNATIONAL',
+          grade_level: 'US_GRADE_1',
+          academic_term: 'TERM_1',
+          lectures_count: 2,
+          quizzes_count: 1,
+          isSubscribed: true
+        },
+        {
+          _id: 'unit_locked',
+          title_ar: 'Algebra',
+          title_en: 'Algebra',
+          curriculum: 'INTERNATIONAL',
+          grade_level: 'US_GRADE_1',
+          academic_term: 'TERM_1',
+          lectures_count: 1,
+          quizzes_count: 0,
+          isSubscribed: false
+        }
+      ]
+    });
+
+    expect(component.units().length).toBe(1);
+    expect(component.units()[0]._id).toBe('unit_numbers');
+
+    const contentsReqs = httpMock.match('/api/v1/units/unit_numbers/curriculum-contents');
+    expect(contentsReqs.length).toBe(1);
+    contentsReqs[0].flush({
+      success: true,
+      data: {
+        isSubscribed: true,
+        isExpired: false,
+        lectures: [
+          { _id: 'lec_1', title_ar: 'Counting 1-10', order_index: 1, video_duration_sec: 300, youtube_video_id: 'abc' }
+        ]
+      }
+    });
+
+    expect(component.lectures().length).toBe(1);
+    expect(component.lectures()[0].titleAr).toBe('Counting 1-10');
+  });
 });

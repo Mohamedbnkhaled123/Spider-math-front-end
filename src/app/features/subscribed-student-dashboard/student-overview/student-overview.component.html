@@ -24,7 +24,7 @@
         <div class="flex flex-wrap items-center gap-2 mb-1.5">
           <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary dark:text-brand-accent border border-brand-primary/20 flex items-center gap-1.5">
             <app-icon name="target" [size]="14" />
-            <span>{{ langService.isArabic() ? (authService.currentUser()?.curriculum === 'EGYPTIAN' ? 'المنهج المصري • الثانوية العامة' : 'المنهج الدولي / التجريبي') : (authService.currentUser()?.curriculum === 'EGYPTIAN' ? 'Egyptian Curriculum • Thanaweya Amma' : 'International / Experimental Curriculum') }}</span>
+            <span>{{ getStudentTrackBadgeLabel() }}</span>
           </span>
 
           <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
@@ -269,7 +269,7 @@
   <!-- ========================================================================= -->
   <!-- Coming Soon Banner or Real Active Academic Tracks                         -->
   <!-- ========================================================================= -->
-  @if (!isLoadingUnits() && !isLoadingActiveGrades() && !isCurrentGradeActive()) {
+  @if (!isLoadingUnits() && !isLoadingActiveGrades() && !isCurrentGradeActive() && units().length === 0) {
     <div class="coming-soon-card p-8 sm:p-14 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-surface-card to-brand-primary/5 shadow-glass text-center max-w-3xl mx-auto my-8">
       <div class="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-brand-glow animate-pulse">
         <app-icon name="clock" [size]="40" />

@@ -126,6 +126,12 @@ export class StudentProfileCompletionComponent implements OnInit {
     const grades = this.availableGrades();
     if (grades.length > 0) {
       this.gradeLevel.set(grades[0].code);
+    } else {
+      const subFilter = code === 'GULF'
+        ? this.country()
+        : (code === 'INTERNATIONAL' ? this.selectedIntlDivision() : undefined);
+      const fallback = this.discoveryService.getAvailableGradesForCurriculum(code, false, subFilter);
+      this.gradeLevel.set(fallback.length > 0 ? fallback[0].code : '');
     }
   }
 

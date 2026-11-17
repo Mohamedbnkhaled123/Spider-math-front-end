@@ -16,7 +16,12 @@ import { ClickOutsideDirective } from '../../../shared/directives/click-outside.
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
-import { AcademicTermCode, curriculumHasTerms } from '../../../core/constants/curriculum-tree.constant';
+import {
+  AcademicTermCode,
+  curriculumHasTerms,
+  findCurriculumByCode,
+  findGradeByCode
+} from '../../../core/constants/curriculum-tree.constant';
 import {
   getUnitMathTheme,
   isUnitContentEmpty,
@@ -86,6 +91,24 @@ export class StudentOverviewComponent implements OnInit {
   readonly showComingSoonModal = signal<boolean>(false);
   readonly comingSoonUnitTitle = signal<string>('');
   readonly toastMessage = signal<string | null>(null);
+
+  getStudentTrackBadgeLabel(): string {
+    const user = this.authService.currentUser();
+    const isAr = this.langService.isArabic();
+    const rawCurr = (user?.curriculum || 'EGYPTIAN').toUpperCase();
+    const rawGrade = (user?.grade_level || '').toUpperCase();
+    const effectiveCurr = (rawCurr === 'AMERICAN' && /^US_GRADE_\d+$/.test(rawGrade)) ? 'INTERNATIONAL' : rawCurr;
+    const currMeta = findCurriculumByCode(effectiveCurr);
+    const gradeMeta = rawGrade ? findGradeByCode(effectiveCurr, rawGrade) : undefined;
+    const currTitle = currMeta
+      ? (isAr ? currMeta.titleAr : currMeta.titleEn)
+      : effectiveCurr;
+    if (gradeMeta) {
+      const gradeTitle = isAr ? (gradeMeta.shortLabelAr || gradeMeta.titleAr) : (gradeMeta.shortLabelEn || gradeMeta.titleEn);
+      return `${currTitle} • ${gradeTitle}`;
+    }
+    return currTitle;
+  }
 
   getUnitMathArt(unit: any, idx: number) {
     return getUnitMathTheme(unit, idx);
@@ -427,12 +450,15 @@ export class StudentOverviewComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.isLoadingUnits.set(false);
-        const apiUnits = res?.data || [];
+        const rawApiUnits = res?.data || [];
+        const hasExplicitSubFlags = rawApiUnits.some((u: any) => typeof u?.isSubscribed === 'boolean');
+        const apiUnits = hasExplicitSubFlags
+          ? rawApiUnits.filter((u: any) => u.isSubscribed === true)
+          : rawApiUnits;
         if (apiUnits.length === 0) {
-          if (!this.swrCache.has(unitsKey)) {
-            this.units.set([]);
-            this.lectures.set([]);
-          }
+          this.units.set([]);
+          this.lectures.set([]);
+          this.swrCache.set(unitsKey, []);
           return;
         }
 
@@ -452,7 +478,7 @@ export class StudentOverviewComponent implements OnInit {
           totalQuizzes: u.quizzes_count || 0,
           completedQuizzes: 0,
           accessScope: u.accessScope || (u.access_scope ?? 'FULL'),
-          isActive: true
+          isActive: u.isSubscribed !== undefined ? !!u.isSubscribed : true
         }));
         this.units.set(mappedUnits);
         this.swrCache.set(unitsKey, mappedUnits);

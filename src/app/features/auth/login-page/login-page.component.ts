@@ -253,6 +253,12 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     const grades = this.regAvailableGrades();
     if (grades.length > 0) {
       this.regGradeLevel.set(grades[0].code);
+    } else {
+      const subFilter = code === 'GULF'
+        ? this.regCountry()
+        : (code === 'INTERNATIONAL' ? this.regSelectedIntlDivision() : undefined);
+      const fallback = this.discoveryService.getAvailableGradesForCurriculum(code, false, subFilter);
+      this.regGradeLevel.set(fallback.length > 0 ? fallback[0].code : '');
     }
   }
 

@@ -850,27 +850,15 @@
                 </h4>
               </div>
 
-              <!-- Toggle Show All Units -->
-              <button
-                type="button"
-                (click)="toggleShowAllUnits()"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                [class.bg-brand-primary/15]="showAllUnits()"
-                [class.border-brand-primary/40]="showAllUnits()"
-                [class.text-brand-primary]="showAllUnits()"
-                [class.bg-surface-card]="!showAllUnits()"
-                [class.border-surface-border]="!showAllUnits()"
-                [class.text-text-muted]="!showAllUnits()"
-              >
-                <app-icon [name]="showAllUnits() ? 'check' : 'filter'" [size]="12" />
-                <span>{{ showAllUnits() ? (langService.isArabic() ? 'عرض الكل (مفعّل)' : 'All Units (Active)') : (langService.isArabic() ? 'عرض كل الوحدات' : 'Show All Units') }}</span>
-              </button>
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-card border border-surface-border text-brand-primary shrink-0">
+                {{ getStudentTrackDisplay(student) }}
+              </span>
             </div>
 
             <!-- Unit Dropdown Selection -->
             <div class="space-y-1.5">
               <label class="block font-bold text-text-secondary text-xs">
-                {{ langService.isArabic() ? ('اختر الوحدة الدراسية (' + student.curriculum + ' - ' + student.gradeLevel + '):') : ('Select Unit for (' + student.curriculum + ' - ' + student.gradeLevel + '):') }}
+                {{ langService.isArabic() ? ('اختر الوحدة الدراسية (' + getStudentTrackDisplay(student) + '):') : ('Select Unit for (' + getStudentTrackDisplay(student) + '):') }}
               </label>
               <select
                 [ngModel]="activationUnitId()"
@@ -882,14 +870,14 @@
                     {{ (langService.isArabic() ? (unit.titleAr || unit.title_ar) : (unit.titleEn || unit.title_en || unit.titleAr || unit.title_ar)) }} ({{ unit.curriculum }} - {{ unit.gradeLevel || unit.grade_level }}) — {{ unit.priceEgp || unit.price_egp || 0 }} {{ langService.isArabic() ? 'ج.م' : 'EGP' }}@if (isUnitActiveForStudent(unit.id || unit._id)) { ({{ langService.isArabic() ? 'مشترك بها حالياً' : 'Already Enrolled' }}) }@else if ((unit.originalPriceEgp || unit.original_price_egp) > (unit.priceEgp || unit.price_egp)) { ({{ langService.isArabic() ? 'خصم فعال' : 'Discounted' }}) }
                   </option>
                 } @empty {
-                  <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة (' + student.curriculum + ' - ' + student.gradeLevel + ')') : ('No units matching (' + student.curriculum + ' - ' + student.gradeLevel + ')') }}</option>
+                  <option value="" disabled selected>{{ langService.isArabic() ? ('لا توجد وحدات مطابقة (' + getStudentTrackDisplay(student) + ')') : ('No units matching (' + getStudentTrackDisplay(student) + ')') }}</option>
                 }
               </select>
               @if (studentMatchingUnits().length === 0) {
                 <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold flex items-center gap-2">
                   <app-icon name="alert-circle" [size]="15" />
                   <span>
-                    {{ langService.isArabic() ? ('لا توجد وحدات لـ (' + student.curriculum + ' - ' + student.gradeLevel + '). فعّل "عرض كل الوحدات" أو أضفها.') : ('No units for this grade. Toggle "Show All" or add in Studio.') }}
+                    {{ langService.isArabic() ? ('لا توجد وحدات مضافة لهذا المنهج والصف (' + getStudentTrackDisplay(student) + '). يمكنك إضافة وحدة من تبويب "المناهج والوحدات".') : ('No units added for (' + getStudentTrackDisplay(student) + '). Add one in "Curricula & Units".') }}
                   </span>
                 </div>
               }

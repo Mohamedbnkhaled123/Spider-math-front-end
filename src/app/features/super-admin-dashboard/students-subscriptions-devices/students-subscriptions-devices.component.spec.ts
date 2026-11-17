@@ -115,19 +115,22 @@ describe('StudentsSubscriptionsDevicesComponent', () => {
     expect(matching[1].id).toBe('u_sec1_2');
   });
 
-  it('should display all units when showAllUnits toggle is activated', () => {
+  it('should strictly filter units to student curriculum and grade without collisions or cross-track units', () => {
     component.realUnits.set([
+      { id: 'u_us1_intl', titleAr: 'Numbers', curriculum: 'INTERNATIONAL', gradeLevel: 'US_GRADE_1' },
+      { id: 'u_us12_intl', titleAr: 'AP Prep', curriculum: 'INTERNATIONAL', gradeLevel: 'US_GRADE_12' },
+      { id: 'u_gulf12', titleAr: 'free test', curriculum: 'GULF', gradeLevel: 'GRADE_12' },
       { id: 'u_sec1_1', titleAr: 'الهندسة', curriculum: 'EGYPTIAN', gradeLevel: 'SEC_1' },
-      { id: 'u_sec3_1', titleAr: 'التفاضل', curriculum: 'EGYPTIAN', gradeLevel: 'SEC_3' }
+      { id: 'u_sat', titleAr: 'November2026', curriculum: 'AMERICAN', gradeLevel: 'SAT_MATH' }
     ]);
 
     component.studentToActivate.set({
-      id: 'student_1',
-      name: 'Mohammed Khaled',
-      haCode: 'HA1001',
-      email: 'mk@test.com',
-      curriculum: 'EGYPTIAN',
-      gradeLevel: 'SEC_1',
+      id: 'student_heba',
+      name: 'Heba c',
+      haCode: 'HA1004',
+      email: 'heba@test.com',
+      curriculum: 'AMERICAN',
+      gradeLevel: 'US_GRADE_1',
       hasActiveSubscription: false,
       subscriptionStatus: 'CANCELLED',
       totalXp: 0,
@@ -135,9 +138,30 @@ describe('StudentsSubscriptionsDevicesComponent', () => {
       isLocked: false,
       isLeaderboardHidden: false
     });
+    expect(component.studentMatchingUnits().map(u => u.id)).toEqual(['u_us1_intl']);
 
-    component.showAllUnits.set(true);
-    expect(component.studentMatchingUnits().length).toBe(2);
+    component.studentToActivate.set({
+      id: 'student_gulf12',
+      name: 'Sara Gulf',
+      haCode: 'HA2002',
+      email: 'sara@test.com',
+      curriculum: 'GULF',
+      gradeLevel: 'GRADE_12',
+      hasActiveSubscription: false,
+      subscriptionStatus: 'CANCELLED',
+      totalXp: 0,
+      approvedDevices: 1,
+      isLocked: false,
+      isLeaderboardHidden: false
+    });
+    expect(component.studentMatchingUnits().map(u => u.id)).toEqual(['u_gulf12']);
+
+    // Newly added unit via availableUnits input appears immediately even if realUnits has older snapshot
+    fixture.componentRef.setInput('availableUnits', [
+      { id: 'u_gulf12_new', titleAr: 'New Gulf Unit', curriculum: 'GULF', gradeLevel: 'GRADE_12' }
+    ]);
+    fixture.detectChanges();
+    expect(component.studentMatchingUnits().map(u => u.id)).toEqual(['u_gulf12', 'u_gulf12_new']);
   });
 
   it('should revoke a student unit subscription and update state', () => {
