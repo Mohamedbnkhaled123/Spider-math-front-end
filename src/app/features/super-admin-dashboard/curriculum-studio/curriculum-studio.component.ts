@@ -974,10 +974,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   });
   readonly activeQuestionForSlicing = signal<QuestionAdminItem | null>(null);
 
-  // Math Keyboard & Exam Options Signals
+  // Math Keyboard Signals
   readonly isMathKeyboardOpen = signal<boolean>(false);
   readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
-  readonly isExamOptionsOpen = signal<boolean>(false);
 
   // Active Question Editing (R2) & New Question Form within Assessment Builder
   readonly editingQuestionId = signal<string | null>(null);
@@ -1002,7 +1001,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
   }
@@ -2856,7 +2854,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     this.isRefSheetActiveInCurriculum.set(Boolean(asm.referenceSheetUrl));
     this.autoRegradeWarning.set(false);
     this.cancelQuestionEdit();
-    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.isAssessmentEditorOpen.set(true);
 
@@ -2871,7 +2868,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
       this.triggerDraftAutoSave(true);
     }
-    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.modalNav.dismissModal('curriculum-assessment-editor');
@@ -2976,14 +2972,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       text: this.langService.isArabic() ? 'تم قص وحفظ صورة السؤال بنجاح' : 'Question cropped and saved successfully',
       type: 'success'
     });
-  }
-
-  toggleExamOptions(): void {
-    this.isExamOptionsOpen.update((v) => !v);
-  }
-
-  closeExamOptions(): void {
-    this.isExamOptionsOpen.set(false);
   }
 
   toggleMathKeyboard(fallbackTarget?: HTMLInputElement | HTMLTextAreaElement): void {
@@ -3135,7 +3123,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   }
 
   cancelQuestionEdit(): void {
-    this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.newQuestionTextAr.set('');
@@ -3398,7 +3385,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
           console.warn('Error during post-save cleanup:', err);
         });
         this.pendingDraft.set(null);
-        this.isExamOptionsOpen.set(false);
         this.isMathKeyboardOpen.set(false);
         this.mathKeyboardTarget.set(null);
         this.modalNav.dismissModal('curriculum-assessment-editor');

@@ -392,7 +392,7 @@
                 @for (grade of trackGrades; track grade.code) {
                   <div
                     (click)="toggleGrade(grade.code)"
-                    class="p-2 rounded-xl border transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
+                    class="p-2 rounded-xl border-[2.5px] transition-all flex items-center justify-between gap-2 cursor-pointer select-none"
                     [class.border-emerald-500/40]="isGradeActive(grade.code)"
                     [class.bg-emerald-500/5]="isGradeActive(grade.code)"
                     [class.border-surface-border]="!isGradeActive(grade.code)"
@@ -1928,71 +1928,6 @@
                   </button>
                 }
               </div>
-              
-              <!-- Quick Options Menu Button -->
-              <div class="relative">
-                <button
-                  type="button"
-                  (click)="toggleExamOptions()"
-                  class="px-2.5 py-1 rounded-xl border border-amber-500/30 bg-surface-card hover:bg-amber-500/10 text-text-primary text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <app-icon name="settings" [size]="12" className="text-amber-500" />
-                  <span>{{ langService.isArabic() ? 'خيارات نوع السؤال' : 'Question Options' }}</span>
-                  <app-icon name="chevron-down" [size]="10" />
-                </button>
-
-                @if (isExamOptionsOpen()) {
-                  <div class="absolute end-0 top-full mt-1.5 w-56 p-1.5 rounded-2xl bg-surface-card border border-surface-border shadow-xl z-50 space-y-1 animate-scale-up">
-                    <button
-                      type="button"
-                      (click)="newQuestionType.set('MCQ'); closeExamOptions()"
-                      class="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-start transition-all cursor-pointer flex items-center justify-between"
-                      [class.bg-brand-primary]="newQuestionType() === 'MCQ'"
-                      [class.text-white]="newQuestionType() === 'MCQ'"
-                      [class.hover:bg-surface-bg]="newQuestionType() !== 'MCQ'"
-                    >
-                      <span>{{ langService.isArabic() ? 'اختيار من متعدد (MCQ)' : 'Multiple Choice (MCQ)' }}</span>
-                      @if (newQuestionType() === 'MCQ') { <app-icon name="check" [size]="12" /> }
-                    </button>
-
-                    <button
-                      type="button"
-                      (click)="newQuestionType.set('INPUT_TEXT'); closeExamOptions()"
-                      class="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-start transition-all cursor-pointer flex items-center justify-between"
-                      [class.bg-brand-primary]="newQuestionType() === 'INPUT_TEXT'"
-                      [class.text-white]="newQuestionType() === 'INPUT_TEXT'"
-                      [class.hover:bg-surface-bg]="newQuestionType() !== 'INPUT_TEXT'"
-                    >
-                      <span>{{ langService.isArabic() ? 'إدخال نص / إجابة قصيرة' : 'Short Answer / Text Input' }}</span>
-                      @if (newQuestionType() === 'INPUT_TEXT') { <app-icon name="check" [size]="12" /> }
-                    </button>
-
-                    <button
-                      type="button"
-                      (click)="newQuestionType.set('ESSAY'); closeExamOptions()"
-                      class="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-start transition-all cursor-pointer flex items-center justify-between"
-                      [class.bg-brand-primary]="newQuestionType() === 'ESSAY'"
-                      [class.text-white]="newQuestionType() === 'ESSAY'"
-                      [class.hover:bg-surface-bg]="newQuestionType() !== 'ESSAY'"
-                    >
-                      <span>{{ langService.isArabic() ? 'مسألة مقالية / حل يدوي' : 'Essay / Handwritten' }}</span>
-                      @if (newQuestionType() === 'ESSAY') { <app-icon name="check" [size]="12" /> }
-                    </button>
-
-                    @if (cachedFileSession()) {
-                      <div class="my-1 border-t border-surface-border"></div>
-                      <button
-                        type="button"
-                        (click)="openManualSlicerForComposer(); closeExamOptions()"
-                        class="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-amber-500 hover:bg-amber-500/10 text-start transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <app-icon name="image" [size]="12" />
-                        <span>{{ langService.isArabic() ? 'قص يدوي من المستند الحالي' : 'Crop from Document' }}</span>
-                      </button>
-                    }
-                  </div>
-                }
-              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2060,14 +1995,6 @@
                   [placeholder]="langService.isArabic() ? 'اكتب منطوق المسألة أو التحدي الرياضي هنا...' : 'Type problem statement or math question here...'"
                   class="w-full bg-transparent text-xs text-text-primary outline-none resize-y"
                 ></textarea>
-                @if (newQuestionTextAr().trim()) {
-                  <div class="mt-2 pt-2 border-t border-surface-border/60 flex items-center gap-2 text-xs text-text-secondary">
-                    <span class="text-[10px] font-bold text-text-muted shrink-0">{{ langService.isArabic() ? 'معاينة:' : 'Preview:' }}</span>
-                    <div class="font-bold text-text-primary min-w-0 flex-1">
-                      <app-math-formula [text]="newQuestionTextAr()" />
-                    </div>
-                  </div>
-                }
               </div>
             </div>
 
@@ -2391,7 +2318,7 @@
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @for (grade of getGradesForGulfStage(stage, track); track grade.code) {
                           <div
-                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border-[2.5px] transition-all"
                             [class.border-brand-primary]="isGradeActive(grade.code)"
                             [class.bg-brand-primary/5]="isGradeActive(grade.code)"
                             [class.border-surface-border]="!isGradeActive(grade.code)"
@@ -2492,7 +2419,7 @@
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @for (grade of getOtherGulfGrades(track); track grade.code) {
                           <div
-                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border-[2.5px] transition-all"
                             [class.border-brand-primary]="isGradeActive(grade.code)"
                             [class.bg-brand-primary/5]="isGradeActive(grade.code)"
                             [class.border-surface-border]="!isGradeActive(grade.code)"
@@ -2656,7 +2583,7 @@
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @for (grade of getGradesForIntlStage(stage, track); track grade.code) {
                           <div
-                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border-[2.5px] transition-all"
                             [class.border-brand-primary]="isGradeActive(grade.code)"
                             [class.bg-brand-primary/5]="isGradeActive(grade.code)"
                             [class.border-surface-border]="!isGradeActive(grade.code)"
@@ -2754,7 +2681,7 @@
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @for (grade of getOtherIntlGrades(track); track grade.code) {
                           <div
-                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                            class="active-grade-card p-3.5 sm:p-4 rounded-2xl border-[2.5px] transition-all"
                             [class.border-brand-primary]="isGradeActive(grade.code)"
                             [class.bg-brand-primary/5]="isGradeActive(grade.code)"
                             [class.border-surface-border]="!isGradeActive(grade.code)"
@@ -2844,7 +2771,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   @for (grade of track.grades; track grade.code) {
                     <div
-                      class="active-grade-card p-3.5 sm:p-4 rounded-2xl border transition-all"
+                      class="active-grade-card p-3.5 sm:p-4 rounded-2xl border-[2.5px] transition-all"
                       [class.border-brand-primary]="isGradeActive(grade.code)"
                       [class.bg-brand-primary/5]="isGradeActive(grade.code)"
                       [class.border-surface-border]="!isGradeActive(grade.code)"

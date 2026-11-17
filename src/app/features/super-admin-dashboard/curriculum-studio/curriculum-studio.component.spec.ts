@@ -865,5 +865,39 @@ describe('CurriculumStudioComponent', () => {
       expect(component.mathKeyboardTarget()).toBeNull();
       expect(hostEl.querySelector('app-math-virtual-keyboard')).toBeNull();
     });
+
+    it('should remove duplicate question options button, remove math preview bar, and render thicker grade borders', () => {
+      component.toggleOverviewTrack('EGYPTIAN');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const gradeRows = hostEl.querySelectorAll('.border-\\[2\\.5px\\]');
+      expect(gradeRows.length).toBeGreaterThan(0);
+
+      component.openAssessmentEditor({
+        id: 'asm_clean_ui_test',
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'اختبار واجهة المحرر',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 15,
+        xpReward: 10,
+        referenceSheetUrl: null,
+        requiresTeacherReview: false,
+        submissionsCount: 0,
+        questions: []
+      });
+      component.newQuestionTextAr.set('sin(30°)');
+      fixture.detectChanges();
+
+      const composerEl = hostEl.querySelector('#curriculumQuestionComposer') as HTMLElement;
+      expect(composerEl).toBeTruthy();
+      expect(composerEl.textContent).not.toContain('خيارات نوع السؤال');
+      expect(composerEl.textContent).not.toContain('Question Options');
+      expect(composerEl.textContent).not.toContain('معاينة:');
+      expect(composerEl.querySelector('app-math-formula')).toBeNull();
+      expect(composerEl.querySelector('select')).toBeTruthy();
+    });
   });
 });
