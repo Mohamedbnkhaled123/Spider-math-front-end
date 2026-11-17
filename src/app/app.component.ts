@@ -94,6 +94,12 @@ export class AppComponent implements OnInit {
           const activeUrl = event.urlAfterRedirects || event.url;
           this.checkIsExamPage(activeUrl);
           this.speedInsightsHandler?.setRoute(activeUrl);
+          if (isPlatformBrowser(this.platformId) && !activeUrl.includes('#')) {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            });
+          }
         }
         this.navigatingUrl.set('');
         this.isRouteNavigating.set(false);

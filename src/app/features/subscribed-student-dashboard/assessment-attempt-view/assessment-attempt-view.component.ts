@@ -5,9 +5,10 @@ import {
   computed,
   inject,
   effect,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -53,6 +54,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
   readonly quizCache = inject(QuizCacheService);
   readonly syncQueue = inject(OfflineSyncQueueService);
   readonly langService = inject(LangService);
@@ -150,10 +152,12 @@ export class AssessmentAttemptViewComponent implements OnInit {
   readonly submissionWarning = signal<string>('');
 
   ngOnInit(): void {
+    this.scrollToExamTop(false);
     const assessmentId = this.route.snapshot.paramMap.get('id');
     if (assessmentId) {
       this.quizCache.startAndCache(assessmentId).subscribe({
         next: (record) => {
+          this.scrollToExamTop(false);
           const isMultiModule = !!(record.isMultiModule ?? (record as any).is_multi_module);
           const module1TimeMinutes = record.module1DurationMinutes ?? (record as any).module_1_time_minutes ?? 35;
           const module2TimeMinutes = record.module2DurationMinutes ?? (record as any).module_2_time_minutes ?? 35;
@@ -345,13 +349,27 @@ export class AssessmentAttemptViewComponent implements OnInit {
   prevQuestion(): void {
     if (this.activeQuestionIdx() > 0) {
       this.activeQuestionIdx.update(i => i - 1);
+      this.scrollToExamTop(true);
     }
   }
 
   nextQuestion(): void {
     if (this.activeQuestionIdx() < this.totalQuestionsCount() - 1) {
       this.activeQuestionIdx.update(i => i + 1);
+      this.scrollToExamTop(true);
     }
+  }
+
+  selectQuestion(idx: number): void {
+    if (idx >= 0 && idx < this.totalQuestionsCount()) {
+      this.activeQuestionIdx.set(idx);
+      this.scrollToExamTop(true);
+    }
+  }
+
+  private scrollToExamTop(smooth: boolean = true): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    window.scrollTo({ top: 0, left: 0, behavior: smooth ? 'smooth' : 'auto' });
   }
 
   toggleDesmos(): void {
@@ -384,6 +402,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
             : `Answer remaining: (${numbersList})`
         );
         this.activeQuestionIdx.set(unanswered[0].index);
+        this.scrollToExamTop(true);
         return;
       }
 
@@ -409,6 +428,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
     this.isModule1Locked.set(true);
     this.currentModule.set(2);
     this.activeQuestionIdx.set(0);
+    this.scrollToExamTop(true);
 
     await this.quizCache.transitionToModule2(this.bundle().assessmentId);
   }
@@ -433,6 +453,7 @@ export class AssessmentAttemptViewComponent implements OnInit {
         );
         // Automatically jump to the first unanswered question!
         this.activeQuestionIdx.set(unanswered[0].index);
+        this.scrollToExamTop(true);
         return;
       }
 

@@ -111,4 +111,63 @@ describe('LandingHomeComponent', () => {
       expect(btn?.classList.contains('inline-flex')).toBeTrue();
     });
   });
+
+  describe('Placement Track Modal Subdivisions (Gulf Countries & International Divisions)', () => {
+    it('should render all 4 Gulf countries when Gulf curriculum is selected in placement modal and pass countryCode to runner', () => {
+      component.isPlacementModalOpen.set(true);
+      component.setPlacementCurriculum('GULF');
+      fixture.detectChanges();
+
+      const gulfSection = fixture.nativeElement.querySelector('[data-testid="placement-gulf-countries"]') as HTMLElement;
+      expect(gulfSection).toBeTruthy();
+      expect(gulfSection.querySelector('[data-country="SA"]')).toBeTruthy();
+      expect(gulfSection.querySelector('[data-country="QA"]')).toBeTruthy();
+      expect(gulfSection.querySelector('[data-country="AE"]')).toBeTruthy();
+      expect(gulfSection.querySelector('[data-country="KW"]')).toBeTruthy();
+
+      const router = (component as any).router;
+      const navigateSpy = spyOn(router, 'navigate');
+      component.setPlacementGulfCountry('AE');
+      fixture.detectChanges();
+      component.startPlacementExam();
+
+      expect(navigateSpy).toHaveBeenCalledWith(
+        ['/placement-test'],
+        jasmine.objectContaining({
+          queryParams: jasmine.objectContaining({
+            curriculum: 'GULF',
+            countryCode: 'AE'
+          })
+        })
+      );
+    });
+
+    it('should render American & British division switchers when International curriculum is selected in placement modal', () => {
+      component.isPlacementModalOpen.set(true);
+      component.setPlacementCurriculum('INTERNATIONAL');
+      fixture.detectChanges();
+
+      const intlSection = fixture.nativeElement.querySelector('[data-testid="placement-intl-divisions"]') as HTMLElement;
+      expect(intlSection).toBeTruthy();
+      expect(intlSection.querySelector('[data-division="AMERICAN_CURRICULUM"]')).toBeTruthy();
+      expect(intlSection.querySelector('[data-division="BRITISH_CURRICULUM"]')).toBeTruthy();
+      expect(component.placementHasTerms()).toBeFalse();
+
+      const router = (component as any).router;
+      const navigateSpy = spyOn(router, 'navigate');
+      component.setPlacementIntlDivision('BRITISH_CURRICULUM');
+      fixture.detectChanges();
+      component.startPlacementExam();
+
+      expect(navigateSpy).toHaveBeenCalledWith(
+        ['/placement-test'],
+        jasmine.objectContaining({
+          queryParams: jasmine.objectContaining({
+            curriculum: 'INTERNATIONAL',
+            divisionCode: 'BRITISH_CURRICULUM'
+          })
+        })
+      );
+    });
+  });
 });

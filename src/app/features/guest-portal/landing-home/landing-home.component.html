@@ -380,7 +380,53 @@
             </div>
           </div>
 
-          <!-- 2. Grade Level Dropdown List -->
+          <!-- 1.5 Gulf Country OR International Division Subdivision (matches Curricula & Units Studio) -->
+          @if (placementCurriculum() === 'GULF') {
+            <div data-testid="placement-gulf-countries">
+              <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ langService.isArabic() ? 'الدولة الخليجية:' : 'Gulf Country:' }}
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                @for (country of gulfCountries; track country.code) {
+                  <button
+                    type="button"
+                    (click)="setPlacementGulfCountry(country.code)"
+                    [attr.data-country]="country.code"
+                    class="px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center truncate"
+                    [ngClass]="placementGulfCountry() === country.code
+                      ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-sm font-black'
+                      : 'bg-surface-bg text-text-secondary border-surface-border hover:border-brand-primary/50 hover:text-text-primary'"
+                  >
+                    {{ langService.isArabic() ? country.nameAr : country.nameEn }}
+                  </button>
+                }
+              </div>
+            </div>
+          } @else if (placementCurriculum() === 'INTERNATIONAL') {
+            <div data-testid="placement-intl-divisions">
+              <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ langService.isArabic() ? 'القسم الدولي:' : 'International Division:' }}
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                @for (div of intlDivisions; track div.code) {
+                  <button
+                    type="button"
+                    (click)="setPlacementIntlDivision(div.code)"
+                    [attr.data-division]="div.code"
+                    class="px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center truncate"
+                    [ngClass]="placementIntlDivision() === div.code
+                      ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-sm font-black'
+                      : 'bg-surface-bg text-text-secondary border-surface-border hover:border-brand-primary/50 hover:text-text-primary'"
+                  >
+                    <app-icon [name]="div.code === 'AMERICAN_CURRICULUM' ? 'award' : 'graduation-cap'" [size]="14" />
+                    <span class="truncate">{{ langService.isArabic() ? div.nameAr : div.nameEn }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 2. Grade Level Dropdown List (Grouped by Stage) -->
           <div>
             <label class="block text-xs font-black text-text-secondary uppercase tracking-wider mb-1.5">
               {{ langService.isArabic() ? 'الصف:' : 'Grade:' }}
@@ -389,11 +435,20 @@
               <select
                 [value]="placementGrade()"
                 (change)="setPlacementGrade($any($event.target).value)"
+                data-testid="placement-grade-select"
                 class="w-full px-4 py-3 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs sm:text-sm font-bold focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all cursor-pointer appearance-none"
               >
-                @for (grade of placementAvailableGrades(); track grade.code) {
-                  <option [value]="grade.code">
-                    {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
+                @for (grp of placementGradeGroups(); track grp.stageLabel) {
+                  <optgroup [label]="grp.stageLabel">
+                    @for (grade of grp.grades; track grade.code) {
+                      <option [value]="grade.code">
+                        {{ langService.isArabic() ? grade.titleAr : grade.titleEn }}
+                      </option>
+                    }
+                  </optgroup>
+                } @empty {
+                  <option value="" disabled>
+                    {{ langService.isArabic() ? 'لا توجد صفوف مفعلة في هذا المسار' : 'No active grades for this track' }}
                   </option>
                 }
               </select>
@@ -403,13 +458,15 @@
             </div>
           </div>
 
-          <!-- Active Term Notice -->
-          <div class="p-3 rounded-xl bg-surface-bg border border-surface-border text-[11px] text-text-secondary flex items-center justify-between">
-            <span class="font-bold text-text-muted">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</span>
-            <span class="font-extrabold text-brand-primary dark:text-brand-accent">
-              {{ activeAcademicTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }}
-            </span>
-          </div>
+          <!-- Active Term Notice (Only for Egyptian & Gulf Curricula) -->
+          @if (placementHasTerms()) {
+            <div class="p-3 rounded-xl bg-surface-bg border border-surface-border text-[11px] text-text-secondary flex items-center justify-between">
+              <span class="font-bold text-text-muted">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</span>
+              <span class="font-extrabold text-brand-primary dark:text-brand-accent">
+                {{ activeAcademicTerm() === 'TERM_1' ? (langService.isArabic() ? 'الترم الأول' : 'Term 1') : (langService.isArabic() ? 'الترم الثاني' : 'Term 2') }}
+              </span>
+            </div>
+          }
 
           <!-- Action Button: Start Assessment -->
           <div class="pt-2">

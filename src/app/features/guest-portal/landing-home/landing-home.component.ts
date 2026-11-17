@@ -33,8 +33,14 @@ import {
   CurriculumCode,
   AcademicTermCode,
   CANONICAL_CURRICULUM_TREE,
+  GULF_COUNTRIES_DATA,
+  INTERNATIONAL_DIVISIONS_DATA,
   ICurriculumNode,
-  IGradeLevelMeta
+  IGradeLevelMeta,
+  IStageGroupedGrades,
+  curriculumHasTerms,
+  groupGradesByStage,
+  getGulfCountryShortName
 } from '../../../core/constants/curriculum-tree.constant';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
@@ -149,13 +155,25 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.landingData()?.activeAcademicTerm || 'TERM_1';
   });
   readonly placementCurriculum = signal<CurriculumCode>('EGYPTIAN');
+  readonly placementGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly placementIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
   readonly placementGrade = signal<string>('SEC_3');
   readonly placementTestInfo = signal<IPlacementTestResponse | null>(null);
   readonly isCheckingPlacement = signal<boolean>(false);
   readonly isPlacementModalOpen = signal<boolean>(false);
   readonly canonicalCurricula = CANONICAL_CURRICULUM_TREE;
+  readonly gulfCountries = GULF_COUNTRIES_DATA;
+  readonly intlDivisions = INTERNATIONAL_DIVISIONS_DATA;
+  readonly placementHasTerms = computed<boolean>(() => curriculumHasTerms(this.placementCurriculum()));
   readonly placementAvailableGrades = computed<readonly IGradeItemData[]>(() => {
-    return this.discoveryService.getAvailableGradesForCurriculum(this.placementCurriculum(), true);
+    const curr = this.placementCurriculum();
+    const subFilter = curr === 'GULF'
+      ? this.placementGulfCountry()
+      : (curr === 'INTERNATIONAL' ? this.placementIntlDivision() : undefined);
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true, subFilter);
+  });
+  readonly placementGradeGroups = computed<readonly IStageGroupedGrades<IGradeItemData>[]>(() => {
+    return groupGradesByStage(this.placementAvailableGrades(), this.langService.isArabic());
   });
   // Hero Video State (Lite YouTube Facade: Unprotected Public Video controlled by Super Admin via CMS)
   readonly isHeroVideoPlaying = signal<boolean>(false);
@@ -800,6 +818,10 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openPlacementModal(): void {
     this.isPlacementModalOpen.set(true);
+    this.discoveryService.loadActiveGradesAndTracks().subscribe(() => {
+      this.syncPlacementGradeSelection();
+    });
+    this.syncPlacementGradeSelection();
     this.checkPlacementAvailability();
   }
 
@@ -809,24 +831,50 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   startPlacementExam(): void {
     this.closePlacementModal();
-    this.router.navigate(['/placement-test'], {
-      queryParams: {
-        curriculum: this.placementCurriculum(),
-        gradeLevel: this.placementGrade(),
-        term: this.activeAcademicTerm()
-      }
+    const curr = this.placementCurriculum();
+    const queryParams: Record<string, string> = {
+      curriculum: curr,
+      gradeLevel: this.placementGrade()
+    };
+    if (curriculumHasTerms(curr)) {
+      queryParams['term'] = this.activeAcademicTerm();
+    }
+    if (curr === 'GULF') {
+      queryParams['countryCode'] = this.placementGulfCountry();
+    } else if (curr === 'INTERNATIONAL') {
+      queryParams['divisionCode'] = this.placementIntlDivision();
+    }
 
-    });
+    this.router.navigate(['/placement-test'], { queryParams });
   }
 
   setPlacementCurriculum(curr: CurriculumCode): void {
     this.placementCurriculum.set(curr);
+    this.syncPlacementGradeSelection();
+    this.checkPlacementAvailability();
+  }
+
+  setPlacementGulfCountry(countryCode: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.placementGulfCountry.set(countryCode);
+    this.syncPlacementGradeSelection();
+    this.checkPlacementAvailability();
+  }
+
+  setPlacementIntlDivision(divCode: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.placementIntlDivision.set(divCode);
+    this.syncPlacementGradeSelection();
+    this.checkPlacementAvailability();
+  }
+
+  getGulfCountryShortLabel(code: 'SA' | 'QA' | 'AE' | 'KW'): string {
+    return getGulfCountryShortName(code, this.langService.isArabic());
+  }
+
+  private syncPlacementGradeSelection(): void {
     const grades = this.placementAvailableGrades();
     if (grades.length > 0 && !grades.some(g => g.code === this.placementGrade())) {
       this.placementGrade.set(grades[0].code);
     }
-
-    this.checkPlacementAvailability();
   }
 
   setPlacementGrade(gradeCode: string): void {

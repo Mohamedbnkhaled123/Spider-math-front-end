@@ -1535,3 +1535,58 @@ export function getGulfCountryGrades(countryCode: string): readonly IGradeLevelM
 export function findInternationalDivision(code: string): IInternationalDivisionData | undefined {
   return INTERNATIONAL_DIVISIONS_DATA.find(d => d.code === code);
 }
+
+export interface IStageGroupedGrades<T = IGradeLevelMeta> {
+  readonly stageLabel: string;
+  readonly grades: readonly T[];
+}
+
+export function groupGradesByStage<T extends { stageAr?: string; stageEn?: string }>(
+  grades: readonly T[],
+  isArabic: boolean
+): IStageGroupedGrades<T>[] {
+  const groups: { stageLabel: string; grades: T[] }[] = [];
+  for (const grade of grades) {
+    const stageLabel =
+      (isArabic ? grade.stageAr : (grade.stageEn || grade.stageAr)) ||
+      (isArabic ? 'الصفوف الدراسية' : 'Grade Levels');
+    let group = groups.find(g => g.stageLabel === stageLabel);
+    if (!group) {
+      group = { stageLabel, grades: [] };
+      groups.push(group);
+    }
+    group.grades.push(grade);
+  }
+  return groups;
+}
+
+export function getGulfCountryShortName(code: 'SA' | 'QA' | 'AE' | 'KW', isArabic: boolean): string {
+  switch (code) {
+    case 'SA':
+      return isArabic ? 'السعودية' : 'KSA';
+    case 'QA':
+      return isArabic ? 'قطر' : 'Qatar';
+    case 'AE':
+      return isArabic ? 'الإمارات' : 'UAE';
+    case 'KW':
+      return isArabic ? 'الكويت' : 'Kuwait';
+  }
+}
+
+export function detectInternationalDivisionForGrade(
+  gradeCode: string | null | undefined
+): 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM' {
+  if (!gradeCode) return 'AMERICAN_CURRICULUM';
+  const normalized = gradeCode.trim().toUpperCase();
+  const britishDiv = INTERNATIONAL_DIVISIONS_DATA.find(d => d.code === 'BRITISH_CURRICULUM');
+  if (
+    britishDiv?.grades.some(g => g.code === normalized) ||
+    normalized.includes('IGCSE') ||
+    normalized.includes('UK_') ||
+    normalized.includes('ALEVEL') ||
+    normalized.includes('OL_')
+  ) {
+    return 'BRITISH_CURRICULUM';
+  }
+  return 'AMERICAN_CURRICULUM';
+}

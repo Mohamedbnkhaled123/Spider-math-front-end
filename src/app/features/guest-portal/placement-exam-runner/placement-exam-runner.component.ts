@@ -27,9 +27,16 @@ import {
 } from '../../../core/services/public-discovery.models';
 import {
   CANONICAL_CURRICULUM_TREE,
+  GULF_COUNTRIES_DATA,
+  INTERNATIONAL_DIVISIONS_DATA,
   CurriculumCode,
-  AcademicTermCode
+  AcademicTermCode,
+  groupGradesByStage,
+  getGulfCountryShortName,
+  detectInternationalDivisionForGrade,
+  IStageGroupedGrades
 } from '../../../core/constants/curriculum-tree.constant';
+import { IGradeItemData } from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
@@ -62,9 +69,13 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   private readonly swrCache = inject(SwrCacheService);
 
   readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
+  readonly gulfCountries = GULF_COUNTRIES_DATA;
+  readonly intlDivisions = INTERNATIONAL_DIVISIONS_DATA;
 
   // Scope parameters
   readonly curriculum = signal<CurriculumCode>('EGYPTIAN');
+  readonly selectedGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
+  readonly selectedIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
   readonly gradeLevel = signal<string>('SEC_3');
   readonly term = signal<AcademicTermCode>('TERM_1');
 
@@ -96,7 +107,15 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
 
   // Available grades for the currently selected curriculum (for guest selector)
   readonly availableGradesForCurriculum = computed(() => {
-    return this.discoveryService.getAvailableGradesForCurriculum(this.curriculum(), true);
+    const curr = this.curriculum();
+    const subFilter = curr === 'GULF'
+      ? this.selectedGulfCountry()
+      : (curr === 'INTERNATIONAL' ? this.selectedIntlDivision() : undefined);
+    return this.discoveryService.getAvailableGradesForCurriculum(curr, true, subFilter);
+  });
+
+  readonly groupedAvailableGrades = computed<readonly IStageGroupedGrades<IGradeItemData>[]>(() => {
+    return groupGradesByStage(this.availableGradesForCurriculum(), this.langService.isArabic());
   });
 
   // Exam state
@@ -174,10 +193,22 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
         this.term.set(student.academic_term as AcademicTermCode);
       }
       this.loadExam();
+      this.scrollToTop(false);
     } else {
       this.route.queryParams.subscribe(params => {
         if (params['curriculum']) {
           this.curriculum.set(params['curriculum'] as CurriculumCode);
+        }
+        if (params['countryCode'] && ['SA', 'QA', 'AE', 'KW'].includes(params['countryCode'])) {
+          this.selectedGulfCountry.set(params['countryCode'] as 'SA' | 'QA' | 'AE' | 'KW');
+        }
+        if (
+          params['divisionCode'] &&
+          ['AMERICAN_CURRICULUM', 'BRITISH_CURRICULUM'].includes(params['divisionCode'])
+        ) {
+          this.selectedIntlDivision.set(params['divisionCode'] as 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM');
+        } else if (this.curriculum() === 'INTERNATIONAL' && params['gradeLevel']) {
+          this.selectedIntlDivision.set(detectInternationalDivisionForGrade(params['gradeLevel']));
         }
         if (params['gradeLevel']) {
           this.gradeLevel.set(params['gradeLevel']);
@@ -186,25 +217,48 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
           this.term.set(params['term'] as AcademicTermCode);
         }
         this.loadExam();
+        this.scrollToTop(false);
       });
     }
   }
 
   onCurriculumSelected(newCurr: CurriculumCode): void {
     this.curriculum.set(newCurr);
-    const grades = this.curriculumTree.find(c => c.code === newCurr)?.grades || [];
-    if (grades.length > 0) {
-      const exists = grades.some(g => g.code === this.gradeLevel());
-      if (!exists) {
-        this.gradeLevel.set(grades[0].code);
-      }
-    }
+    this.syncAvailableGradeSelection();
     this.loadExam();
+  }
+
+  onGulfCountrySelected(countryCode: 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.selectedGulfCountry.set(countryCode);
+    this.syncAvailableGradeSelection();
+    this.loadExam();
+  }
+
+  onIntlDivisionSelected(divCode: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.selectedIntlDivision.set(divCode);
+    this.syncAvailableGradeSelection();
+    this.loadExam();
+  }
+
+  getGulfCountryShortLabel(code: 'SA' | 'QA' | 'AE' | 'KW'): string {
+    return getGulfCountryShortName(code, this.langService.isArabic());
+  }
+
+  private syncAvailableGradeSelection(): void {
+    const grades = this.availableGradesForCurriculum();
+    if (grades.length > 0 && !grades.some(g => g.code === this.gradeLevel())) {
+      this.gradeLevel.set(grades[0].code);
+    }
   }
 
   onGradeSelected(newGrade: string): void {
     this.gradeLevel.set(newGrade);
     this.loadExam();
+  }
+
+  private scrollToTop(smooth: boolean = true): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    window.scrollTo({ top: 0, left: 0, behavior: smooth ? 'smooth' : 'auto' });
   }
 
   ngOnDestroy(): void {
@@ -276,18 +330,21 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   nextQuestion(): void {
     if (this.currentQuestionIdx() < this.totalQuestionsCount() - 1) {
       this.currentQuestionIdx.update(i => i + 1);
+      this.scrollToTop(true);
     }
   }
 
   prevQuestion(): void {
     if (this.currentQuestionIdx() > 0) {
       this.currentQuestionIdx.update(i => i - 1);
+      this.scrollToTop(true);
     }
   }
 
   jumpToQuestion(idx: number): void {
     if (idx >= 0 && idx < this.totalQuestionsCount()) {
       this.currentQuestionIdx.set(idx);
+      this.scrollToTop(true);
     }
   }
 

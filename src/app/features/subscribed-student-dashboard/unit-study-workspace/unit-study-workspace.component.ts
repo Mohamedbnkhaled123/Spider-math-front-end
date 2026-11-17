@@ -1,9 +1,11 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ElementRef,
   signal,
   computed,
   inject,
+  viewChild,
   OnInit,
   OnDestroy,
   PLATFORM_ID
@@ -58,6 +60,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
   private readonly swrCache = inject(SwrCacheService);
   private querySub?: Subscription;
   fallbackLectureId: string | null = null;
+  readonly lectureViewport = viewChild<ElementRef<HTMLElement>>('lectureViewport');
 
   // Active view tab: video lecture or PDF handout
   readonly activeTab = signal<'video' | 'pdf'>('video');
@@ -142,7 +145,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
         if (lectures && lectures.length > 0) {
           const found = lectures.find((l) => l._id === targetLecId);
           if (found && this.selectedLectureId() !== found._id) {
-            this.selectLecture(found._id);
+            this.selectLecture(found._id, true);
           }
         }
       }
@@ -172,7 +175,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
       if (cached.lectures?.length > 0) {
         const queryLecId = this.route.snapshot.queryParams['lectureId'] || this.fallbackLectureId;
         const target = (queryLecId ? cached.lectures.find(l => l._id === queryLecId) : null) || cached.lectures[0];
-        this.selectLecture(target._id);
+        this.selectLecture(target._id, !!queryLecId);
       }
     } else {
       this.isLoading.set(true);
@@ -258,7 +261,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
             || (currentId ? mappedLectures.find(l => l._id === currentId) : null)
             || mappedLectures[0];
 
-          this.selectLecture(target._id);
+          this.selectLecture(target._id, !!queryLecId);
         }
       },
       error: () => {
@@ -267,12 +270,15 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectLecture(lectureId: string): void {
+  selectLecture(lectureId: string, scrollIntoView: boolean = false): void {
     this.selectedLectureId.set(lectureId);
     const targetLecture = this.workspaceData().lectures.find(l => l._id === lectureId);
     if (targetLecture && targetLecture.isAccessible === false) {
       this.isLectureLocked.set(true);
       this.playbackToken.set('');
+      if (scrollIntoView) {
+        this.scrollPlayerIntoView();
+      }
       return;
     }
     this.isLectureLocked.set(false);
@@ -285,6 +291,26 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
         this.playbackToken.set(targetLecture.encryptedVideoId);
       }
       this.fetchPlaybackToken(lectureId);
+    }
+    if (scrollIntoView) {
+      this.scrollPlayerIntoView();
+    }
+  }
+
+  private scrollPlayerIntoView(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const scrollFn = () => {
+      const target = this.lectureViewport()?.nativeElement || document.getElementById('lecture-viewport');
+      if (target && typeof target.scrollIntoView === 'function') {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => scrollFn());
+    } else {
+      setTimeout(scrollFn, 0);
     }
   }
 
@@ -373,7 +399,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
 
     if (confirmed) {
       const qp = returnHome ? { returnToHome: 'true' } : undefined;
-      this.router.navigate(['/student/assessments', assessmentId, 'attempt'], { queryParams: qp });
+      this.router.navigate(['/student/assessments', assessmentId], { queryParams: qp });
     }
   }
 }

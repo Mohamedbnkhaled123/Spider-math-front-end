@@ -167,4 +167,55 @@ describe('UnitStudyWorkspaceComponent', () => {
     const tokenReq = httpMock.expectOne('/api/v1/lectures/lec_target/secure-playback');
     tokenReq.flush({ success: true, data: { token: 'mock_token' } });
   });
+
+  it('should scroll lecture viewport into view when selecting a lecture interactively', () => {
+    const scrollIntoViewSpy = jasmine.createSpy('scrollIntoView');
+    const originalGetById = document.getElementById.bind(document);
+    spyOn(document, 'getElementById').and.callFake((id: string) => {
+      if (id === 'lecture-viewport') {
+        return { scrollIntoView: scrollIntoViewSpy } as unknown as HTMLElement;
+      }
+      return originalGetById(id);
+    });
+
+    const originalRaf = window.requestAnimationFrame;
+    spyOn(window, 'requestAnimationFrame').and.callFake((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+
+    component.workspaceData.update((w) => ({
+      ...w,
+      lectures: [
+        {
+          _id: 'lec_scroll_1',
+          titleAr: 'المحاضرة 1',
+          titleEn: 'Lecture 1',
+          order: 1,
+          durationMinutes: 20,
+          encryptedVideoId: 'vid_scroll_1',
+          isPrintAllowed: false,
+          watchPercentage: 0,
+          isCompleted: false,
+          hasAssessment: false
+        }
+      ]
+    }));
+
+    component.selectLecture('lec_scroll_1', true);
+    expect(scrollIntoViewSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    expect(originalRaf).toBeDefined();
+  });
+
+  it('should navigate directly to standalone assessment route when startAssessment is confirmed', async () => {
+    spyOn(component.confirmDialogService, 'confirm').and.returnValue(Promise.resolve(true));
+    const router = (component as any).router;
+    const navigateSpy = spyOn(router, 'navigate');
+
+    await component.startAssessment('asm_standalone_1', 'كويز تجريبي');
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/student/assessments', 'asm_standalone_1'],
+      { queryParams: undefined }
+    );
+  });
 });

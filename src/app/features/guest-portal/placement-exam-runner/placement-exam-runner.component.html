@@ -29,20 +29,50 @@
       @if (!isStudentLoggedIn() && !studentExamFinished()) {
         <div class="flex items-center flex-wrap gap-2 w-full md:w-auto justify-center">
           <!-- Curriculum Dropdown/Buttons -->
-          <div class="flex items-center gap-1 bg-surface-bg p-1 rounded-xl border border-surface-border text-xs">
+          <div class="flex items-center flex-wrap gap-1 bg-surface-bg p-1 rounded-xl border border-surface-border text-xs">
             @for (c of curriculumTree; track c.code) {
               <button
                 type="button"
                 (click)="onCurriculumSelected(c.code)"
-                class="px-2.5 py-1 rounded-lg font-bold transition-all text-[11px] leading-normal inline-flex items-center justify-center"
+                class="px-2.5 py-1 rounded-lg font-bold transition-all text-[11px] leading-normal inline-flex items-center justify-center cursor-pointer"
                 [ngClass]="curriculum() === c.code ? 'bg-brand-gold text-slate-950 font-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
               >
-                {{ langService.isArabic() ? c.badgeTextAr : c.badgeTextEn }}
+                {{ langService.isArabic() ? c.titleAr : c.titleEn }}
               </button>
             }
           </div>
 
-          <!-- Grade Level Selector -->
+          <!-- Gulf Country Quick Selector -->
+          @if (curriculum() === 'GULF') {
+            <div class="flex items-center flex-wrap gap-1 bg-surface-bg p-1 rounded-xl border border-brand-gold/40 text-xs">
+              @for (country of gulfCountries; track country.code) {
+                <button
+                  type="button"
+                  (click)="onGulfCountrySelected(country.code)"
+                  class="px-2 py-1 rounded-lg font-bold transition-all text-[11px] leading-normal inline-flex items-center justify-center cursor-pointer"
+                  [ngClass]="selectedGulfCountry() === country.code ? 'bg-brand-gold text-slate-950 font-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
+                >
+                  {{ getGulfCountryShortLabel(country.code) }}
+                </button>
+              }
+            </div>
+          } @else if (curriculum() === 'INTERNATIONAL') {
+            <!-- International Division Quick Selector -->
+            <div class="flex items-center flex-wrap gap-1 bg-surface-bg p-1 rounded-xl border border-brand-gold/40 text-xs">
+              @for (div of intlDivisions; track div.code) {
+                <button
+                  type="button"
+                  (click)="onIntlDivisionSelected(div.code)"
+                  class="px-2.5 py-1 rounded-lg font-bold transition-all text-[11px] leading-normal inline-flex items-center justify-center cursor-pointer"
+                  [ngClass]="selectedIntlDivision() === div.code ? 'bg-brand-gold text-slate-950 font-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
+                >
+                  {{ langService.isArabic() ? div.nameAr : div.nameEn }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Grade Level Selector (Stage Grouped) -->
           <div class="flex items-center gap-1 bg-surface-bg px-2 py-1 rounded-xl border border-surface-border text-xs">
             <span class="text-text-muted text-[10px] font-bold">{{ langService.isArabic() ? 'الصف:' : 'Grade:' }}</span>
             <select
@@ -50,10 +80,14 @@
               (change)="onGradeSelected($any($event.target).value)"
               class="bg-transparent border-0 text-text-primary font-bold text-xs focus:ring-0 cursor-pointer"
             >
-              @for (g of availableGradesForCurriculum(); track g.code) {
-                <option [value]="g.code" class="bg-surface-card text-text-primary">
-                  {{ langService.isArabic() ? (g.shortLabelAr || g.titleAr) : (g.shortLabelEn || g.titleEn || g.titleAr) }}
-                </option>
+              @for (grp of groupedAvailableGrades(); track grp.stageLabel) {
+                <optgroup [label]="grp.stageLabel">
+                  @for (g of grp.grades; track g.code) {
+                    <option [value]="g.code" class="bg-surface-card text-text-primary">
+                      {{ langService.isArabic() ? (g.shortLabelAr || g.titleAr) : (g.shortLabelEn || g.titleEn || g.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
               }
             </select>
           </div>

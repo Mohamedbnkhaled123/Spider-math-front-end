@@ -154,4 +154,25 @@ describe('PlacementExamRunnerComponent', () => {
       expect(headerEl?.classList.contains('z-layer-header')).toBeFalse();
     });
   });
+
+  describe('Quick Track Selector Subdivisions (Gulf Countries & International Divisions)', () => {
+    it('should switch Gulf countries and International divisions accurately for guests', () => {
+      component.studentExamFinished.set(false);
+      component.onCurriculumSelected('GULF');
+      fixture.detectChanges();
+
+      expect(component.curriculum()).toBe('GULF');
+      component.onGulfCountrySelected('KW');
+      fixture.detectChanges();
+      expect(component.selectedGulfCountry()).toBe('KW');
+
+      component.onCurriculumSelected('INTERNATIONAL');
+      fixture.detectChanges();
+      expect(component.curriculum()).toBe('INTERNATIONAL');
+
+      component.onIntlDivisionSelected('BRITISH_CURRICULUM');
+      fixture.detectChanges();
+      expect(component.selectedIntlDivision()).toBe('BRITISH_CURRICULUM');
+    });
+  });
 });

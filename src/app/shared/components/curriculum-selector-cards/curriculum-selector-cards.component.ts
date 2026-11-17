@@ -1177,12 +1177,18 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
   startPlacementExamForGrade(grade: IGradeLevelAvailability): void {
     this.selectedGradeCode.set(grade.code);
     this.closeTrackModal();
+    const curr = this.selectedCurriculumCode();
     const queryParams: Record<string, string> = {
-      curriculum: this.selectedCurriculumCode(),
+      curriculum: curr,
       gradeLevel: grade.code
     };
     if (this.currentCurriculumHasTerms()) {
       queryParams['term'] = this.selectedTermCode();
+    }
+    if (curr === 'GULF') {
+      queryParams['countryCode'] = this.selectedGulfCountry();
+    } else if (curr === 'INTERNATIONAL') {
+      queryParams['divisionCode'] = this.selectedIntlDivision();
     }
     this.router.navigate(['/placement-test'], { queryParams });
   }
@@ -1275,12 +1281,18 @@ export class CurriculumSelectorCardsComponent implements OnInit, AfterViewInit, 
 
   startPlacementExamForCurrentGrade(): void {
     this.closeTrackModal();
+    const curr = this.selectedCurriculumCode();
     const queryParams: Record<string, string> = {
-      curriculum: this.selectedCurriculumCode(),
+      curriculum: curr,
       gradeLevel: this.selectedGradeCode()
     };
     if (this.currentCurriculumHasTerms()) {
       queryParams['term'] = this.selectedTermCode();
+    }
+    if (curr === 'GULF') {
+      queryParams['countryCode'] = this.selectedGulfCountry();
+    } else if (curr === 'INTERNATIONAL') {
+      queryParams['divisionCode'] = this.selectedIntlDivision();
     }
     this.router.navigate(['/placement-test'], { queryParams });
   }
