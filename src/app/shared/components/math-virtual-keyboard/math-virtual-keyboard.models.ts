@@ -65,6 +65,71 @@ export interface INumericKey {
   ariaLabel?: string;
 }
 
+const SUPERSCRIPT_MAP: Record<string, string> = {
+  '0': '⁰',
+  '1': '¹',
+  '2': '²',
+  '3': '³',
+  '4': '⁴',
+  '5': '⁵',
+  '6': '⁶',
+  '7': '⁷',
+  '8': '⁸',
+  '9': '⁹',
+  '+': '⁺',
+  '-': '⁻',
+  'n': 'ⁿ',
+  'i': 'ⁱ'
+};
+
+const SUBSCRIPT_MAP: Record<string, string> = {
+  '0': '₀',
+  '1': '₁',
+  '2': '₂',
+  '3': '₃',
+  '4': '₄',
+  '5': '₅',
+  '6': '₆',
+  '7': '₇',
+  '8': '₈',
+  '9': '₉',
+  'a': 'ₐ',
+  'e': 'ₑ',
+  'i': 'ᵢ',
+  'k': 'ₖ',
+  'm': 'ₘ',
+  'n': 'ₙ',
+  'x': 'ₓ'
+};
+
+const SIMPLE_ROOT_RADICAND_RE = /^[a-zA-Z0-9\u0600-\u06FF⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ]+$/;
+
+function convertToSuperscript(expr: string): string {
+  const trimmed = expr.trim();
+  if (!trimmed) return '';
+  let result = '';
+  for (const ch of trimmed) {
+    if (!SUPERSCRIPT_MAP[ch]) {
+      return `^(${trimmed})`;
+    }
+    result += SUPERSCRIPT_MAP[ch];
+  }
+  return result;
+}
+
+function convertToSubscript(expr: string): string {
+  const trimmed = expr.trim();
+  if (!trimmed) return '';
+  let result = '';
+  for (const ch of trimmed) {
+    if (!SUBSCRIPT_MAP[ch]) {
+      return `_${trimmed}`;
+    }
+    result += SUBSCRIPT_MAP[ch];
+  }
+  return result;
+}
+
 /**
  * Converts raw LaTeX commands to clean visual mathematical symbols
  * and strips raw LaTeX delimiters ($...$, $$...$$, \(...\), \[...\]),
@@ -72,35 +137,106 @@ export interface INumericKey {
  */
 export function toVisualMath(text: string): string {
   if (!text) return '';
-  return text
+
+  // 1. Strip math delimiters, delimiter sizing commands, and LaTeX spacing
+  let out = text
     .replace(/\$\$/g, '')
     .replace(/(?<!\\)\$/g, '')
     .replace(/\\\[/g, '')
     .replace(/\\\]/g, '')
     .replace(/\\\(/g, '')
     .replace(/\\\)/g, '')
+    .replace(/\\left\s*([(\[|.]|\\\{)/g, (_m, d) => (d === '.' ? '' : d === '\\{' ? '{' : d))
+    .replace(/\\right\s*([)\]|.]|\\\})/g, (_m, d) => (d === '.' ? '' : d === '\\}' ? '}' : d))
+    .replace(/\\\{/g, '{')
+    .replace(/\\\}/g, '}')
+    .replace(/\\qquad|\\quad/g, ' ')
+    .replace(/\s*\\,\s*dx/g, ' dx')
+    .replace(/\\[,;:!]/g, ' ');
+
+  // 2. Structured calculus and log forms BEFORE standalone command replacements strip backslashes
+  out = out
+    .replace(/\\sum_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∑($1 to $2) ')
+    .replace(/\\int_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∫($1 to $2) ')
+    .replace(/\\lim_\{([^{}]*?)\s*\\to\s*([^{}]*?)\}\s*/g, (_m, v, t) => `lim(${v.trim()}→${t.trim()}) `)
+    .replace(/\\log_\{([^{}]*)\}\(([^)]*)\)/g, 'log_$1($2)')
+    .replace(/\\ln\(([^)]*)\)/g, 'ln($1)');
+
+  // 3. Unwrap font/text/accent commands and degree symbol
+  out = out
+    .replace(/\\mathbb\{R\}/g, 'ℝ')
+    .replace(/\\mathbb\{N\}/g, 'ℕ')
+    .replace(/\\mathbb\{Z\}/g, 'ℤ')
+    .replace(/\\mathbb\{Q\}/g, 'ℚ')
+    .replace(/\\mathbb\{C\}/g, 'ℂ')
+    .replace(/\\(?:text|textrm|textbf|mathrm|mathbf|mathit|mathsf|overline)\{([^{}]*)\}/g, '$1')
+    .replace(/\\bar\{([^{}]*)\}/g, '$1')
+    .replace(/\\vec\{([^{}]*)\}/g, '$1')
+    .replace(/\^\{\\circ\}|\\circ(?![a-zA-Z])/g, '°')
+    .replace(/\\degree(?![a-zA-Z])/g, '°');
+
+  // 4. Convert simple powers and subscripts before resolving nested braces inside \frac / \sqrt
+  out = out
+    .replace(/\^\{([^{}]*)\}/g, (_m, exp) => convertToSuperscript(exp))
+    .replace(/\^([0-9ni])/g, (_m, ch) => SUPERSCRIPT_MAP[ch] || `^${ch}`)
+    .replace(/(?<!log)_\{([^{}]*)\}/g, (_m, sub) => convertToSubscript(sub))
+    .replace(/(?<!log)_([0-9])/g, (_m, ch) => SUBSCRIPT_MAP[ch] || `_${ch}`);
+
+  // 5. Resolve derivatives, roots, and fractions (multi-pass handles nested roots inside fractions)
+  for (let pass = 0; pass < 3; pass++) {
+    const prev = out;
+    out = out
+      .replace(/\\frac\{d\}\{dx\}/g, 'd/dx')
+      .replace(/\\frac\{dy\}\{dx\}/g, 'dy/dx')
+      .replace(/\\frac\{\\partial\}\{\\partial x\}/g, '∂/∂x')
+      .replace(/\\frac\{1\}\{2\}/g, '½')
+      .replace(/\\sqrt\[([^\]]*)\]\{((?:[^{}]|\{[^{}]*\})*)\}/g, (_m, deg, rad) =>
+        SIMPLE_ROOT_RADICAND_RE.test(rad.trim()) ? `${deg}√${rad.trim()}` : `${deg}√(${rad.trim()})`
+      )
+      .replace(/\\sqrt\{((?:[^{}]|\{[^{}]*\})*)\}/g, (_m, rad) =>
+        SIMPLE_ROOT_RADICAND_RE.test(rad.trim()) ? `√${rad.trim()}` : `√(${rad.trim()})`
+      )
+      .replace(/\\frac\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}/g, '($1/$2)');
+    if (out === prev) break;
+  }
+
+  // 6. Named LaTeX operators, relations, arrows, sets, and Greek letters
+  return out
     .replace(/\\le(?![a-zA-Z])/g, '≤')
     .replace(/\\leq(?![a-zA-Z])/g, '≤')
     .replace(/\\ge(?![a-zA-Z])/g, '≥')
     .replace(/\\geq(?![a-zA-Z])/g, '≥')
     .replace(/\\neq(?![a-zA-Z])/g, '≠')
     .replace(/\\ne(?![a-zA-Z])/g, '≠')
+    .replace(/\\equiv(?![a-zA-Z])/g, '≡')
+    .replace(/\\approx(?![a-zA-Z])/g, '≈')
+    .replace(/\\propto(?![a-zA-Z])/g, '∝')
     .replace(/\\pm(?![a-zA-Z])/g, '±')
     .replace(/\\mp(?![a-zA-Z])/g, '∓')
     .replace(/\\times(?![a-zA-Z])/g, '×')
     .replace(/\\div(?![a-zA-Z])/g, '÷')
-    .replace(/\\approx(?![a-zA-Z])/g, '≈')
     .replace(/\\infty(?![a-zA-Z])/g, '∞')
     .replace(/\\cdot(?![a-zA-Z])/g, '·')
     .replace(/\\in(?![a-zA-Z])/g, '∈')
     .replace(/\\notin(?![a-zA-Z])/g, '∉')
     .replace(/\\subset(?![a-zA-Z])/g, '⊂')
     .replace(/\\subseteq(?![a-zA-Z])/g, '⊆')
+    .replace(/\\supset(?![a-zA-Z])/g, '⊃')
+    .replace(/\\supseteq(?![a-zA-Z])/g, '⊇')
     .replace(/\\cup(?![a-zA-Z])/g, '∪')
     .replace(/\\cap(?![a-zA-Z])/g, '∩')
+    .replace(/\\forall(?![a-zA-Z])/g, '∀')
+    .replace(/\\exists(?![a-zA-Z])/g, '∃')
+    .replace(/\\emptyset(?![a-zA-Z])|\\varnothing(?![a-zA-Z])/g, '∅')
     .replace(/\\therefore(?![a-zA-Z])/g, '∴')
     .replace(/\\because(?![a-zA-Z])/g, '∵')
+    .replace(/\\implies(?![a-zA-Z])|\\Rightarrow(?![a-zA-Z])/g, '⇒')
+    .replace(/\\iff(?![a-zA-Z])|\\Leftrightarrow(?![a-zA-Z])/g, '⇔')
+    .replace(/\\leftrightarrow(?![a-zA-Z])/g, '↔')
+    .replace(/\\uparrow(?![a-zA-Z])/g, '↑')
+    .replace(/\\downarrow(?![a-zA-Z])/g, '↓')
     .replace(/\\pi(?![a-zA-Z])/g, 'π')
+    .replace(/\\Pi(?![a-zA-Z])/g, 'Π')
     .replace(/\\theta(?![a-zA-Z])/g, 'θ')
     .replace(/\\alpha(?![a-zA-Z])/g, 'α')
     .replace(/\\beta(?![a-zA-Z])/g, 'β')
@@ -109,7 +245,16 @@ export function toVisualMath(text: string): string {
     .replace(/\\delta(?![a-zA-Z])/g, 'δ')
     .replace(/\\lambda(?![a-zA-Z])/g, 'λ')
     .replace(/\\omega(?![a-zA-Z])/g, 'ω')
+    .replace(/\\Omega(?![a-zA-Z])/g, 'Ω')
+    .replace(/\\phi(?![a-zA-Z])|\\varphi(?![a-zA-Z])/g, 'φ')
+    .replace(/\\Phi(?![a-zA-Z])/g, 'Φ')
+    .replace(/\\sigma(?![a-zA-Z])/g, 'σ')
+    .replace(/\\Sigma(?![a-zA-Z])/g, 'Σ')
+    .replace(/\\mu(?![a-zA-Z])/g, 'μ')
+    .replace(/\\rho(?![a-zA-Z])/g, 'ρ')
+    .replace(/\\varepsilon(?![a-zA-Z])|\\epsilon(?![a-zA-Z])/g, 'ε')
     .replace(/\\angle(?![a-zA-Z])/g, '∠')
+    .replace(/\\measuredangle(?![a-zA-Z])/g, '∡')
     .replace(/\\perp(?![a-zA-Z])/g, '⊥')
     .replace(/\\parallel(?![a-zA-Z])/g, '∥')
     .replace(/\\triangle(?![a-zA-Z])/g, '△')
@@ -124,6 +269,7 @@ export function toVisualMath(text: string): string {
     .replace(/\\log(?![a-zA-Z])/g, 'log')
     .replace(/\\ln(?![a-zA-Z])/g, 'ln')
     .replace(/\\lim(?![a-zA-Z])/g, 'lim')
+    .replace(/\\partial(?![a-zA-Z])/g, '∂')
     .replace(/\\to(?![a-zA-Z])/g, '→')
     .replace(/\\rightarrow(?![a-zA-Z])/g, '→')
     .replace(/\\leftarrow(?![a-zA-Z])/g, '←')
@@ -131,25 +277,8 @@ export function toVisualMath(text: string): string {
     .replace(/\\iint(?![a-zA-Z])/g, '∬')
     .replace(/\\sum(?![a-zA-Z])/g, '∑')
     .replace(/\\prod(?![a-zA-Z])/g, '∏')
-    .replace(/\\degree(?![a-zA-Z])/g, '°')
-    .replace(/\^\{\\circ\}|\\circ(?![a-zA-Z])/g, '°')
-    .replace(/\\%/g, '%')
-    .replace(/\\sqrt\[([^\]]*)\]\{([^}]*)\}/g, '$1√$2')
-    .replace(/\\sqrt\{([^}]*)\}/g, '√$1')
-    .replace(/\\frac\{d\}\{dx\}/g, 'd/dx')
-    .replace(/\\frac\{dy\}\{dx\}/g, 'dy/dx')
-    .replace(/\\frac\{\\partial\}\{\\partial x\}/g, '∂/∂x')
-    .replace(/\\frac\{1\}\{2\}/g, '½')
-    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1/$2)')
-    .replace(/\\sum_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∑($1 to $2) ')
-    .replace(/\\int_\{([^{}]*)\}\^\{([^{}]*)\}\s*/g, '∫($1 to $2) ')
-    .replace(/\\lim_\{([^{}]*)\s*\\to\s*([^{}]*)\}\s*/g, 'lim($1→$2) ')
-    .replace(/\\log_\{([^{}]*)\}\(([^)]*)\)/g, 'log_$1($2)')
-    .replace(/\\ln\(([^)]*)\)/g, 'ln($1)')
-    .replace(/\\,\s*dx/g, ' dx')
-    .replace(/\^2\b|\^\{2\}/g, '²')
-    .replace(/\^3\b|\^\{3\}/g, '³')
-    .replace(/\^n\b|\^\{n\}/g, 'ⁿ');
+    .replace(/\\ldots(?![a-zA-Z])|\\cdots(?![a-zA-Z])|\\dots(?![a-zA-Z])/g, '…')
+    .replace(/\\%/g, '%');
 }
 
 /**
@@ -439,6 +568,8 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
   { label: 'x²', latex: 'x²', category: 'ALGEBRA', ariaLabel: 'x squared' },
   { label: 'x³', latex: 'x³', category: 'ALGEBRA', ariaLabel: 'x cubed' },
   { label: 'xⁿ', latex: 'xⁿ', category: 'ALGEBRA', ariaLabel: 'x power n' },
+  { label: 'xʸ', latex: 'x^{y}', templateType: 'POWER', category: 'ALGEBRA', ariaLabel: 'Custom power exponent' },
+  { label: 'xᵢ', latex: 'x_{i}', templateType: 'SUBSCRIPT', category: 'ALGEBRA', ariaLabel: 'Subscript index' },
   { label: '|x|', latex: '|x|', templateType: 'ABS', category: 'ALGEBRA', ariaLabel: 'Absolute value' },
   { label: 'log', latex: 'log()', templateType: 'LOG', category: 'ALGEBRA', ariaLabel: 'Logarithm' },
   { label: 'ln', latex: 'ln()', templateType: 'LN', category: 'ALGEBRA', ariaLabel: 'Natural log' },
@@ -481,13 +612,16 @@ export const MATH_KEYBOARD_KEYS: IMathSymbolKey[] = [
 
   // --- CALCULUS & LIMITS ---
   { label: '∫', latex: '∫', category: 'CALCULUS', ariaLabel: 'Indefinite integral' },
+  { label: '∫ₐᵇ', latex: '\\int_{a}^{b}', templateType: 'INTEGRAL', category: 'CALCULUS', ariaLabel: 'Definite integral' },
   { label: '∬', latex: '∬', category: 'CALCULUS', ariaLabel: 'Double integral' },
   { label: 'd/dx', latex: 'd/dx', category: 'CALCULUS', ariaLabel: 'Derivative d/dx' },
   { label: 'dy/dx', latex: 'dy/dx', category: 'CALCULUS', ariaLabel: 'Derivative dy/dx' },
   { label: '∂/∂x', latex: '∂/∂x', category: 'CALCULUS', ariaLabel: 'Partial derivative' },
   { label: '∑', latex: '∑', category: 'CALCULUS', ariaLabel: 'Summation' },
+  { label: '∑ₐᵇ', latex: '\\sum_{i=1}^{n}', templateType: 'SUMMATION', category: 'CALCULUS', ariaLabel: 'Summation with bounds' },
   { label: '∏', latex: '∏', category: 'CALCULUS', ariaLabel: 'Product' },
   { label: 'lim', latex: 'lim', category: 'CALCULUS', ariaLabel: 'Limit' },
+  { label: 'lim→', latex: '\\lim_{x \\to 0}', templateType: 'LIMIT', category: 'CALCULUS', ariaLabel: 'Limit with target' },
   { label: "f'(x)", latex: "f'(x)", category: 'CALCULUS', ariaLabel: 'First derivative' },
   { label: 'dx', latex: 'dx', category: 'CALCULUS', ariaLabel: 'dx differential' },
   { label: 'dy', latex: 'dy', category: 'CALCULUS', ariaLabel: 'dy differential' },
@@ -532,12 +666,34 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 1b. Visual Fractions: (num/den)
-  const visualFracRegex = /\(([a-zA-Z0-9]+)\/([a-zA-Z0-9]+)\)/g;
+const REVERSE_SUPERSCRIPT_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(SUPERSCRIPT_MAP).map(([k, v]) => [v, k])
+);
+
+const REVERSE_SUBSCRIPT_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(SUBSCRIPT_MAP).map(([k, v]) => [v, k])
+);
+
+function decodeSuperscriptString(sup: string): string {
+  return Array.from(sup)
+    .map((ch) => REVERSE_SUPERSCRIPT_MAP[ch] ?? ch)
+    .join('');
+}
+
+function decodeSubscriptString(sub: string): string {
+  return Array.from(sub)
+    .map((ch) => REVERSE_SUBSCRIPT_MAP[ch] ?? ch)
+    .join('');
+}
+
+// 1b. Visual Fractions: (num/den) including compound terms like (x+1/x-2), and unicode ½
+  const visualFracRegex = /\(([^()/]+)\/([^()/]+)\)/g;
   while ((match = visualFracRegex.exec(text)) !== null) {
     const raw = match[0];
-    const num = match[1];
-    const den = match[2];
+    const num = match[1].trim();
+    const den = match[2].trim();
+    const isDerivative = (num === 'd' && den === 'dx') || (num === 'dy' && den === 'dx') || (num === '∂' && den === '∂x');
+    if (isDerivative) continue;
     candidates.push({
       id: `sym_vfrac_${match.index}`,
       type: 'FRACTION',
@@ -554,6 +710,30 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
         slots: [
           { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: num },
           { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: den }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
+  const unicodeHalfRegex = /½/g;
+  while ((match = unicodeHalfRegex.exec(text)) !== null) {
+    candidates.push({
+      id: `sym_vhalf_${match.index}`,
+      type: 'FRACTION',
+      titleAr: 'كسر اعتيادي',
+      titleEn: 'Fraction',
+      startIndex: match.index,
+      endIndex: match.index + 1,
+      rawLatex: '\\frac{1}{2}',
+      displayPreview: '½',
+      template: {
+        type: 'FRACTION',
+        titleAr: 'تعديل الكسر',
+        titleEn: 'Edit Fraction',
+        slots: [
+          { id: 'num', labelAr: 'البسط', labelEn: 'Numerator', placeholder: '3', value: '1' },
+          { id: 'den', labelAr: 'المقام', labelEn: 'Denominator', placeholder: '5', value: '2' }
         ],
         activeSlotIndex: 0
       }
@@ -588,12 +768,12 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 2b. Visual Nth Root: deg√rad
-  const visualNthRootRegex = /([0-9a-zA-Z]+)√([0-9a-zA-Z]+)/g;
+  // 2b. Visual Nth Root: deg√(rad) or deg√rad
+  const visualNthRootRegex = /([0-9a-zA-Z\u0600-\u06FF]+)√(?:\(([^()]+)\)|([0-9a-zA-Z\u0600-\u06FF⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ]+))/g;
   while ((match = visualNthRootRegex.exec(text)) !== null) {
     const raw = match[0];
     const deg = match[1];
-    const rad = match[2];
+    const rad = (match[2] ?? match[3] ?? '').trim();
     candidates.push({
       id: `sym_vnth_${match.index}`,
       type: 'NTH_ROOT',
@@ -642,11 +822,11 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 3b. Visual Square Root: √rad (excluding if preceded by deg in deg√rad)
-  const visualSqrtRegex = /(?<![0-9a-zA-Z])√([a-zA-Z0-9]+)/g;
+  // 3b. Visual Square Root: √(rad) or √rad (excluding if preceded by deg in deg√rad)
+  const visualSqrtRegex = /(?<![0-9a-zA-Z\u0600-\u06FF])√(?:\(([^()]+)\)|([a-zA-Z0-9\u0600-\u06FF⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ]+))/g;
   while ((match = visualSqrtRegex.exec(text)) !== null) {
     const raw = match[0];
-    const rad = match[1];
+    const rad = (match[1] ?? match[2] ?? '').trim();
     candidates.push({
       id: `sym_vsqrt_${match.index}`,
       type: 'SQRT',
@@ -698,6 +878,36 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
+  // 4b. Visual Summation: ∑(lower to upper) expr
+  const visualSumRegex = /∑\(([^()]*?)\s+to\s+([^()]*?)\)\s*([^\s$+\-=]+|\S+)/g;
+  while ((match = visualSumRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const lower = match[1].trim();
+    const upper = match[2].trim();
+    const expr = match[3].trim();
+    candidates.push({
+      id: `sym_vsum_${match.index}`,
+      type: 'SUMMATION',
+      titleAr: 'رمز التجميع (سيجما)',
+      titleEn: 'Summation',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\sum_{${lower}}^{${upper}} ${expr}`,
+      displayPreview: raw,
+      template: {
+        type: 'SUMMATION',
+        titleAr: 'تعديل التجميع',
+        titleEn: 'Edit Summation',
+        slots: [
+          { id: 'lower', labelAr: 'بداية التجميع', labelEn: 'Lower limit', placeholder: 'i=1', value: lower },
+          { id: 'upper', labelAr: 'نهاية التجميع', labelEn: 'Upper limit', placeholder: 'n', value: upper },
+          { id: 'expr', labelAr: 'المقدار المراد جمعه', labelEn: 'Expression', placeholder: 'i', value: expr }
+        ],
+        activeSlotIndex: 2
+      }
+    });
+  }
+
   // 5. Definite Integral: \int_{a}^{b} expr \, dx
   const defIntRegex = /\\int_\{([^{}]*)\}\^\{([^{}]*)\}(?:\s*(.*?)(?:\\,\s*dx|\s+dx|(?=\\int|\\sum|\$|\n|$)))?/g;
   while ((match = defIntRegex.exec(text)) !== null) {
@@ -714,6 +924,36 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       endIndex: match.index + raw.length,
       rawLatex: raw,
       displayPreview: toVisualMath(raw),
+      template: {
+        type: 'INTEGRAL',
+        titleAr: 'تعديل التكامل المحدد',
+        titleEn: 'Edit Definite Integral',
+        slots: [
+          { id: 'lower', labelAr: 'الحد السفلي (a)', labelEn: 'Lower (a)', placeholder: '0', value: a },
+          { id: 'upper', labelAr: 'الحد العلوي (b)', labelEn: 'Upper (b)', placeholder: '1', value: b },
+          { id: 'expr', labelAr: 'الدالة f(x)', labelEn: 'Integrand', placeholder: 'x', value: expr }
+        ],
+        activeSlotIndex: 2
+      }
+    });
+  }
+
+  // 5b. Visual Definite Integral: ∫(a to b) expr dx
+  const visualDefIntRegex = /∫\(([^()]*?)\s+to\s+([^()]*?)\)\s*(.*?)\s+dx/g;
+  while ((match = visualDefIntRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const a = match[1].trim();
+    const b = match[2].trim();
+    const expr = (match[3] || 'x').trim();
+    candidates.push({
+      id: `sym_vdefint_${match.index}`,
+      type: 'INTEGRAL',
+      titleAr: 'تكامل محدد',
+      titleEn: 'Definite Integral',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\int_{${a}}^{${b}} ${expr} \\, dx`,
+      displayPreview: raw,
       template: {
         type: 'INTEGRAL',
         titleAr: 'تعديل التكامل المحدد',
@@ -754,6 +994,32 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
+  // 6b. Visual Indefinite Integral: ∫ expr dx
+  const visualIndefIntRegex = /∫(?!\([^()]*?\s+to\s+[^()]*?\))\s*([^\n]+?)\s+dx/g;
+  while ((match = visualIndefIntRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const expr = (match[1] || 'x').trim();
+    candidates.push({
+      id: `sym_vindefint_${match.index}`,
+      type: 'INDEFINITE_INTEGRAL',
+      titleAr: 'تكامل غير محدد',
+      titleEn: 'Indefinite Integral',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\int ${expr} \\, dx`,
+      displayPreview: raw,
+      template: {
+        type: 'INDEFINITE_INTEGRAL',
+        titleAr: 'تعديل التكامل غير المحدد',
+        titleEn: 'Edit Indefinite Integral',
+        slots: [
+          { id: 'expr', labelAr: 'الدالة المراد مكاملتها', labelEn: 'Integrand', placeholder: 'x', value: expr }
+        ],
+        activeSlotIndex: 0
+      }
+    });
+  }
+
   // 7. Limit: \lim_{x \to val} expr
   const limRegex = /\\lim_\{\s*(?:x\s*\\to\s*)?([^{}]*)\}(?:\s*(.*?)(?=\s*\$|\n|$|\\lim|\\int|\\sum))?/g;
   while ((match = limRegex.exec(text)) !== null) {
@@ -769,6 +1035,34 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       endIndex: match.index + raw.length,
       rawLatex: raw,
       displayPreview: toVisualMath(raw),
+      template: {
+        type: 'LIMIT',
+        titleAr: 'تعديل النهاية',
+        titleEn: 'Edit Limit',
+        slots: [
+          { id: 'to', labelAr: 'تقترب x من', labelEn: 'x approaches', placeholder: '0', value: toVal },
+          { id: 'expr', labelAr: 'الدالة المراد دراستها', labelEn: 'Expression', placeholder: 'f(x)', value: expr }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 7b. Visual Limit: lim(x→val) expr
+  const visualLimRegex = /lim\(\s*(?:x\s*→\s*)?([^()]+)\)\s*([^\n$]+?)(?=\s*$|\n|\s+lim\(|\s+∫|\s+∑|$)/g;
+  while ((match = visualLimRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const toVal = match[1].trim();
+    const expr = (match[2] || 'f(x)').trim();
+    candidates.push({
+      id: `sym_vlim_${match.index}`,
+      type: 'LIMIT',
+      titleAr: 'نهاية رياضية (lim)',
+      titleEn: 'Limit (lim)',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\lim_{x \\to ${toVal}} ${expr}`,
+      displayPreview: raw,
       template: {
         type: 'LIMIT',
         titleAr: 'تعديل النهاية',
@@ -810,8 +1104,36 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 9. Natural Log: \ln(val)
-  const lnRegex = /\\ln\(([^\)]*)\)/g;
+  // 8b. Visual Logarithm: log_base(val)
+  const visualLogRegex = /\blog_([^\s(]+)\(([^()]+)\)/g;
+  while ((match = visualLogRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1].trim();
+    const val = match[2].trim();
+    candidates.push({
+      id: `sym_vlog_${match.index}`,
+      type: 'LOG',
+      titleAr: 'لوغاريتم',
+      titleEn: 'Logarithm',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `\\log_{${base}}(${val})`,
+      displayPreview: raw,
+      template: {
+        type: 'LOG',
+        titleAr: 'تعديل اللوغاريتم',
+        titleEn: 'Edit Logarithm',
+        slots: [
+          { id: 'base', labelAr: 'أساس اللوغاريتم (a)', labelEn: 'Base (a)', placeholder: '10', value: base },
+          { id: 'val', labelAr: 'العدد (b)', labelEn: 'Value (b)', placeholder: 'x', value: val }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 9. Natural Log: \ln(val) or visual ln(val)
+  const lnRegex = /(?:\\ln|\bln)\(([^\)]*)\)/g;
   while ((match = lnRegex.exec(text)) !== null) {
     const raw = match[0];
     const val = match[1];
@@ -822,7 +1144,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       titleEn: 'Natural Log (ln)',
       startIndex: match.index,
       endIndex: match.index + raw.length,
-      rawLatex: raw,
+      rawLatex: raw.startsWith('\\') ? raw : `\\ln(${val})`,
       displayPreview: toVisualMath(raw),
       template: {
         type: 'LN',
@@ -836,12 +1158,12 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 10. Power: base^{exp} or base^digit (excluding if preceded by \int or \sum)
-  const powRegex = /(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^\{([^{}]*)\}|(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^([0-9a-zA-Z])/g;
+  // 10. Power: base^{exp} or base^(exp) or base^digit (excluding if preceded by \int or \sum)
+  const powRegex = /(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^\{([^{}]*)\}|(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^\(([^()]+)\)|(?<!\\(?:int|sum)[^{}]*)(\b[a-zA-Z0-9\)]+)\^([0-9a-zA-Z])/g;
   while ((match = powRegex.exec(text)) !== null) {
     const raw = match[0];
-    const base = match[1] || match[3];
-    const exp = match[2] || match[4];
+    const base = match[1] || match[3] || match[5];
+    const exp = match[2] || match[4] || match[6];
     candidates.push({
       id: `sym_pow_${match.index}`,
       type: 'POWER',
@@ -864,13 +1186,12 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
     });
   }
 
-  // 10b. Visual Power: base[²³ⁿ]
-  const visualPowRegex = /([a-zA-Z0-9]+)([²³ⁿ])/g;
+  // 10b. Visual Power: base[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿⁱ]+
+  const visualPowRegex = /([a-zA-Z0-9\u0600-\u06FF\)]+)([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ]+)/g;
   while ((match = visualPowRegex.exec(text)) !== null) {
     const raw = match[0];
     const base = match[1];
-    const expChar = match[2];
-    const exp = expChar === '²' ? '2' : expChar === '³' ? '3' : 'n';
+    const exp = decodeSuperscriptString(match[2]);
     candidates.push({
       id: `sym_vpow_${match.index}`,
       type: 'POWER',
@@ -894,7 +1215,7 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
   }
 
   // 11. Subscript: base_{sub} or base_digit (excluding if preceded by \int, \sum, \lim, \log)
-  const subRegex = /(?<!\\(?:int|sum|lim|log)[^{}]*)(\b[a-zA-Z0-9\)]+)_\{([^{}]*)\}|(?<!\\(?:int|sum|lim|log)[^{}]*)(\b[a-zA-Z0-9\)]+)_([0-9a-zA-Z])/g;
+  const subRegex = /(?<!\\(?:int|sum|lim|log)[^{}]*)(?<!\blog)(\b[a-zA-Z0-9\)]+)_\{([^{}]*)\}|(?<!\\(?:int|sum|lim|log)[^{}]*)(?<!\blog)(\b[a-zA-Z0-9\)]+)_([0-9a-zA-Z])/g;
   while ((match = subRegex.exec(text)) !== null) {
     const raw = match[0];
     const base = match[1] || match[3];
@@ -908,6 +1229,34 @@ export function parseMathSymbolsFromText(text: string): IParsedMathSymbol[] {
       endIndex: match.index + raw.length,
       rawLatex: raw,
       displayPreview: toVisualMath(raw),
+      template: {
+        type: 'SUBSCRIPT',
+        titleAr: 'تعديل الدليل السفلي',
+        titleEn: 'Edit Subscript',
+        slots: [
+          { id: 'base', labelAr: 'الرمز الأساسي', labelEn: 'Base', placeholder: 'x', value: base },
+          { id: 'sub', labelAr: 'الدليل السفلي', labelEn: 'Subscript', placeholder: '1', value: sub }
+        ],
+        activeSlotIndex: 1
+      }
+    });
+  }
+
+  // 11b. Visual Subscript: base[₀-₉ₐₑᵢₖₘₙₓ]+
+  const visualSubRegex = /([a-zA-Z0-9\u0600-\u06FF]+)([₀₁₂₃₄₅₆₇₈₉ₐₑᵢₖₘₙₓ]+)/g;
+  while ((match = visualSubRegex.exec(text)) !== null) {
+    const raw = match[0];
+    const base = match[1];
+    const sub = decodeSubscriptString(match[2]);
+    candidates.push({
+      id: `sym_vsub_${match.index}`,
+      type: 'SUBSCRIPT',
+      titleAr: 'دليل سفلي',
+      titleEn: 'Subscript',
+      startIndex: match.index,
+      endIndex: match.index + raw.length,
+      rawLatex: `${base}_{${sub}}`,
+      displayPreview: raw,
       template: {
         type: 'SUBSCRIPT',
         titleAr: 'تعديل الدليل السفلي',

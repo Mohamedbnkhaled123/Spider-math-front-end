@@ -219,7 +219,7 @@
 
     <!-- Math Symbol Tactile Keys Grid (Google Keyboard Proportions, Clean Math Glyphs) -->
     <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1 p-0.5 max-h-36 overflow-y-auto touch-pan-y overscroll-contain">
-      @for (key of visibleKeys(); track key.latex) {
+      @for (key of visibleKeys(); track key.category + '_' + key.label) {
         <button
           type="button"
           (pointerdown)="preventFocusLoss($event)"

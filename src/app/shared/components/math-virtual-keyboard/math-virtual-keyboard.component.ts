@@ -186,6 +186,32 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
   }
 
   /**
+   * Commits a mutated text value onto the target input element, emits events,
+   * and re-syncs internal previewFormula/cursor if the parent transformed LaTeX into visual symbols.
+   */
+  private commitElementValue(
+    el: HTMLInputElement | HTMLTextAreaElement,
+    nextValue: string,
+    cursorPos: number
+  ): void {
+    const safePos = Math.max(0, Math.min(cursorPos, nextValue.length));
+    el.value = nextValue;
+    el.setSelectionRange(safePos, safePos);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    this.previewFormula.set(nextValue);
+    this.activeCursorPos.set(safePos);
+    this.valueChange.emit(nextValue);
+
+    // Parent components normalize raw LaTeX to visual symbols inside valueChange;
+    // re-sync so symbol chips and future edits stay aligned with el.value.
+    if (el.value !== this.previewFormula()) {
+      this.previewFormula.set(el.value);
+      this.activeCursorPos.set(el.selectionStart ?? el.value.length);
+    }
+  }
+
+  /**
    * Deletes the currently edited math symbol completely from the input behind the scenes.
    */
   deleteEditingSymbol(): void {
@@ -195,14 +221,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
       this.ensureInputModeSuppression(el);
       const currentVal = el.value;
       const nextVal = currentVal.slice(0, range.start) + currentVal.slice(range.end);
-      el.value = nextVal;
-      const newPos = Math.max(0, Math.min(range.start, nextVal.length));
-      el.setSelectionRange(newPos, newPos);
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      this.previewFormula.set(nextVal);
-      this.activeCursorPos.set(newPos);
-      this.valueChange.emit(nextVal);
+      this.commitElementValue(el, nextVal, range.start);
     }
     this.editingSymbolRange.set(null);
     this.activeVisualTemplate.set(null);
@@ -259,14 +278,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
       // In-place replacement of existing math symbol
       const currentVal = el.value;
       const nextVal = currentVal.slice(0, range.start) + latex + currentVal.slice(range.end);
-      el.value = nextVal;
-      const newCursor = Math.max(0, Math.min(range.start + latex.length, nextVal.length));
-      el.setSelectionRange(newCursor, newCursor);
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      this.previewFormula.set(nextVal);
-      this.activeCursorPos.set(newCursor);
-      this.valueChange.emit(nextVal);
+      this.commitElementValue(el, nextVal, range.start + latex.length);
     } else {
       // Insertion of new math symbol at cursor
       this.insertSymbolDirect(latex);
@@ -315,17 +327,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     const currentValue = el.value;
 
     const nextValue = currentValue.slice(0, start) + latexCode + currentValue.slice(end);
-    el.value = nextValue;
-
-    const newCursorPos = Math.max(0, Math.min(start + latexCode.length + cursorOffset, el.value.length));
-    el.setSelectionRange(newCursorPos, newCursorPos);
-
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    this.previewFormula.set(nextValue);
-    this.activeCursorPos.set(newCursorPos);
-    this.valueChange.emit(nextValue);
+    this.commitElementValue(el, nextValue, start + latexCode.length + cursorOffset);
   }
 
   /**
@@ -397,16 +399,7 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
     const currentValue = el.value;
 
     const nextValue = currentValue.slice(0, start) + delimiter + currentValue.slice(end);
-    el.value = nextValue;
-
-    const newCursor = start + offset;
-    el.setSelectionRange(newCursor, newCursor);
-
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    this.previewFormula.set(nextValue);
-    this.valueChange.emit(nextValue);
+    this.commitElementValue(el, nextValue, start + offset);
   }
 
   handleBackspace(): void {
@@ -432,28 +425,14 @@ export class MathVirtualKeyboardComponent implements OnDestroy {
 
     if (start !== end) {
       const nextValue = currentValue.slice(0, start) + currentValue.slice(end);
-      el.value = nextValue;
-      el.setSelectionRange(start, start);
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      this.previewFormula.set(nextValue);
-      this.activeCursorPos.set(start);
-      this.valueChange.emit(nextValue);
+      this.commitElementValue(el, nextValue, start);
       return;
     }
 
     if (start === 0) return;
 
     const nextValue = currentValue.slice(0, start - 1) + currentValue.slice(start);
-    el.value = nextValue;
-    el.setSelectionRange(start - 1, start - 1);
-
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    this.previewFormula.set(nextValue);
-    this.activeCursorPos.set(start - 1);
-    this.valueChange.emit(nextValue);
+    this.commitElementValue(el, nextValue, start - 1);
   }
 
   handleSpace(): void {

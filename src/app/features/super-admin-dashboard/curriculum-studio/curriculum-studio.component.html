@@ -1891,8 +1891,8 @@
                     <span class="text-[10px] font-bold text-text-muted block">{{ langService.isArabic() ? 'الإجابات المقبولة الصحيحة:' : 'Accepted Correct Answers:' }}</span>
                     <div class="flex flex-wrap gap-1.5">
                       @for (ans of q.acceptedAnswers; track $index) {
-                        <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">
-                          {{ ans }}
+                        <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                          <app-math-formula [text]="ans" />
                         </span>
                       }
                     </div>
@@ -2050,15 +2050,25 @@
                   <span>{{ langService.isArabic() ? 'رموز ومعادلات' : 'Formula Symbols' }}</span>
                 </button>
               </div>
-              <textarea
-                #qTextarea
-                rows="2"
-                [ngModel]="newQuestionTextAr()"
-                (ngModelChange)="newQuestionTextAr.set($event)"
-                (focus)="openMathKeyboard(qTextarea)"
-                [placeholder]="langService.isArabic() ? 'اكتب منطوق المسألة أو التحدي الرياضي هنا...' : 'Type problem statement or math question here...'"
-                class="w-full px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary outline-none focus:border-brand-primary"
-              ></textarea>
+              <div class="question-input-wrapper rounded-xl border border-surface-border bg-surface-card focus-within:border-brand-primary transition-all p-2.5">
+                <textarea
+                  #qTextarea
+                  rows="2"
+                  [value]="stripLatexDelimiters(newQuestionTextAr())"
+                  (input)="onQuestionTextInput($event)"
+                  (focus)="mathKeyboardTarget.set(qTextarea)"
+                  [placeholder]="langService.isArabic() ? 'اكتب منطوق المسألة أو التحدي الرياضي هنا...' : 'Type problem statement or math question here...'"
+                  class="w-full bg-transparent text-xs text-text-primary outline-none resize-y"
+                ></textarea>
+                @if (newQuestionTextAr().trim()) {
+                  <div class="mt-2 pt-2 border-t border-surface-border/60 flex items-center gap-2 text-xs text-text-secondary">
+                    <span class="text-[10px] font-bold text-text-muted shrink-0">{{ langService.isArabic() ? 'معاينة:' : 'Preview:' }}</span>
+                    <div class="font-bold text-text-primary min-w-0 flex-1">
+                      <app-math-formula [text]="newQuestionTextAr()" />
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
 
             <!-- Question Image (Direct Device Upload or Manual Crop from Cached Session) -->
@@ -2102,17 +2112,18 @@
                       <input
                         #mcqInput
                         type="text"
-                        [ngModel]="newQuestionOptions()[$index]"
-                        (ngModelChange)="newQuestionOptions()[$index] = $event"
-                        (focus)="openMathKeyboard(mcqInput)"
+                        [value]="stripLatexDelimiters(opt)"
+                        (input)="onOptionInput($index, $event)"
+                        (focus)="mathKeyboardTarget.set(mcqInput)"
                         [attr.data-opt-index]="$index"
                         [placeholder]="langService.isArabic() ? ('الخيار ' + ($index + 1)) : ('Option ' + ($index + 1))"
-                        class="flex-1 px-2 py-1 rounded-lg border-none bg-transparent text-xs text-text-primary outline-none"
+                        class="flex-1 px-2 py-1 rounded-lg border-none bg-transparent text-xs text-text-primary outline-none min-w-0"
                       />
                       <button
                         type="button"
                         (click)="openMathKeyboard(mcqInput)"
                         class="p-1 rounded text-text-muted hover:text-brand-primary cursor-pointer shrink-0"
+                        [title]="langService.isArabic() ? 'فتح لوحة الرموز الرياضية لهذا الخيار' : 'Open Math Keyboard for this option'"
                       >
                         <app-icon name="calculator" [size]="12" />
                       </button>
@@ -2148,7 +2159,7 @@
                         type="text"
                         [value]="stripLatexDelimiters(ans)"
                         (input)="updateAcceptedAnswer($index, $event)"
-                        (focus)="openMathKeyboard(ansInput)"
+                        (focus)="mathKeyboardTarget.set(ansInput)"
                         [attr.data-ans-index]="$index"
                         [placeholder]="langService.isArabic() ? ('أدخل إجابة صحيحة محتملة (' + ($index + 1) + ')...') : ('Enter accepted answer (' + ($index + 1) + ')...')"
                         class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0 font-bold"
@@ -3635,11 +3646,13 @@
     />
   }
 
-  <!-- Teacher Virtual Math Keyboard -->
-  <app-math-virtual-keyboard
-    [(isOpen)]="isMathKeyboardOpen"
-    [targetInput]="mathKeyboardTarget()"
-    (valueChange)="onMathKeyboardValueChange($event)"
-  />
+  <!-- Teacher Virtual Math Keyboard (Mounted strictly while Question/Assessment Editor is open) -->
+  @if (isAssessmentEditorOpen()) {
+    <app-math-virtual-keyboard
+      [(isOpen)]="isMathKeyboardOpen"
+      [targetInput]="mathKeyboardTarget()"
+      (valueChange)="onMathKeyboardValueChange($event)"
+    />
+  }
 
 </section>

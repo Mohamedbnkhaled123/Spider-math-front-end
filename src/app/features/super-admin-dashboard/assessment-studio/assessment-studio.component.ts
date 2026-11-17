@@ -452,8 +452,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateAcceptedAnswer(idx: number, event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
+  updateAcceptedAnswer(idx: number, eventOrVal: Event | string): void {
+    const val = typeof eventOrVal === 'string'
+      ? toVisualMath(eventOrVal)
+      : toVisualMath((eventOrVal.target as HTMLInputElement)?.value || '');
     this.newQuestionAcceptedAnswers.update((arr) => {
       const copy = [...arr];
       copy[idx] = val;
@@ -566,9 +568,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (!target) return;
     const visualVal = stripLatexDelimiters(val);
     if (target.value !== visualVal) {
-      const pos = target.selectionStart ?? visualVal.length;
+      const rawPos = target.selectionStart ?? val.length;
+      const adjustedPos = Math.min(stripLatexDelimiters(val.slice(0, rawPos)).length, visualVal.length);
       target.value = visualVal;
-      target.setSelectionRange(pos, pos);
+      target.setSelectionRange(adjustedPos, adjustedPos);
     }
     if (target.tagName.toLowerCase() === 'textarea') {
       this.newQuestionTextAr.set(visualVal);
@@ -576,6 +579,10 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       const optIdx = target.getAttribute('data-opt-index');
       if (optIdx !== null) {
         this.updateOption(Number(optIdx), visualVal);
+      }
+      const ansIdx = target.getAttribute('data-ans-index');
+      if (ansIdx !== null) {
+        this.updateAcceptedAnswer(Number(ansIdx), visualVal);
       }
     }
     this.triggerDraftAutoSave(false);

@@ -2054,8 +2054,9 @@
                             #ansInput
                             type="text"
                             [value]="stripLatexDelimiters(ans)"
+                            [attr.data-ans-index]="$index"
                             (input)="updateAcceptedAnswer($index, $event)"
-                            (focus)="openMathKeyboard(ansInput)"
+                            (focus)="mathKeyboardTarget.set(ansInput)"
                             [placeholder]="langService.isArabic() ? ('أدخل إجابة صحيحة محتملة (' + ($index + 1) + ')...') : ('Enter accepted answer (' + ($index + 1) + ')...')"
                             class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0 font-bold"
                           />

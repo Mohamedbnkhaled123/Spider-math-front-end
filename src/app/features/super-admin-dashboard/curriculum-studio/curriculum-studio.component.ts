@@ -7,6 +7,7 @@ import {
   computed,
   inject,
   OnInit,
+  OnDestroy,
   PLATFORM_ID,
   HostListener
 } from '@angular/core';
@@ -41,7 +42,10 @@ import { AssessmentQuestionItem } from '../assessment-studio/assessment-studio.m
 import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
 import { ISliceResult } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
 import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
-import { stripLatexDelimiters } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
+import {
+  stripLatexDelimiters,
+  toVisualMath
+} from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
 import {
   AcademicTermCode,
   AssessmentAdminItem,
@@ -173,8 +177,9 @@ export function sortGradesDescending(grades: GradeOption[]): GradeOption[] {
   styleUrl: './curriculum-studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CurriculumStudioComponent implements OnInit {
+export class CurriculumStudioComponent implements OnInit, OnDestroy {
   readonly langService = inject(LangService);
+  readonly toVisualMath = toVisualMath;
   private readonly http = inject(HttpClient);
   private readonly discoveryService = inject(PublicDiscoveryService);
 
@@ -994,6 +999,12 @@ export class CurriculumStudioComponent implements OnInit {
   ngOnInit(): void {
     this.loadActiveGrades();
     this.checkForPendingDrafts();
+  }
+
+  ngOnDestroy(): void {
+    this.isExamOptionsOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
   }
 
   triggerDraftAutoSave(immediate = false): void {
@@ -2860,6 +2871,9 @@ export class CurriculumStudioComponent implements OnInit {
     if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
       this.triggerDraftAutoSave(true);
     }
+    this.isExamOptionsOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
     this.modalNav.dismissModal('curriculum-assessment-editor');
     this.isAssessmentEditorOpen.set(false);
     this.cancelQuestionEdit();
@@ -2972,13 +2986,22 @@ export class CurriculumStudioComponent implements OnInit {
     this.isExamOptionsOpen.set(false);
   }
 
-  toggleMathKeyboard(target?: HTMLInputElement | HTMLTextAreaElement): void {
+  toggleMathKeyboard(fallbackTarget?: HTMLInputElement | HTMLTextAreaElement): void {
     if (this.isMathKeyboardOpen()) {
       this.isMathKeyboardOpen.set(false);
-      this.mathKeyboardTarget.set(null);
     } else {
-      if (target) {
-        this.mathKeyboardTarget.set(target);
+      const currentTarget = this.mathKeyboardTarget();
+      if (!currentTarget || !currentTarget.isConnected) {
+        if (fallbackTarget) {
+          this.mathKeyboardTarget.set(fallbackTarget);
+        } else if (typeof document !== 'undefined') {
+          const firstTarget = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+            '#curriculumQuestionComposer .question-input-wrapper textarea, #curriculumQuestionComposer input[type="text"]'
+          );
+          if (firstTarget) {
+            this.mathKeyboardTarget.set(firstTarget);
+          }
+        }
       }
       this.isMathKeyboardOpen.set(true);
     }
@@ -2989,37 +3012,59 @@ export class CurriculumStudioComponent implements OnInit {
     this.isMathKeyboardOpen.set(true);
   }
 
+  private normalizeInputElementWithCursor(
+    target: HTMLInputElement | HTMLTextAreaElement,
+    rawVal: string
+  ): string {
+    const visualVal = stripLatexDelimiters(rawVal);
+    if (target.value !== visualVal) {
+      const rawPos = target.selectionStart ?? rawVal.length;
+      const adjustedPos = Math.min(stripLatexDelimiters(rawVal.slice(0, rawPos)).length, visualVal.length);
+      target.value = visualVal;
+      target.setSelectionRange(adjustedPos, adjustedPos);
+    }
+    return visualVal;
+  }
+
   onMathKeyboardValueChange(val: string): void {
     const target = this.mathKeyboardTarget();
     if (!target) return;
-    const visualVal = stripLatexDelimiters(val);
-    if (target.value !== visualVal) {
-      const pos = target.selectionStart ?? visualVal.length;
-      target.value = visualVal;
-      target.setSelectionRange(pos, pos);
-    }
+    const visualVal = this.normalizeInputElementWithCursor(target, val);
     if (target.tagName.toLowerCase() === 'textarea') {
       this.newQuestionTextAr.set(visualVal);
     } else {
       const optIdx = target.getAttribute('data-opt-index');
       if (optIdx !== null) {
-        const idx = Number(optIdx);
-        this.newQuestionOptions.update((opts) => {
-          const arr = [...opts];
-          arr[idx] = visualVal;
-          return arr;
-        });
+        this.updateOption(Number(optIdx), visualVal);
       }
       const ansIdx = target.getAttribute('data-ans-index');
       if (ansIdx !== null) {
-        const idx = Number(ansIdx);
-        this.newQuestionAcceptedAnswers.update((ans) => {
-          const arr = [...ans];
-          arr[idx] = visualVal;
-          return arr;
-        });
+        this.updateAcceptedAnswer(Number(ansIdx), visualVal);
       }
     }
+  }
+
+  onQuestionTextInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    if (!target) return;
+    const visualVal = this.normalizeInputElementWithCursor(target, target.value);
+    this.newQuestionTextAr.set(visualVal);
+  }
+
+  onOptionInput(index: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    const visualVal = this.normalizeInputElementWithCursor(target, target.value);
+    this.updateOption(index, visualVal);
+  }
+
+  updateOption(index: number, value: string): void {
+    const visualVal = toVisualMath(value);
+    this.newQuestionOptions.update((opts) => {
+      const copy = opts.length === 4 ? [...opts] : [...opts, '', '', ''].slice(0, 4);
+      copy[index] = visualVal;
+      return copy;
+    });
   }
 
   addAcceptedAnswerOption(): void {
@@ -3034,10 +3079,16 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   updateAcceptedAnswer(idx: number, eventOrVal: Event | string): void {
-    const val = typeof eventOrVal === 'string' ? eventOrVal : (eventOrVal.target as HTMLInputElement)?.value || '';
+    let visualVal: string;
+    if (typeof eventOrVal === 'string') {
+      visualVal = toVisualMath(eventOrVal);
+    } else {
+      const target = eventOrVal.target as HTMLInputElement | null;
+      visualVal = target ? this.normalizeInputElementWithCursor(target, target.value) : '';
+    }
     this.newQuestionAcceptedAnswers.update((ans) => {
       const arr = [...ans];
-      arr[idx] = val;
+      arr[idx] = visualVal;
       return arr;
     });
   }
@@ -3054,14 +3105,14 @@ export class CurriculumStudioComponent implements OnInit {
     const targetId = q.id || String(q.order);
     this.editingQuestionId.set(targetId);
     this.newQuestionType.set(q.type === 'ESSAY_PHOTO' ? 'ESSAY' : q.type);
-    this.newQuestionTextAr.set(q.textAr || '');
+    this.newQuestionTextAr.set(toVisualMath(q.textAr || ''));
     this.newQuestionImageUrl.set(q.questionImageUrl || null);
     const rawOpts = q.options && q.options.length === 4
       ? [...q.options]
       : (q.options?.length ? [...q.options, '', '', ''].slice(0, 4) : ['', '', '', '']);
-    this.newQuestionOptions.set(rawOpts);
+    this.newQuestionOptions.set(rawOpts.map((o) => toVisualMath(o || '')));
     this.newQuestionAcceptedAnswers.set(
-      q.acceptedAnswers && q.acceptedAnswers.length > 0 ? [...q.acceptedAnswers] : ['']
+      q.acceptedAnswers && q.acceptedAnswers.length > 0 ? q.acceptedAnswers.map((a) => toVisualMath(a || '')) : ['']
     );
     this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
     this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
@@ -3084,6 +3135,9 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   cancelQuestionEdit(): void {
+    this.isExamOptionsOpen.set(false);
+    this.isMathKeyboardOpen.set(false);
+    this.mathKeyboardTarget.set(null);
     this.newQuestionTextAr.set('');
     this.newQuestionImageUrl.set(null);
     this.newQuestionOptions.set(['', '', '', '']);
@@ -3344,6 +3398,9 @@ export class CurriculumStudioComponent implements OnInit {
           console.warn('Error during post-save cleanup:', err);
         });
         this.pendingDraft.set(null);
+        this.isExamOptionsOpen.set(false);
+        this.isMathKeyboardOpen.set(false);
+        this.mathKeyboardTarget.set(null);
         this.modalNav.dismissModal('curriculum-assessment-editor');
         asm.requiresTeacherReview = requiresTeacherReview;
         this.assessmentSaved.emit(asm);

@@ -544,9 +544,16 @@ describe('MathVirtualKeyboardComponent', () => {
       expect(toVisualMath('\\frac{1}{2}')).toBe('½');
       expect(toVisualMath('\\frac{3}{5}')).toBe('(3/5)');
       expect(toVisualMath('\\sqrt{16}')).toBe('√16');
+      expect(toVisualMath('\\sqrt{x+1}')).toBe('√(x+1)');
       expect(toVisualMath('\\sqrt[3]{8}')).toBe('3√8');
       expect(toVisualMath('x^2')).toBe('x²');
+      expect(toVisualMath('x^4 + y^{-1} + a_{1}')).toBe('x⁴ + y⁻¹ + a₁');
       expect(toVisualMath('1س\\le\\neq\\neq')).toBe('1س≤≠≠');
+      expect(toVisualMath('\\lim_{x \\to 0} f(x)')).toBe('lim(x→0) f(x)');
+      expect(toVisualMath('\\int_{0}^{1} x \\, dx')).toBe('∫(0 to 1) x dx');
+      expect(toVisualMath('\\sum_{i=1}^{n} i')).toBe('∑(i=1 to n) i');
+      expect(toVisualMath('\\log_{10}(x)')).toBe('log_10(x)');
+      expect(toVisualMath('\\frac{\\sqrt{x^{2}+1}}{2} + \\text{سم}')).toBe('(√(x²+1)/2) + سم');
     });
 
     it('should parse visual mathematical symbols from text with parseMathSymbolsFromText', () => {
@@ -568,6 +575,18 @@ describe('MathVirtualKeyboardComponent', () => {
       expect(symbols[3].type).toBe('POWER');
       expect(symbols[3].template.slots[0].value).toBe('x');
       expect(symbols[3].template.slots[1].value).toBe('2');
+    });
+
+    it('should parse extended visual calculus, compound roots/fractions, and superscripts/subscripts for direct editing', () => {
+      const text = 'احسب (x+1/2) + √(x+1) + lim(x→0) sin(x) + ∫(0 to 1) x dx + x⁴ + a₁';
+      const symbols = parseMathSymbolsFromText(text);
+
+      expect(symbols.some(s => s.type === 'FRACTION' && s.template.slots[0].value === 'x+1' && s.template.slots[1].value === '2')).toBeTrue();
+      expect(symbols.some(s => s.type === 'SQRT' && s.template.slots[0].value === 'x+1')).toBeTrue();
+      expect(symbols.some(s => s.type === 'LIMIT' && s.template.slots[0].value === '0')).toBeTrue();
+      expect(symbols.some(s => s.type === 'INTEGRAL' && s.template.slots[0].value === '0' && s.template.slots[1].value === '1')).toBeTrue();
+      expect(symbols.some(s => s.type === 'POWER' && s.template.slots[0].value === 'x' && s.template.slots[1].value === '4')).toBeTrue();
+      expect(symbols.some(s => s.type === 'SUBSCRIPT' && s.template.slots[0].value === 'a' && s.template.slots[1].value === '1')).toBeTrue();
     });
 
     it('should render compact Google-style keyboard layout with numeric-grid and close button X', () => {

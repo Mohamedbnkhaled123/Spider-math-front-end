@@ -784,5 +784,86 @@ describe('CurriculumStudioComponent', () => {
       ];
       expect(component.getActiveGradesCountForList(sampleGrades)).toBe(2);
     });
+
+    it('should not auto-open math keyboard on input focus, dismiss it on modal close/cancel, and normalize LaTeX visually', () => {
+      component.openAssessmentEditor({
+        id: 'asm_kb_test',
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'اختبار الكيبورد الرياضي',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 20,
+        xpReward: 10,
+        referenceSheetUrl: null,
+        requiresTeacherReview: false,
+        submissionsCount: 0,
+        questions: [
+          {
+            id: 'q_latex_1',
+            order: 1,
+            type: 'MCQ',
+            textAr: '$\\frac{3}{5} + \\sqrt{16} + x^{4}$',
+            options: ['$x^{2}$', '$\\frac{1}{2}$', '$\\lim_{x \\to 0} x$', '$\\text{سم}$'],
+            correctOptionIndex: 0,
+            points: 5
+          }
+        ]
+      });
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const textarea = hostEl.querySelector('#curriculumQuestionComposer textarea') as HTMLTextAreaElement;
+      expect(textarea).toBeTruthy();
+
+      // Focusing textarea sets target WITHOUT auto-opening keyboard
+      textarea.dispatchEvent(new FocusEvent('focus'));
+      fixture.detectChanges();
+      expect(component.mathKeyboardTarget()).toBe(textarea);
+      expect(component.isMathKeyboardOpen()).toBeFalse();
+
+      // Focusing MCQ option sets target WITHOUT auto-opening keyboard
+      const mcqInput = hostEl.querySelector('#curriculumQuestionComposer input[data-opt-index="0"]') as HTMLInputElement;
+      expect(mcqInput).toBeTruthy();
+      mcqInput.dispatchEvent(new FocusEvent('focus'));
+      fixture.detectChanges();
+      expect(component.mathKeyboardTarget()).toBe(mcqInput);
+      expect(component.isMathKeyboardOpen()).toBeFalse();
+
+      // Explicitly opening keyboard opens it
+      component.openMathKeyboard(textarea);
+      fixture.detectChanges();
+      expect(component.isMathKeyboardOpen()).toBeTrue();
+      expect(hostEl.querySelector('app-math-virtual-keyboard aside')).toBeTruthy();
+
+      // Editing LaTeX question normalizes everything cleanly for non-LaTeX teachers
+      const existingQ = component.activeAssessment()!.questions[0];
+      component.editQuestion(existingQ);
+      fixture.detectChanges();
+      expect(component.newQuestionTextAr()).toBe('(3/5) + √16 + x⁴');
+      expect(component.newQuestionOptions()[1]).toBe('½');
+      expect(component.newQuestionOptions()[2]).toBe('lim(x→0) x');
+      expect(component.newQuestionOptions()[3]).toBe('سم');
+      expect(textarea.value).not.toContain('$');
+      expect(textarea.value).not.toContain('\\frac');
+
+      // Cancelling edit closes keyboard cleanly
+      component.cancelQuestionEdit();
+      fixture.detectChanges();
+      expect(component.isMathKeyboardOpen()).toBeFalse();
+      expect(component.mathKeyboardTarget()).toBeNull();
+
+      // Closing assessment editor always dismisses and unmounts math keyboard
+      component.openMathKeyboard(textarea);
+      fixture.detectChanges();
+      expect(component.isMathKeyboardOpen()).toBeTrue();
+
+      component.closeAssessmentEditor();
+      fixture.detectChanges();
+      expect(component.isAssessmentEditorOpen()).toBeFalse();
+      expect(component.isMathKeyboardOpen()).toBeFalse();
+      expect(component.mathKeyboardTarget()).toBeNull();
+      expect(hostEl.querySelector('app-math-virtual-keyboard')).toBeNull();
+    });
   });
 });

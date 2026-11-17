@@ -46,12 +46,49 @@ export function isPureLatex(text: string): boolean {
   // Single math variable letter: e.g. 'x', 'y', 'z', 'a', 'b', 'n'
   if (/^[a-zA-Z]$/.test(trimmed)) return true;
   // Common standalone math symbols: ±, ×, ÷, ≤, ≥, ≠, ≈, ∞, π, θ, °, etc.
-  if (/^[±×÷≤≥≠≈∞πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√·∈∉⊂⊆∪∩∴∵]$/.test(trimmed)) return true;
+  if (/^[±×÷≤≥≠≈∞πθ°αβγΔδλωφΦσΣμρΩΠ∠∡⊥∥△≅∼∫∬∑∏→⇒⇔↔↑↓≡∝∂∈∉⊂⊆⊃⊇∪∩∀∃∅∴∵⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ₀₁₂₃₄₅₆₇₈₉½√·ℝℕℤℚℂ%]$/.test(trimmed)) return true;
   // If it contains math expressions without Arabic text
   const hasArabic = /[\u0600-\u06FF]/.test(trimmed);
-  if (!hasArabic && /[\^_{}\\=<>≤≥≠≈±∓×÷·∞∈∉⊂⊆∪∩∴∵πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√%]/.test(trimmed)) return true;
+  if (!hasArabic && /[\^_{}\\=<>≤≥≠≈±∓×÷·∞∈∉⊂⊆⊃⊇∪∩∀∃∅∴∵⇒⇔↔↑↓≡∝∂πθ°αβγΔδλωφΦσΣμρΩΠ△∠∡⊥∥≅∼∫∬∑∏→⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ₀₁₂₃₄₅₆₇₈₉½√ℝℕℤℚℂ%]/.test(trimmed)) return true;
   return false;
 }
+
+const UNICODE_TO_ASCII_SUPER: Record<string, string> = {
+  '⁰': '0',
+  '¹': '1',
+  '²': '2',
+  '³': '3',
+  '⁴': '4',
+  '⁵': '5',
+  '⁶': '6',
+  '⁷': '7',
+  '⁸': '8',
+  '⁹': '9',
+  '⁺': '+',
+  '⁻': '-',
+  'ⁿ': 'n',
+  'ⁱ': 'i'
+};
+
+const UNICODE_TO_ASCII_SUB: Record<string, string> = {
+  '₀': '0',
+  '₁': '1',
+  '₂': '2',
+  '₃': '3',
+  '₄': '4',
+  '₅': '5',
+  '₆': '6',
+  '₇': '7',
+  '₈': '8',
+  '₉': '9',
+  'ₐ': 'a',
+  'ₑ': 'e',
+  'ᵢ': 'i',
+  'ₖ': 'k',
+  'ₘ': 'm',
+  'ₙ': 'n',
+  'ₓ': 'x'
+};
 
 /**
  * Normalizes Unicode visual math characters into standard KaTeX notation
@@ -61,15 +98,26 @@ export function isPureLatex(text: string): boolean {
 export function normalizeForKaTeX(mathStr: string): string {
   if (!mathStr) return '';
   return mathStr
-    .replace(/²/g, '^2')
-    .replace(/³/g, '^3')
-    .replace(/ⁿ/g, '^n')
+    .replace(/([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ]+)/g, (_m, seq) => {
+      const ascii = Array.from(seq as string).map((ch) => UNICODE_TO_ASCII_SUPER[ch] ?? ch).join('');
+      return ascii.length === 1 ? `^${ascii}` : `^{${ascii}}`;
+    })
+    .replace(/([₀₁₂₃₄₅₆₇₈₉ₐₑᵢₖₘₙₓ]+)/g, (_m, seq) => {
+      const ascii = Array.from(seq as string).map((ch) => UNICODE_TO_ASCII_SUB[ch] ?? ch).join('');
+      return ascii.length === 1 ? `_${ascii}` : `_{${ascii}}`;
+    })
+    .replace(/\^\(([^()]+)\)/g, '^{$1}')
     .replace(/½/g, '\\frac{1}{2}')
     .replace(/△\s*/g, '\\triangle ')
     .replace(/\s*⊥\s*/g, ' \\perp ')
     .replace(/\s*∥\s*/g, ' \\parallel ')
     .replace(/\s*·\s*/g, ' \\cdot ')
+    .replace(/∫\(([^()]*?)\s+to\s+([^()]*?)\)\s*/g, '\\int_{$1}^{$2} ')
+    .replace(/∑\(([^()]*?)\s+to\s+([^()]*?)\)\s*/g, '\\sum_{$1}^{$2} ')
+    .replace(/lim\(([^→()]+)→([^()]+)\)\s*/g, '\\lim_{$1 \\to $2} ')
+    .replace(/([0-9a-zA-Z]+)√\(([^()]+)\)/g, '\\sqrt[$1]{$2}')
     .replace(/([0-9a-zA-Z]+)√([0-9a-zA-Z]+)/g, '\\sqrt[$1]{$2}')
+    .replace(/√\(([^()]+)\)/g, '\\sqrt{$1}')
     .replace(/√([0-9a-zA-Z]+)/g, '\\sqrt{$1}')
     .replace(/\(([^/()]+)\/([^/()]+)\)/g, '\\frac{$1}{$2}')
     .trim();
@@ -79,7 +127,7 @@ export function normalizeForKaTeX(mathStr: string): string {
  * Pattern to identify LaTeX commands, superscripts/subscripts, and standalone math symbols
  * outside dollar signs so teachers and users never need to write or see dollar signs.
  */
-const UNWRAPPED_LATEX_PATTERN = /(\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})*|[a-zA-Z0-9]+(?:\^\{[^{}]*\}|\^[0-9a-zA-Z]|_\{[^{}]*\}|_[0-9a-zA-Z]|[²³ⁿ])+?|[0-9a-zA-Z]*√[0-9a-zA-Z]+|\([^/()]+\/[^/()]+\)|[±×÷≤≥≠≈∞πθ°αβγΔδλω△∠⊥∥≅∼∫∬∑∏→²³ⁿ½√·∈∉⊂⊆∪∩∴∵<>])/g;
+const UNWRAPPED_LATEX_PATTERN = /(\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})*|[a-zA-Z0-9]+(?:\^\{[^{}]*\}|\^\([^()]+\)|\^[0-9a-zA-Z]|_\{[^{}]*\}|_[0-9a-zA-Z]|[⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ₀₁₂₃₄₅₆₇₈₉])+?|[0-9a-zA-Z]*√(?:\([^()]+\)|[0-9a-zA-Z]+)|∫\([^()]+\s+to\s+[^()]+\)|∑\([^()]+\s+to\s+[^()]+\)|lim\([^→()]+→[^()]+\)|\([^/()]+\/[^/()]+\)|[±×÷≤≥≠≈∞πθ°αβγΔδλωφΦσΣμρΩΠ△∠∡⊥∥≅∼∫∬∑∏→⇒⇔↔↑↓≡∝∂⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ₀₁₂₃₄₅₆₇₈₉½√·∈∉⊂⊆⊃⊇∪∩∀∃∅∴∵ℝℕℤℚℂ<>])/g;
 
 /**
  * Splits plain text segments that may contain unwrapped LaTeX commands into TEXT and INLINE_MATH tokens.
