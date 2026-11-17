@@ -242,6 +242,23 @@ export class CurriculumStudioComponent implements OnInit {
   readonly modalAddGradeIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
   readonly overviewGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
   readonly overviewIntlDivision = signal<'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('AMERICAN_CURRICULUM');
+  readonly expandedOverviewTracks = signal<Record<string, boolean>>({});
+
+  toggleOverviewTrack(trackCode: string): void {
+    this.expandedOverviewTracks.update((prev) => ({
+      ...prev,
+      [trackCode]: !prev[trackCode]
+    }));
+  }
+
+  isOverviewTrackExpanded(trackCode: string): boolean {
+    return !!this.expandedOverviewTracks()[trackCode];
+  }
+
+  getActiveGradesCountForList(grades: GradeOption[]): number {
+    const activeSet = new Set(this.activeGrades());
+    return grades.filter((g) => activeSet.has(g.code)).length;
+  }
 
   selectGulfCountry(code: 'SA' | 'QA' | 'AE' | 'KW'): void {
     this.selectedGulfCountry.set(code);
@@ -721,7 +738,7 @@ export class CurriculumStudioComponent implements OnInit {
       const divData = findInternationalDivision(this.overviewIntlDivision());
       if (divData) {
         const divGradeCodes = new Set(divData.stages.flatMap(s => s.gradeCodes));
-        return track.grades.filter(g => divGradeCodes.has(g.code));
+        return track.grades.filter(g => divGradeCodes.has(g.code) || (g.isCustom && (!g.divisionCode || g.divisionCode === this.overviewIntlDivision())));
       }
     }
     return track.grades;

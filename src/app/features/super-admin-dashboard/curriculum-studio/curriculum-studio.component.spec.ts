@@ -759,5 +759,30 @@ describe('CurriculumStudioComponent', () => {
       expect(overview.length).toBeGreaterThan(0);
       expect(overview[0].order).toBe(1);
     });
+
+    it('should manage independent collapsible track lists for Active Grades Overview', () => {
+      expect(component.isOverviewTrackExpanded('EGYPTIAN')).toBeFalse();
+      expect(component.isOverviewTrackExpanded('GULF')).toBeFalse();
+
+      component.toggleOverviewTrack('EGYPTIAN');
+      expect(component.isOverviewTrackExpanded('EGYPTIAN')).toBeTrue();
+      expect(component.isOverviewTrackExpanded('GULF')).toBeFalse();
+
+      component.toggleOverviewTrack('GULF');
+      expect(component.isOverviewTrackExpanded('EGYPTIAN')).toBeTrue();
+      expect(component.isOverviewTrackExpanded('GULF')).toBeTrue();
+
+      component.toggleOverviewTrack('EGYPTIAN');
+      expect(component.isOverviewTrackExpanded('EGYPTIAN')).toBeFalse();
+      expect(component.isOverviewTrackExpanded('GULF')).toBeTrue();
+
+      component.activeGrades.set(['SEC_1', 'SEC_3']);
+      const sampleGrades = [
+        { code: 'SEC_1', titleAr: 'أولى ثانوي', titleEn: 'Grade 10' },
+        { code: 'SEC_2', titleAr: 'ثانية ثانوي', titleEn: 'Grade 11' },
+        { code: 'SEC_3', titleAr: 'ثالثة ثانوي', titleEn: 'Grade 12' }
+      ];
+      expect(component.getActiveGradesCountForList(sampleGrades)).toBe(2);
+    });
   });
 });
