@@ -61,10 +61,12 @@
         </div>
       }
 
-      @if (isLoadingStatus()) {
+      @if (isLoadingStatus() || isAutoAuthenticatingDev()) {
         <div class="py-8 flex items-center justify-center gap-2 text-xs font-bold text-text-muted">
           <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
-          <span>{{ langService.isArabic() ? 'جاري التحقق...' : 'Checking portal...' }}</span>
+          <span>{{ isAutoAuthenticatingDev()
+            ? (langService.isArabic() ? 'تم التعرف على الجهاز الموثوق — جاري فتح لوحة التحكم...' : 'Trusted device recognized — entering Studio...')
+            : (langService.isArabic() ? 'جاري التحقق...' : 'Checking portal...') }}</span>
         </div>
       } @else if (portalMode() === 'developer') {
         <!-- =============================================================== -->

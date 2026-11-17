@@ -15,9 +15,12 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { DeviceFingerprintService } from '../../../core/auth/device-fingerprint.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ModalNavigationService } from '../../../core/services/modal-navigation.service';
 import { ensureGoogleGsiScriptLoaded, SPIDER_GOOGLE_CLIENT_ID } from '../../../core/auth/google-gsi.util';
+
+export const DEV_TRUST_TOKEN_KEY = 'spider_math_dev_trust_token';
 
 export interface AdminPortalStatus {
   teacherCodeSet: boolean;
@@ -39,6 +42,7 @@ export class AdminAccessModalComponent implements OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly fingerprintService = inject(DeviceFingerprintService);
   private readonly modalNav = inject(ModalNavigationService);
   private readonly platformId = inject(PLATFORM_ID);
   readonly langService = inject(LangService);
@@ -50,6 +54,7 @@ export class AdminAccessModalComponent implements OnDestroy {
     devCodeSet: true
   });
   readonly isLoadingStatus = signal<boolean>(false);
+  readonly isAutoAuthenticatingDev = signal<boolean>(false);
   readonly isSubmitting = signal<boolean>(false);
   readonly isGoogleAuthenticating = signal<boolean>(false);
   readonly showPassword = signal<boolean>(false);
@@ -73,8 +78,12 @@ export class AdminAccessModalComponent implements OnDestroy {
           close: () => this.close()
         });
         this.fetchPortalStatus();
-        if (mode === 'teacher' && isPlatformBrowser(this.platformId)) {
-          ensureGoogleGsiScriptLoaded().catch(() => {});
+        if (isPlatformBrowser(this.platformId)) {
+          if (mode === 'teacher') {
+            ensureGoogleGsiScriptLoaded().catch(() => {});
+          } else {
+            this.fingerprintService.getOrCreateDeviceIdentity().catch(() => {});
+          }
         }
       } else {
         this.modalNav.dismissModal(this.modalId);
@@ -92,11 +101,20 @@ export class AdminAccessModalComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.showPassword.set(false);
     this.teacherTab.set('code');
+    this.isAutoAuthenticatingDev.set(false);
     this.isSubmitting.set(false);
     this.isGoogleAuthenticating.set(false);
   }
 
   fetchPortalStatus(): void {
+    if (this.portalMode() === 'developer' && this.authService.isSuperAdmin()) {
+      this.close();
+      void this.modalNav.whenSettled().then(() => {
+        void this.router.navigateByUrl('/admin');
+      });
+      return;
+    }
+
     this.isLoadingStatus.set(true);
     this.http.get<{ success: boolean; data: AdminPortalStatus }>('/api/v1/auth/admin-portal-status').subscribe({
       next: (res) => {
@@ -109,6 +127,18 @@ export class AdminAccessModalComponent implements OnDestroy {
             res.data.teacherGoogleSet
           ) {
             this.teacherTab.set('google');
+          } else if (
+            this.portalMode() === 'developer' &&
+            res.data.devCodeSet &&
+            isPlatformBrowser(this.platformId)
+          ) {
+            let savedTrustToken: string | null = null;
+            try {
+              savedTrustToken = localStorage.getItem(DEV_TRUST_TOKEN_KEY);
+            } catch {}
+            if (savedTrustToken && savedTrustToken.trim().length >= 32) {
+              this.attemptTrustedDevAutoLogin(savedTrustToken.trim());
+            }
           }
         }
       },
@@ -116,6 +146,34 @@ export class AdminAccessModalComponent implements OnDestroy {
         this.isLoadingStatus.set(false);
       }
     });
+  }
+
+  private attemptTrustedDevAutoLogin(deviceTrustToken: string): void {
+    const deviceUuid = this.fingerprintService.getExistingDeviceUuidSync();
+    if (!deviceUuid || deviceUuid === 'SSR_STATIC_DEVICE_NODE' || deviceUuid === 'SM-PENDING-FINGERPRINT') {
+      return;
+    }
+
+    this.isAutoAuthenticatingDev.set(true);
+    this.http
+      .post<{ success: boolean; data: { token: string; user: any } }>(
+        '/api/v1/auth/dev-device-login',
+        { deviceUuid, deviceTrustToken }
+      )
+      .subscribe({
+        next: (res) => {
+          this.isAutoAuthenticatingDev.set(false);
+          if (res?.data?.token && res?.data?.user) {
+            this.completeAdminSession(res.data.token, res.data.user);
+          }
+        },
+        error: () => {
+          this.isAutoAuthenticatingDev.set(false);
+          try {
+            localStorage.removeItem(DEV_TRUST_TOKEN_KEY);
+          } catch {}
+        }
+      });
   }
 
   close(): void {
@@ -163,18 +221,35 @@ export class AdminAccessModalComponent implements OnDestroy {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    const endpoint = this.portalMode() === 'developer'
+    const isDevMode = this.portalMode() === 'developer';
+    const endpoint = isDevMode
       ? (isSetup ? '/api/v1/auth/dev-setup-code' : '/api/v1/auth/admin-login')
       : (isSetup ? '/api/v1/auth/teacher-setup-code' : '/api/v1/auth/admin-login');
 
-    const payload = isSetup
-      ? { accessCode: code }
-      : { accessCode: code, mode: this.portalMode() === 'developer' ? 'dev' : 'teacher' };
+    const deviceUuid = isDevMode && isPlatformBrowser(this.platformId)
+      ? this.fingerprintService.getExistingDeviceUuidSync()
+      : undefined;
 
-    this.http.post<{ success: boolean; data: { token: string; user: any } }>(endpoint, payload).subscribe({
+    const payload: Record<string, any> = isSetup
+      ? {
+          accessCode: code,
+          ...(deviceUuid && deviceUuid !== 'SM-PENDING-FINGERPRINT' ? { deviceUuid } : {})
+        }
+      : {
+          accessCode: code,
+          mode: isDevMode ? 'dev' : 'teacher',
+          ...(deviceUuid && deviceUuid !== 'SM-PENDING-FINGERPRINT' ? { deviceUuid } : {})
+        };
+
+    this.http.post<{ success: boolean; data: { token: string; user: any; devDeviceTrustToken?: string } }>(endpoint, payload).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
         if (res?.data?.token && res?.data?.user) {
+          if (res.data.devDeviceTrustToken && isPlatformBrowser(this.platformId)) {
+            try {
+              localStorage.setItem(DEV_TRUST_TOKEN_KEY, res.data.devDeviceTrustToken);
+            } catch {}
+          }
           this.completeAdminSession(res.data.token, res.data.user);
         } else {
           this.errorMessage.set(
@@ -279,6 +354,12 @@ export class AdminAccessModalComponent implements OnDestroy {
     this.authService.setPendingDeviceApproval(false);
     this.authService.setSession(token, user);
     this.close();
-    this.router.navigateByUrl('/admin');
+    if (this.modalNav.isSettling()) {
+      void this.modalNav.whenSettled().then(() => {
+        void this.router.navigateByUrl('/admin');
+      });
+    } else {
+      void this.router.navigateByUrl('/admin');
+    }
   }
 }

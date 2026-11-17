@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { ModalNavigationService } from '../services/modal-navigation.service';
 
 export type UserRole = 'SUPER_ADMIN' | 'STUDENT' | 'PARENT';
 
@@ -31,6 +32,7 @@ export interface IUserDto {
 export class AuthService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly modalNav = inject(ModalNavigationService);
 
   private readonly TOKEN_KEY = 'spider_math_jwt';
   private readonly USER_KEY = 'spider_math_user';
@@ -129,7 +131,24 @@ export class AuthService {
       try {
         sessionStorage.removeItem(this.PENDING_DEVICE_KEY);
       } catch {}
-      this.router.navigateByUrl(redirectUrl);
+
+      const navigateToTarget = () => {
+        void this.router.navigateByUrl(redirectUrl, { replaceUrl: true }).then((ok) => {
+          if (!ok && typeof window !== 'undefined' && !window.location.pathname.startsWith('/context.html')) {
+            window.location.replace(redirectUrl);
+          }
+        });
+      };
+
+      if (this.modalNav.isSettling()) {
+        void this.modalNav.whenSettled().then(() => {
+          this.modalNav.clearStack();
+          navigateToTarget();
+        });
+      } else {
+        this.modalNav.clearStack();
+        navigateToTarget();
+      }
     }
   }
 

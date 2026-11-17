@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { AuthService, IUserDto } from './auth.service';
+import { ModalNavigationService } from '../services/modal-navigation.service';
 
 describe('AuthService Avatar Normalization & Persistence', () => {
   let service: AuthService;
@@ -116,5 +117,31 @@ describe('AuthService Avatar Normalization & Persistence', () => {
     expect(reloadedService.isAuthenticated()).toBeTrue();
     expect(reloadedService.currentUser()?.avatar_url).toBe('/assets/avatars/student-avatar-09.webp');
     expect(reloadedService.currentUser()?.avatarUrl).toBe('/assets/avatars/student-avatar-09.webp');
+  });
+
+  it('should wait for modal history settle, replaceUrl to landing page, and preserve trusted dev device storage on logout', async () => {
+    const router = TestBed.inject(Router);
+    const modalNav = TestBed.inject(ModalNavigationService);
+    const navSpy = spyOn(router, 'navigateByUrl').and.returnValue(Promise.resolve(true));
+    spyOn(modalNav, 'isSettling').and.returnValue(true);
+    spyOn(modalNav, 'whenSettled').and.returnValue(Promise.resolve());
+
+    localStorage.setItem('spider_math_device_uuid', 'SM-DEV-123');
+    localStorage.setItem('spider_math_dev_trust_token', 'trust_token_abc');
+    service.setSession('jwt_active', {
+      _id: 'std_1',
+      full_name: 'Student One',
+      email: 'std@spidermath.edu',
+      role: 'STUDENT'
+    });
+
+    service.clearSession('/');
+    expect(service.isAuthenticated()).toBeFalse();
+    expect(localStorage.getItem('spider_math_jwt')).toBeNull();
+    expect(localStorage.getItem('spider_math_device_uuid')).toBe('SM-DEV-123');
+    expect(localStorage.getItem('spider_math_dev_trust_token')).toBe('trust_token_abc');
+
+    await Promise.resolve();
+    expect(navSpy).toHaveBeenCalledWith('/', { replaceUrl: true });
   });
 });

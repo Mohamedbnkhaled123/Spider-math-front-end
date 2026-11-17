@@ -14,9 +14,37 @@ export class ModalNavigationService {
   private readonly platformId = inject(PLATFORM_ID);
   private modalStack: ModalNavigationEntry[] = [];
   private isProgrammaticDismiss = false;
+  private hasPendingHistoryBack = false;
+  private pendingSettleResolvers: Array<() => void> = [];
+  private settleFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly openModalCount = signal<number>(0);
   readonly topModalId = signal<string | null>(null);
+
+  isSettling(): boolean {
+    return this.hasPendingHistoryBack;
+  }
+
+  whenSettled(): Promise<void> {
+    if (!this.hasPendingHistoryBack || !isPlatformBrowser(this.platformId)) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      this.pendingSettleResolvers.push(resolve);
+    });
+  }
+
+  private resolveSettleWaiters(): void {
+    this.hasPendingHistoryBack = false;
+    if (this.settleFallbackTimer) {
+      clearTimeout(this.settleFallbackTimer);
+      this.settleFallbackTimer = null;
+    }
+    const waiters = this.pendingSettleResolvers.splice(0);
+    for (const resolve of waiters) {
+      resolve();
+    }
+  }
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -56,11 +84,23 @@ export class ModalNavigationService {
     );
 
     if (isTop && isPlatformBrowser(this.platformId)) {
-      this.isProgrammaticDismiss = true;
-      try {
-        window.history.back();
-      } catch {
-        this.isProgrammaticDismiss = false;
+      const historyState = window.history.state;
+      if (historyState?.isModalOverlay === true && historyState?.modalId === id) {
+        this.isProgrammaticDismiss = true;
+        this.hasPendingHistoryBack = true;
+        if (this.settleFallbackTimer) {
+          clearTimeout(this.settleFallbackTimer);
+        }
+        this.settleFallbackTimer = setTimeout(() => {
+          this.isProgrammaticDismiss = false;
+          this.resolveSettleWaiters();
+        }, 80);
+        try {
+          window.history.back();
+        } catch {
+          this.isProgrammaticDismiss = false;
+          this.resolveSettleWaiters();
+        }
       }
     }
   }
@@ -68,15 +108,20 @@ export class ModalNavigationService {
   async handlePopState(event?: PopStateEvent): Promise<void> {
     if (this.isProgrammaticDismiss) {
       this.isProgrammaticDismiss = false;
+      this.resolveSettleWaiters();
       return;
     }
 
     if (this.modalStack.length === 0) {
+      this.resolveSettleWaiters();
       return;
     }
 
     const topModal = this.modalStack.pop();
-    if (!topModal) return;
+    if (!topModal) {
+      this.resolveSettleWaiters();
+      return;
+    }
 
     this.openModalCount.set(this.modalStack.length);
     this.topModalId.set(
@@ -96,6 +141,7 @@ export class ModalNavigationService {
     } catch (closeErr) {
       console.warn('ModalNavigationService: close callback failed', closeErr);
     }
+    this.resolveSettleWaiters();
   }
 
   getStack(): readonly ModalNavigationEntry[] {
@@ -106,5 +152,7 @@ export class ModalNavigationService {
     this.modalStack = [];
     this.openModalCount.set(0);
     this.topModalId.set(null);
+    this.isProgrammaticDismiss = false;
+    this.resolveSettleWaiters();
   }
 }

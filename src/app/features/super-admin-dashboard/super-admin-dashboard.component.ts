@@ -89,10 +89,12 @@ export class SuperAdminDashboardComponent implements OnInit {
     teacherCodeSet: boolean;
     teacherGoogleEmail: string;
     devCodeSet: boolean;
+    trustedDevDevicesCount?: number;
   }>({
     teacherCodeSet: false,
     teacherGoogleEmail: '',
-    devCodeSet: false
+    devCodeSet: false,
+    trustedDevDevicesCount: 0
   });
   readonly secTeacherGoogleEmail = signal<string>('');
   readonly secNewTeacherCode = signal<string>('');
@@ -909,7 +911,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     }
 
     this.isSavingSecuritySettings.set(true);
-    this.http.patch<{ success: boolean; data: { teacherCodeSet: boolean; teacherGoogleEmail: string; devCodeSet: boolean } }>(
+    this.http.patch<{ success: boolean; data: { teacherCodeSet: boolean; teacherGoogleEmail: string; devCodeSet: boolean; trustedDevDevicesCount?: number } }>(
       '/api/v1/admin/users/security-access',
       payload
     ).subscribe({
@@ -918,6 +920,9 @@ export class SuperAdminDashboardComponent implements OnInit {
         if (res?.data) {
           this.securitySettings.set(res.data);
           this.secTeacherGoogleEmail.set(res.data.teacherGoogleEmail || '');
+        }
+        if (newDevCode) {
+          try { localStorage.removeItem('spider_math_dev_trust_token'); } catch {}
         }
         this.secNewTeacherCode.set('');
         this.secCurrentDevCode.set('');
@@ -928,6 +933,28 @@ export class SuperAdminDashboardComponent implements OnInit {
       error: (err) => {
         this.isSavingSecuritySettings.set(false);
         const msg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ إعدادات الأمان.';
+        this.triggerToast(msg, 'error');
+      }
+    });
+  }
+
+  revokeTrustedDevDevices(): void {
+    this.isSavingSecuritySettings.set(true);
+    this.http.patch<{ success: boolean; data: { teacherCodeSet: boolean; teacherGoogleEmail: string; devCodeSet: boolean; trustedDevDevicesCount?: number } }>(
+      '/api/v1/admin/users/security-access',
+      { revokeDevDevices: true }
+    ).subscribe({
+      next: (res) => {
+        this.isSavingSecuritySettings.set(false);
+        if (res?.data) {
+          this.securitySettings.set(res.data);
+        }
+        try { localStorage.removeItem('spider_math_dev_trust_token'); } catch {}
+        this.triggerToast('تم إلغاء ثقة جميع أجهزة المطور بنجاح', 'success');
+      },
+      error: (err) => {
+        this.isSavingSecuritySettings.set(false);
+        const msg = err?.error?.error?.message || err?.error?.message || 'تعذر إلغاء الأجهزة الموثوقة.';
         this.triggerToast(msg, 'error');
       }
     });

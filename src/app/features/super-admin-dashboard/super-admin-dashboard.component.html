@@ -631,6 +631,21 @@
                   {{ securitySettings().devCodeSet ? (langService.isArabic() ? 'مقفل ومفعل' : 'Locked & Configured') : (langService.isArabic() ? 'غير معين' : 'Not set') }}
                 </strong>
               </span>
+              @if ((securitySettings().trustedDevDevicesCount || 0) > 0) {
+                <div class="w-full pt-2 border-t border-surface-border flex items-center justify-between gap-2">
+                  <span class="font-bold text-text-muted">
+                    {{ langService.isArabic() ? ('أجهزة المطور الموثوقة: ' + securitySettings().trustedDevDevicesCount) : ('Trusted Dev Devices: ' + securitySettings().trustedDevDevicesCount) }}
+                  </span>
+                  <button
+                    type="button"
+                    (click)="revokeTrustedDevDevices()"
+                    [disabled]="isSavingSecuritySettings()"
+                    class="px-2.5 py-1 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 font-bold hover:bg-rose-500/20 cursor-pointer disabled:opacity-50"
+                  >
+                    {{ langService.isArabic() ? 'إلغاء ثقة جميع الأجهزة' : 'Revoke All Trusted Devices' }}
+                  </button>
+                </div>
+              }
             </div>
 
             <div class="space-y-1.5">
