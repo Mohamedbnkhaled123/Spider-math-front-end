@@ -56,6 +56,10 @@ export interface AssessmentDraft {
   composerSnapshot?: QuestionComposerSnapshot;
   createdAt: number;
   updatedAt: number;
+  unitId?: string;
+  lectureId?: string | null;
+  assessmentType?: string;
+  studioContext?: 'CURRICULUM_STUDIO' | 'ASSESSMENT_STUDIO';
 }
 
 export type AssessmentDraftRecord = AssessmentDraft;

@@ -123,8 +123,8 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.comingSoonUnitTitle.set(title);
     this.showComingSoonModal.set(true);
     const toast = this.langService.isArabic()
-      ? `⏳ قريباً — محتوى "${title}" قيد الإعداد!`
-      : `⏳ Coming Soon — "${title}" is being prepared!`;
+      ? `قريباً — محتوى "${title}" قيد الإعداد!`
+      : `Coming Soon — "${title}" is being prepared!`;
     this.toastMessage.set(toast);
     setTimeout(() => {
       if (this.toastMessage() === toast) {

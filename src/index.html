@@ -1,6 +1,22 @@
 <!doctype html>
 <html lang="ar" dir="rtl" class="dark" data-theme="dark">
 <head>
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('spider_math_theme_v3');
+        if (t === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else if (t === 'dark') {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="utf-8">
   <title>Spider Math Platform | منصة سبايدر ماث التعليمية — المهندسة هبة عبدالوهاب</title>
   <base href="/">

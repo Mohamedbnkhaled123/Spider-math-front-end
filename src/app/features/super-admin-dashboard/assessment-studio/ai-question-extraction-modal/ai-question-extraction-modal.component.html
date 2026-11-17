@@ -546,6 +546,17 @@
                         </button>
                         <button
                           type="button"
+                          (click)="setQuestionType(q, 'INPUT_TEXT')"
+                          class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                          [class.bg-brand-primary]="q.type === 'INPUT_TEXT'"
+                          [class.text-white]="q.type === 'INPUT_TEXT'"
+                          [class.text-text-muted]="q.type !== 'INPUT_TEXT'"
+                        >
+                          <app-icon name="file-text" [size]="12" />
+                          <span>{{ langService.isArabic() ? 'إدخال نص' : 'Short Answer' }}</span>
+                        </button>
+                        <button
+                          type="button"
                           (click)="setQuestionType(q, 'ESSAY')"
                           class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
                           [class.bg-brand-primary]="q.type === 'ESSAY'"
@@ -695,6 +706,59 @@
                               (focus)="onFieldFocus(optInputRef)"
                               class="w-full px-2.5 py-1.5 rounded-lg border border-surface-border bg-surface-card text-text-primary text-xs outline-none focus:border-brand-primary"
                             />
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  } @else if (q.type === 'INPUT_TEXT') {
+                    <!-- Short Answer / Accepted Answers Builder -->
+                    <div class="space-y-3 pt-2 border-t border-surface-border">
+                      <div class="flex items-center justify-between">
+                        <label class="font-bold text-text-secondary text-[11px] block">
+                          {{ langService.isArabic() ? 'الإجابات المقبولة (تصحيح تلقائي فوري):' : 'Accepted Answers (Auto-Graded):' }}
+                        </label>
+                        <button
+                          type="button"
+                          (click)="addAcceptedAnswer(q)"
+                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-all cursor-pointer"
+                        >
+                          <app-icon name="plus" [size]="13" />
+                          <span>{{ langService.isArabic() ? 'إضافة إجابة مقبولة' : 'Add Accepted Answer' }}</span>
+                        </button>
+                      </div>
+
+                      <div class="space-y-2">
+                        @for (ans of (q.acceptedAnswers && q.acceptedAnswers.length > 0 ? q.acceptedAnswers : ['']); track $index) {
+                          <div class="flex items-center gap-2 p-1.5 rounded-xl border border-surface-border bg-surface-bg">
+                            <span class="w-5 h-5 rounded-md bg-surface-card flex items-center justify-center text-[10px] font-bold text-text-muted shrink-0">
+                              {{ $index + 1 }}
+                            </span>
+                            <input
+                              #stagedAnsInput
+                              type="text"
+                              [value]="stripLatexDelimiters(ans)"
+                              (input)="onAcceptedAnswerInput(q, $index, $event)"
+                              (focus)="onFieldFocus(stagedAnsInput)"
+                              [placeholder]="langService.isArabic() ? ('أدخل إجابة صحيحة محتملة (' + ($index + 1) + ')...') : ('Enter accepted answer (' + ($index + 1) + ')...')"
+                              class="flex-1 bg-transparent border-none text-xs text-text-primary outline-none min-w-0 font-bold"
+                            />
+                            <button
+                              type="button"
+                              (click)="openMathKeyboard(stagedAnsInput)"
+                              class="p-1 rounded-lg text-text-muted hover:text-brand-primary transition-all cursor-pointer shrink-0"
+                              [title]="langService.isArabic() ? 'لوحة الرموز الرياضية' : 'Math Keyboard'"
+                            >
+                              <app-icon name="calculator" [size]="14" />
+                            </button>
+                            @if ((q.acceptedAnswers?.length || 1) > 1) {
+                              <button
+                                type="button"
+                                (click)="removeAcceptedAnswer(q, $index)"
+                                class="p-1 rounded-lg text-text-muted hover:text-rose-500 transition-all cursor-pointer shrink-0"
+                              >
+                                <app-icon name="trash" [size]="14" />
+                              </button>
+                            }
                           </div>
                         }
                       </div>

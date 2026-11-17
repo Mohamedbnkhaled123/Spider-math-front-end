@@ -6,12 +6,17 @@ import {
   signal,
   computed,
   inject,
-  OnInit
+  OnInit,
+  PLATFORM_ID,
+  HostListener
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { ModalNavigationService } from '../../../core/services/modal-navigation.service';
+import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
+import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
 import { AppIconComponent, AppIconName } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import {
@@ -126,6 +131,15 @@ const GRADE_DESCENDING_ORDER: Record<string, number> = {
 };
 
 export function sortGradesDescending(grades: GradeOption[]): GradeOption[] {
+  const hasCustomOrder = grades.some((g) => g.order !== undefined);
+  if (hasCustomOrder) {
+    return [...grades].sort((a, b) => {
+      const orderA = a.order ?? GRADE_DESCENDING_ORDER[a.code] ?? 999;
+      const orderB = b.order ?? GRADE_DESCENDING_ORDER[b.code] ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.code.localeCompare(b.code);
+    });
+  }
   return [...grades].sort((a, b) => {
     const orderA = GRADE_DESCENDING_ORDER[a.code] ?? 999;
     const orderB = GRADE_DESCENDING_ORDER[b.code] ?? 999;
@@ -176,10 +190,15 @@ export class CurriculumStudioComponent implements OnInit {
   readonly gradeChange = output<string>();
   readonly termChange = output<AcademicTermCode>();
   readonly unitUpdated = output<UnitPackageAdminItem>();
+  readonly unitsReordered = output<UnitPackageAdminItem[]>();
   readonly unitDeleted = output<string>();
   readonly unitCreated = output<Partial<UnitPackageAdminItem>>();
   readonly assessmentSaved = output<AssessmentAdminItem>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
+
+  // Reordering In-Progress States
+  readonly isReorderingUnit = signal<boolean>(false);
+  readonly isReorderingLecture = signal<boolean>(false);
 
   // Active Grades Management
   readonly activeGrades = signal<string[]>(['SEC_3']);
@@ -211,10 +230,10 @@ export class CurriculumStudioComponent implements OnInit {
 
   // Gulf Countries List
   readonly GULF_COUNTRIES = [
-    { code: 'SA' as const, nameAr: 'المملكة العربية السعودية', shortNameAr: 'السعودية', nameEn: 'Saudi Arabia', shortNameEn: 'Saudi', flag: '🇸🇦' },
-    { code: 'QA' as const, nameAr: 'دولة قطر', shortNameAr: 'قطر', nameEn: 'Qatar', shortNameEn: 'Qatar', flag: '🇶🇦' },
-    { code: 'AE' as const, nameAr: 'الإمارات العربية المتحدة', shortNameAr: 'الإمارات', nameEn: 'United Arab Emirates', shortNameEn: 'UAE', flag: '🇦🇪' },
-    { code: 'KW' as const, nameAr: 'دولة الكويت', shortNameAr: 'الكويت', nameEn: 'Kuwait', shortNameEn: 'Kuwait', flag: '🇰🇼' }
+    { code: 'SA' as const, nameAr: 'المملكة العربية السعودية', shortNameAr: 'السعودية', nameEn: 'Saudi Arabia', shortNameEn: 'Saudi', flag: '' },
+    { code: 'QA' as const, nameAr: 'دولة قطر', shortNameAr: 'قطر', nameEn: 'Qatar', shortNameEn: 'Qatar', flag: '' },
+    { code: 'AE' as const, nameAr: 'الإمارات العربية المتحدة', shortNameAr: 'الإمارات', nameEn: 'United Arab Emirates', shortNameEn: 'UAE', flag: '' },
+    { code: 'KW' as const, nameAr: 'دولة الكويت', shortNameAr: 'الكويت', nameEn: 'Kuwait', shortNameEn: 'Kuwait', flag: '' }
   ];
 
   readonly selectedGulfCountry = signal<'SA' | 'QA' | 'AE' | 'KW'>('SA');
@@ -266,9 +285,11 @@ export class CurriculumStudioComponent implements OnInit {
             }
             const countryGrade = countryData.grades.find((cg) => cg.code === g.code);
             return {
+              ...g,
               code: g.code,
               titleAr: countryGrade ? countryGrade.titleAr : g.titleAr,
               titleEn: countryGrade ? (countryGrade.titleEn || countryGrade.titleAr) : (g.titleEn || g.titleAr),
+              order: g.order,
               isCustom: false
             };
           });
@@ -277,14 +298,27 @@ export class CurriculumStudioComponent implements OnInit {
     return track.grades;
   }
 
-  getGulfStagesForModal(): readonly IGulfStageDefinition[] {
-    const country = findGulfCountry(this.modalGulfCountry());
-    return country?.stages || [];
+  getGulfStagesForModal(track?: CurriculumTrackItem): CurriculumStageItem[] {
+    const t = track || this.allCurriculaTracks().find((x) => x.code === 'GULF');
+    const countryCode = this.modalGulfCountry();
+    const configuredDiv = t?.divisions?.find((d) => d.code === countryCode);
+    if (configuredDiv?.stages && configuredDiv.stages.length > 0) {
+      return configuredDiv.stages;
+    }
+    const country = findGulfCountry(countryCode);
+    return (country?.stages || []).map((s, idx) => ({
+      code: s.code,
+      nameAr: s.nameAr,
+      nameEn: s.nameEn,
+      gradeCodes: [...s.gradeCodes],
+      order: idx + 1
+    }));
   }
 
-  getGradesForGulfStage(stage: IGulfStageDefinition, track: CurriculumTrackItem): GradeOption[] {
+  getGradesForGulfStage(stage: { gradeCodes?: readonly string[] }, track: CurriculumTrackItem): GradeOption[] {
     const displayed = this.getDisplayedGradesForTrack(track);
-    return displayed.filter((g) => stage.gradeCodes.includes(g.code));
+    const codes = stage.gradeCodes || [];
+    return displayed.filter((g) => codes.includes(g.code));
   }
 
   getOtherGulfGrades(track: CurriculumTrackItem): GradeOption[] {
@@ -374,14 +408,14 @@ export class CurriculumStudioComponent implements OnInit {
         nameAr: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameAr || 'المنهج الأمريكي',
         nameEn: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameEn || 'American Curriculum',
         iconName: 'award',
-        flag: '🇺🇸'
+        flag: ''
       },
       {
         code: 'BRITISH_CURRICULUM',
         nameAr: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameAr || 'المنهج البريطاني',
         nameEn: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameEn || 'British Curriculum',
         iconName: 'graduation-cap',
-        flag: '🇬🇧'
+        flag: ''
       }
     ];
   }
@@ -464,10 +498,12 @@ export class CurriculumStudioComponent implements OnInit {
       nameAr: d.nameAr,
       nameEn: d.nameEn,
       iconName: d.iconName,
-      stages: d.stages.map((s) => ({
+      stages: d.stages.map((s, idx) => ({
         code: s.code,
         nameAr: s.nameAr,
-        nameEn: s.nameEn
+        nameEn: s.nameEn,
+        gradeCodes: [...s.gradeCodes],
+        order: idx + 1
       }))
     }));
   }
@@ -482,7 +518,7 @@ export class CurriculumStudioComponent implements OnInit {
     if (!stage) return [];
     const canonicalDiv = INTERNATIONAL_DIVISIONS_DATA.find((d) => d.code === this.modalIntlDivision());
     const canonicalStage = canonicalDiv?.stages.find((s) => s.code === stage.code);
-    const targetCodes = canonicalStage ? canonicalStage.gradeCodes : [];
+    const targetCodes = stage.gradeCodes && stage.gradeCodes.length > 0 ? stage.gradeCodes : (canonicalStage ? canonicalStage.gradeCodes : []);
     return targetCodes
       .map((code) => track.grades.find((g) => g.code === code))
       .filter((g): g is GradeOption => Boolean(g));
@@ -665,15 +701,20 @@ export class CurriculumStudioComponent implements OnInit {
     if (track.code === 'GULF') {
       const countryData = findGulfCountry(this.overviewGulfCountry());
       if (countryData) {
-        return countryData.grades.map(cg => {
-          const matchingTrackGrade = track.grades.find(g => g.code === cg.code);
-          return {
-            code: cg.code,
-            titleAr: cg.titleAr,
-            titleEn: cg.titleEn,
-            isCustom: matchingTrackGrade?.isCustom
-          };
-        });
+        const countryGradeCodes = new Set(countryData.grades.map((cg) => cg.code));
+        return track.grades
+          .filter((g) => countryGradeCodes.has(g.code) || (g.isCustom && (!g.countryCode || g.countryCode === countryData.code)))
+          .map((g) => {
+            const countryGrade = countryData.grades.find((cg) => cg.code === g.code);
+            return {
+              ...g,
+              code: g.code,
+              titleAr: countryGrade ? countryGrade.titleAr : g.titleAr,
+              titleEn: countryGrade ? (countryGrade.titleEn || countryGrade.titleAr) : (g.titleEn || g.titleAr),
+              order: g.order,
+              isCustom: g.isCustom
+            };
+          });
       }
     }
     if (track.code === 'INTERNATIONAL') {
@@ -689,14 +730,13 @@ export class CurriculumStudioComponent implements OnInit {
   getSelectedGulfCountryName(): string {
     const c = findGulfCountry(this.selectedGulfCountry());
     if (!c) return '';
-    return this.langService.isArabic() ? `${c.flagEmoji} ${c.nameAr}` : `${c.flagEmoji} ${c.nameEn}`;
+    return this.langService.isArabic() ? c.nameAr : c.nameEn;
   }
 
   getSelectedIntlDivisionName(): string {
     const d = findInternationalDivision(this.selectedIntlDivision());
     if (!d) return '';
-    const flag = d.code === 'AMERICAN_CURRICULUM' ? '🇺🇸' : '🇬🇧';
-    return this.langService.isArabic() ? `${flag} ${d.nameAr}` : `${flag} ${d.nameEn}`;
+    return this.langService.isArabic() ? d.nameAr : (d.nameEn || d.nameAr);
   }
 
   getSelectedGradeTitle(): string {
@@ -724,7 +764,8 @@ export class CurriculumStudioComponent implements OnInit {
             stages: d.stages.map(s => ({
               code: s.code,
               nameAr: s.nameAr,
-              nameEn: s.nameEn
+              nameEn: s.nameEn,
+              gradeCodes: [...s.gradeCodes]
             }))
           }))
         : undefined,
@@ -887,6 +928,12 @@ export class CurriculumStudioComponent implements OnInit {
   readonly isRefSheetActiveInCurriculum = signal<boolean>(false);
   readonly isRefSheetActiveInCreateAssessment = signal<boolean>(false);
 
+  // Assessment Draft & Navigation Services
+  readonly draftService = inject(AssessmentDraftService);
+  readonly modalNav = inject(ModalNavigationService);
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly pendingDraft = signal<AssessmentDraft | null>(null);
+
   // Assessment Safe Editor State
   readonly isAssessmentEditorOpen = signal<boolean>(false);
   readonly activeAssessment = signal<AssessmentAdminItem | null>(null);
@@ -894,10 +941,15 @@ export class CurriculumStudioComponent implements OnInit {
 
   readonly stripLatexDelimiters = stripLatexDelimiters;
 
-  // Question Extraction & Slicing Signals
+  // Question Extraction & Slicing Signals (Scoped per assessment - R3)
   readonly isAiExtractionModalOpen = signal<boolean>(false);
   readonly isManualSlicerOpen = signal<boolean>(false);
-  readonly cachedFileSession = signal<ICachedFileSession | null>(null);
+  private readonly assessmentFileSessions = signal<Record<string, ICachedFileSession>>({});
+  readonly cachedFileSession = computed<ICachedFileSession | null>(() => {
+    const asm = this.activeAssessment();
+    if (!asm || !asm.id) return null;
+    return this.assessmentFileSessions()[asm.id] || null;
+  });
   readonly activeQuestionForSlicing = signal<QuestionAdminItem | null>(null);
 
   // Math Keyboard & Exam Options Signals
@@ -905,7 +957,8 @@ export class CurriculumStudioComponent implements OnInit {
   readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
   readonly isExamOptionsOpen = signal<boolean>(false);
 
-  // New Question Form within Assessment Builder
+  // Active Question Editing (R2) & New Question Form within Assessment Builder
+  readonly editingQuestionId = signal<string | null>(null);
   readonly newQuestionType = signal<'MCQ' | 'INPUT_TEXT' | 'ESSAY'>('MCQ');
   readonly newQuestionTextAr = signal<string>('');
   readonly newQuestionImageUrl = signal<string | null>(null);
@@ -914,8 +967,150 @@ export class CurriculumStudioComponent implements OnInit {
   readonly newQuestionAcceptedAnswers = signal<string[]>(['']);
   readonly newQuestionPoints = signal<number>(5);
 
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
+      this.triggerDraftAutoSave(true);
+    }
+  }
+
   ngOnInit(): void {
     this.loadActiveGrades();
+    this.checkForPendingDrafts();
+  }
+
+  triggerDraftAutoSave(immediate = false): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+
+    const draft: AssessmentDraft = {
+      draftId: asm.id || 'curriculum_assessment_draft',
+      assessmentId: asm.id || null,
+      draftType: 'EDIT',
+      titleAr: asm.titleAr || '',
+      titleEn: asm.titleEn || '',
+      curriculum: this.selectedCurriculum(),
+      gradeLevel: this.selectedGrade(),
+      term: this.selectedTerm(),
+      calculatorType: asm.calculatorType || 'NONE',
+      referenceSheetUrl: asm.referenceSheetUrl || null,
+      durationMinutes: asm.durationMinutes || 20,
+      passPercentage: 60,
+      maxAttempts: 1,
+      isScheduled: false,
+      isPlacementTest: false,
+      requiresTeacherReview: !!asm.requiresTeacherReview,
+      totalPoints: (asm.questions || []).reduce((sum, q) => sum + (q.points || 1), 0),
+      questions: (asm.questions || []).map((q) => ({
+        id: q.id,
+        order: q.order,
+        type: q.type,
+        textAr: q.textAr,
+        questionImageUrl: q.questionImageUrl || null,
+        options: q.options || [],
+        correctOptionIndex: q.correctOptionIndex ?? 0,
+        acceptedAnswers: q.acceptedAnswers || [],
+        points: q.points || 5,
+        explanationAr: ''
+      })),
+      composerSnapshot: {
+        editingQuestionId: this.editingQuestionId(),
+        type: this.newQuestionType(),
+        textAr: this.newQuestionTextAr(),
+        imageUrl: this.newQuestionImageUrl(),
+        options: this.newQuestionOptions(),
+        acceptedAnswers: this.newQuestionAcceptedAnswers(),
+        correctIndex: this.newQuestionCorrectIndex(),
+        points: this.newQuestionPoints(),
+        youtubeUrl: ''
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      unitId: asm.unitId,
+      lectureId: asm.lectureId || null,
+      assessmentType: asm.type,
+      studioContext: 'CURRICULUM_STUDIO'
+    };
+
+    if (immediate) {
+      this.draftService.saveDraft(draft);
+    } else {
+      this.draftService.scheduleDebouncedSave(draft, 600);
+    }
+  }
+
+  async checkForPendingDrafts(): Promise<void> {
+    try {
+      const latest = await this.draftService.getLatestDraft();
+      if (latest && (!latest.studioContext || latest.studioContext === 'CURRICULUM_STUDIO')) {
+        this.pendingDraft.set(latest);
+      }
+    } catch (err) {
+      console.warn('Failed to check for pending drafts:', err);
+    }
+  }
+
+  restoreDraft(draft: AssessmentDraft): void {
+    const baseItem: AssessmentAdminItem = {
+      id: draft.assessmentId || draft.draftId,
+      unitId: draft.unitId || '',
+      lectureId: draft.lectureId || null,
+      titleAr: draft.titleAr || '',
+      titleEn: draft.titleEn || '',
+      type: (draft.assessmentType as any) || 'QUIZ',
+      calculatorType: draft.calculatorType || 'NONE',
+      durationMinutes: draft.durationMinutes || 20,
+      submissionsCount: 0,
+      referenceSheetUrl: draft.referenceSheetUrl || null,
+      requiresTeacherReview: !!draft.requiresTeacherReview,
+      questions: (draft.questions || []).map((q, idx) => ({
+        id: q.id || `q_${idx}`,
+        order: q.order || idx + 1,
+        type: q.type,
+        textAr: q.textAr || '',
+        questionImageUrl: q.questionImageUrl || null,
+        options: q.options || [],
+        correctOptionIndex: q.correctOptionIndex ?? 0,
+        acceptedAnswers: q.acceptedAnswers || [],
+        points: q.points || 5
+      }))
+    };
+
+    this.openAssessmentEditor(baseItem);
+
+    if (draft.composerSnapshot) {
+      this.editingQuestionId.set(draft.composerSnapshot.editingQuestionId || null);
+      this.newQuestionType.set(
+        draft.composerSnapshot.type === 'INPUT_TEXT'
+          ? 'INPUT_TEXT'
+          : draft.composerSnapshot.type === 'ESSAY' || draft.composerSnapshot.type === 'ESSAY_PHOTO'
+            ? 'ESSAY'
+            : 'MCQ'
+      );
+      this.newQuestionTextAr.set(draft.composerSnapshot.textAr || '');
+      this.newQuestionImageUrl.set(draft.composerSnapshot.imageUrl || null);
+      this.newQuestionOptions.set(draft.composerSnapshot.options || ['', '', '', '']);
+      this.newQuestionCorrectIndex.set(draft.composerSnapshot.correctIndex ?? 0);
+      this.newQuestionAcceptedAnswers.set(draft.composerSnapshot.acceptedAnswers || ['']);
+      this.newQuestionPoints.set(draft.composerSnapshot.points || 5);
+    } else {
+      this.cancelQuestionEdit();
+    }
+
+    this.pendingDraft.set(null);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تمت استعادة المسودة بنجاح' : 'Draft restored successfully',
+      type: 'success'
+    });
+  }
+
+  async discardDraft(draftId: string): Promise<void> {
+    await this.draftService.deleteDraft(draftId);
+    this.pendingDraft.set(null);
+    this.toastTriggered.emit({
+      text: this.langService.isArabic() ? 'تم حذف المسودة' : 'Draft discarded',
+      type: 'warning'
+    });
   }
 
   loadActiveGrades(): void {
@@ -1268,6 +1463,292 @@ export class CurriculumStudioComponent implements OnInit {
     );
   }
 
+  isFirstGrade(trackCode: CurriculumCode, gradeCode: string, viewGrades?: GradeOption[]): boolean {
+    const list = viewGrades || this.allCurriculaTracks().find((t) => t.code === trackCode)?.grades || [];
+    const idx = list.findIndex((g) => g.code === gradeCode);
+    return idx <= 0;
+  }
+
+  isLastGrade(trackCode: CurriculumCode, gradeCode: string, viewGrades?: GradeOption[]): boolean {
+    const list = viewGrades || this.allCurriculaTracks().find((t) => t.code === trackCode)?.grades || [];
+    const idx = list.findIndex((g) => g.code === gradeCode);
+    return idx < 0 || idx >= list.length - 1;
+  }
+
+  moveGradeUp(trackCode: CurriculumCode, gradeCode: string, event?: Event, viewGrades?: GradeOption[]): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const list = viewGrades || track.grades;
+    const viewIdx = list.findIndex((g) => g.code === gradeCode);
+    if (viewIdx <= 0) return;
+
+    const prevGrade = list[viewIdx - 1];
+    if (!prevGrade) return;
+
+    const currentGrades = [...track.grades];
+    const fromIdx = currentGrades.findIndex((g) => g.code === gradeCode);
+    const toIdx = currentGrades.findIndex((g) => g.code === prevGrade.code);
+    if (fromIdx < 0 || toIdx < 0) return;
+
+    const temp = currentGrades[fromIdx]!;
+    currentGrades[fromIdx] = currentGrades[toIdx]!;
+    currentGrades[toIdx] = temp;
+
+    const reindexedGrades = currentGrades.map((g, i) => ({ ...g, order: i + 1 }));
+
+    let updatedDivs = track.divisions;
+    if (trackCode === 'INTERNATIONAL') {
+      const currentDivs = this.getIntlDivisionsForModal(track);
+      updatedDivs = currentDivs.map((d) => {
+        const updatedStages = (d.stages || []).map((s) => {
+          if (s.gradeCodes && s.gradeCodes.includes(gradeCode) && s.gradeCodes.includes(prevGrade.code)) {
+            const codes = [...s.gradeCodes];
+            const i1 = codes.indexOf(gradeCode);
+            const i2 = codes.indexOf(prevGrade.code);
+            const tCode = codes[i1]!;
+            codes[i1] = codes[i2]!;
+            codes[i2] = tCode;
+            return { ...s, gradeCodes: codes };
+          }
+          return s;
+        });
+        return { ...d, stages: updatedStages };
+      });
+    } else if (trackCode === 'GULF') {
+      const countryCode = this.modalGulfCountry();
+      const currentStages = this.getGulfStagesForModal(track);
+      const updatedStages = currentStages.map((s) => {
+        if (s.gradeCodes && s.gradeCodes.includes(gradeCode) && s.gradeCodes.includes(prevGrade.code)) {
+          const codes = [...s.gradeCodes];
+          const i1 = codes.indexOf(gradeCode);
+          const i2 = codes.indexOf(prevGrade.code);
+          const tCode = codes[i1]!;
+          codes[i1] = codes[i2]!;
+          codes[i2] = tCode;
+          return { ...s, gradeCodes: codes };
+        }
+        return s;
+      });
+      const currentDivs = track.divisions || [];
+      if (currentDivs.some((d) => d.code === countryCode)) {
+        updatedDivs = currentDivs.map((d) => (d.code === countryCode ? { ...d, stages: updatedStages } : d));
+      } else {
+        updatedDivs = [...currentDivs, { code: countryCode, nameAr: countryCode, stages: updatedStages }];
+      }
+    }
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, grades: reindexedGrades, divisions: updatedDivs || t.divisions } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب الصفوف بنجاح' : 'Grades order updated successfully',
+      false
+    );
+  }
+
+  moveGradeDown(trackCode: CurriculumCode, gradeCode: string, event?: Event, viewGrades?: GradeOption[]): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const list = viewGrades || track.grades;
+    const viewIdx = list.findIndex((g) => g.code === gradeCode);
+    if (viewIdx < 0 || viewIdx >= list.length - 1) return;
+
+    const nextGrade = list[viewIdx + 1];
+    if (!nextGrade) return;
+
+    const currentGrades = [...track.grades];
+    const fromIdx = currentGrades.findIndex((g) => g.code === gradeCode);
+    const toIdx = currentGrades.findIndex((g) => g.code === nextGrade.code);
+    if (fromIdx < 0 || toIdx < 0) return;
+
+    const temp = currentGrades[fromIdx]!;
+    currentGrades[fromIdx] = currentGrades[toIdx]!;
+    currentGrades[toIdx] = temp;
+
+    const reindexedGrades = currentGrades.map((g, i) => ({ ...g, order: i + 1 }));
+
+    let updatedDivsDown = track.divisions;
+    if (trackCode === 'INTERNATIONAL') {
+      const currentDivs = this.getIntlDivisionsForModal(track);
+      updatedDivsDown = currentDivs.map((d) => {
+        const updatedStages = (d.stages || []).map((s) => {
+          if (s.gradeCodes && s.gradeCodes.includes(gradeCode) && s.gradeCodes.includes(nextGrade.code)) {
+            const codes = [...s.gradeCodes];
+            const i1 = codes.indexOf(gradeCode);
+            const i2 = codes.indexOf(nextGrade.code);
+            const tCode = codes[i1]!;
+            codes[i1] = codes[i2]!;
+            codes[i2] = tCode;
+            return { ...s, gradeCodes: codes };
+          }
+          return s;
+        });
+        return { ...d, stages: updatedStages };
+      });
+    } else if (trackCode === 'GULF') {
+      const countryCode = this.modalGulfCountry();
+      const currentStages = this.getGulfStagesForModal(track);
+      const updatedStages = currentStages.map((s) => {
+        if (s.gradeCodes && s.gradeCodes.includes(gradeCode) && s.gradeCodes.includes(nextGrade.code)) {
+          const codes = [...s.gradeCodes];
+          const i1 = codes.indexOf(gradeCode);
+          const i2 = codes.indexOf(nextGrade.code);
+          const tCode = codes[i1]!;
+          codes[i1] = codes[i2]!;
+          codes[i2] = tCode;
+          return { ...s, gradeCodes: codes };
+        }
+        return s;
+      });
+      const currentDivs = track.divisions || [];
+      if (currentDivs.some((d) => d.code === countryCode)) {
+        updatedDivsDown = currentDivs.map((d) => (d.code === countryCode ? { ...d, stages: updatedStages } : d));
+      } else {
+        updatedDivsDown = [...currentDivs, { code: countryCode, nameAr: countryCode, stages: updatedStages }];
+      }
+    }
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, grades: reindexedGrades, divisions: updatedDivsDown || t.divisions } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب الصفوف بنجاح' : 'Grades order updated successfully',
+      false
+    );
+  }
+
+  moveStageUp(trackCode: CurriculumCode, divisionCode: string, stageCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const currentDivs = this.getIntlDivisionsForModal(track);
+    const div = currentDivs.find((d) => d.code === divisionCode);
+    if (!div || !div.stages || div.stages.length <= 1) return;
+
+    const stageIdx = div.stages.findIndex((s) => s.code === stageCode);
+    if (stageIdx <= 0) return;
+
+    const newStages = [...div.stages];
+    const temp = newStages[stageIdx]!;
+    newStages[stageIdx] = newStages[stageIdx - 1]!;
+    newStages[stageIdx - 1] = temp;
+    const reindexedStages = newStages.map((s, i) => ({ ...s, order: i + 1 }));
+
+    const updatedDivs = currentDivs.map((d) => (d.code === divisionCode ? { ...d, stages: reindexedStages } : d));
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, divisions: updatedDivs } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب المراحل بنجاح' : 'Stages order updated successfully',
+      false
+    );
+  }
+
+  moveStageDown(trackCode: CurriculumCode, divisionCode: string, stageCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const currentDivs = this.getIntlDivisionsForModal(track);
+    const div = currentDivs.find((d) => d.code === divisionCode);
+    if (!div || !div.stages || div.stages.length <= 1) return;
+
+    const stageIdx = div.stages.findIndex((s) => s.code === stageCode);
+    if (stageIdx < 0 || stageIdx >= div.stages.length - 1) return;
+
+    const newStages = [...div.stages];
+    const temp = newStages[stageIdx]!;
+    newStages[stageIdx] = newStages[stageIdx + 1]!;
+    newStages[stageIdx + 1] = temp;
+    const reindexedStages = newStages.map((s, i) => ({ ...s, order: i + 1 }));
+
+    const updatedDivs = currentDivs.map((d) => (d.code === divisionCode ? { ...d, stages: reindexedStages } : d));
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, divisions: updatedDivs } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب المراحل بنجاح' : 'Stages order updated successfully',
+      false
+    );
+  }
+
+  moveGulfStageUp(trackCode: CurriculumCode, countryCode: string, stageCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const currentStages = [...this.getGulfStagesForModal(track)];
+    const stageIdx = currentStages.findIndex((s) => s.code === stageCode);
+    if (stageIdx <= 0) return;
+
+    const temp = currentStages[stageIdx]!;
+    currentStages[stageIdx] = currentStages[stageIdx - 1]!;
+    currentStages[stageIdx - 1] = temp;
+    const reindexedStages = currentStages.map((s, i) => ({ ...s, order: i + 1 }));
+
+    const currentDivs = track.divisions || [];
+    let updatedDivs: CurriculumDivisionItem[];
+    if (currentDivs.some((d) => d.code === countryCode)) {
+      updatedDivs = currentDivs.map((d) => (d.code === countryCode ? { ...d, stages: reindexedStages } : d));
+    } else {
+      updatedDivs = [...currentDivs, { code: countryCode, nameAr: countryCode, stages: reindexedStages }];
+    }
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, divisions: updatedDivs } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب المراحل الدراسية بنجاح' : 'Stages order updated successfully',
+      false
+    );
+  }
+
+  moveGulfStageDown(trackCode: CurriculumCode, countryCode: string, stageCode: string): void {
+    const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
+    if (!track) return;
+
+    const currentStages = [...this.getGulfStagesForModal(track)];
+    const stageIdx = currentStages.findIndex((s) => s.code === stageCode);
+    if (stageIdx < 0 || stageIdx >= currentStages.length - 1) return;
+
+    const temp = currentStages[stageIdx]!;
+    currentStages[stageIdx] = currentStages[stageIdx + 1]!;
+    currentStages[stageIdx + 1] = temp;
+    const reindexedStages = currentStages.map((s, i) => ({ ...s, order: i + 1 }));
+
+    const currentDivs = track.divisions || [];
+    let updatedDivs: CurriculumDivisionItem[];
+    if (currentDivs.some((d) => d.code === countryCode)) {
+      updatedDivs = currentDivs.map((d) => (d.code === countryCode ? { ...d, stages: reindexedStages } : d));
+    } else {
+      updatedDivs = [...currentDivs, { code: countryCode, nameAr: countryCode, stages: reindexedStages }];
+    }
+
+    this.allCurriculaTracks.update((tracks) =>
+      tracks.map((t) => (t.code === trackCode ? { ...t, divisions: updatedDivs } : t))
+    );
+
+    this.executeSaveActiveGrades(
+      this.langService.isArabic() ? 'تم تحديث ترتيب المراحل الدراسية بنجاح' : 'Stages order updated successfully',
+      false
+    );
+  }
+
   confirmSectionChanges(trackCode: CurriculumCode): void {
     const track = this.allCurriculaTracks().find((t) => t.code === trackCode);
     this.openConfirm(
@@ -1378,6 +1859,61 @@ export class CurriculumStudioComponent implements OnInit {
         this.toastTriggered.emit({
           text: `تم ${nextState ? 'نشر' : 'إلغاء نشر'} الوحدة فورياً!`,
           type: 'success'
+        });
+      }
+    });
+  }
+
+  moveUnitUp(index: number): void {
+    if (index <= 0 || this.isReorderingUnit()) return;
+    this.reorderUnitsByIndex(index, index - 1);
+  }
+
+  moveUnitDown(index: number): void {
+    const list = this.units();
+    if (index >= list.length - 1 || this.isReorderingUnit()) return;
+    this.reorderUnitsByIndex(index, index + 1);
+  }
+
+  private reorderUnitsByIndex(fromIndex: number, toIndex: number): void {
+    const currentList = [...this.units()];
+    const temp = currentList[fromIndex];
+    const target = currentList[toIndex];
+    if (!temp || !target) return;
+    currentList[fromIndex] = target;
+    currentList[toIndex] = temp;
+    const reindexed = currentList.map((u, i) => ({ ...u, order: i + 1 }));
+    this.unitsReordered.emit(reindexed);
+
+    this.isReorderingUnit.set(true);
+    const reorderPayload = {
+      unitIds: reindexed.map((u) => u.id),
+      items: reindexed.map((u, idx) => ({ id: u.id, order_index: idx + 1, order: idx + 1 }))
+    };
+
+    this.http.put<{ success: boolean }>('/api/v1/admin/curriculum-units/reorder', reorderPayload).subscribe({
+      next: () => {
+        this.isReorderingUnit.set(false);
+        this.toastTriggered.emit({
+          text: this.langService.isArabic() ? 'تم تحديث وترتيب الوحدات بنجاح' : 'Units order updated successfully',
+          type: 'success'
+        });
+      },
+      error: () => {
+        const u1 = reindexed[fromIndex]!;
+        const u2 = reindexed[toIndex]!;
+        this.http.patch(`/api/v1/admin/units/${u1.id}`, { order_index: u1.order, order: u1.order }).subscribe();
+        this.http.patch(`/api/v1/admin/units/${u2.id}`, { order_index: u2.order, order: u2.order }).subscribe({
+          next: () => {
+            this.isReorderingUnit.set(false);
+            this.toastTriggered.emit({
+              text: this.langService.isArabic() ? 'تم تحديث وترتيب الوحدات بنجاح' : 'Units order updated successfully',
+              type: 'success'
+            });
+          },
+          error: () => {
+            this.isReorderingUnit.set(false);
+          }
         });
       }
     });
@@ -1548,6 +2084,7 @@ export class CurriculumStudioComponent implements OnInit {
         const created = res?.data;
         const newUnit: UnitPackageAdminItem = {
           id: created?._id || created?.id,
+          order: created?.order_index ?? (this.units().length + 1),
           titleAr: created?.title_ar || form.titleAr.trim(),
           titleEn: created?.title_en || titleEn,
           curriculum: created?.curriculum || this.selectedCurriculum(),
@@ -1871,6 +2408,66 @@ export class CurriculumStudioComponent implements OnInit {
     });
   }
 
+  moveLectureUp(unit: UnitPackageAdminItem, index: number): void {
+    if (index <= 0 || this.isReorderingLecture()) return;
+    this.reorderLecturesByIndex(unit, index, index - 1);
+  }
+
+  moveLectureDown(unit: UnitPackageAdminItem, index: number): void {
+    const list = unit.lectures || [];
+    if (index >= list.length - 1 || this.isReorderingLecture()) return;
+    this.reorderLecturesByIndex(unit, index, index + 1);
+  }
+
+  private reorderLecturesByIndex(unit: UnitPackageAdminItem, fromIndex: number, toIndex: number): void {
+    const currentList = [...(unit.lectures || [])];
+    const temp = currentList[fromIndex];
+    const target = currentList[toIndex];
+    if (!temp || !target) return;
+    currentList[fromIndex] = target;
+    currentList[toIndex] = temp;
+    const reindexed = currentList.map((l, i) => ({ ...l, order: i + 1 }));
+    const updatedUnit: UnitPackageAdminItem = {
+      ...unit,
+      lectures: reindexed
+    };
+    this.unitUpdated.emit(updatedUnit);
+
+    this.isReorderingLecture.set(true);
+    const reorderPayload = {
+      unitId: unit.id,
+      lectureIds: reindexed.map((l) => l.id),
+      items: reindexed.map((l, idx) => ({ id: l.id, order_index: idx + 1, order: idx + 1 }))
+    };
+
+    this.http.put<{ success: boolean }>('/api/v1/admin/lectures/reorder', reorderPayload).subscribe({
+      next: () => {
+        this.isReorderingLecture.set(false);
+        this.toastTriggered.emit({
+          text: this.langService.isArabic() ? 'تم حفظ ترتيب المحاضرات بنجاح' : 'Lectures order saved successfully',
+          type: 'success'
+        });
+      },
+      error: () => {
+        const l1 = reindexed[fromIndex]!;
+        const l2 = reindexed[toIndex]!;
+        this.http.patch(`/api/v1/admin/lectures/${l1.id}`, { order_index: l1.order, order: l1.order }).subscribe();
+        this.http.patch(`/api/v1/admin/lectures/${l2.id}`, { order_index: l2.order, order: l2.order }).subscribe({
+          next: () => {
+            this.isReorderingLecture.set(false);
+            this.toastTriggered.emit({
+              text: this.langService.isArabic() ? 'تم حفظ ترتيب المحاضرات بنجاح' : 'Lectures order saved successfully',
+              type: 'success'
+            });
+          },
+          error: () => {
+            this.isReorderingLecture.set(false);
+          }
+        });
+      }
+    });
+  }
+
   deleteLecture(unit: UnitPackageAdminItem, lectureId: string): void {
     const lec = unit.lectures.find((l) => l.id === lectureId);
     const lecTitle = lec ? ((this.langService.isArabic() ? lec.titleAr : lec.titleEn) || `محاضرة ${lec.order || 1}`) : '';
@@ -1890,7 +2487,7 @@ export class CurriculumStudioComponent implements OnInit {
             );
             const updatedUnit: UnitPackageAdminItem = {
               ...unit,
-              lectures: unit.lectures.filter((l) => l.id !== lectureId),
+              lectures: unit.lectures.filter((l) => l.id !== lectureId).map((l, idx) => ({ ...l, order: idx + 1 })),
               assessments: updatedAssessments
             };
             this.unitUpdated.emit(updatedUnit);
@@ -2163,6 +2760,8 @@ export class CurriculumStudioComponent implements OnInit {
               lectures: updatedLectures,
               assessments: unit.assessments.filter((a) => a.id !== assessmentId)
             };
+            this.draftService.deleteDraft(assessmentId).catch(() => {});
+            this.pendingDraft.set(null);
             this.unitUpdated.emit(updatedUnit);
             this.toastTriggered.emit({
               text: this.langService.isArabic() ? 'تم حذف التقييم بنجاح' : 'Assessment deleted successfully',
@@ -2228,16 +2827,25 @@ export class CurriculumStudioComponent implements OnInit {
     this.activeAssessment.set(JSON.parse(JSON.stringify(asm)));
     this.isRefSheetActiveInCurriculum.set(Boolean(asm.referenceSheetUrl));
     this.autoRegradeWarning.set(false);
-    this.newQuestionTextAr.set('');
-    this.newQuestionImageUrl.set(null);
-    this.newQuestionOptions.set(['', '', '', '']);
-    this.newQuestionCorrectIndex.set(0);
-    this.newQuestionAcceptedAnswers.set(['']);
-    this.newQuestionPoints.set(5);
-    this.newQuestionType.set('MCQ');
+    this.cancelQuestionEdit();
     this.isExamOptionsOpen.set(false);
     this.isMathKeyboardOpen.set(false);
     this.isAssessmentEditorOpen.set(true);
+
+    this.modalNav.registerModal({
+      id: 'curriculum-assessment-editor',
+      saveDraft: () => this.triggerDraftAutoSave(true),
+      close: () => this.closeAssessmentEditor()
+    });
+  }
+
+  closeAssessmentEditor(): void {
+    if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
+      this.triggerDraftAutoSave(true);
+    }
+    this.modalNav.dismissModal('curriculum-assessment-editor');
+    this.isAssessmentEditorOpen.set(false);
+    this.cancelQuestionEdit();
   }
 
   // =========================================================================
@@ -2273,6 +2881,7 @@ export class CurriculumStudioComponent implements OnInit {
       requiresTeacherReview: hasEssay ? true : asm.requiresTeacherReview
     };
     this.activeAssessment.set(updatedAsm);
+    this.triggerDraftAutoSave(true);
     this.toastTriggered.emit({
       text: this.langService.isArabic()
         ? `تم استخراج وحفظ ${extractedQuestions.length} أسئلة بنجاح`
@@ -2282,7 +2891,13 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   onFileSessionCached(session: ICachedFileSession): void {
-    this.cachedFileSession.set(session);
+    const asm = this.activeAssessment();
+    if (asm && asm.id) {
+      this.assessmentFileSessions.update((sessions) => ({
+        ...sessions,
+        [asm.id]: session
+      }));
+    }
     this.toastTriggered.emit({
       text: this.langService.isArabic()
         ? `تم تجهيز صفحة ${session.pageNumber} للقص اليدوي.`
@@ -2292,7 +2907,13 @@ export class CurriculumStudioComponent implements OnInit {
   }
 
   onManualSlicingRequestedFromExtraction(session: ICachedFileSession): void {
-    this.cachedFileSession.set(session);
+    const asm = this.activeAssessment();
+    if (asm && asm.id) {
+      this.assessmentFileSessions.update((sessions) => ({
+        ...sessions,
+        [asm.id]: session
+      }));
+    }
     this.openManualSlicerForComposer();
   }
 
@@ -2319,6 +2940,7 @@ export class CurriculumStudioComponent implements OnInit {
     }
     this.isManualSlicerOpen.set(false);
     this.activeQuestionForSlicing.set(null);
+    this.triggerDraftAutoSave(true);
     this.toastTriggered.emit({
       text: this.langService.isArabic() ? 'تم قص وحفظ صورة السؤال بنجاح' : 'Question cropped and saved successfully',
       type: 'success'
@@ -2411,6 +3033,50 @@ export class CurriculumStudioComponent implements OnInit {
     });
   }
 
+  editQuestion(q: QuestionAdminItem): void {
+    const targetId = q.id || String(q.order);
+    this.editingQuestionId.set(targetId);
+    this.newQuestionType.set(q.type === 'ESSAY_PHOTO' ? 'ESSAY' : q.type);
+    this.newQuestionTextAr.set(q.textAr || '');
+    this.newQuestionImageUrl.set(q.questionImageUrl || null);
+    const rawOpts = q.options && q.options.length === 4
+      ? [...q.options]
+      : (q.options?.length ? [...q.options, '', '', ''].slice(0, 4) : ['', '', '', '']);
+    this.newQuestionOptions.set(rawOpts);
+    this.newQuestionAcceptedAnswers.set(
+      q.acceptedAnswers && q.acceptedAnswers.length > 0 ? [...q.acceptedAnswers] : ['']
+    );
+    this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
+    this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
+
+    if (typeof document !== 'undefined') {
+      setTimeout(() => {
+        const composerEl = document.getElementById('curriculumQuestionComposer');
+        if (composerEl) {
+          composerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    }
+
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `جاري تعديل السؤال رقم ${q.order}`
+        : `Editing Question #${q.order}`,
+      type: 'warning'
+    });
+  }
+
+  cancelQuestionEdit(): void {
+    this.newQuestionTextAr.set('');
+    this.newQuestionImageUrl.set(null);
+    this.newQuestionOptions.set(['', '', '', '']);
+    this.newQuestionCorrectIndex.set(0);
+    this.newQuestionAcceptedAnswers.set(['']);
+    this.newQuestionPoints.set(5);
+    this.newQuestionType.set('MCQ');
+    this.editingQuestionId.set(null);
+  }
+
   addQuestionToAssessment(): void {
     const asm = this.activeAssessment();
     if (!asm) return;
@@ -2460,33 +3126,76 @@ export class CurriculumStudioComponent implements OnInit {
     const isMcq = qType === 'MCQ';
     const isInputText = qType === 'INPUT_TEXT';
     const isEssay = qType === 'ESSAY';
+    const editId = this.editingQuestionId();
 
-    const newQ: QuestionAdminItem = {
-      id: `q_${Date.now()}`,
-      order: asm.questions.length + 1,
-      type: qType,
-      textAr: text || 'مسألة رياضية مصورة',
-      questionImageUrl: this.newQuestionImageUrl(),
-      options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
-      correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
-      acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
-      points: this.newQuestionPoints()
-    };
+    if (editId) {
+      // UPDATE EXISTING QUESTION (R2)
+      const targetIdx = asm.questions.findIndex((q) => (q.id && q.id === editId) || String(q.order) === editId);
+      if (targetIdx === -1) {
+        this.cancelQuestionEdit();
+        return;
+      }
 
-    const updatedAsm: AssessmentAdminItem = {
-      ...asm,
-      questions: [...asm.questions, newQ],
-      requiresTeacherReview: isEssay ? true : asm.requiresTeacherReview
-    };
-    this.activeAssessment.set(updatedAsm);
+      const existingQ = asm.questions[targetIdx];
+      const updatedQ: QuestionAdminItem = {
+        ...existingQ,
+        type: qType,
+        textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
+        questionImageUrl: this.newQuestionImageUrl(),
+        options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
+        correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
+        acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
+        points: this.newQuestionPoints()
+      };
 
-    // Reset Form
-    this.newQuestionTextAr.set('');
-    this.newQuestionImageUrl.set(null);
-    this.newQuestionOptions.set(['', '', '', '']);
-    this.newQuestionCorrectIndex.set(0);
-    this.newQuestionAcceptedAnswers.set(['']);
-    this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
+      const nextQuestions = [...asm.questions];
+      nextQuestions[targetIdx] = updatedQ;
+
+      const hasEssayAfter = nextQuestions.some((q) => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
+      const updatedAsm: AssessmentAdminItem = {
+        ...asm,
+        questions: nextQuestions,
+        requiresTeacherReview: hasEssayAfter ? true : asm.requiresTeacherReview
+      };
+      this.activeAssessment.set(updatedAsm);
+
+      if (asm.submissionsCount > 0) {
+        this.autoRegradeWarning.set(true);
+      }
+
+      this.cancelQuestionEdit();
+      this.triggerDraftAutoSave(true);
+
+      this.toastTriggered.emit({
+        text: this.langService.isArabic() ? 'تم تحديث السؤال بنجاح' : 'Question updated successfully',
+        type: 'success'
+      });
+    } else {
+      // ADD NEW QUESTION
+      const newQ: QuestionAdminItem = {
+        id: `q_${Date.now()}`,
+        order: asm.questions.length + 1,
+        type: qType,
+        textAr: text || 'مسألة رياضية مصورة',
+        questionImageUrl: this.newQuestionImageUrl(),
+        options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
+        correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
+        acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
+        points: this.newQuestionPoints()
+      };
+
+      const updatedAsm: AssessmentAdminItem = {
+        ...asm,
+        questions: [...asm.questions, newQ],
+        requiresTeacherReview: isEssay ? true : asm.requiresTeacherReview
+      };
+      this.activeAssessment.set(updatedAsm);
+
+      this.cancelQuestionEdit();
+      this.triggerDraftAutoSave(true);
+
+      this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
+    }
   }
 
   deleteQuestion(order: number): void {
@@ -2499,6 +3208,7 @@ export class CurriculumStudioComponent implements OnInit {
       () => {
         const filtered = asm.questions.filter((q) => q.order !== order);
         this.activeAssessment.set({ ...asm, questions: filtered });
+        this.triggerDraftAutoSave(true);
         this.toastTriggered.emit({ text: 'تم حذف السؤال', type: 'warning' });
       },
       true,
@@ -2611,6 +3321,12 @@ export class CurriculumStudioComponent implements OnInit {
 
     this.http.patch(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
       next: () => {
+        // Guaranteed draft cleanup from Dexie and LocalStorage upon successful save
+        this.draftService.deleteDraft(asm.id).catch((err) => {
+          console.warn('Error during post-save cleanup:', err);
+        });
+        this.pendingDraft.set(null);
+        this.modalNav.dismissModal('curriculum-assessment-editor');
         asm.requiresTeacherReview = requiresTeacherReview;
         this.assessmentSaved.emit(asm);
         this.isAssessmentEditorOpen.set(false);

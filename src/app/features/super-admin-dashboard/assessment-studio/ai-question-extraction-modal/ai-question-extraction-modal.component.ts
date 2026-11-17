@@ -25,6 +25,7 @@ import { ManualImageSlicerModalComponent } from '../../../../shared/components/m
 import { ISliceResult } from '../../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.models';
 import { cropBoundingBoxToBlob, uploadBlobToCloudinary, applyBoundingBoxPadding } from '../../../../shared/utils/box2d-cropper.util';
 import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
+import { ModalNavigationService } from '../../../../core/services/modal-navigation.service';
 import { AssessmentQuestionItem } from '../assessment-studio.models';
 import {
   AiExtractionMode,
@@ -56,12 +57,17 @@ export class AiQuestionExtractionModalComponent {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly langService = inject(LangService);
+  readonly modalNav = inject(ModalNavigationService);
 
   // Inputs & Two-Way Model (Bound dynamically from active assessment)
   readonly isOpen = model<boolean>(false);
+  readonly assessmentId = input<string>('');
   readonly curriculum = input<string>('');
   readonly gradeLevel = input<string>('');
   readonly existingSession = input<ICachedFileSession | null>(null);
+
+  private readonly stagedByAssessment = new Map<string, IStagedQuestion[]>();
+  private lastAssessmentId: string | null = null;
 
   // Outputs
   readonly questionsExtracted = output<AssessmentQuestionItem[]>();
@@ -136,11 +142,40 @@ export class AiQuestionExtractionModalComponent {
 
     effect(() => {
       const open = this.isOpen();
+      const currentId = this.assessmentId();
       const session = this.existingSession();
 
       untracked(() => {
-        if (open && session && !this.uploadedFile() && !this.currentCanvas) {
-          this.restoreCachedSession(session);
+        if (open) {
+          this.modalNav.registerModal({
+            id: 'ai-question-extraction-modal',
+            saveDraft: () => this.saveTransientDraft(),
+            close: () => this.close()
+          });
+
+          if (this.lastAssessmentId !== currentId) {
+            this.lastAssessmentId = currentId;
+            this.uploadedFile.set(null);
+            this.fileType.set(null);
+            this.fileName.set('');
+            this.currentPageNumber.set(1);
+            this.totalPages.set(1);
+            this.currentDataUrl.set(null);
+            this.currentCanvas = null;
+            this.errorMessage.set(null);
+
+            const existingStaged = this.stagedByAssessment.get(currentId) || [];
+            this.stagedQuestions.set(existingStaged);
+
+            if (session) {
+              this.restoreCachedSession(session);
+              this.currentStep.set(existingStaged.length > 0 ? 'STAGING_REVIEW' : 'PREVIEW_AND_PAGE');
+            } else {
+              this.currentStep.set(existingStaged.length > 0 ? 'STAGING_REVIEW' : 'UPLOAD_AND_SELECT');
+            }
+          } else if (session && !this.uploadedFile() && !this.currentCanvas) {
+            this.restoreCachedSession(session);
+          }
         }
       });
     });
@@ -510,13 +545,71 @@ export class AiQuestionExtractionModalComponent {
     );
   }
 
-  setQuestionType(q: IStagedQuestion, type: 'MCQ' | 'ESSAY'): void {
+  setQuestionType(q: IStagedQuestion, type: 'MCQ' | 'ESSAY' | 'INPUT_TEXT'): void {
     q.type = type;
     if (type === 'MCQ' && (!q.options || q.options.length === 0)) {
       q.options = ['', '', '', ''];
     }
+    if (type === 'INPUT_TEXT') {
+      if (!q.acceptedAnswers || q.acceptedAnswers.length === 0) {
+        q.acceptedAnswers = q.accepted_answers && q.accepted_answers.length > 0
+          ? [...q.accepted_answers]
+          : [''];
+      }
+      q.accepted_answers = q.acceptedAnswers;
+    }
     this.stagedQuestions.update((list) => [...list]);
+    const aid = this.assessmentId();
+    if (aid) {
+      this.stagedByAssessment.set(aid, this.stagedQuestions());
+    }
     this.cdr.markForCheck();
+  }
+
+  addAcceptedAnswer(q: IStagedQuestion): void {
+    if (!q.acceptedAnswers) q.acceptedAnswers = [];
+    q.acceptedAnswers.push('');
+    q.accepted_answers = q.acceptedAnswers;
+    this.stagedQuestions.update((list) => [...list]);
+    const aid = this.assessmentId();
+    if (aid) {
+      this.stagedByAssessment.set(aid, this.stagedQuestions());
+    }
+    this.cdr.markForCheck();
+  }
+
+  removeAcceptedAnswer(q: IStagedQuestion, index: number): void {
+    if (!q.acceptedAnswers) return;
+    if (q.acceptedAnswers.length <= 1) {
+      q.acceptedAnswers[0] = '';
+    } else {
+      q.acceptedAnswers.splice(index, 1);
+    }
+    q.accepted_answers = q.acceptedAnswers;
+    this.stagedQuestions.update((list) => [...list]);
+    const aid = this.assessmentId();
+    if (aid) {
+      this.stagedByAssessment.set(aid, this.stagedQuestions());
+    }
+    this.cdr.markForCheck();
+  }
+
+  onAcceptedAnswerInput(q: IStagedQuestion, index: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    const visual = stripLatexDelimiters(target.value);
+    if (visual !== target.value) {
+      const pos = target.selectionStart ?? visual.length;
+      target.value = visual;
+      target.setSelectionRange(pos, pos);
+    }
+    if (!q.acceptedAnswers) q.acceptedAnswers = [];
+    q.acceptedAnswers[index] = visual;
+    q.accepted_answers = q.acceptedAnswers;
+    const aid = this.assessmentId();
+    if (aid) {
+      this.stagedByAssessment.set(aid, this.stagedQuestions());
+    }
   }
 
   openManualSlicerForQuestion(q: IStagedQuestion): void {
@@ -662,6 +755,7 @@ export class AiQuestionExtractionModalComponent {
         }
 
         const isMcq = q.type === 'MCQ';
+        const isInputText = q.type === 'INPUT_TEXT';
         const validOptions = isMcq
           ? (q.options || []).map((o) => o.trim()).filter((o) => o.length > 0)
           : [];
@@ -679,6 +773,10 @@ export class AiQuestionExtractionModalComponent {
               : Math.min(validOptions.length - 1, Math.max(0, q.correct_option_index));
         }
 
+        const validAccepted = isInputText
+          ? (q.acceptedAnswers || q.accepted_answers || []).map((a) => (a || '').trim()).filter(Boolean)
+          : undefined;
+
         finalQuestions.push({
           id: `q_ai_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
           order: 0, // Sequentially assigned by AssessmentStudio parent
@@ -687,6 +785,7 @@ export class AiQuestionExtractionModalComponent {
           questionImageUrl: finalImageUrl,
           options: validOptions,
           correctOptionIndex: finalCorrectIndex,
+          acceptedAnswers: isInputText ? (validAccepted && validAccepted.length > 0 ? validAccepted : [q.question_text.trim() || 'إجابة']) : undefined,
           points: q.points > 0 ? q.points : 1,
           explanationAr: ''
         });
@@ -694,6 +793,14 @@ export class AiQuestionExtractionModalComponent {
 
       this.questionsExtracted.emit(finalQuestions);
       this.emitFileSession();
+
+      const unselected = this.stagedQuestions().filter((q) => !q.checked);
+      this.stagedQuestions.set(unselected);
+      const aid = this.assessmentId();
+      if (aid) {
+        this.stagedByAssessment.set(aid, unselected);
+      }
+
       this.close();
     } catch (uploadErr: any) {
       this.errorMessage.set(
@@ -713,7 +820,18 @@ export class AiQuestionExtractionModalComponent {
     this.currentStep.set(step);
   }
 
+  saveTransientDraft(): void {
+    const aid = this.assessmentId();
+    if (aid) {
+      this.stagedByAssessment.set(aid, this.stagedQuestions());
+    }
+    if (this.currentCanvas || this.uploadedFile()) {
+      this.emitFileSession();
+    }
+  }
+
   close(): void {
+    this.modalNav.dismissModal('ai-question-extraction-modal');
     this.isOpen.set(false);
     this.cancelled.emit();
   }

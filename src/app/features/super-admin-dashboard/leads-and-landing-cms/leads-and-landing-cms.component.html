@@ -1829,10 +1829,19 @@
 
                       <div class="text-[10px] text-text-muted flex items-center gap-3">
                         @if (honoree.locationAr) {
-                          <span>📍 {{ honoree.locationAr }}</span>
+                          <span class="inline-flex items-center gap-1">
+                            <app-icon name="map-pin" [size]="10" />
+                            <span>{{ honoree.locationAr }}</span>
+                          </span>
                         }
-                        <span class="font-numeric font-bold text-brand-gold">⚡ {{ honoree.xp || 0 }} XP</span>
-                        <span class="font-numeric font-bold text-emerald-500">🎯 {{ honoree.accuracy || 100 }}%</span>
+                        <span class="inline-flex items-center gap-1 font-numeric font-bold text-brand-gold">
+                          <app-icon name="activity" [size]="10" className="text-brand-gold" />
+                          <span>{{ honoree.xp || 0 }} XP</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1 font-numeric font-bold text-emerald-500">
+                          <app-icon name="target" [size]="10" className="text-emerald-500" />
+                          <span>{{ honoree.accuracy || 100 }}%</span>
+                        </span>
                       </div>
                     </div>
                   </div>

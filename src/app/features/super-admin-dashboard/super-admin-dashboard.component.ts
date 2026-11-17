@@ -353,22 +353,25 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.get<{ success: boolean; data: any[] }>(`/api/v1/units?${params}`).subscribe({
       next: (res) => {
         if (res?.data && Array.isArray(res.data)) {
-          const mapped: UnitPackageAdminItem[] = res.data.map((u: any) => ({
-            id: u._id,
-            titleAr: u.title_ar,
-            titleEn: u.title_en || '',
-            curriculum: u.curriculum,
-            gradeLevel: u.grade_level,
-            term: u.academic_term || u.term || 'TERM_1',
-            type: u.package_type || 'STUDY_UNIT',
-            isPublished: !!u.is_published,
-            priceEgp: u.price_egp || 0,
-            originalPriceEgp: u.original_price_egp || null,
-            discountPercentage: u.discount_percentage || null,
-            isDiscounted: !!(u.is_discounted || (u.original_price_egp && u.original_price_egp > u.price_egp)),
-            lectures: [],
-            assessments: []
-          }));
+          const mapped: UnitPackageAdminItem[] = res.data
+            .map((u: any, idx: number) => ({
+              id: u._id,
+              order: u.order_index ?? (idx + 1),
+              titleAr: u.title_ar,
+              titleEn: u.title_en || '',
+              curriculum: u.curriculum,
+              gradeLevel: u.grade_level,
+              term: u.academic_term || u.term || 'TERM_1',
+              type: u.package_type || 'STUDY_UNIT',
+              isPublished: !!u.is_published,
+              priceEgp: u.price_egp || 0,
+              originalPriceEgp: u.original_price_egp || null,
+              discountPercentage: u.discount_percentage || null,
+              isDiscounted: !!(u.is_discounted || (u.original_price_egp && u.original_price_egp > u.price_egp)),
+              lectures: [],
+              assessments: []
+            }))
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           this.unitsList.set(mapped);
           this.swrCache.set(unitsKey, mapped);
 
@@ -701,26 +704,45 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   onUnitUpdated(updated: UnitPackageAdminItem): void {
-    this.unitsList.update((list) =>
-      list.map((u) => (u.id === updated.id ? updated : u))
-    );
+    const updatedList = this.unitsList().map((u) => (u.id === updated.id ? updated : u));
+    this.unitsList.set(updatedList);
+    const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+    this.swrCache.set(unitsKey, updatedList);
+  }
+
+  onUnitsReordered(reordered: UnitPackageAdminItem[]): void {
+    this.unitsList.set(reordered);
+    const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+    this.swrCache.set(unitsKey, reordered);
   }
 
   onUnitDeleted(unitId: string): void {
     this.http.delete(`/api/v1/admin/units/${unitId}`).subscribe({
       next: () => {
-        this.unitsList.update((list) => list.filter((u) => u.id !== unitId));
+        const remaining = this.unitsList().filter((u) => u.id !== unitId);
+        this.unitsList.set(remaining);
+        const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+        this.swrCache.set(unitsKey, remaining);
         this.triggerToast('تم حذف الوحدة!', 'warning');
       },
       error: () => {
-        this.unitsList.update((list) => list.filter((u) => u.id !== unitId));
+        const remaining = this.unitsList().filter((u) => u.id !== unitId);
+        this.unitsList.set(remaining);
+        const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+        this.swrCache.set(unitsKey, remaining);
         this.triggerToast('تم حذف الوحدة!', 'warning');
       }
     });
   }
 
   onUnitCreated(newUnit: any): void {
-    this.unitsList.update((list) => [newUnit, ...list]);
+    const list = [...this.unitsList()];
+    const order = newUnit.order ?? (list.length + 1);
+    const unitWithOrder = { ...newUnit, order };
+    const nextList = [...list, unitWithOrder].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    this.unitsList.set(nextList);
+    const unitsKey = `admin_units_${this.selectedCurriculum()}_${this.selectedGrade()}_${this.selectedTerm()}`;
+    this.swrCache.set(unitsKey, nextList);
   }
 
   onAssessmentSaved(asm: AssessmentAdminItem): void {

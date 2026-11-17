@@ -2566,6 +2566,7 @@
   <!-- AI Question Extraction Modal (Phase 5) -->
   <app-ai-question-extraction-modal
     [(isOpen)]="isAiExtractionModalOpen"
+    [assessmentId]="activeAssessment()?.id || ''"
     [curriculum]="activeAssessment()?.curriculum || 'EGYPTIAN'"
     [gradeLevel]="activeAssessment()?.gradeLevel || 'SEC_3'"
     [existingSession]="cachedFileSession()"

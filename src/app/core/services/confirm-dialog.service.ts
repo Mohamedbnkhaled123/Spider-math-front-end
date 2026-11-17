@@ -1,4 +1,5 @@
-import { Injectable, signal, Signal } from '@angular/core';
+import { Injectable, signal, Signal, inject } from '@angular/core';
+import { ModalNavigationService } from './modal-navigation.service';
 
 export interface ConfirmDialogConfig {
   title: string;
@@ -27,6 +28,7 @@ export interface IConfirmDialogService {
   providedIn: 'root'
 })
 export class ConfirmDialogService implements IConfirmDialogService {
+  private readonly modalNav = inject(ModalNavigationService);
   private readonly _state = signal<ConfirmDialogState>({
     isOpen: false,
     config: {
@@ -55,10 +57,15 @@ export class ConfirmDialogService implements IConfirmDialogService {
         },
         resolve
       });
+      this.modalNav.registerModal({
+        id: 'confirm-dialog',
+        close: () => this.handleCancel()
+      });
     });
   }
 
   handleConfirm(): void {
+    this.modalNav.dismissModal('confirm-dialog');
     const s = this._state();
     const resolve = s.resolve;
     this._state.set({
@@ -72,6 +79,7 @@ export class ConfirmDialogService implements IConfirmDialogService {
   }
 
   handleCancel(): void {
+    this.modalNav.dismissModal('confirm-dialog');
     const s = this._state();
     const resolve = s.resolve;
     this._state.set({
@@ -85,6 +93,7 @@ export class ConfirmDialogService implements IConfirmDialogService {
   }
 
   close(): void {
+    this.modalNav.dismissModal('confirm-dialog');
     const s = this._state();
     const resolve = s.resolve;
     this._state.set({

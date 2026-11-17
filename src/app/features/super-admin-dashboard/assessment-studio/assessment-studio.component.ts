@@ -33,6 +33,7 @@ import {
 } from '../curriculum-studio/curriculum-studio.models';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
+import { ModalNavigationService } from '../../../core/services/modal-navigation.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { UiLayoutService } from '../../../core/services/ui-layout.service';
 
@@ -99,6 +100,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly draftService = inject(AssessmentDraftService);
   private readonly swrCache = inject(SwrCacheService);
   private readonly uiLayoutService = inject(UiLayoutService);
+  private readonly modalNav = inject(ModalNavigationService);
 
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
 
@@ -463,9 +465,14 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly isMathKeyboardOpen = signal<boolean>(false);
   readonly mathKeyboardTarget = signal<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
-  // AI Question Extraction & Slicer State (Phase 5)
+  // AI Question Extraction & Slicer State (Phase 5 - Scoped per assessment R3)
   readonly isAiExtractionModalOpen = signal<boolean>(false);
-  readonly cachedFileSession = signal<ICachedFileSession | null>(null);
+  private readonly assessmentFileSessions = signal<Record<string, ICachedFileSession>>({});
+  readonly cachedFileSession = computed<ICachedFileSession | null>(() => {
+    const asm = this.activeAssessment();
+    if (!asm || !asm.id) return null;
+    return this.assessmentFileSessions()[asm.id] || null;
+  });
   readonly isManualSlicerOpen = signal<boolean>(false);
   readonly activeQuestionForSlicing = signal<AssessmentQuestionItem | null>(null);
 
@@ -625,7 +632,13 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   onFileSessionCached(session: ICachedFileSession): void {
-    this.cachedFileSession.set(session);
+    const asm = this.activeAssessment();
+    if (asm && asm.id) {
+      this.assessmentFileSessions.update((sessions) => ({
+        ...sessions,
+        [asm.id]: session
+      }));
+    }
     this.toastTriggered.emit({
       text: this.langService.isArabic()
         ? `تم تجهيز صفحة ${session.pageNumber} للقص.`
@@ -635,7 +648,13 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   onManualSlicingRequestedFromExtraction(session: ICachedFileSession): void {
-    this.cachedFileSession.set(session);
+    const asm = this.activeAssessment();
+    if (asm && asm.id) {
+      this.assessmentFileSessions.update((sessions) => ({
+        ...sessions,
+        [asm.id]: session
+      }));
+    }
     this.openManualSlicerForComposer();
   }
 
@@ -1673,6 +1692,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.editorErrorMessage.set(null);
     this.autoRegradeWarning.set(false);
     this.isEditorOpen.set(true);
+    this.modalNav.registerModal({
+      id: 'assessment-studio-editor',
+      saveDraft: () => this.triggerDraftAutoSave(true),
+      close: () => this.closeEditor()
+    });
     this.loadUnitsForEditor(copy.curriculum, copy.gradeLevel, copy.term);
 
     // Also check async Dexie draft in case IndexedDB holds a newer version than localStorage
@@ -1706,6 +1730,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     this.mathKeyboardTarget.set(null);
     this.editorErrorMessage.set(null);
     this.isEditorOpen.set(false);
+    this.modalNav.dismissModal('assessment-studio-editor');
     this.activeAssessment.set(null);
     this.resetQuestionForm();
     this.checkForPendingDrafts();

@@ -111,7 +111,7 @@ export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
     code: 'SA',
     nameAr: 'المملكة العربية السعودية',
     nameEn: 'Saudi Arabia',
-    flagEmoji: '🇸🇦',
+    flagEmoji: '',
     stages: [
       {
         code: 'SECONDARY',
@@ -249,7 +249,7 @@ export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
     code: 'QA',
     nameAr: 'دولة قطر',
     nameEn: 'Qatar',
-    flagEmoji: '🇶🇦',
+    flagEmoji: '',
     stages: [
       {
         code: 'SECONDARY',
@@ -387,7 +387,7 @@ export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
     code: 'AE',
     nameAr: 'الإمارات العربية المتحدة',
     nameEn: 'United Arab Emirates',
-    flagEmoji: '🇦🇪',
+    flagEmoji: '',
     stages: [
       {
         code: 'CYCLE_3',
@@ -525,7 +525,7 @@ export const GULF_COUNTRIES_DATA: readonly IGulfCountryData[] = [
     code: 'KW',
     nameAr: 'دولة الكويت',
     nameEn: 'Kuwait',
-    flagEmoji: '🇰🇼',
+    flagEmoji: '',
     stages: [
       {
         code: 'SECONDARY',
@@ -855,7 +855,7 @@ export const INTERNATIONAL_DIVISIONS_DATA: readonly IInternationalDivisionData[]
     nameAr: 'المنهج البريطاني',
     nameEn: 'British Curriculum',
     iconName: 'graduation-cap',
-    mathSymbol: '🎓',
+    mathSymbol: '∫',
     accentColorHex: '#EC4899',
     stages: [
       {

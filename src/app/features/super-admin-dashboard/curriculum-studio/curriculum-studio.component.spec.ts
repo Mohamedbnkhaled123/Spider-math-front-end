@@ -588,4 +588,176 @@ describe('CurriculumStudioComponent', () => {
       expect(http.delete).toHaveBeenCalledWith('/api/v1/admin/assessments/asm-789');
     });
   });
+
+  describe('Units, Lectures, and Grades Reordering Suite', () => {
+    it('should reorder units up and down sequentially', () => {
+      const units: any[] = [
+        { id: 'u1', titleAr: 'الوحدة الأولى', order: 1, lectures: [], assessments: [] },
+        { id: 'u2', titleAr: 'الوحدة الثانية', order: 2, lectures: [], assessments: [] },
+        { id: 'u3', titleAr: 'الوحدة الثالثة', order: 3, lectures: [], assessments: [] }
+      ];
+      fixture.componentRef.setInput('units', units);
+      fixture.detectChanges();
+
+      spyOn(component.unitsReordered, 'emit');
+      const http = (component as any).http;
+      spyOn(http, 'put').and.returnValue({
+        subscribe: (callbacks: any) => callbacks.next?.({ success: true })
+      });
+
+      // Move u2 up (index 1 -> index 0)
+      component.moveUnitUp(1);
+      expect(component.unitsReordered.emit).toHaveBeenCalledWith([
+        jasmine.objectContaining({ id: 'u2', order: 1 }),
+        jasmine.objectContaining({ id: 'u1', order: 2 }),
+        jasmine.objectContaining({ id: 'u3', order: 3 })
+      ]);
+      expect(http.put).toHaveBeenCalledWith(
+        '/api/v1/admin/curriculum-units/reorder',
+        jasmine.objectContaining({ unitIds: ['u2', 'u1', 'u3'] })
+      );
+
+      // Move top unit up should do nothing
+      (component.unitsReordered.emit as jasmine.Spy).calls.reset();
+      component.moveUnitUp(0);
+      expect(component.unitsReordered.emit).not.toHaveBeenCalled();
+
+      // Move bottom unit down should do nothing
+      component.moveUnitDown(2);
+      expect(component.unitsReordered.emit).not.toHaveBeenCalled();
+    });
+
+    it('should reorder lectures inside a unit up and down', () => {
+      const unit: any = {
+        id: 'u1',
+        titleAr: 'الوحدة الأولى',
+        lectures: [
+          { id: 'l1', titleAr: 'محاضرة 1', order: 1 },
+          { id: 'l2', titleAr: 'محاضرة 2', order: 2 }
+        ],
+        assessments: []
+      };
+
+      spyOn(component.unitUpdated, 'emit');
+      const http = (component as any).http;
+      spyOn(http, 'put').and.returnValue({
+        subscribe: (callbacks: any) => callbacks.next?.({ success: true })
+      });
+
+      // Move l2 up (index 1 -> index 0)
+      component.moveLectureUp(unit, 1);
+      expect(component.unitUpdated.emit).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          id: 'u1',
+          lectures: [
+            jasmine.objectContaining({ id: 'l2', order: 1 }),
+            jasmine.objectContaining({ id: 'l1', order: 2 })
+          ]
+        })
+      );
+      expect(http.put).toHaveBeenCalledWith(
+        '/api/v1/admin/lectures/reorder',
+        jasmine.objectContaining({
+          unitId: 'u1',
+          lectureIds: ['l2', 'l1']
+        })
+      );
+    });
+
+    it('should reorder grades inside a curriculum track', () => {
+      const track = component.allCurriculaTracks().find((t) => t.code === 'EGYPTIAN');
+      expect(track).toBeDefined();
+
+      const initialFirst = track!.grades[0].code;
+      const initialSecond = track!.grades[1].code;
+
+      const http = (component as any).http;
+      spyOn(http, 'put').and.returnValue({
+        subscribe: (callbacks: any) => callbacks.next?.({ success: true })
+      });
+
+      // Move second grade up to first
+      component.moveGradeUp('EGYPTIAN', initialSecond);
+
+      const updatedTrack = component.allCurriculaTracks().find((t) => t.code === 'EGYPTIAN');
+      expect(updatedTrack!.grades[0].code).toBe(initialSecond);
+      expect(updatedTrack!.grades[0].order).toBe(1);
+      expect(updatedTrack!.grades[1].code).toBe(initialFirst);
+      expect(updatedTrack!.grades[1].order).toBe(2);
+      expect(http.put).toHaveBeenCalledWith(
+        '/api/v1/admin/cms-config/active-grades',
+        jasmine.any(Object)
+      );
+    });
+
+    it('should reorder international stages inside division', () => {
+      const track = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+      expect(track).toBeDefined();
+
+      const divs = component.getIntlDivisionsForModal(track!);
+      const americanDiv = divs.find((d) => d.code === 'AMERICAN_CURRICULUM');
+      expect(americanDiv).toBeDefined();
+      expect(americanDiv!.stages!.length).toBeGreaterThan(1);
+
+      const initialStage0 = americanDiv!.stages![0].code;
+      const initialStage1 = americanDiv!.stages![1].code;
+
+      const http = (component as any).http;
+      spyOn(http, 'put').and.returnValue({
+        subscribe: (callbacks: any) => callbacks.next?.({ success: true })
+      });
+
+      component.moveStageUp('INTERNATIONAL', 'AMERICAN_CURRICULUM', initialStage1);
+
+      const updatedTrack = component.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+      const updatedDivs = component.getIntlDivisionsForModal(updatedTrack!);
+      const updatedAmDiv = updatedDivs.find((d) => d.code === 'AMERICAN_CURRICULUM');
+      expect(updatedAmDiv!.stages![0].code).toBe(initialStage1);
+      expect(updatedAmDiv!.stages![1].code).toBe(initialStage0);
+    });
+
+    it('should reorder gulf stages and preserve order property', () => {
+      const track = component.allCurriculaTracks().find((t) => t.code === 'GULF');
+      expect(track).toBeDefined();
+
+      const stages = component.getGulfStagesForModal(track!);
+      expect(stages.length).toBeGreaterThan(1);
+      const stage0 = stages[0].code;
+      const stage1 = stages[1].code;
+
+      const http = (component as any).http;
+      spyOn(http, 'put').and.returnValue({
+        subscribe: (callbacks: any) => callbacks.next?.({ success: true })
+      });
+
+      component.moveGulfStageUp('GULF', 'SA', stage1);
+
+      const updatedTrack = component.allCurriculaTracks().find((t) => t.code === 'GULF');
+      const updatedStages = component.getGulfStagesForModal(updatedTrack!);
+      expect(updatedStages[0].code).toBe(stage1);
+      expect(updatedStages[0].order).toBe(1);
+      expect(updatedStages[1].code).toBe(stage0);
+      expect(updatedStages[1].order).toBe(2);
+    });
+
+    it('should retain order in getDisplayedGradesForTrack and getOverviewGradesForTrack for GULF', () => {
+      const track = component.allCurriculaTracks().find((t) => t.code === 'GULF');
+      expect(track).toBeDefined();
+
+      // Assign custom order to first 2 grades
+      const modifiedGrades = track!.grades.map((g, idx) => ({ ...g, order: idx + 1 }));
+      component.allCurriculaTracks.update((tracks) =>
+        tracks.map((t) => (t.code === 'GULF' ? { ...t, grades: modifiedGrades } : t))
+      );
+
+      const updatedTrack = component.allCurriculaTracks().find((t) => t.code === 'GULF')!;
+      const displayed = component.getDisplayedGradesForTrack(updatedTrack);
+      expect(displayed.length).toBeGreaterThan(0);
+      expect(displayed[0].order).toBe(1);
+
+      const overview = component.getOverviewGradesForTrack(updatedTrack);
+      expect(overview.length).toBeGreaterThan(0);
+      expect(overview[0].order).toBe(1);
+    });
+  });
 });

@@ -21,6 +21,7 @@ import { RouteSkeletonLoaderComponent } from './shared/components/route-skeleton
 import { ConfirmDialogService } from './core/services/confirm-dialog.service';
 import { UiLayoutService } from './core/services/ui-layout.service';
 import { LangService } from './core/seo-theme-i18n/lang.service';
+import { ThemeService } from './core/seo-theme-i18n/theme.service';
 import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 
 @Component({
@@ -40,6 +41,7 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
 })
 export class AppComponent implements OnInit {
   readonly langService = inject(LangService);
+  readonly themeService = inject(ThemeService);
   readonly confirmDialogService = inject(ConfirmDialogService);
   readonly uiLayoutService = inject(UiLayoutService);
   private readonly seoMetaService = inject(SeoMetaService);

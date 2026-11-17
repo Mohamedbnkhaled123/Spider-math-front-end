@@ -93,7 +93,7 @@
           [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
         >
           @if (isPlaying()) {
-            <span class="w-4 h-4 flex items-center justify-center font-bold">❚❚</span>
+            <app-icon name="pause" [size]="16" />
           } @else {
             <app-icon name="play" [size]="16" />
           }

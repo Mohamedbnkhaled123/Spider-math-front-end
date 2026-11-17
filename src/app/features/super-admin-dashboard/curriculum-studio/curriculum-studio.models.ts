@@ -10,6 +10,7 @@ export type QuestionType = 'MCQ' | 'ESSAY' | 'ESSAY_PHOTO' | 'INPUT_TEXT';
 
 export interface GradeOption {
   code: string;
+  order?: number;
   titleAr: string;
   titleEn: string;
   shortLabelAr?: string;
@@ -24,6 +25,7 @@ export interface GradeOption {
 
 export interface CurriculumStageItem {
   code: string;
+  order?: number;
   nameAr: string;
   nameEn?: string;
   gradeCodes?: string[];
@@ -42,6 +44,7 @@ export interface CurriculumTrackItem {
   nameAr: string;
   nameEn?: string;
   divisions?: CurriculumDivisionItem[];
+  stages?: CurriculumStageItem[];
   grades: GradeOption[];
 }
 
@@ -94,6 +97,7 @@ export interface LectureAdminItem {
 
 export interface UnitPackageAdminItem {
   id: string;
+  order?: number;
   titleAr: string;
   titleEn: string;
   curriculum: CurriculumCode;

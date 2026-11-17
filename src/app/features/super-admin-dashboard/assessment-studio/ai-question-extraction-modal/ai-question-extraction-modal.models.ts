@@ -13,9 +13,11 @@ export interface IStagedQuestion {
   pageNumber?: number;
   pageDataUrl?: string | null;
   question_text: string;
-  type: 'MCQ' | 'ESSAY';
+  type: 'MCQ' | 'ESSAY' | 'INPUT_TEXT';
   options: string[];
   correct_option_index: number;
+  accepted_answers?: string[];
+  acceptedAnswers?: string[];
   points: number;
   has_geometry_diagram: boolean;
   box_2d?: [number, number, number, number];
