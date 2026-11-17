@@ -6,6 +6,7 @@ import { provideTransloco } from '@jsverse/transloco';
 
 import { BrandHeaderComponent } from './brand-header.component';
 import { TranslocoHttpLoader } from '../../../core/seo-theme-i18n/transloco-loader';
+import { AdminAccessPortalService } from '../../../core/auth/admin-access-portal.service';
 
 describe('BrandHeaderComponent', () => {
   beforeEach(async () => {
@@ -93,6 +94,33 @@ describe('BrandHeaderComponent', () => {
       fixture.detectChanges();
       const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
       expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
+    });
+  });
+
+  describe('Secret Developer Portal Trigger & Logo Branding', () => {
+    it('should render the English hero mascot logo image', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      fixture.detectChanges();
+      const logoImg: HTMLImageElement | null = fixture.nativeElement.querySelector('a img');
+      expect(logoImg).toBeTruthy();
+      expect(logoImg?.getAttribute('src')).toContain('/assets/branding/spider-mascot-hero-book-v3.webp?v=12');
+    });
+
+    it('should open developer portal after 12 rapid clicks on navbar logo', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+      const portal = TestBed.inject(AdminAccessPortalService);
+      portal.close();
+      fixture.detectChanges();
+
+      const event = { preventDefault: jasmine.createSpy('preventDefault'), stopPropagation: jasmine.createSpy('stopPropagation') } as unknown as Event;
+      for (let i = 0; i < 11; i++) {
+        component.onNavLogoClick(event);
+        expect(portal.isOpen()).toBeFalse();
+      }
+      component.onNavLogoClick(event);
+      expect(portal.isOpen()).toBeTrue();
+      expect(portal.portalMode()).toBe('developer');
     });
   });
 });

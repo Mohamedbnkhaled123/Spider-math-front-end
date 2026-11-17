@@ -1,1 +1,1 @@
-export type LoginTab = 'student' | 'parent' | 'admin';
+export type LoginTab = 'student' | 'parent';

@@ -32,17 +32,17 @@
     <!-- 1. Brand Logo & Luxury Academic Wordmark -->
     <a
       [routerLink]="activePortal() ? activePortal()!.route : '/'"
-      (click)="closeMobileMenu()"
-      class="flex items-center gap-1.5 sm:gap-2.5 group focus:outline-none rounded-xl p-0.5 sm:p-1 transition-transform duration-200 hover:scale-[1.02] shrink-0 min-w-0"
+      (click)="onNavLogoClick($event)"
+      class="flex items-center gap-1.5 sm:gap-2.5 group focus:outline-none rounded-xl p-0.5 sm:p-1 transition-transform duration-200 hover:scale-[1.02] shrink-0 min-w-0 select-none"
     >
-      <!-- Official Mascot Logo Icon (With Open Academic Book) -->
+      <!-- Official Hero Book Mascot Icon -->
       <img
-        src="/assets/branding/spider-mascot-nav-v3.webp?v=5"
+        src="/assets/branding/spider-mascot-hero-book-v3.webp?v=12"
         alt="Spider Math Logo"
-        width="40"
-        height="40"
+        width="44"
+        height="44"
         decoding="async"
-        class="w-7 h-7 sm:w-10 sm:h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0"
+        class="w-8 h-8 sm:w-11 sm:h-11 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0"
       />
 
       <!-- Academic Wordmark -->

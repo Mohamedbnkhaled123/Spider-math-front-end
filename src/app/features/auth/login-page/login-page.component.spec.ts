@@ -31,9 +31,10 @@ describe('LoginPageComponent', () => {
     expect(component.activeTab()).toBe('student');
   });
 
-  it('should switch tabs properly', () => {
+  it('should switch tabs cleanly between student and parent without exposing an admin tab', () => {
     component.setTab('parent');
     expect(component.activeTab()).toBe('parent');
+    expect(fixture.nativeElement.textContent).not.toContain('استوديو الإدارة');
   });
 
   describe('Dynamic custom grades in student direct registration', () => {

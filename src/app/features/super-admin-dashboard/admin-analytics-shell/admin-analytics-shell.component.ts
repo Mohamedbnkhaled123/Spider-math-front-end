@@ -43,6 +43,7 @@ export class AdminAnalyticsShellComponent {
 
   readonly backupExportRequested = output<void>();
   readonly purgeHomeworkRequested = output<void>();
+  readonly securitySettingsRequested = output<void>();
 
   // Notification Flyout State
   readonly isNotificationsOpen = signal<boolean>(false);
@@ -79,5 +80,10 @@ export class AdminAnalyticsShellComponent {
 
   triggerPurge(): void {
     this.purgeHomeworkRequested.emit();
+  }
+
+  triggerSecuritySettings(): void {
+    this.isMobileToolsOpen.set(false);
+    this.securitySettingsRequested.emit();
   }
 }

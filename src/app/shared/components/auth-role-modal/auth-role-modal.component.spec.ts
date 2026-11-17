@@ -25,7 +25,8 @@ describe('AuthRoleModalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should list all 5 role presets', () => {
-    expect(component.rolePresets.length).toBe(5);
+  it('should list non-admin role presets without exposing open admin access', () => {
+    expect(component.rolePresets.length).toBe(4);
+    expect(component.rolePresets.some((p) => p.role === 'SUPER_ADMIN')).toBeFalse();
   });
 });

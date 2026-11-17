@@ -1,10 +1,12 @@
-import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AdminAccessPortalService } from '../../../core/auth/admin-access-portal.service';
+import { RapidClickTracker } from '../../../core/utils/rapid-click-trigger.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { UiLayoutService } from '../../../core/services/ui-layout.service';
 
@@ -16,12 +18,33 @@ import { UiLayoutService } from '../../../core/services/ui-layout.service';
   styleUrl: './brand-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BrandFooterComponent {
+export class BrandFooterComponent implements OnDestroy {
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
   readonly uiLayoutService = inject(UiLayoutService);
+  private readonly adminAccessPortal = inject(AdminAccessPortalService);
   private readonly router = inject(Router);
   private readonly discoveryService = inject(PublicDiscoveryService);
+
+  private readonly footerLogoTracker = new RapidClickTracker(5);
+
+  ngOnDestroy(): void {
+    this.footerLogoTracker.reset();
+  }
+
+  onFooterLogoClick(event?: Event): void {
+    this.footerLogoTracker.handleClick(
+      event,
+      () => {
+        this.adminAccessPortal.openTeacherPortal();
+      },
+      () => {
+        this.router.navigateByUrl(this.homeRoute()).then(() => {
+          this.scrollToTop();
+        });
+      }
+    );
+  }
 
   readonly currentYear = new Date().getFullYear();
 

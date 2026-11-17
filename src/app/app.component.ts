@@ -18,7 +18,9 @@ import { BrandHeaderComponent } from './shared/components/brand-header/brand-hea
 import { BrandFooterComponent } from './shared/components/brand-footer/brand-footer.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 import { RouteSkeletonLoaderComponent } from './shared/components/route-skeleton-loader/route-skeleton-loader.component';
+import { AdminAccessModalComponent } from './shared/components/admin-access-modal/admin-access-modal.component';
 import { ConfirmDialogService } from './core/services/confirm-dialog.service';
+import { AdminAccessPortalService } from './core/auth/admin-access-portal.service';
 import { UiLayoutService } from './core/services/ui-layout.service';
 import { LangService } from './core/seo-theme-i18n/lang.service';
 import { ThemeService } from './core/seo-theme-i18n/theme.service';
@@ -33,7 +35,8 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
     BrandHeaderComponent,
     BrandFooterComponent,
     ConfirmDialogComponent,
-    RouteSkeletonLoaderComponent
+    RouteSkeletonLoaderComponent,
+    AdminAccessModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -43,6 +46,7 @@ export class AppComponent implements OnInit {
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
   readonly confirmDialogService = inject(ConfirmDialogService);
+  readonly adminAccessPortal = inject(AdminAccessPortalService);
   readonly uiLayoutService = inject(UiLayoutService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);

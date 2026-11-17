@@ -46,4 +46,14 @@
       <app-confirm-dialog></app-confirm-dialog>
     }
   }
+
+  <!-- Hidden Teacher (5-Click Footer) & Developer (12-Click Nav) Access Modal (Deferred until opened) -->
+  @if (adminAccessPortal.isOpen()) {
+    @defer (when adminAccessPortal.isOpen()) {
+      <app-admin-access-modal
+        [(isOpen)]="adminAccessPortal.isOpen"
+        [portalMode]="adminAccessPortal.portalMode()"
+      ></app-admin-access-modal>
+    }
+  }
 </div>

@@ -1,0 +1,297 @@
+@if (isOpen()) {
+  <div
+    class="fixed inset-0 z-[1350] bg-black/45 backdrop-blur-sm flex items-center justify-center p-4 pt-16 sm:pt-20 animate-fade-in cursor-pointer"
+    (click)="close()"
+  >
+    <div
+      class="w-full max-w-md max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border-[2.5px] border-surface-border bg-surface-card shadow-2xl p-6 sm:p-7 space-y-5 relative animate-scale-up cursor-default"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Close Button -->
+      <button
+        type="button"
+        (click)="close()"
+        class="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-bg transition-colors cursor-pointer absolute top-4 left-4 rtl:left-4 rtl:right-auto ltr:right-4 ltr:left-auto"
+        [attr.aria-label]="langService.isArabic() ? 'إغلاق' : 'Close'"
+      >
+        <app-icon name="x" [size]="18" />
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-center space-y-2 pt-1">
+        <div class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center border border-brand-primary/30 bg-brand-primary/10 text-brand-primary shadow-sm">
+          <app-icon [name]="portalMode() === 'developer' ? 'sliders' : 'shield'" [size]="22" />
+        </div>
+
+        @if (portalMode() === 'developer') {
+          <h3 class="text-lg font-black text-text-primary font-academic-serif">
+            @if (isDevFirstTimeSetup()) {
+              {{ langService.isArabic() ? 'تسجيل كود المطور السري (لمرة واحدة)' : 'Register Developer Code (One-Time)' }}
+            } @else {
+              {{ langService.isArabic() ? 'بوابة دخول المطور' : 'Developer Access' }}
+            }
+          </h3>
+          <p class="text-xs text-text-secondary leading-relaxed">
+            @if (isDevFirstTimeSetup()) {
+              {{ langService.isArabic()
+                ? 'سجّل كلمة سر خاصة ومختلفة عن كود المعلمة. التسجيل عبر هذا المدخل متاح لمرة واحدة فقط.'
+                : 'Set your own unique secret password once. After initial registration, unauthenticated resets are locked.' }}
+            } @else {
+              {{ langService.isArabic()
+                ? 'التسجيل الأول تم مسبقاً — أدخل كود المطور السري للمتابعة إلى لوحة التحكم.'
+                : 'Initial one-time setup completed — enter your developer secret password.' }}
+            }
+          </p>
+        } @else {
+          <h3 class="text-lg font-black text-text-primary font-academic-serif">
+            {{ langService.isArabic() ? 'بوابة دخول المعلمة — الإدارة' : 'Teacher Admin Portal' }}
+          </h3>
+          <p class="text-xs text-text-secondary">
+            {{ langService.isArabic()
+              ? 'سجلي الدخول بالكود السري الخاص بكِ أو عبر حساب Google المعتمد.'
+              : 'Sign in using your private teacher code or authorized Google account.' }}
+          </p>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-xs font-bold text-rose-500 flex items-center gap-2">
+          <app-icon name="alert-circle" [size]="16" className="shrink-0" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (isLoadingStatus()) {
+        <div class="py-8 flex items-center justify-center gap-2 text-xs font-bold text-text-muted">
+          <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
+          <span>{{ langService.isArabic() ? 'جاري التحقق...' : 'Checking portal...' }}</span>
+        </div>
+      } @else if (portalMode() === 'developer') {
+        <!-- =============================================================== -->
+        <!-- DEVELOPER 12-CLICK PORTAL                                       -->
+        <!-- =============================================================== -->
+        <form (ngSubmit)="submitCode()" class="space-y-4">
+          @if (!isDevFirstTimeSetup()) {
+            <div class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+              <app-icon name="lock" [size]="14" className="shrink-0" />
+              <span>{{ langService.isArabic() ? 'تم قفل التسجيل السريع (مسموح لمرة واحدة فقط)' : 'One-time setup locked; password changes inside dashboard only.' }}</span>
+            </div>
+          }
+
+          <div>
+            <label class="block text-xs font-bold text-text-secondary mb-1.5">
+              {{ isDevFirstTimeSetup()
+                ? (langService.isArabic() ? 'أدخل كلمة السر الجديدة (لمرة واحدة):' : 'New Secret Password (One-Time Setup):')
+                : (langService.isArabic() ? 'كلمة سر المطور:' : 'Developer Secret Password:') }}
+            </label>
+            <div class="relative">
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                [ngModel]="accessCodeInput()"
+                (ngModelChange)="accessCodeInput.set($event)"
+                name="devAccessCode"
+                autocomplete="off"
+                dir="ltr"
+                [placeholder]="langService.isArabic() ? '••••••••' : 'Enter secret code...'"
+                class="w-full px-3.5 py-2.5 pe-10 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold outline-none focus:border-brand-primary"
+              />
+              <button
+                type="button"
+                (click)="showPassword.update(v => !v)"
+                class="absolute end-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-1 cursor-pointer"
+                tabindex="-1"
+              >
+                <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="15" />
+              </button>
+            </div>
+          </div>
+
+          @if (isDevFirstTimeSetup()) {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                {{ langService.isArabic() ? 'تأكيد كلمة السر:' : 'Confirm Secret Password:' }}
+              </label>
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                [ngModel]="confirmCodeInput()"
+                (ngModelChange)="confirmCodeInput.set($event)"
+                name="devConfirmCode"
+                autocomplete="off"
+                dir="ltr"
+                [placeholder]="langService.isArabic() ? '••••••••' : 'Re-enter secret code...'"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold outline-none focus:border-brand-primary"
+              />
+            </div>
+          }
+
+          <button
+            type="submit"
+            [disabled]="isSubmitting()"
+            class="btn-gold-metallic w-full py-3 rounded-xl font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            @if (isSubmitting()) {
+              <app-icon name="loader" [size]="16" className="animate-spin" />
+              <span>{{ langService.isArabic() ? 'جاري التحقق...' : 'Verifying...' }}</span>
+            } @else {
+              <app-icon name="log-in" [size]="16" />
+              <span>{{ isDevFirstTimeSetup()
+                ? (langService.isArabic() ? 'حفظ الكود ودخول الإدارة' : 'Register Code & Enter')
+                : (langService.isArabic() ? 'دخول المطور' : 'Sign In') }}</span>
+            }
+          </button>
+        </form>
+      } @else {
+        <!-- =============================================================== -->
+        <!-- TEACHER 5-CLICK FOOTER PORTAL                                   -->
+        <!-- =============================================================== -->
+        <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+          <button
+            type="button"
+            (click)="teacherTab.set('code'); errorMessage.set(null)"
+            class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            [class.bg-brand-primary]="teacherTab() === 'code'"
+            [class.text-white]="teacherTab() === 'code'"
+            [class.text-text-secondary]="teacherTab() !== 'code'"
+          >
+            <app-icon name="lock" [size]="14" />
+            <span>{{ langService.isArabic() ? 'الكود السري' : 'Secret Code' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="teacherTab.set('google'); errorMessage.set(null)"
+            class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            [class.bg-brand-primary]="teacherTab() === 'google'"
+            [class.text-white]="teacherTab() === 'google'"
+            [class.text-text-secondary]="teacherTab() !== 'google'"
+          >
+            <app-icon name="mail" [size]="14" />
+            <span>{{ langService.isArabic() ? 'إيميل Google' : 'Google Email' }}</span>
+          </button>
+        </div>
+
+        @if (teacherTab() === 'code') {
+          @if (!isTeacherFirstTimeSetup() && !portalStatus().teacherCodeSet && portalStatus().teacherGoogleSet) {
+            <div class="p-4 rounded-2xl bg-surface-bg border border-surface-border text-center space-y-3">
+              <p class="text-xs font-bold text-text-secondary leading-relaxed">
+                {{ langService.isArabic()
+                  ? 'حساب المعلمة مربوط حالياً بالدخول عبر Google. يمكنك الدخول بإيميل Google أو تعيين كود سري من إعدادات لوحة الإدارة بعد الدخول.'
+                  : 'Teacher access is currently linked via Google Sign-In. Sign in with Google, or configure a backup password inside Admin Settings.' }}
+              </p>
+              <button
+                type="button"
+                (click)="teacherTab.set('google')"
+                class="px-4 py-2 rounded-xl bg-brand-primary text-white text-xs font-bold cursor-pointer"
+              >
+                {{ langService.isArabic() ? 'الانتقال لتسجيل Google' : 'Go to Google Sign-In' }}
+              </button>
+            </div>
+          } @else {
+            <form (ngSubmit)="submitCode()" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                  {{ isTeacherFirstTimeSetup()
+                    ? (langService.isArabic() ? 'اختاري كود دخول خاص بكِ (كلمة سر المعلمة):' : 'Set Your Teacher Secret Code:')
+                    : (langService.isArabic() ? 'كود دخول المعلمة:' : 'Teacher Access Code:') }}
+                </label>
+                <div class="relative">
+                  <input
+                    [type]="showPassword() ? 'text' : 'password'"
+                    [ngModel]="accessCodeInput()"
+                    (ngModelChange)="accessCodeInput.set($event)"
+                    name="teacherAccessCode"
+                    autocomplete="off"
+                    dir="ltr"
+                    [placeholder]="langService.isArabic() ? '••••••••' : 'Enter access code...'"
+                    class="w-full px-3.5 py-2.5 pe-10 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold outline-none focus:border-brand-primary"
+                  />
+                  <button
+                    type="button"
+                    (click)="showPassword.update(v => !v)"
+                    class="absolute end-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-1 cursor-pointer"
+                    tabindex="-1"
+                  >
+                    <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="15" />
+                  </button>
+                </div>
+              </div>
+
+              @if (isTeacherFirstTimeSetup()) {
+                <div>
+                  <label class="block text-xs font-bold text-text-secondary mb-1.5">
+                    {{ langService.isArabic() ? 'تأكيد الكود السري:' : 'Confirm Access Code:' }}
+                  </label>
+                  <input
+                    [type]="showPassword() ? 'text' : 'password'"
+                    [ngModel]="confirmCodeInput()"
+                    (ngModelChange)="confirmCodeInput.set($event)"
+                    name="teacherConfirmCode"
+                    autocomplete="off"
+                    dir="ltr"
+                    [placeholder]="langService.isArabic() ? '••••••••' : 'Re-enter access code...'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold outline-none focus:border-brand-primary"
+                  />
+                </div>
+              }
+
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="btn-gold-metallic w-full py-3 rounded-xl font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <app-icon name="loader" [size]="16" className="animate-spin" />
+                  <span>{{ langService.isArabic() ? 'جاري التحقق...' : 'Verifying...' }}</span>
+                } @else {
+                  <app-icon name="shield" [size]="16" />
+                  <span>{{ isTeacherFirstTimeSetup()
+                    ? (langService.isArabic() ? 'حفظ الكود ودخول الإدارة' : 'Save Code & Enter Studio')
+                    : (langService.isArabic() ? 'دخول لوحة الإدارة' : 'Sign In to Admin Studio') }}</span>
+                }
+              </button>
+            </form>
+          }
+        } @else {
+          <!-- Google Auth Tab for Teacher -->
+          <div class="space-y-4">
+            <div class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border text-xs text-text-secondary leading-relaxed">
+              @if (!portalStatus().teacherGoogleSet && !portalStatus().teacherCodeSet) {
+                {{ langService.isArabic()
+                  ? 'عند اختيار حساب Google لأول مرة سيتم اعتماده كبريد المعلمة الرسمي لدخول لوحة التحكم.'
+                  : 'Your first Google sign-in will securely bind your email as the official teacher account.' }}
+              } @else if (portalStatus().teacherGoogleSet) {
+                {{ langService.isArabic()
+                  ? 'اضغطي لتسجيل الدخول باستخدام إيميل Google المعتمد للمعلمة.'
+                  : 'Sign in with your authorized teacher Google account.' }}
+              } @else {
+                {{ langService.isArabic()
+                  ? 'تم تعيين كود سري مسبقاً بدون ربط بريد Google. يرجى الدخول بالكود أولاً وربط الإيميل من إعدادات لوحة الإدارة.'
+                  : 'Please sign in with your Secret Code first, then bind your Google email inside Admin Settings.' }}
+              }
+            </div>
+
+            <button
+              type="button"
+              (click)="triggerTeacherGoogleLogin()"
+              [disabled]="isGoogleAuthenticating()"
+              class="w-full py-3 rounded-2xl border-[2px] border-surface-border bg-surface-bg hover:border-brand-primary text-text-primary font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              @if (isGoogleAuthenticating()) {
+                <app-icon name="loader" [size]="18" className="animate-spin text-brand-primary" />
+                <span>{{ langService.isArabic() ? 'جاري التحقق عبر Google...' : 'Verifying with Google...' }}</span>
+              } @else {
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <span>{{ langService.isArabic() ? 'دخول المعلمة عبر Google' : 'Teacher Sign In with Google' }}</span>
+              }
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}

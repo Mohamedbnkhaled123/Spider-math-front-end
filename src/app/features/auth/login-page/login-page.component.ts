@@ -26,6 +26,7 @@ import {
   CountryGroup
 } from '../../../core/utils/phone-validator.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
+import { ensureGoogleGsiScriptLoaded, SPIDER_GOOGLE_CLIENT_ID } from '../../../core/auth/google-gsi.util';
 import { LoginTab } from './login-page.models';
 
 declare const google: any;
@@ -73,7 +74,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   readonly studentHaCode = signal<string>('');
   readonly parentPhone = signal<string>('');
   readonly parentStudentCode = signal<string>('');
-  readonly adminPin = signal<string>('');
 
   // =========================================================================
   // Direct Registration Form Signals (Non-Google Option)
@@ -135,11 +135,8 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     const qp = this.route.snapshot.queryParams;
     if (qp['roleMismatch'] === 'true' || qp['role']) {
       if (qp['requiredRole']?.includes('SUPER_ADMIN') || qp['role'] === 'ADMIN') {
-        this.activeTab.set('admin');
         if (qp['roleMismatch'] === 'true') {
-          this.errorMessage.set(
-            'غير مصرح كمدير.'
-          );
+          this.errorMessage.set('غير مصرح كإدارة.');
         }
         return;
       }
@@ -390,32 +387,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   // Authentic Google Identity Services (GIS) OAuth Popup Flow
   // =========================================================================
   private ensureGoogleScriptLoaded(): Promise<boolean> {
-    if (typeof window === 'undefined') return Promise.resolve(false);
-    const win = window as any;
-    if (win.google?.accounts?.oauth2) return Promise.resolve(true);
-
-    return new Promise((resolve) => {
-      let script = document.querySelector('script[src*="accounts.google.com/gsi/client"]') as HTMLScriptElement | null;
-      if (!script) {
-        script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-      }
-
-      let waitedMs = 0;
-      const interval = setInterval(() => {
-        waitedMs += 100;
-        if (win.google?.accounts?.oauth2) {
-          clearInterval(interval);
-          resolve(true);
-        } else if (waitedMs >= 4000) {
-          clearInterval(interval);
-          resolve(false);
-        }
-      }, 100);
-    });
+    return ensureGoogleGsiScriptLoaded();
   }
 
   async triggerGoogleOAuth(intent: 'login' | 'signup'): Promise<void> {
@@ -436,7 +408,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
     try {
       const client = win.google.accounts.oauth2.initTokenClient({
-        client_id: '157492277386-n7dudqv4devn897v381bpvf8b101bi8s.apps.googleusercontent.com',
+        client_id: SPIDER_GOOGLE_CLIENT_ID,
         scope: 'email profile openid',
         prompt: 'select_account',
         callback: (response: any) => {
@@ -695,33 +667,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
             'البيانات غير مطابقة.'
           )
         );
-      }
-    });
-  }
-
-  // =========================================================================
-  // Super Admin Login
-  // =========================================================================
-  submitAdminLogin(): void {
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    this.http.post<{ success: boolean; data: { token: string; user: any } }>(
-      '/api/v1/auth/admin-login',
-      {}
-    ).subscribe({
-      next: (res) => {
-        this.isSubmitting.set(false);
-        if (res?.data?.token && res?.data?.user) {
-          this.authService.setSession(res.data.token, res.data.user);
-          this.router.navigateByUrl('/admin');
-        } else {
-          this.errorMessage.set('تعذر تسجيل الدخول. أعد المحاولة.');
-        }
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        this.errorMessage.set(this.extractErrorMessage(err, 'تعذر الاتصال بسيرفر الإدارة.'));
       }
     });
   }

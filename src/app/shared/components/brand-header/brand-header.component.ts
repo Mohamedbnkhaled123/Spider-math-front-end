@@ -5,6 +5,7 @@ import {
   signal,
   computed,
   OnInit,
+  OnDestroy,
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -16,6 +17,8 @@ import { AuthRoleModalComponent } from '../auth-role-modal/auth-role-modal.compo
 import { ThemeService } from '../../../core/seo-theme-i18n/theme.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AdminAccessPortalService } from '../../../core/auth/admin-access-portal.service';
+import { RapidClickTracker } from '../../../core/utils/rapid-click-trigger.util';
 import { SeoMetaService } from '../../../core/seo-theme-i18n/seo-meta.service';
 import { NotificationsService } from '../../../core/services/notifications.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
@@ -30,15 +33,18 @@ import { ClickOutsideDirective } from '../../directives/click-outside.directive'
   styleUrl: './brand-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BrandHeaderComponent implements OnInit {
+export class BrandHeaderComponent implements OnInit, OnDestroy {
   readonly themeService = inject(ThemeService);
   readonly langService = inject(LangService);
   readonly authService = inject(AuthService);
   readonly notificationsService = inject(NotificationsService);
   readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly adminAccessPortal = inject(AdminAccessPortalService);
   private readonly seoMetaService = inject(SeoMetaService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+
+  private readonly navLogoTracker = new RapidClickTracker(12);
 
   readonly isAuthModalOpen = signal<boolean>(false);
   readonly isMobileMenuOpen = signal<boolean>(false);
@@ -86,6 +92,25 @@ export class BrandHeaderComponent implements OnInit {
     if (this.authService.isAuthenticated()) {
       this.notificationsService.fetchNotifications();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.navLogoTracker.reset();
+  }
+
+  onNavLogoClick(event?: Event): void {
+    this.navLogoTracker.handleClick(
+      event,
+      () => {
+        this.closeMobileMenu();
+        this.adminAccessPortal.openDeveloperPortal();
+      },
+      () => {
+        this.closeMobileMenu();
+        const target = this.activePortal() ? this.activePortal()!.route : '/';
+        this.router.navigateByUrl(target);
+      }
+    );
   }
 
   toggleTheme(): void {

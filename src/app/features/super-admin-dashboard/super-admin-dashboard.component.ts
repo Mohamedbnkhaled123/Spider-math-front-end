@@ -8,6 +8,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
@@ -46,6 +47,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     AppIconComponent,
     AdminAnalyticsShellComponent,
@@ -78,6 +80,24 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly showPurgeConfirmModal = signal<boolean>(false);
   readonly isDesktopToolsOpen = signal<boolean>(false);
   readonly isDesktopNotificationsOpen = signal<boolean>(false);
+
+  // Portal Access Security Settings Modal
+  readonly isSecuritySettingsModalOpen = signal<boolean>(false);
+  readonly isLoadingSecuritySettings = signal<boolean>(false);
+  readonly isSavingSecuritySettings = signal<boolean>(false);
+  readonly securitySettings = signal<{
+    teacherCodeSet: boolean;
+    teacherGoogleEmail: string;
+    devCodeSet: boolean;
+  }>({
+    teacherCodeSet: false,
+    teacherGoogleEmail: '',
+    devCodeSet: false
+  });
+  readonly secTeacherGoogleEmail = signal<string>('');
+  readonly secNewTeacherCode = signal<string>('');
+  readonly secCurrentDevCode = signal<string>('');
+  readonly secNewDevCode = signal<string>('');
 
   // Curriculum State
   readonly selectedCurriculum = signal<CurriculumCode>('EGYPTIAN');
@@ -839,5 +859,77 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   onToastTriggered(event: { text: string; type: 'success' | 'warning' | 'error' }): void {
     this.triggerToast(event.text, event.type);
+  }
+
+  openSecuritySettingsModal(): void {
+    this.isDesktopToolsOpen.set(false);
+    this.secNewTeacherCode.set('');
+    this.secCurrentDevCode.set('');
+    this.secNewDevCode.set('');
+    this.isSecuritySettingsModalOpen.set(true);
+    this.isLoadingSecuritySettings.set(true);
+
+    this.http.get<{ success: boolean; data: { teacherCodeSet: boolean; teacherGoogleEmail: string; devCodeSet: boolean } }>(
+      '/api/v1/admin/users/security-access'
+    ).subscribe({
+      next: (res) => {
+        this.isLoadingSecuritySettings.set(false);
+        if (res?.data) {
+          this.securitySettings.set(res.data);
+          this.secTeacherGoogleEmail.set(res.data.teacherGoogleEmail || '');
+        }
+      },
+      error: () => {
+        this.isLoadingSecuritySettings.set(false);
+      }
+    });
+  }
+
+  saveSecuritySettings(): void {
+    const payload: Record<string, any> = {};
+    const emailTrimmed = this.secTeacherGoogleEmail().trim();
+    if (emailTrimmed !== (this.securitySettings().teacherGoogleEmail || '')) {
+      payload['teacherGoogleEmail'] = emailTrimmed;
+    }
+    const newTeacherCode = this.secNewTeacherCode().trim();
+    if (newTeacherCode) {
+      payload['newTeacherCode'] = newTeacherCode;
+    }
+    const newDevCode = this.secNewDevCode().trim();
+    if (newDevCode) {
+      payload['newDevCode'] = newDevCode;
+      if (this.secCurrentDevCode().trim()) {
+        payload['currentDevCode'] = this.secCurrentDevCode().trim();
+      }
+    }
+
+    if (Object.keys(payload).length === 0) {
+      this.isSecuritySettingsModalOpen.set(false);
+      return;
+    }
+
+    this.isSavingSecuritySettings.set(true);
+    this.http.patch<{ success: boolean; data: { teacherCodeSet: boolean; teacherGoogleEmail: string; devCodeSet: boolean } }>(
+      '/api/v1/admin/users/security-access',
+      payload
+    ).subscribe({
+      next: (res) => {
+        this.isSavingSecuritySettings.set(false);
+        if (res?.data) {
+          this.securitySettings.set(res.data);
+          this.secTeacherGoogleEmail.set(res.data.teacherGoogleEmail || '');
+        }
+        this.secNewTeacherCode.set('');
+        this.secCurrentDevCode.set('');
+        this.secNewDevCode.set('');
+        this.isSecuritySettingsModalOpen.set(false);
+        this.triggerToast('تم تحديث إعدادات أمان الدخول بنجاح', 'success');
+      },
+      error: (err) => {
+        this.isSavingSecuritySettings.set(false);
+        const msg = err?.error?.error?.message || err?.error?.message || 'تعذر حفظ إعدادات الأمان.';
+        this.triggerToast(msg, 'error');
+      }
+    });
   }
 }

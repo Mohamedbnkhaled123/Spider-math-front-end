@@ -92,18 +92,6 @@ export class AuthRoleModalComponent {
       targetRoute: '/pending-device-approval',
       isPendingDevice: true,
       fullName: 'عمر خالد'
-    },
-    {
-      id: 'super-admin-01',
-      role: 'SUPER_ADMIN',
-      titleAr: 'مدير النظام (م. هبة عبدالوهاب)',
-      titleEn: 'Super Admin (Eng. Heba)',
-      subtitleAr: 'اعتماد الأجهزة وإدارة الطلاب',
-      subtitleEn: 'Device approvals & students',
-      badgeText: 'إشراف كامل',
-      icon: 'user',
-      targetRoute: '/admin',
-      fullName: 'م. هبة عبد الوهاب'
     }
   ];
 
@@ -119,36 +107,6 @@ export class AuthRoleModalComponent {
 
   activatePreset(preset: RolePreset): void {
     this.authService.setPendingDeviceApproval(!!preset.isPendingDevice);
-
-    if (preset.role === 'SUPER_ADMIN') {
-      this.http.post<{ success: boolean; data: { token: string; user: any } }>('/api/v1/auth/admin-login', {}).subscribe({
-        next: (res) => {
-          if (res?.data?.token) {
-            this.authService.setPendingDeviceApproval(false);
-            this.authService.setSession(res.data.token, res.data.user);
-            this.close();
-            this.router.navigateByUrl(preset.targetRoute);
-          }
-        },
-        error: () => {
-          this.authService.setPendingDeviceApproval(false);
-          this.authService.setSession('mock_jwt_token_' + preset.id, {
-            _id: preset.id,
-            full_name: preset.fullName,
-            email: preset.id + '@spidermath.com',
-            role: preset.role,
-            student_ha_code: preset.studentHaCode,
-            total_xp: 0,
-            has_active_subscription: true,
-            curriculum: 'EGYPTIAN',
-            grade_level: 'SEC_3'
-          });
-          this.close();
-          this.router.navigateByUrl(preset.targetRoute);
-        }
-      });
-      return;
-    }
 
     if (preset.studentHaCode && !preset.isPendingDevice) {
       this.http.post<any>('/api/v1/auth/student-code-login', { student_ha_code: preset.studentHaCode }).subscribe({
