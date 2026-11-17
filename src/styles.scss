@@ -56,8 +56,8 @@
   --gradient-spider-text: linear-gradient(90deg, #92400E 0%, #B45309 50%, #78350F 100%);
   --gradient-card-border: linear-gradient(135deg, rgba(158, 111, 24, 0.45), rgba(107, 63, 160, 0.25));
   // Surfaces & Glassmorphism
-  --surface-border: rgba(158, 111, 24, 0.32);
-  --surface-border-glow: rgba(158, 111, 24, 0.70);
+  --surface-border: rgba(158, 111, 24, 0.55);
+  --surface-border-glow: rgba(158, 111, 24, 0.85);
   --surface-glass: rgba(248, 241, 235, 0.90);
   --math-bg-stroke: rgba(17, 22, 41, 0.06);
   --grid-pattern-color: rgba(158, 111, 24, 0.05);
@@ -112,8 +112,8 @@
   --gradient-spider-text: linear-gradient(90deg, #D4AF6A 0%, #F3DC9E 50%, #C49A45 100%);
   --gradient-card-border: linear-gradient(135deg, rgba(212, 175, 106, 0.35), rgba(168, 85, 247, 0.25));
   // Surfaces & Glassmorphism
-  --surface-border: rgba(212, 175, 106, 0.24);
-  --surface-border-glow: rgba(212, 175, 106, 0.75);
+  --surface-border: rgba(212, 175, 106, 0.42);
+  --surface-border-glow: rgba(212, 175, 106, 0.85);
   --surface-glass: rgba(42, 29, 55, 0.85);
   --math-bg-stroke: rgba(255, 255, 255, 0.055);
   --grid-pattern-color: transparent;
@@ -367,12 +367,12 @@ code,
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--surface-border);
+  border: 2.5px solid var(--surface-border);
 }
 
 .glass-card {
   background: var(--surface-bg-card);
-  border: 1px solid var(--surface-border);
+  border: 2.5px solid var(--surface-border);
   box-shadow: var(--shadow-card);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
   &:hover {
@@ -679,7 +679,7 @@ code,
 .btn-ghost-academic {
   background: var(--surface-bg-card);
   color: var(--text-primary);
-  border: 1px solid var(--surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 0.75rem;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -705,7 +705,7 @@ code,
   background: var(--surface-bg-card);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border: 1px solid var(--surface-border);
+  border: 2.5px solid var(--surface-border);
   border-radius: 1.5rem;
   box-shadow: var(--shadow-card);
   overflow: hidden;
@@ -722,7 +722,7 @@ code,
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
+    padding: 1.5px;
     background: linear-gradient(135deg, rgba(124, 77, 255, 0.5) 0%, transparent 40%, rgba(212, 175, 106, 0.4) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;

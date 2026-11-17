@@ -2237,7 +2237,7 @@
                 @for (q of editorFilteredQuestions(); track q.id) {
                   <div
                     [id]="'question-card-' + q.id"
-                    class="p-4 rounded-2xl border bg-surface-card space-y-3 transition-all"
+                    class="p-4 rounded-2xl border-[2.5px] bg-surface-card space-y-3 transition-all shadow-xs"
                     [class.border-surface-border]="editingQuestionId() !== q.id"
                     [class.border-amber-500]="editingQuestionId() === q.id"
                     [class.ring-1]="editingQuestionId() === q.id"
