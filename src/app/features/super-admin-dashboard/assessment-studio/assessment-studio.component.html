@@ -72,7 +72,7 @@
       </button>
     </div>
 
-    <!-- 3-Tier Filter Bar: Curriculum -> Grade Level -> Academic Term -->
+    <!-- 5-Level Hierarchy Filter Bar: Curriculum -> Country/Division -> Grade Level -> Academic Term -->
     <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 border-t border-surface-border items-center">
       
       <!-- 1. Curriculum Selector (5 cols) -->
@@ -83,9 +83,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
           [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
-          [title]="langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum'"
+          [title]="getCurriculumTrackName('EGYPTIAN')"
         >
-          {{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}
+          {{ getCurriculumTrackName('EGYPTIAN') }}
         </button>
 
         <button
@@ -94,9 +94,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
           [class.text-white]="selectedCurriculum() === 'GULF'"
-          [title]="langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum'"
+          [title]="getCurriculumTrackName('GULF')"
         >
-          {{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}
+          {{ getCurriculumTrackName('GULF') }}
         </button>
 
         <button
@@ -105,9 +105,9 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
           [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
-          [title]="langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum'"
+          [title]="getCurriculumTrackName('INTERNATIONAL')"
         >
-          {{ langService.isArabic() ? 'المناهج الدولية' : 'International' }}
+          {{ getCurriculumTrackName('INTERNATIONAL') }}
         </button>
 
         <button
@@ -116,11 +116,68 @@
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate min-w-0"
           [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
           [class.text-white]="selectedCurriculum() === 'AMERICAN'"
-          [title]="langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)'"
+          [title]="getCurriculumTrackName('AMERICAN')"
         >
-          {{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American (SAT)' }}
+          {{ getCurriculumTrackName('AMERICAN') }}
         </button>
       </div>
+
+      <!-- Gulf Countries Selector when GULF curriculum is active -->
+      @if (selectedCurriculum() === 'GULF') {
+        <div class="sm:col-span-12 flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+          <span class="text-xs font-bold text-text-muted px-1 flex items-center gap-1.5 shrink-0">
+            <app-icon name="globe" [size]="14" className="text-brand-primary" />
+            <span>{{ langService.isArabic() ? 'الدولة:' : 'Country:' }}</span>
+          </span>
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+            @for (country of GULF_COUNTRIES; track country.code) {
+              <button
+                type="button"
+                (click)="selectGulfCountry(country.code)"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                [class.bg-brand-primary]="selectedGulfCountry() === country.code"
+                [class.text-white]="selectedGulfCountry() === country.code"
+                [class.shadow-sm]="selectedGulfCountry() === country.code"
+                [class.bg-surface-card]="selectedGulfCountry() !== country.code"
+                [class.text-text-secondary]="selectedGulfCountry() !== country.code"
+                [class.border]="selectedGulfCountry() !== country.code"
+                [class.border-surface-border]="selectedGulfCountry() !== country.code"
+              >
+                <span class="sm:hidden">{{ langService.isArabic() ? country.shortNameAr : country.shortNameEn }}</span>
+                <span class="hidden sm:inline">{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- International Divisions Selector when INTERNATIONAL curriculum is active (American & British) -->
+      @if (selectedCurriculum() === 'INTERNATIONAL') {
+        <div class="sm:col-span-12 flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+          <span class="text-xs font-bold text-text-muted px-1 flex items-center gap-1.5 shrink-0">
+            <app-icon name="globe" [size]="14" className="text-brand-primary" />
+            <span>{{ langService.isArabic() ? 'القسم الدولي:' : 'International Division:' }}</span>
+          </span>
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+            @for (div of getIntlDivisions(); track div.code) {
+              <button
+                type="button"
+                (click)="selectIntlDivision(div.code)"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                [class.bg-brand-primary]="selectedIntlDivision() === div.code"
+                [class.text-white]="selectedIntlDivision() === div.code"
+                [class.shadow-sm]="selectedIntlDivision() === div.code"
+                [class.bg-surface-card]="selectedIntlDivision() !== div.code"
+                [class.text-text-secondary]="selectedIntlDivision() !== div.code"
+                [class.border]="selectedIntlDivision() !== div.code"
+                [class.border-surface-border]="selectedIntlDivision() !== div.code"
+              >
+                <span>{{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
 
       <!-- 2. Grade Level Dropdown (4 or 7 cols) -->
       <div [class]="currentCurriculumHasTerms() ? 'sm:col-span-4 space-y-1' : 'sm:col-span-7 space-y-1'">
@@ -144,10 +201,50 @@
             (ngModelChange)="selectGrade($event)"
             class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary appearance-none cursor-pointer"
           >
-            @for (grade of gradeOptions(); track grade.code) {
-              <option [value]="grade.code">
-                {{ (langService.isArabic() ? grade.titleAr : grade.titleEn) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
-              </option>
+            @if (selectedCurriculum() === 'GULF') {
+              @for (stage of getGulfStages(selectedGulfCountry()); track stage.code) {
+                <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                  @for (grade of getGradesForGulfStage(stage, gradeOptions()); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                    </option>
+                  }
+                </optgroup>
+              }
+              @if (getOtherGulfGrades(selectedGulfCountry(), gradeOptions()).length > 0) {
+                <optgroup [label]="langService.isArabic() ? 'صفوف أخرى' : 'Other Grades'">
+                  @for (grade of getOtherGulfGrades(selectedGulfCountry(), gradeOptions()); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                    </option>
+                  }
+                </optgroup>
+              }
+            } @else if (selectedCurriculum() === 'INTERNATIONAL') {
+              @for (stage of getIntlStages(selectedIntlDivision()); track stage.code) {
+                <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                  @for (grade of getGradesForIntlStage(stage); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                    </option>
+                  }
+                </optgroup>
+              }
+              @if (getOtherIntlGrades(selectedIntlDivision()).length > 0) {
+                <optgroup [label]="langService.isArabic() ? 'صفوف دولية أخرى' : 'Other International Grades'">
+                  @for (grade of getOtherIntlGrades(selectedIntlDivision()); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                    </option>
+                  }
+                </optgroup>
+              }
+            } @else {
+              @for (grade of gradeOptions(); track grade.code) {
+                <option [value]="grade.code">
+                  {{ (langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr)) }} ({{ isGradeActive(grade.code) ? (langService.isArabic() ? 'مفعل' : 'Active') : (langService.isArabic() ? 'قريباً' : 'Soon') }})
+                </option>
+              }
             }
           </select>
           <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -190,7 +287,7 @@
       <div class="flex flex-wrap items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-brand-primary shrink-0"></span>
         <h3 class="text-sm font-black text-text-primary">
-          {{ langService.isArabic() ? 'قائمة امتحانات الصف: ' : 'Assessments for: ' }}<span class="text-brand-primary">{{ selectedGrade() }}</span>
+          {{ langService.isArabic() ? 'قائمة امتحانات الصف: ' : 'Assessments for: ' }}<span class="text-brand-primary">{{ getSelectedGradeTitle() }}</span>
         </h3>
         <span class="text-xs text-text-muted">
           ({{ scopedAssessments().length }} {{ langService.isArabic() ? 'امتحانات' : 'Assessments' }})
@@ -299,6 +396,20 @@
                   <p class="text-xs text-text-muted mt-0.5 font-mono">
                     {{ item.titleEn }}
                   </p>
+                }
+                @if (item.unitTitle || item.lectureTitle) {
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    @if (item.unitTitle) {
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 truncate max-w-[180px]" [title]="item.unitTitle">
+                        {{ item.unitTitle }}
+                      </span>
+                    }
+                    @if (item.lectureTitle) {
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 truncate max-w-[180px]" [title]="item.lectureTitle">
+                        {{ item.lectureTitle }}
+                      </span>
+                    }
+                  </div>
                 }
               </div>
 
@@ -602,10 +713,10 @@
                   (ngModelChange)="onCurriculumChangeInCreate($event)"
                   class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
                 >
-                  <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
-                  <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                  <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum' }}</option>
-                  <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
+                  <option value="EGYPTIAN">{{ getCurriculumTrackName('EGYPTIAN') }}</option>
+                  <option value="GULF">{{ getCurriculumTrackName('GULF') }}</option>
+                  <option value="INTERNATIONAL">{{ getCurriculumTrackName('INTERNATIONAL') }}</option>
+                  <option value="AMERICAN">{{ getCurriculumTrackName('AMERICAN') }}</option>
                 </select>
                 <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
                   <app-icon name="chevron-down" [size]="14" />
@@ -617,11 +728,44 @@
               <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الصف الدراسي (عزل كامل):' : 'Grade Level (Strict Isolation):' }}</label>
               <div class="relative">
                 <select
-                  [(ngModel)]="createForm().gradeLevel"
-                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none appearance-none cursor-pointer"
+                  [ngModel]="createForm().gradeLevel"
+                  (ngModelChange)="onGradeChangeInCreate($event)"
+                  class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-bold focus:border-brand-primary outline-none appearance-none cursor-pointer"
                 >
-                  @for (grade of createGradeOptions(); track grade.code) {
-                    <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                  @if (createForm().curriculum === 'GULF') {
+                    @for (stage of getGulfStages(createGulfCountry()); track stage.code) {
+                      <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                        @for (grade of getGradesForGulfStage(stage, createGradeOptions()); track grade.code) {
+                          <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                        }
+                      </optgroup>
+                    }
+                    @if (getOtherGulfGrades(createGulfCountry(), createGradeOptions()).length > 0) {
+                      <optgroup [label]="langService.isArabic() ? 'صفوف أخرى' : 'Other Grades'">
+                        @for (grade of getOtherGulfGrades(createGulfCountry(), createGradeOptions()); track grade.code) {
+                          <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                        }
+                      </optgroup>
+                    }
+                  } @else if (createForm().curriculum === 'INTERNATIONAL') {
+                    @for (stage of getIntlStages(createIntlDivision()); track stage.code) {
+                      <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                        @for (grade of getGradesForIntlStage(stage); track grade.code) {
+                          <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                        }
+                      </optgroup>
+                    }
+                    @if (getOtherIntlGrades(createIntlDivision()).length > 0) {
+                      <optgroup [label]="langService.isArabic() ? 'صفوف دولية أخرى' : 'Other International Grades'">
+                        @for (grade of getOtherIntlGrades(createIntlDivision()); track grade.code) {
+                          <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                        }
+                      </optgroup>
+                    }
+                  } @else {
+                    @for (grade of createGradeOptions(); track grade.code) {
+                      <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                    }
                   }
                 </select>
                 <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -631,13 +775,54 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="currentCurriculumHasTerms()" [class.sm:grid-cols-2]="!currentCurriculumHasTerms()">
-            @if (currentCurriculumHasTerms()) {
+          @if (createForm().curriculum === 'GULF') {
+            <div class="flex flex-wrap items-center gap-1.5 p-2.5 rounded-xl bg-surface-bg border border-surface-border">
+              <span class="text-[11px] font-bold text-text-muted me-1">{{ langService.isArabic() ? 'الدولة:' : 'Country:' }}</span>
+              @for (country of GULF_COUNTRIES; track country.code) {
+                <button
+                  type="button"
+                  (click)="selectCreateGulfCountry(country.code)"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                  [class.bg-brand-primary]="createGulfCountry() === country.code"
+                  [class.text-white]="createGulfCountry() === country.code"
+                  [class.bg-surface-card]="createGulfCountry() !== country.code"
+                  [class.text-text-secondary]="createGulfCountry() !== country.code"
+                  [class.border]="createGulfCountry() !== country.code"
+                  [class.border-surface-border]="createGulfCountry() !== country.code"
+                >
+                  {{ langService.isArabic() ? country.shortNameAr : country.shortNameEn }}
+                </button>
+              }
+            </div>
+          } @else if (createForm().curriculum === 'INTERNATIONAL') {
+            <div class="flex flex-wrap items-center gap-1.5 p-2.5 rounded-xl bg-surface-bg border border-surface-border">
+              <span class="text-[11px] font-bold text-text-muted me-1">{{ langService.isArabic() ? 'القسم الدولي:' : 'Division:' }}</span>
+              @for (div of getIntlDivisions(); track div.code) {
+                <button
+                  type="button"
+                  (click)="selectCreateIntlDivision(div.code)"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                  [class.bg-brand-primary]="createIntlDivision() === div.code"
+                  [class.text-white]="createIntlDivision() === div.code"
+                  [class.bg-surface-card]="createIntlDivision() !== div.code"
+                  [class.text-text-secondary]="createIntlDivision() !== div.code"
+                  [class.border]="createIntlDivision() !== div.code"
+                  [class.border-surface-border]="createIntlDivision() !== div.code"
+                >
+                  {{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="hasCurriculumTerms(createForm().curriculum)" [class.sm:grid-cols-2]="!hasCurriculumTerms(createForm().curriculum)">
+            @if (hasCurriculumTerms(createForm().curriculum)) {
               <div>
                 <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
                 <div class="relative">
                   <select
-                    [(ngModel)]="createForm().term"
+                    [ngModel]="createForm().term"
+                    (ngModelChange)="onTermChangeInCreate($event)"
                     class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
                   >
                     <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>
@@ -1195,10 +1380,10 @@
                       [disabled]="asm.submissionsCount > 0"
                       class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
                     >
-                      <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian Curriculum' }}</option>
-                      <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf Curriculum' }}</option>
-                      <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية' : 'International Curriculum' }}</option>
-                      <option value="AMERICAN">{{ langService.isArabic() ? 'الأمريكية (SAT)' : 'American Curriculum (SAT)' }}</option>
+                      <option value="EGYPTIAN">{{ getCurriculumTrackName('EGYPTIAN') }}</option>
+                      <option value="GULF">{{ getCurriculumTrackName('GULF') }}</option>
+                      <option value="INTERNATIONAL">{{ getCurriculumTrackName('INTERNATIONAL') }}</option>
+                      <option value="AMERICAN">{{ getCurriculumTrackName('AMERICAN') }}</option>
                     </select>
                     <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
                       <app-icon name="chevron-down" [size]="14" />
@@ -1215,12 +1400,45 @@
                   </label>
                   <div class="relative">
                     <select
-                      [(ngModel)]="asm.gradeLevel"
+                      [ngModel]="asm.gradeLevel"
+                      (ngModelChange)="onGradeChangeInEditor($event)"
                       [disabled]="asm.submissionsCount > 0"
-                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-mono font-bold focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
+                      class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs font-bold focus:border-brand-primary outline-none disabled:opacity-60 appearance-none cursor-pointer"
                     >
-                      @for (grade of editorGradeOptions(); track grade.code) {
-                        <option [value]="grade.code">{{ grade.titleAr }} ({{ grade.code }})</option>
+                      @if (asm.curriculum === 'GULF') {
+                        @for (stage of getGulfStages(editorGulfCountry()); track stage.code) {
+                          <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                            @for (grade of getGradesForGulfStage(stage, editorGradeOptions()); track grade.code) {
+                              <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                            }
+                          </optgroup>
+                        }
+                        @if (getOtherGulfGrades(editorGulfCountry(), editorGradeOptions()).length > 0) {
+                          <optgroup [label]="langService.isArabic() ? 'صفوف أخرى' : 'Other Grades'">
+                            @for (grade of getOtherGulfGrades(editorGulfCountry(), editorGradeOptions()); track grade.code) {
+                              <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                            }
+                          </optgroup>
+                        }
+                      } @else if (asm.curriculum === 'INTERNATIONAL') {
+                        @for (stage of getIntlStages(editorIntlDivision()); track stage.code) {
+                          <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                            @for (grade of getGradesForIntlStage(stage); track grade.code) {
+                              <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                            }
+                          </optgroup>
+                        }
+                        @if (getOtherIntlGrades(editorIntlDivision()).length > 0) {
+                          <optgroup [label]="langService.isArabic() ? 'صفوف دولية أخرى' : 'Other International Grades'">
+                            @for (grade of getOtherIntlGrades(editorIntlDivision()); track grade.code) {
+                              <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                            }
+                          </optgroup>
+                        }
+                      } @else {
+                        @for (grade of editorGradeOptions(); track grade.code) {
+                          <option [value]="grade.code">{{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}</option>
+                        }
                       }
                     </select>
                     <div class="absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted flex items-center">
@@ -1230,13 +1448,56 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="currentCurriculumHasTerms()" [class.sm:grid-cols-2]="!currentCurriculumHasTerms()">
-                @if (currentCurriculumHasTerms()) {
+              @if (asm.curriculum === 'GULF') {
+                <div class="flex flex-wrap items-center gap-1.5 p-2.5 rounded-xl bg-surface-bg border border-surface-border">
+                  <span class="text-[11px] font-bold text-text-muted me-1">{{ langService.isArabic() ? 'الدولة:' : 'Country:' }}</span>
+                  @for (country of GULF_COUNTRIES; track country.code) {
+                    <button
+                      type="button"
+                      [disabled]="asm.submissionsCount > 0"
+                      (click)="selectEditorGulfCountry(country.code)"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer disabled:opacity-60"
+                      [class.bg-brand-primary]="editorGulfCountry() === country.code"
+                      [class.text-white]="editorGulfCountry() === country.code"
+                      [class.bg-surface-card]="editorGulfCountry() !== country.code"
+                      [class.text-text-secondary]="editorGulfCountry() !== country.code"
+                      [class.border]="editorGulfCountry() !== country.code"
+                      [class.border-surface-border]="editorGulfCountry() !== country.code"
+                    >
+                      {{ langService.isArabic() ? country.shortNameAr : country.shortNameEn }}
+                    </button>
+                  }
+                </div>
+              } @else if (asm.curriculum === 'INTERNATIONAL') {
+                <div class="flex flex-wrap items-center gap-1.5 p-2.5 rounded-xl bg-surface-bg border border-surface-border">
+                  <span class="text-[11px] font-bold text-text-muted me-1">{{ langService.isArabic() ? 'القسم الدولي:' : 'Division:' }}</span>
+                  @for (div of getIntlDivisions(); track div.code) {
+                    <button
+                      type="button"
+                      [disabled]="asm.submissionsCount > 0"
+                      (click)="selectEditorIntlDivision(div.code)"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer disabled:opacity-60"
+                      [class.bg-brand-primary]="editorIntlDivision() === div.code"
+                      [class.text-white]="editorIntlDivision() === div.code"
+                      [class.bg-surface-card]="editorIntlDivision() !== div.code"
+                      [class.text-text-secondary]="editorIntlDivision() !== div.code"
+                      [class.border]="editorIntlDivision() !== div.code"
+                      [class.border-surface-border]="editorIntlDivision() !== div.code"
+                    >
+                      {{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}
+                    </button>
+                  }
+                </div>
+              }
+
+              <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-3]="hasCurriculumTerms(asm.curriculum)" [class.sm:grid-cols-2]="!hasCurriculumTerms(asm.curriculum)">
+                @if (hasCurriculumTerms(asm.curriculum)) {
                   <div>
                     <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الترم:' : 'Term:' }}</label>
                     <div class="relative">
                       <select
-                        [(ngModel)]="asm.term"
+                        [ngModel]="asm.term"
+                        (ngModelChange)="onTermChangeInEditor($event)"
                         class="w-full ps-3.5 pe-10 py-2 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:border-brand-primary outline-none appearance-none cursor-pointer"
                       >
                         <option value="TERM_1">{{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}</option>

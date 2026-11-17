@@ -990,4 +990,72 @@ describe('AssessmentStudioComponent', () => {
       expect(innerBody?.classList.contains('min-h-0')).toBeTrue();
     });
   });
+
+  describe('Hierarchical Gulf Country and International Division Parity', () => {
+    it('should render Gulf country selector and group Gulf grades by country stages', () => {
+      component.selectCurriculum('GULF');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      expect(hostEl.textContent).toContain('المملكة العربية السعودية');
+      expect(hostEl.textContent).toContain('دولة قطر');
+      expect(hostEl.textContent).toContain('الإمارات العربية المتحدة');
+      expect(hostEl.textContent).toContain('دولة الكويت');
+
+      const optgroups = Array.from(hostEl.querySelectorAll('optgroup')).map((g) => g.getAttribute('label'));
+      expect(optgroups).toContain('المرحلة الثانوية');
+      expect(optgroups).toContain('المرحلة المتوسطة');
+
+      // Switch to UAE and verify UAE Cycle stages appear
+      component.selectGulfCountry('AE');
+      fixture.detectChanges();
+      const uaeOptgroups = Array.from(hostEl.querySelectorAll('optgroup')).map((g) => g.getAttribute('label'));
+      expect(uaeOptgroups).toContain('الحلقة الثالثة');
+      expect(uaeOptgroups).toContain('الحلقة الثانية');
+    });
+
+    it('should render International divisions selector and strictly scope American vs British grades', () => {
+      component.selectCurriculum('INTERNATIONAL');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      expect(hostEl.textContent).toContain('المنهج الأمريكي');
+      expect(hostEl.textContent).toContain('المنهج البريطاني');
+      expect(component.currentCurriculumHasTerms()).toBeFalse();
+
+      // American division grades should start with US_GRADE_*
+      expect(component.selectedIntlDivision()).toBe('AMERICAN_CURRICULUM');
+      expect(component.gradeOptions().some((g) => g.code.startsWith('US_GRADE_'))).toBeTrue();
+      expect(component.gradeOptions().some((g) => g.code.startsWith('IGCSE_'))).toBeFalse();
+
+      // Switching to British division scopes exclusively to British/IGCSE grades
+      component.selectIntlDivision('BRITISH_CURRICULUM');
+      fixture.detectChanges();
+      expect(component.selectedGrade().startsWith('IGCSE_')).toBeTrue();
+      expect(component.gradeOptions().some((g) => g.code.startsWith('IGCSE_'))).toBeTrue();
+      expect(component.gradeOptions().some((g) => g.code.startsWith('US_GRADE_'))).toBeFalse();
+    });
+
+    it('should provide Gulf/International division controls and accurate term visibility inside Create Modal', () => {
+      component.selectCurriculum('EGYPTIAN');
+      component.openCreateModal();
+      fixture.detectChanges();
+      expect(component.hasCurriculumTerms(component.createForm().curriculum)).toBeTrue();
+
+      component.onCurriculumChangeInCreate('INTERNATIONAL');
+      fixture.detectChanges();
+      expect(component.hasCurriculumTerms(component.createForm().curriculum)).toBeFalse();
+
+      component.selectCreateIntlDivision('BRITISH_CURRICULUM');
+      fixture.detectChanges();
+      expect(component.createForm().gradeLevel.startsWith('IGCSE_')).toBeTrue();
+
+      component.onCurriculumChangeInCreate('GULF');
+      fixture.detectChanges();
+      expect(component.hasCurriculumTerms(component.createForm().curriculum)).toBeTrue();
+      component.selectCreateGulfCountry('KW');
+      fixture.detectChanges();
+      expect(component.createGulfCountry()).toBe('KW');
+    });
+  });
 });
