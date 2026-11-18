@@ -83,6 +83,7 @@ export class AiQuestionExtractionModalComponent {
 
   // File & Canvas State
   readonly uploadedFile = signal<File | null>(null);
+  readonly uploadedImages = signal<Array<{ fileName: string; canvas: HTMLCanvasElement; dataUrl: string }>>([]);
   readonly fileType = signal<'pdf' | 'image' | null>(null);
   readonly fileName = signal<string>('');
   readonly isDragging = signal<boolean>(false);
@@ -265,6 +266,7 @@ export class AiQuestionExtractionModalComponent {
           if (this.lastAssessmentId !== currentId) {
             this.lastAssessmentId = currentId;
             this.uploadedFile.set(null);
+            this.uploadedImages.set([]);
             this.fileType.set(null);
             this.fileName.set('');
             this.currentPageNumber.set(1);
@@ -353,19 +355,33 @@ export class AiQuestionExtractionModalComponent {
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.handleSelectedFile(files[0]);
+      this.handleSelectedFiles(files);
     }
   }
 
   onFileInputChanged(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     if (inputEl.files && inputEl.files.length > 0) {
-      this.handleSelectedFile(inputEl.files[0]);
+      this.handleSelectedFiles(inputEl.files);
     }
+  }
+
+  handleSelectedFiles(files: FileList | File[]): void {
+    const list = Array.from(files || []);
+    if (list.length === 0) return;
+
+    const imageFiles = list.filter((f) => f.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp)$/i.test(f.name));
+    if (list.length > 1 && imageFiles.length > 0) {
+      this.processMultipleImages(imageFiles);
+      return;
+    }
+
+    this.handleSelectedFile(list[0]);
   }
 
   handleSelectedFile(file: File): void {
     this.errorMessage.set(null);
+    this.uploadedImages.set([]);
     const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), file.name);
     if (storedPage && storedPage >= 1) {
       this.currentPageNumber.set(storedPage);
@@ -393,6 +409,99 @@ export class AiQuestionExtractionModalComponent {
     }
   }
 
+  private async loadImageFileToCanvas(file: File): Promise<{ fileName: string; canvas: HTMLCanvasElement; dataUrl: string }> {
+    const rawDataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = rawDataUrl;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('dir', 'ltr');
+    canvas.style.direction = 'ltr';
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      (ctx as CanvasRenderingContext2D).direction = 'ltr';
+      ctx.drawImage(img, 0, 0);
+    }
+
+    return {
+      fileName: file.name,
+      canvas,
+      dataUrl: canvas.toDataURL('image/webp', 0.85)
+    };
+  }
+
+  private async processMultipleImages(files: File[]): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.errorMessage.set(null);
+    this.isProcessing.set(true);
+    this.processingMessage.set(
+      this.langService.isArabic()
+        ? `جاري تجهيز ${files.length} صور...`
+        : `Processing ${files.length} images...`
+    );
+
+    try {
+      const capped = files.slice(0, 10);
+      const items: Array<{ fileName: string; canvas: HTMLCanvasElement; dataUrl: string }> = [];
+      for (const f of capped) {
+        items.push(await this.loadImageFileToCanvas(f));
+      }
+
+      if (items.length === 0) return;
+
+      this.uploadedFile.set(capped[0]);
+      this.uploadedImages.set(items);
+      this.fileType.set('image');
+      this.fileName.set(
+        this.langService.isArabic()
+          ? `${items[0].fileName} (+${items.length - 1} صور)`
+          : `${items[0].fileName} (+${items.length - 1} images)`
+      );
+      this.totalPages.set(items.length);
+      this.currentPageNumber.set(1);
+      this.currentCanvas = items[0].canvas;
+      this.currentDataUrl.set(items[0].dataUrl);
+      this.pageScopeMode.set('PAGE_RANGE');
+      this.rangeStartPage.set(1);
+      this.rangeEndPage.set(items.length);
+      this.currentStep.set('PREVIEW_AND_PAGE');
+      this.emitFileSession();
+    } catch {
+      this.errorMessage.set(
+        this.langService.isArabic()
+          ? 'تعذر قراءة إحدى الصور المحددة.'
+          : 'Unable to read one of the selected images.'
+      );
+    } finally {
+      this.isProcessing.set(false);
+    }
+  }
+
+  goToImagePage(pageNum: number): void {
+    const items = this.uploadedImages();
+    if (items.length === 0) return;
+    const clamped = Math.max(1, Math.min(items.length, pageNum));
+    const entry = items[clamped - 1];
+    if (!entry) return;
+    this.currentPageNumber.set(clamped);
+    this.currentCanvas = entry.canvas;
+    this.currentDataUrl.set(entry.dataUrl);
+    this.emitFileSession();
+  }
+
   private async processImageFile(file: File): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -402,38 +511,15 @@ export class AiQuestionExtractionModalComponent {
     );
 
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const img = new Image();
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = reject;
-        img.src = dataUrl;
-      });
-
-      const canvas = document.createElement('canvas');
-      canvas.setAttribute('dir', 'ltr');
-      canvas.style.direction = 'ltr';
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        (ctx as CanvasRenderingContext2D).direction = 'ltr';
-        ctx.drawImage(img, 0, 0);
-      }
-
-      this.currentCanvas = canvas;
-      this.currentDataUrl.set(canvas.toDataURL('image/webp', 0.85));
+      const rendered = await this.loadImageFileToCanvas(file);
+      this.uploadedImages.set([rendered]);
+      this.currentCanvas = rendered.canvas;
+      this.currentDataUrl.set(rendered.dataUrl);
       this.currentPageNumber.set(1);
       this.totalPages.set(1);
       this.currentStep.set('PREVIEW_AND_PAGE');
       this.emitFileSession();
-    } catch (err: any) {
+    } catch {
       this.errorMessage.set(
         this.langService.isArabic()
           ? 'تعذر قراءة ملف الصورة.'
@@ -500,6 +586,60 @@ export class AiQuestionExtractionModalComponent {
 
   // --- AI Extraction Trigger ---
 
+  /**
+   * Scales oversized canvases down to <=1400px for fast AI inference (~1.3s),
+   * while preserving smaller canvases verbatim and keeping the 2.0x original for local crops.
+   */
+  getOptimizedAiBase64(
+    canvas: HTMLCanvasElement | null,
+    fallbackDataUrl: string | null,
+    maxDim = 1400,
+    quality = 0.80
+  ): string {
+    if (
+      !canvas ||
+      !isPlatformBrowser(this.platformId) ||
+      canvas.width === 0 ||
+      canvas.height === 0 ||
+      (canvas.width <= maxDim && canvas.height <= maxDim)
+    ) {
+      return fallbackDataUrl || '';
+    }
+
+    try {
+      const scale = Math.min(maxDim / canvas.width, maxDim / canvas.height);
+      const scaled = document.createElement('canvas');
+      scaled.width = Math.max(1, Math.round(canvas.width * scale));
+      scaled.height = Math.max(1, Math.round(canvas.height * scale));
+      const ctx = scaled.getContext('2d');
+      if (!ctx) return fallbackDataUrl || '';
+      ctx.drawImage(canvas, 0, 0, scaled.width, scaled.height);
+      const compressed = scaled.toDataURL('image/webp', quality);
+      return compressed && compressed.length > 30 ? compressed : fallbackDataUrl || '';
+    } catch {
+      return fallbackDataUrl || '';
+    }
+  }
+
+  private formatExtractionError(err: any): string {
+    const status = err?.status;
+    let raw = 'Server error';
+    if (typeof err?.error === 'object' && err?.error !== null) {
+      raw = err.error?.error?.message || err.error?.message || err?.message || raw;
+    } else if (typeof err?.error === 'string' && err.error.trim().length > 0) {
+      raw = err.error.trim();
+    } else if (err?.message) {
+      raw = err.message;
+    }
+
+    if (status === 504 || /504|timeout|error occurred with your deployment/i.test(raw)) {
+      return this.langService.isArabic()
+        ? 'انتهت مهلة الاستجابة من الخادم (504). يرجى المحاولة مرة أخرى أو تقليل عدد الصفحات المحددة.'
+        : 'Server gateway timeout (504). Please try again or reduce the number of selected pages.';
+    }
+    return raw;
+  }
+
   async startAiExtraction(): Promise<void> {
     if (this.extractionMode() === 'MANUAL_CROP') {
       this.useFileForManualSlicing();
@@ -515,8 +655,9 @@ export class AiQuestionExtractionModalComponent {
       return;
     }
 
+    const isMultiItemSource = this.fileType() === 'pdf' || (this.fileType() === 'image' && this.uploadedImages().length > 1);
     const targetPages: number[] = [];
-    if (this.pageScopeMode() === 'CURRENT_PAGE' || this.fileType() !== 'pdf') {
+    if (this.pageScopeMode() === 'CURRENT_PAGE' || !isMultiItemSource || this.totalPages() <= 1) {
       targetPages.push(this.currentPageNumber());
     } else {
       for (let p = this.rangeStartPage(); p <= this.rangeEndPage(); p++) {
@@ -528,6 +669,10 @@ export class AiQuestionExtractionModalComponent {
     this.errorMessage.set(null);
 
     const allExtractedStaged: IStagedQuestion[] = [];
+    const succeededPages: number[] = [];
+    const failedPages: number[] = [];
+    let lastPageError: any = null;
+
     const isTextOnlyMode = this.extractionMode() === 'TEXT_LATEX_ONLY';
     const customKey = this.customApiKey().trim();
     const headers: Record<string, string> = {};
@@ -547,7 +692,11 @@ export class AiQuestionExtractionModalComponent {
         let pageDataUrl: string | null = null;
         let pageCanvas: HTMLCanvasElement | null = null;
 
-        if (p === this.currentPageNumber() && this.currentDataUrl()) {
+        if (this.fileType() === 'image' && this.uploadedImages().length > 1) {
+          const imgEntry = this.uploadedImages()[p - 1];
+          pageDataUrl = imgEntry?.dataUrl || null;
+          pageCanvas = imgEntry?.canvas || null;
+        } else if (p === this.currentPageNumber() && this.currentDataUrl()) {
           pageDataUrl = this.currentDataUrl();
           pageCanvas = this.currentCanvas;
         } else {
@@ -561,7 +710,7 @@ export class AiQuestionExtractionModalComponent {
         }
 
         const payload: Record<string, any> = {
-          imageBase64: pageDataUrl,
+          imageBase64: this.getOptimizedAiBase64(pageCanvas, pageDataUrl),
           mimeType: 'image/webp',
           mode: this.extractionMode(),
           curriculum: this.curriculum(),
@@ -571,14 +720,22 @@ export class AiQuestionExtractionModalComponent {
           payload['apiKey'] = customKey;
         }
 
-        const res = await firstValueFrom(
-          this.http.post<IAiExtractionBackendResponse>(
-            '/api/v1/assessments/ai-extract-questions',
-            payload,
-            { headers }
-          )
-        );
+        let res: IAiExtractionBackendResponse;
+        try {
+          res = await firstValueFrom(
+            this.http.post<IAiExtractionBackendResponse>(
+              '/api/v1/assessments/ai-extract-questions',
+              payload,
+              { headers }
+            )
+          );
+        } catch (pageErr: any) {
+          lastPageError = pageErr;
+          failedPages.push(p);
+          continue;
+        }
 
+        succeededPages.push(p);
         const rawQuestions = res?.data?.questions || [];
 
         for (let i = 0; i < rawQuestions.length; i++) {
@@ -623,45 +780,59 @@ export class AiQuestionExtractionModalComponent {
       }
 
       if (allExtractedStaged.length === 0) {
-        this.errorMessage.set(
-          this.langService.isArabic()
-            ? 'لم يتم العثور على أي أسئلة في الصفحات المحددة.'
-            : 'No questions found in selected pages.'
-        );
+        if (lastPageError) {
+          const formatted = this.formatExtractionError(lastPageError);
+          this.errorMessage.set(
+            this.langService.isArabic() && !formatted.includes('مهلة')
+              ? `فشل استخراج الأسئلة: ${formatted}`
+              : formatted
+          );
+        } else {
+          this.errorMessage.set(
+            this.langService.isArabic()
+              ? 'لم يتم العثور على أي أسئلة في الصفحات المحددة.'
+              : 'No questions found in selected pages.'
+          );
+        }
         return;
       }
 
-      // Update staged questions: replace entries for targetPages, preserve others
-      const targetPagesSet = new Set(targetPages);
+      // Update staged questions: replace entries for succeededPages, preserve others
+      const succeededPagesSet = new Set(succeededPages);
       this.stagedQuestions.update((prev) => {
-        const otherPages = prev.filter((q) => !q.pageNumber || !targetPagesSet.has(q.pageNumber));
+        const otherPages = prev.filter((q) => !q.pageNumber || !succeededPagesSet.has(q.pageNumber));
         return [...otherPages, ...allExtractedStaged];
       });
 
-      // Advance current page to the last page extracted
-      const lastPage = targetPages[targetPages.length - 1];
+      // Advance current page to the last succeeded page
+      const lastPage = succeededPages[succeededPages.length - 1] || targetPages[targetPages.length - 1];
       this.currentPageNumber.set(lastPage);
-      this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), lastPage);
+      if (this.fileType() === 'pdf') {
+        this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), lastPage);
+      } else if (this.uploadedImages().length > 1) {
+        const entry = this.uploadedImages()[lastPage - 1];
+        if (entry) {
+          this.currentCanvas = entry.canvas;
+          this.currentDataUrl.set(entry.dataUrl);
+        }
+      }
       this.emitFileSession();
+
+      if (failedPages.length > 0) {
+        this.errorMessage.set(
+          this.langService.isArabic()
+            ? `تم استخراج ${allExtractedStaged.length} أسئلة، لكن تعذر استخراج الصفحات (${failedPages.join(', ')}). يمكنك إعادة المحاولة لتلك الصفحات.`
+            : `Extracted ${allExtractedStaged.length} questions, but pages (${failedPages.join(', ')}) failed. You can retry those pages.`
+        );
+      }
 
       this.currentStep.set('STAGING_REVIEW');
     } catch (err: any) {
-      let serverMsg = 'Server error';
-      if (typeof err?.error === 'object' && err?.error !== null) {
-        serverMsg =
-          err.error?.error?.message ||
-          err.error?.message ||
-          err?.message ||
-          'Server error';
-      } else if (typeof err?.error === 'string' && err.error.trim().length > 0) {
-        serverMsg = err.error.trim();
-      } else if (err?.message) {
-        serverMsg = err.message;
-      }
+      const serverMsg = this.formatExtractionError(err);
       this.errorMessage.set(
-        this.langService.isArabic()
+        this.langService.isArabic() && !serverMsg.includes('مهلة')
           ? `فشل استخراج الأسئلة: ${serverMsg}`
-          : `Extraction failed: ${serverMsg}`
+          : serverMsg
       );
     } finally {
       this.isProcessing.set(false);

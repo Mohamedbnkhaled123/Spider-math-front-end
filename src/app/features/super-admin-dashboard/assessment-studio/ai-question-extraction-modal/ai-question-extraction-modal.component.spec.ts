@@ -767,5 +767,132 @@ describe('AiQuestionExtractionModalComponent', () => {
       expect(modalWin?.classList.contains('max-w-5xl')).toBeFalse();
       expect(modalWin?.classList.contains('lg:h-[calc(100dvh-10.5rem)]')).toBeFalse();
     });
+
+    it('should compress oversized canvas for AI payload while preserving small canvases verbatim', () => {
+      const smallCanvas = document.createElement('canvas');
+      smallCanvas.width = 800;
+      smallCanvas.height = 1000;
+      expect(component.getOptimizedAiBase64(smallCanvas, 'data:image/webp;base64,small')).toBe('data:image/webp;base64,small');
+
+      const largeCanvas = document.createElement('canvas');
+      largeCanvas.width = 2400;
+      largeCanvas.height = 3200;
+      const optimized = component.getOptimizedAiBase64(largeCanvas, 'data:image/webp;base64,huge');
+      expect(optimized.startsWith('data:image/')).toBeTrue();
+      expect(optimized).not.toBe('data:image/webp;base64,huge');
+    });
+
+    it('should extract multiple uploaded images sequentially', async () => {
+      const c1 = document.createElement('canvas');
+      c1.width = 100;
+      c1.height = 100;
+      const c2 = document.createElement('canvas');
+      c2.width = 100;
+      c2.height = 100;
+
+      component.fileType.set('image');
+      component.uploadedImages.set([
+        { fileName: 'img1.png', canvas: c1, dataUrl: 'data:image/webp;base64,img1' },
+        { fileName: 'img2.png', canvas: c2, dataUrl: 'data:image/webp;base64,img2' }
+      ]);
+      component.totalPages.set(2);
+      component.currentPageNumber.set(1);
+      component.currentCanvas = c1;
+      component.currentDataUrl.set('data:image/webp;base64,img1');
+      component.pageScopeMode.set('PAGE_RANGE');
+      component.rangeStartPage.set(1);
+      component.rangeEndPage.set(2);
+
+      const extractionPromise = component.startAiExtraction();
+
+      const req1 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      expect(req1.request.body.imageBase64).toBe('data:image/webp;base64,img1');
+      req1.flush({
+        success: true,
+        data: {
+          questions: [{ question_text: 'Image 1 Q', options: ['A', 'B'], correct_option_index: 0, has_geometry_diagram: false, points: 1 }]
+        }
+      });
+
+      await new Promise(r => setTimeout(r, 10));
+
+      const req2 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      expect(req2.request.body.imageBase64).toBe('data:image/webp;base64,img2');
+      req2.flush({
+        success: true,
+        data: {
+          questions: [{ question_text: 'Image 2 Q', options: ['C', 'D'], correct_option_index: 1, has_geometry_diagram: false, points: 2 }]
+        }
+      });
+
+      await extractionPromise;
+
+      expect(component.stagedQuestions().length).toBe(2);
+      expect(component.stagedQuestions()[0].question_text).toBe('Image 1 Q');
+      expect(component.stagedQuestions()[1].question_text).toBe('Image 2 Q');
+      expect(component.currentStep()).toBe('STAGING_REVIEW');
+    });
+
+    it('should preserve extracted questions on partial 504 failure during multi-page batch', async () => {
+      component.setPageScopeMode('PAGE_RANGE');
+      component.rangeStartPage.set(1);
+      component.rangeEndPage.set(2);
+      component.totalPages.set(5);
+      component.fileType.set('pdf');
+      component.currentPageNumber.set(1);
+
+      const mockCanvas1 = document.createElement('canvas');
+      mockCanvas1.width = 100;
+      mockCanvas1.height = 100;
+      component.currentCanvas = mockCanvas1;
+      component.currentDataUrl.set('data:image/webp;base64,page1');
+
+      const mockCanvas2 = document.createElement('canvas');
+      mockCanvas2.width = 100;
+      mockCanvas2.height = 100;
+      const mockViewer = {
+        renderPageToDataUrl: jasmine.createSpy('renderPageToDataUrl').and.resolveTo({
+          canvas: mockCanvas2,
+          dataUrl: 'data:image/webp;base64,page2'
+        })
+      };
+      (component as any).pdfViewer = () => mockViewer;
+
+      const extractionPromise = component.startAiExtraction();
+
+      const req1 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      req1.flush({
+        success: true,
+        data: {
+          questions: [{ question_text: 'Saved Q from Page 1', options: ['A', 'B'], correct_option_index: 0, has_geometry_diagram: false, points: 1 }]
+        }
+      });
+
+      await new Promise(r => setTimeout(r, 10));
+
+      const req2 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      req2.flush('An error occurred with your deployment', { status: 504, statusText: 'Gateway Timeout' });
+
+      await extractionPromise;
+
+      expect(component.stagedQuestions().length).toBe(1);
+      expect(component.stagedQuestions()[0].question_text).toBe('Saved Q from Page 1');
+      expect(component.currentStep()).toBe('STAGING_REVIEW');
+      expect(component.errorMessage()).toContain('2');
+    });
+
+    it('should format 504 deployment timeout into clear Arabic guidance when all pages fail', async () => {
+      component.currentDataUrl.set('data:image/webp;base64,page1');
+      component.fileType.set('image');
+
+      const extractionPromise = component.startAiExtraction();
+
+      const req = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      req.flush('An error occurred with your deployment', { status: 504, statusText: 'Gateway Timeout' });
+
+      await extractionPromise;
+
+      expect(component.errorMessage()).toContain('504');
+    });
   });
 });
