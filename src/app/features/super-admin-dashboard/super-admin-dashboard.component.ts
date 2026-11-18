@@ -434,6 +434,9 @@ export class SuperAdminDashboardComponent implements OnInit {
                               type: a.assessment_type || 'QUIZ',
                               calculatorType: a.graph_calculator || a.calculator_mode || a.calculatorType || 'NONE',
                               durationMinutes: a.time_limit_minutes || a.duration_minutes || 20,
+                              isMultiModule: !!(a.is_multi_module ?? a.isMultiModule),
+                              module1TimeMinutes: a.module_1_time_minutes ?? a.module1TimeMinutes ?? 35,
+                              module2TimeMinutes: a.module_2_time_minutes ?? a.module2TimeMinutes ?? 35,
                               xpReward: a.xp_reward ?? null,
                               referenceSheetUrl: a.reference_sheet_url || a.referenceSheetUrl || null,
                               requiresTeacherReview: !!(a.requires_teacher_review ?? a.requiresTeacherReview),
@@ -449,7 +452,8 @@ export class SuperAdminDashboardComponent implements OnInit {
                                 options: q.options || [],
                                 correctOptionIndex: q.correct_option_index ?? 0,
                                 acceptedAnswers: q.accepted_answers || q.acceptedAnswers || [],
-                                points: q.points || 5
+                                points: q.points || 5,
+                                moduleIndex: (q.module_index as 1 | 2) || (q.moduleIndex as 1 | 2) || 1
                               }))
                             }))
                           }

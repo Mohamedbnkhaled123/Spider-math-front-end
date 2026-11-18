@@ -58,6 +58,7 @@ export interface QuestionAdminItem {
   correctOptionIndex: number;
   acceptedAnswers?: string[];
   points: number;
+  moduleIndex?: 1 | 2;
 }
 
 export type AssessmentAdminType = 'QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM';
@@ -71,6 +72,9 @@ export interface AssessmentAdminItem {
   type?: AssessmentAdminType;
   calculatorType: CalculatorMode;
   durationMinutes: number;
+  isMultiModule?: boolean;
+  module1TimeMinutes?: number;
+  module2TimeMinutes?: number;
   submissionsCount: number;
   xpReward?: number | null;
   referenceSheetUrl?: string | null;

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { CurriculumStudioComponent } from './curriculum-studio.component';
+import { AssessmentAdminItem, UnitPackageAdminItem } from './curriculum-studio.models';
 
 describe('CurriculumStudioComponent', () => {
   let component: CurriculumStudioComponent;
@@ -898,6 +899,251 @@ describe('CurriculumStudioComponent', () => {
       expect(composerEl.textContent).not.toContain('معاينة:');
       expect(composerEl.querySelector('app-math-formula')).toBeNull();
       expect(composerEl.querySelector('select')).toBeTruthy();
+    });
+  });
+
+  describe('Two-Module Assessment System in Curriculum Studio (Quizzes & Comprehensive Exams)', () => {
+    let httpTestingController: HttpTestingController;
+
+    const mockUnit: UnitPackageAdminItem = {
+      id: '65f1a2b3c4d5e6f7a8b9c0d1',
+      titleAr: 'الوحدة الأولى',
+      titleEn: 'Unit 1',
+      curriculum: 'EGYPTIAN',
+      gradeLevel: 'SEC_3',
+      term: 'TERM_1',
+      type: 'STUDY_UNIT',
+      isPublished: true,
+      priceEgp: 100,
+      lectures: [],
+      assessments: []
+    };
+
+    beforeEach(() => {
+      httpTestingController = TestBed.inject(HttpTestingController);
+      const reqs = httpTestingController.match('/api/v1/public/active-grades');
+      reqs.forEach((r) => r.flush({ success: true, data: [] }));
+    });
+
+    afterEach(() => {
+      httpTestingController.verify();
+    });
+
+    it('should initialize newAssessmentForm with two-module defaults', () => {
+      component.openCreateAssessmentModal(mockUnit);
+      const form = component.newAssessmentForm();
+      expect(form.isMultiModule).toBeFalse();
+      expect(form.module1TimeMinutes).toBe(35);
+      expect(form.module2TimeMinutes).toBe(35);
+    });
+
+    it('should force isMultiModule to false when assessment type is set to HOMEWORK', () => {
+      component.openCreateAssessmentModal(mockUnit);
+      component.newAssessmentForm.update((f) => ({ ...f, isMultiModule: true }));
+      expect(component.newAssessmentForm().isMultiModule).toBeTrue();
+
+      component.setAssessmentType('HOMEWORK');
+      expect(component.newAssessmentForm().type).toBe('HOMEWORK');
+      expect(component.newAssessmentForm().isMultiModule).toBeFalse();
+    });
+
+    it('should calculate duration and send multi-module fields when creating QUIZ or COMPREHENSIVE_EXAM', () => {
+      spyOn(component.unitUpdated, 'emit');
+      component.openCreateAssessmentModal(mockUnit);
+      component.newAssessmentForm.update((f) => ({
+        ...f,
+        type: 'COMPREHENSIVE_EXAM',
+        titleAr: 'امتحان شامل تجريبي',
+        xpReward: 10,
+        isMultiModule: true,
+        module1TimeMinutes: 35,
+        module2TimeMinutes: 25,
+        durationMinutes: 10
+      }));
+
+      component.saveNewAssessment();
+
+      const req = httpTestingController.expectOne('/api/v1/admin/assessments');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body.is_multi_module).toBeTrue();
+      expect(req.request.body.module_1_time_minutes).toBe(35);
+      expect(req.request.body.module_2_time_minutes).toBe(25);
+      expect(req.request.body.duration_minutes).toBe(60);
+      expect(req.request.body.time_limit_minutes).toBe(60);
+
+      req.flush({
+        success: true,
+        data: {
+          id: 'asm_multi_comp_1',
+          unit_id: '65f1a2b3c4d5e6f7a8b9c0d1',
+          title_ar: 'امتحان شامل تجريبي',
+          assessment_type: 'COMPREHENSIVE_EXAM',
+          is_multi_module: true,
+          module_1_time_minutes: 35,
+          module_2_time_minutes: 25,
+          duration_minutes: 60,
+          calculator_mode: 'NONE',
+          questions: []
+        }
+      });
+
+      expect(component.unitUpdated.emit).toHaveBeenCalledWith(jasmine.objectContaining({
+        assessments: jasmine.arrayContaining([
+          jasmine.objectContaining({
+            id: 'asm_multi_comp_1',
+            isMultiModule: true,
+            module1TimeMinutes: 35,
+            module2TimeMinutes: 25,
+            durationMinutes: 60
+          })
+        ])
+      }));
+    });
+
+    it('should assign moduleIndex 2 to question when composer selects Module 2', () => {
+      const mockAsm: AssessmentAdminItem = {
+        id: 'asm_test_editor',
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'كويز تفاعلي',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 70,
+        isMultiModule: true,
+        module1TimeMinutes: 35,
+        module2TimeMinutes: 35,
+        submissionsCount: 0,
+        questions: []
+      };
+
+      component.openAssessmentEditor(mockAsm);
+      expect(component.newQuestionModuleIndex()).toBe(1);
+      expect(component.moduleFilterTab()).toBe('ALL');
+
+      component.newQuestionModuleIndex.set(2);
+      component.newQuestionTextAr.set('Calculate derivative of f(x) = x^2');
+      component.newQuestionOptions.set(['2x', 'x', 'x^2', '2']);
+      component.newQuestionCorrectIndex.set(0);
+
+      component.addQuestionToAssessment();
+
+      const active = component.activeAssessment();
+      expect(active?.questions.length).toBe(1);
+      expect(active?.questions[0].moduleIndex).toBe(2);
+      expect(component.module2QuestionsCount()).toBe(1);
+      expect(component.module1QuestionsCount()).toBe(0);
+    });
+
+    it('should filter questions properly according to moduleFilterTab', () => {
+      const mockAsm: AssessmentAdminItem = {
+        id: 'asm_filter_test',
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'امتحان تجريبي',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 70,
+        isMultiModule: true,
+        module1TimeMinutes: 35,
+        module2TimeMinutes: 35,
+        submissionsCount: 0,
+        questions: [
+          {
+            id: 'q1',
+            order: 1,
+            type: 'MCQ',
+            textAr: 'سؤال موديول 1',
+            options: ['A', 'B'],
+            correctOptionIndex: 0,
+            points: 5,
+            moduleIndex: 1
+          },
+          {
+            id: 'q2',
+            order: 2,
+            type: 'MCQ',
+            textAr: 'سؤال موديول 2',
+            options: ['C', 'D'],
+            correctOptionIndex: 1,
+            points: 5,
+            moduleIndex: 2
+          }
+        ]
+      };
+
+      component.openAssessmentEditor(mockAsm);
+
+      component.moduleFilterTab.set('ALL');
+      expect(component.filteredQuestions().length).toBe(2);
+
+      component.moduleFilterTab.set(1);
+      expect(component.filteredQuestions().length).toBe(1);
+      expect(component.filteredQuestions()[0].id).toBe('q1');
+
+      component.moduleFilterTab.set(2);
+      expect(component.filteredQuestions().length).toBe(1);
+      expect(component.filteredQuestions()[0].id).toBe('q2');
+    });
+
+    it('should send multi-module attributes and per-question module_index on saveAssessmentSettings', () => {
+      spyOn(component.assessmentSaved, 'emit');
+      const mockAsm: AssessmentAdminItem = {
+        id: 'asm_save_patch',
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'امتحان نهائي',
+        type: 'COMPREHENSIVE_EXAM',
+        calculatorType: 'DESMOS',
+        durationMinutes: 60,
+        isMultiModule: true,
+        module1TimeMinutes: 35,
+        module2TimeMinutes: 30,
+        submissionsCount: 0,
+        questions: [
+          {
+            id: 'q_mod1',
+            order: 1,
+            type: 'MCQ',
+            textAr: 'Q1',
+            options: ['1', '2'],
+            correctOptionIndex: 0,
+            points: 5,
+            moduleIndex: 1
+          },
+          {
+            id: 'q_mod2',
+            order: 2,
+            type: 'MCQ',
+            textAr: 'Q2',
+            options: ['3', '4'],
+            correctOptionIndex: 1,
+            points: 5,
+            moduleIndex: 2
+          }
+        ]
+      };
+
+      component.openAssessmentEditor(mockAsm);
+      component.saveAssessmentSettings();
+
+      const req = httpTestingController.expectOne('/api/v1/admin/assessments/asm_save_patch');
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body.is_multi_module).toBeTrue();
+      expect(req.request.body.module_1_time_minutes).toBe(35);
+      expect(req.request.body.module_2_time_minutes).toBe(30);
+      expect(req.request.body.duration_minutes).toBe(65);
+      expect(req.request.body.questions[0].module_index).toBe(1);
+      expect(req.request.body.questions[1].module_index).toBe(2);
+
+      req.flush({ success: true });
+
+      expect(component.assessmentSaved.emit).toHaveBeenCalledWith(jasmine.objectContaining({
+        id: 'asm_save_patch',
+        isMultiModule: true,
+        module1TimeMinutes: 35,
+        module2TimeMinutes: 30,
+        durationMinutes: 65
+      }));
     });
   });
 });

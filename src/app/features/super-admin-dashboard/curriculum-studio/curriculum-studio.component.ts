@@ -935,6 +935,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     referenceSheetUrl: string | null;
     requiresTeacherReview: boolean;
     lectureId: string | null;
+    isMultiModule: boolean;
+    module1TimeMinutes: number;
+    module2TimeMinutes: number;
   }>({
     titleAr: '',
     type: 'QUIZ',
@@ -943,7 +946,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     xpReward: null,
     referenceSheetUrl: null,
     requiresTeacherReview: false,
-    lectureId: null
+    lectureId: null,
+    isMultiModule: false,
+    module1TimeMinutes: 35,
+    module2TimeMinutes: 35
   });
 
   // Reference Sheet Toggles
@@ -987,6 +993,27 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   readonly newQuestionCorrectIndex = signal<number>(0);
   readonly newQuestionAcceptedAnswers = signal<string[]>(['']);
   readonly newQuestionPoints = signal<number>(5);
+  readonly newQuestionModuleIndex = signal<1 | 2>(1);
+
+  // Two-Module Question Filter
+  readonly moduleFilterTab = signal<'ALL' | 1 | 2>('ALL');
+
+  readonly module1QuestionsCount = computed(() => {
+    return (this.activeAssessment()?.questions || []).filter((q) => q.moduleIndex !== 2).length;
+  });
+
+  readonly module2QuestionsCount = computed(() => {
+    return (this.activeAssessment()?.questions || []).filter((q) => q.moduleIndex === 2).length;
+  });
+
+  readonly filteredQuestions = computed(() => {
+    const questions = this.activeAssessment()?.questions || [];
+    const filter = this.moduleFilterTab();
+    if (filter === 'ALL' || !this.activeAssessment()?.isMultiModule) {
+      return questions;
+    }
+    return questions.filter((q) => (q.moduleIndex === 2 ? 2 : 1) === filter);
+  });
 
   @HostListener('window:beforeunload')
   onBeforeUnload(): void {
@@ -1021,6 +1048,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       calculatorType: asm.calculatorType || 'NONE',
       referenceSheetUrl: asm.referenceSheetUrl || null,
       durationMinutes: asm.durationMinutes || 20,
+      isMultiModule: !!asm.isMultiModule,
+      module1TimeMinutes: asm.module1TimeMinutes,
+      module2TimeMinutes: asm.module2TimeMinutes,
       passPercentage: 60,
       maxAttempts: 1,
       isScheduled: false,
@@ -1037,6 +1067,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         correctOptionIndex: q.correctOptionIndex ?? 0,
         acceptedAnswers: q.acceptedAnswers || [],
         points: q.points || 5,
+        moduleIndex: q.moduleIndex === 2 ? 2 : 1,
         explanationAr: ''
       })),
       composerSnapshot: {
@@ -1048,6 +1079,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         acceptedAnswers: this.newQuestionAcceptedAnswers(),
         correctIndex: this.newQuestionCorrectIndex(),
         points: this.newQuestionPoints(),
+        moduleIndex: this.newQuestionModuleIndex(),
         youtubeUrl: ''
       },
       createdAt: Date.now(),
@@ -1086,6 +1118,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       type: (draft.assessmentType as any) || 'QUIZ',
       calculatorType: draft.calculatorType || 'NONE',
       durationMinutes: draft.durationMinutes || 20,
+      isMultiModule: !!draft.isMultiModule,
+      module1TimeMinutes: draft.module1TimeMinutes ?? 35,
+      module2TimeMinutes: draft.module2TimeMinutes ?? 35,
       submissionsCount: 0,
       referenceSheetUrl: draft.referenceSheetUrl || null,
       requiresTeacherReview: !!draft.requiresTeacherReview,
@@ -1098,7 +1133,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         options: q.options || [],
         correctOptionIndex: q.correctOptionIndex ?? 0,
         acceptedAnswers: q.acceptedAnswers || [],
-        points: q.points || 5
+        points: q.points || 5,
+        moduleIndex: q.moduleIndex === 2 ? 2 : 1
       }))
     };
 
@@ -1106,6 +1142,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
     if (draft.composerSnapshot) {
       this.editingQuestionId.set(draft.composerSnapshot.editingQuestionId || null);
+      this.newQuestionModuleIndex.set(draft.composerSnapshot.moduleIndex === 2 ? 2 : 1);
       this.newQuestionType.set(
         draft.composerSnapshot.type === 'INPUT_TEXT'
           ? 'INPUT_TEXT'
@@ -2583,7 +2620,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       xpReward: null,
       referenceSheetUrl: null,
       requiresTeacherReview: false,
-      lectureId: targetLectureId || null
+      lectureId: targetLectureId || null,
+      isMultiModule: false,
+      module1TimeMinutes: 35,
+      module2TimeMinutes: 35
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -2599,7 +2639,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       xpReward: null,
       referenceSheetUrl: null,
       requiresTeacherReview: false,
-      lectureId: null
+      lectureId: null,
+      isMultiModule: false,
+      module1TimeMinutes: 35,
+      module2TimeMinutes: 35
     });
     this.isCreateAssessmentModalOpen.set(true);
   }
@@ -2609,7 +2652,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       ...prev,
       type,
       durationMinutes: type === 'HOMEWORK' ? 60 : (type === 'COMPREHENSIVE_EXAM' ? 45 : 20),
-      requiresTeacherReview: type === 'HOMEWORK' ? true : prev.requiresTeacherReview
+      requiresTeacherReview: type === 'HOMEWORK' ? true : prev.requiresTeacherReview,
+      isMultiModule: type === 'HOMEWORK' ? false : prev.isMultiModule
     }));
   }
 
@@ -2633,6 +2677,12 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     }
 
     const isHw = form.type === 'HOMEWORK';
+    const isMultiMod = !isHw && !!form.isMultiModule;
+    const mod1Time = isMultiMod ? (Number(form.module1TimeMinutes) || 35) : null;
+    const mod2Time = isMultiMod ? (Number(form.module2TimeMinutes) || 35) : null;
+    const computedDuration = isMultiMod
+      ? ((Number(form.module1TimeMinutes) || 35) + (Number(form.module2TimeMinutes) || 35))
+      : (form.durationMinutes || (isHw ? 60 : 30));
     const requiresTeacherReview = isHw ? true : !!form.requiresTeacherReview;
 
     // General Assessment (Standalone for grade level)
@@ -2645,7 +2695,11 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         title_ar: form.titleAr.trim(),
         title_en: form.titleAr.trim(),
         assessment_type: form.type,
-        time_limit_minutes: form.durationMinutes || (isHw ? 60 : 30),
+        time_limit_minutes: computedDuration,
+        duration_minutes: computedDuration,
+        is_multi_module: isMultiMod,
+        module_1_time_minutes: mod1Time,
+        module_2_time_minutes: mod2Time,
         min_expected_solve_sec: 10,
         max_attempts: isHw ? 5 : 3,
         graph_calculator: form.calculatorType,
@@ -2665,7 +2719,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
             titleAr: form.titleAr.trim(),
             type: form.type,
             calculatorType: form.calculatorType,
-            durationMinutes: form.durationMinutes,
+            durationMinutes: computedDuration,
+            isMultiModule: isMultiMod,
+            module1TimeMinutes: mod1Time ?? undefined,
+            module2TimeMinutes: mod2Time ?? undefined,
             xpReward: form.xpReward,
             referenceSheetUrl: form.referenceSheetUrl || null,
             requiresTeacherReview: requiresTeacherReview,
@@ -2701,7 +2758,11 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       title_ar: form.titleAr.trim(),
       title_en: form.titleAr.trim(),
       assessment_type: form.type,
-      time_limit_minutes: form.durationMinutes || (isHw ? 60 : 30),
+      time_limit_minutes: computedDuration,
+      duration_minutes: computedDuration,
+      is_multi_module: isMultiMod,
+      module_1_time_minutes: mod1Time,
+      module_2_time_minutes: mod2Time,
       min_expected_solve_sec: 10,
       max_attempts: isHw ? 5 : 3,
       graph_calculator: form.calculatorType,
@@ -2723,7 +2784,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
           titleAr: form.titleAr.trim(),
           type: form.type,
           calculatorType: form.calculatorType,
-          durationMinutes: form.durationMinutes,
+          durationMinutes: computedDuration,
+          isMultiModule: isMultiMod,
+          module1TimeMinutes: mod1Time ?? undefined,
+          module2TimeMinutes: mod2Time ?? undefined,
           xpReward: form.xpReward,
           referenceSheetUrl: form.referenceSheetUrl || null,
           requiresTeacherReview: requiresTeacherReview,
@@ -2738,7 +2802,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
             options: q.options || (isHw ? [] : ['أ', 'ب', 'ج', 'د']),
             correctOptionIndex: q.correct_option_index ?? 0,
             acceptedAnswers: q.accepted_answers || [],
-            points: q.points || 5
+            points: q.points || 5,
+            moduleIndex: isMultiMod ? ((q.module_index as 1 | 2) || 1) : 1
           }))
         };
 
@@ -2850,7 +2915,13 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   }
 
   openAssessmentEditor(asm: AssessmentAdminItem): void {
-    this.activeAssessment.set(JSON.parse(JSON.stringify(asm)));
+    const cloned = JSON.parse(JSON.stringify(asm));
+    cloned.isMultiModule = !!cloned.isMultiModule;
+    cloned.module1TimeMinutes = cloned.module1TimeMinutes ?? 35;
+    cloned.module2TimeMinutes = cloned.module2TimeMinutes ?? 35;
+    this.activeAssessment.set(cloned);
+    this.moduleFilterTab.set('ALL');
+    this.newQuestionModuleIndex.set(1);
     this.isRefSheetActiveInCurriculum.set(Boolean(asm.referenceSheetUrl));
     this.autoRegradeWarning.set(false);
     this.cancelQuestionEdit();
@@ -2897,7 +2968,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       options: (q.type === 'MCQ' ? (q.options || []) : []).map((o) => (o || '').trim()),
       correctOptionIndex: q.correctOptionIndex ?? 0,
       acceptedAnswers: q.acceptedAnswers || [],
-      points: q.points || 5
+      points: q.points || 5,
+      moduleIndex: q.moduleIndex === 2 ? 2 : 1
     }));
 
     const updatedQuestions = [...currentQuestions, ...formattedNewQuestions];
@@ -3104,6 +3176,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     );
     this.newQuestionCorrectIndex.set(q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0);
     this.newQuestionPoints.set(Math.max(1, Math.min(50, Number(q.points) || 5)));
+    this.newQuestionModuleIndex.set(q.moduleIndex === 2 ? 2 : 1);
 
     if (typeof document !== 'undefined') {
       setTimeout(() => {
@@ -3132,6 +3205,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     this.newQuestionAcceptedAnswers.set(['']);
     this.newQuestionPoints.set(5);
     this.newQuestionType.set('MCQ');
+    this.newQuestionModuleIndex.set(1);
     this.editingQuestionId.set(null);
   }
 
@@ -3203,7 +3277,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
         correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
         acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
-        points: this.newQuestionPoints()
+        points: this.newQuestionPoints(),
+        moduleIndex: asm.isMultiModule ? (this.newQuestionModuleIndex() === 2 ? 2 : 1) : 1
       };
 
       const nextQuestions = [...asm.questions];
@@ -3239,7 +3314,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
         correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
         acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
-        points: this.newQuestionPoints()
+        points: this.newQuestionPoints(),
+        moduleIndex: asm.isMultiModule ? (this.newQuestionModuleIndex() === 2 ? 2 : 1) : 1
       };
 
       const updatedAsm: AssessmentAdminItem = {
@@ -3347,6 +3423,13 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       }
     }
 
+    const isHw = asm.type === 'HOMEWORK';
+    const isMultiMod = !isHw && !!asm.isMultiModule;
+    const mod1Time = isMultiMod ? (Number(asm.module1TimeMinutes) || 35) : null;
+    const mod2Time = isMultiMod ? (Number(asm.module2TimeMinutes) || 35) : null;
+    const computedDuration = isMultiMod
+      ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35))
+      : (asm.durationMinutes || 30);
     const hasEssay = asm.questions.some(q => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
     const requiresTeacherReview = hasEssay ? true : !!asm.requiresTeacherReview;
 
@@ -3356,7 +3439,11 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
       title_en: asm.titleAr ? asm.titleAr.trim() : undefined,
       calculator_mode: asm.calculatorType,
-      duration_minutes: asm.durationMinutes,
+      duration_minutes: computedDuration,
+      time_limit_minutes: computedDuration,
+      is_multi_module: isMultiMod,
+      module_1_time_minutes: mod1Time,
+      module_2_time_minutes: mod2Time,
       reference_sheet_url: asm.referenceSheetUrl || null,
       xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
       requires_teacher_review: requiresTeacherReview,
@@ -3373,7 +3460,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
           options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => (o || '').trim()),
           correct_option_index: (isEssay || isInputText) ? undefined : Math.max(0, q.correctOptionIndex ?? 0),
           accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean) : undefined,
-          points: q.points || 5
+          points: q.points || 5,
+          module_index: isMultiMod ? (q.moduleIndex === 2 ? 2 : 1) : 1
         };
       })
     };
@@ -3388,6 +3476,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         this.isMathKeyboardOpen.set(false);
         this.mathKeyboardTarget.set(null);
         this.modalNav.dismissModal('curriculum-assessment-editor');
+        asm.isMultiModule = isMultiMod;
+        asm.module1TimeMinutes = mod1Time ?? undefined;
+        asm.module2TimeMinutes = mod2Time ?? undefined;
+        asm.durationMinutes = computedDuration;
         asm.requiresTeacherReview = requiresTeacherReview;
         this.assessmentSaved.emit(asm);
         this.isAssessmentEditorOpen.set(false);
