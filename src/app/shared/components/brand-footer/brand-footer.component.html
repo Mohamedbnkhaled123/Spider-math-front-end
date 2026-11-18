@@ -5,11 +5,12 @@
 
       <!-- Main Footer Row -->
       <div class="w-full flex flex-col md:flex-row items-center justify-between gap-6">
-        <!-- 1. Left: Spider Mascot + Wordmark -->
-        <a
-          [routerLink]="homeRoute()"
+        <!-- 1. Left: Spider Mascot + Wordmark (Teacher Secret Entry - 5 Rapid Taps; Stays anchored in place with zero jumping) -->
+        <button
+          type="button"
           (click)="onFooterLogoClick($event)"
-          class="flex items-center gap-2.5 group cursor-pointer shrink-0 select-none"
+          class="flex items-center gap-2.5 group cursor-pointer shrink-0 select-none bg-transparent border-0 p-0 text-start font-inherit focus:outline-none"
+          aria-label="Spider Math Teacher Portal"
         >
           <img
             src="/assets/branding/spider-mascot-hero-book-v3.webp?v=12"
@@ -23,7 +24,7 @@
           <span class="academic-wordmark text-xl font-bold">
             {{ langService.isArabic() ? 'سبايدر ماث' : 'Spider Math' }}
           </span>
-        </a>
+        </button>
 
         <!-- 2. Center: Editorial Quick Links (Only on public landing/guest views; hidden in Student, Parent & Teacher/Admin portals) -->
         @if (!isPortalRoute()) {

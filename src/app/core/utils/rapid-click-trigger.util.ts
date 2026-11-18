@@ -22,7 +22,11 @@ export class RapidClickTracker {
     onThresholdReached: () => void,
     onSingleClick?: () => void
   ): void {
-    event?.preventDefault();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      (event as unknown as { stopImmediatePropagation?: () => void }).stopImmediatePropagation?.();
+    }
     const now = Date.now();
 
     if (this.lastClickAt > 0 && now - this.lastClickAt > this.maxGapMs) {

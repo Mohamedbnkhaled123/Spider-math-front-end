@@ -29,11 +29,11 @@
 
   <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4 w-full min-w-0">
     
-    <!-- 1. Brand Logo & Luxury Academic Wordmark -->
+    <!-- 1. Brand Logo & Luxury Academic Wordmark (Developer Secret Entry - 12 Rapid Taps; Single Tap Navigates) -->
     <a
-      [routerLink]="activePortal() ? activePortal()!.route : '/'"
       (click)="onNavLogoClick($event)"
-      class="flex items-center gap-1.5 sm:gap-2.5 group focus:outline-none rounded-xl p-0.5 sm:p-1 transition-transform duration-200 hover:scale-[1.02] shrink-0 min-w-0 select-none"
+      class="flex items-center gap-1.5 sm:gap-2.5 group focus:outline-none rounded-xl p-0.5 sm:p-1 transition-transform duration-200 hover:scale-[1.02] shrink-0 min-w-0 select-none cursor-pointer"
+      aria-label="Spider Math"
     >
       <!-- Official Hero Book Mascot Icon -->
       <img

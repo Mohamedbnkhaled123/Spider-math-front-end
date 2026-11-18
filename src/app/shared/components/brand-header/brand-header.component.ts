@@ -99,6 +99,10 @@ export class BrandHeaderComponent implements OnInit, OnDestroy {
   }
 
   onNavLogoClick(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.navLogoTracker.handleClick(
       event,
       () => {

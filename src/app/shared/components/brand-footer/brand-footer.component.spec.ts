@@ -53,4 +53,13 @@ describe('BrandFooterComponent', () => {
     expect(portal.isOpen()).toBeTrue();
     expect(portal.portalMode()).toBe('teacher');
   });
+
+  it('should never scroll or navigate on single click on footer logo', () => {
+    const event = { preventDefault: jasmine.createSpy('preventDefault'), stopPropagation: jasmine.createSpy('stopPropagation') } as unknown as Event;
+    spyOn(window, 'scrollTo');
+    component.onFooterLogoClick(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
 });

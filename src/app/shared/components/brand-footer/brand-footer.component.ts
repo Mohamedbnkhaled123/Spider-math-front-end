@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
@@ -13,7 +13,7 @@ import { UiLayoutService } from '../../../core/services/ui-layout.service';
 @Component({
   selector: 'app-brand-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppIconComponent],
+  imports: [CommonModule, AppIconComponent],
   templateUrl: './brand-footer.component.html',
   styleUrl: './brand-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,15 +33,14 @@ export class BrandFooterComponent implements OnDestroy {
   }
 
   onFooterLogoClick(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.footerLogoTracker.handleClick(
       event,
       () => {
         this.adminAccessPortal.openTeacherPortal();
-      },
-      () => {
-        this.router.navigateByUrl(this.homeRoute()).then(() => {
-          this.scrollToTop();
-        });
       }
     );
   }
