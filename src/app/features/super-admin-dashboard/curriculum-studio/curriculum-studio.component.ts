@@ -3309,12 +3309,6 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         [asm.id]: session
       }));
     }
-    this.toastTriggered.emit({
-      text: this.langService.isArabic()
-        ? `تم تجهيز صفحة ${session.pageNumber} للقص اليدوي.`
-        : `Page ${session.pageNumber} cached and ready for manual crop.`,
-      type: 'success'
-    });
   }
 
   onManualSlicingRequestedFromExtraction(session: ICachedFileSession): void {
@@ -3328,6 +3322,12 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         this.selectComposerModule(session.targetModuleIndex);
       }
     }
+    this.toastTriggered.emit({
+      text: this.langService.isArabic()
+        ? `تم تجهيز صفحة ${session.pageNumber} للقص اليدوي.`
+        : `Page ${session.pageNumber} cached and ready for manual crop.`,
+      type: 'success'
+    });
     this.openManualSlicerForComposer();
   }
 

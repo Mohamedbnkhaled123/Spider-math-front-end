@@ -1187,5 +1187,80 @@ describe('AiQuestionExtractionModalComponent', () => {
       expect(emitted[0].moduleIndex).toBe(2);
       expect(emitted[1].moduleIndex).toBe(1);
     });
+
+    it('should stay on PREVIEW_AND_PAGE when switching from STAGING_REVIEW even when existingSession updates from parent', () => {
+      const asmId = 'asm_preview_step_lock';
+      const pdfFile = new File(['%PDF-1.4 preview'], 'preview.pdf', { type: 'application/pdf' });
+
+      let latestEmittedSession: ICachedFileSession | null = null;
+      component.fileSessionCached.subscribe((s) => {
+        latestEmittedSession = s;
+        fixture.componentRef.setInput('existingSession', s);
+        fixture.detectChanges();
+      });
+
+      fixture.componentRef.setInput('assessmentId', asmId);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      component.handleSelectedFile(pdfFile);
+      component.stagedQuestions.set([
+        {
+          id: 'q_staged_1',
+          checked: true,
+          pageNumber: 4,
+          question_text: 'سؤال مستخرج',
+          type: 'MCQ',
+          options: ['1', '2', '3', '4'],
+          correct_option_index: 0,
+          points: 1,
+          has_geometry_diagram: false
+        }
+      ]);
+      component.goToStep('STAGING_REVIEW');
+      fixture.detectChanges();
+
+      expect(component.currentStep()).toBe('STAGING_REVIEW');
+
+      // User clicks "Page Preview" tab while staged questions exist
+      const previewTabBtn: HTMLButtonElement | null = fixture.nativeElement.querySelector('[data-testid="step-preview-tab-btn"]');
+      expect(previewTabBtn).toBeTruthy();
+      previewTabBtn!.click();
+      fixture.detectChanges();
+
+      expect(component.currentStep()).toBe('PREVIEW_AND_PAGE');
+
+      // Simulate PdfPageViewer emitting pageRendered while Step 2 is open, echoing existingSession back via parent
+      const mockCanvas = document.createElement('canvas');
+      mockCanvas.width = 100;
+      mockCanvas.height = 100;
+      component.onPdfPageRendered({
+        pageNumber: 4,
+        totalPages: 10,
+        canvas: mockCanvas,
+        blob: new Blob(['p4'], { type: 'image/webp' }),
+        dataUrl: 'data:image/webp;base64,p4',
+        width: 100,
+        height: 100
+      });
+      fixture.detectChanges();
+
+      expect(latestEmittedSession).toBeTruthy();
+      expect(component.currentStep()).toBe('PREVIEW_AND_PAGE');
+    });
+
+    it('should render cached currentDataUrl fallback in PREVIEW_AND_PAGE when PDF File object is unavailable', () => {
+      fixture.componentRef.setInput('assessmentId', 'asm_pdf_fallback');
+      fixture.componentRef.setInput('isOpen', true);
+      component.fileType.set('pdf');
+      component.uploadedFile.set(null);
+      component.currentDataUrl.set('data:image/webp;base64,cachedFallback');
+      component.goToStep('PREVIEW_AND_PAGE');
+      fixture.detectChanges();
+
+      expect(component.canPreviewPage()).toBeTrue();
+      const fallbackEl = fixture.nativeElement.querySelector('[data-testid="pdf-fallback-preview"]');
+      expect(fallbackEl).toBeTruthy();
+    });
   });
 });

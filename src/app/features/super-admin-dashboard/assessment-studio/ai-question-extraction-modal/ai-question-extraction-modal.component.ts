@@ -142,6 +142,15 @@ export class AiQuestionExtractionModalComponent {
     );
   });
 
+  canPreviewPage(): boolean {
+    return Boolean(
+      this.uploadedFile() ||
+      this.currentCanvas ||
+      this.currentDataUrl() ||
+      this.uploadedImages().length > 0
+    );
+  }
+
   readonly rangeValidationError = computed(() => {
     if (this.pageScopeMode() === 'CURRENT_PAGE') return null;
     const total = Math.max(1, this.totalPages());
@@ -360,14 +369,19 @@ export class AiQuestionExtractionModalComponent {
 
             if (effectiveSession) {
               this.restoreCachedSession(effectiveSession);
-              this.currentStep.set(restoredStaged.length > 0 ? 'STAGING_REVIEW' : 'PREVIEW_AND_PAGE');
+              const preferredStep = syncPersisted?.currentStep;
+              if (restoredStaged.length > 0 && preferredStep !== 'PREVIEW_AND_PAGE') {
+                this.currentStep.set('STAGING_REVIEW');
+              } else {
+                this.currentStep.set('PREVIEW_AND_PAGE');
+              }
               this.rebuildSessionCanvases(effectiveSession);
             } else {
               this.currentStep.set(restoredStaged.length > 0 ? 'STAGING_REVIEW' : 'UPLOAD_AND_SELECT');
               this.hydrateFromIndexedDb(effId, this.activeHydrationToken);
             }
-          } else {
-            // Reopening for the same assessment
+          } else if (justOpened) {
+            // Reopening the modal for the same assessment
             const memoryStaged = this.stagedByAssessment.get(effId);
             if (this.stagedQuestions().length === 0 && memoryStaged && memoryStaged.length > 0) {
               this.stagedQuestions.set(memoryStaged);
@@ -392,18 +406,30 @@ export class AiQuestionExtractionModalComponent {
               }
             }
 
-            if (this.stagedQuestions().length > 0) {
+            const preferredStep = syncPersisted?.currentStep;
+            if (this.stagedQuestions().length > 0 && preferredStep !== 'PREVIEW_AND_PAGE') {
               this.currentStep.set('STAGING_REVIEW');
-            } else if (
-              this.uploadedFile() ||
-              this.currentCanvas ||
-              this.currentDataUrl() ||
-              this.uploadedImages().length > 0
-            ) {
+            } else if (this.canPreviewPage()) {
               this.currentStep.set('PREVIEW_AND_PAGE');
             } else {
               this.hydrateFromIndexedDb(effId, ++this.activeHydrationToken);
             }
+          } else if (
+            session &&
+            !this.canPreviewPage() &&
+            this.stagedQuestions().length === 0 &&
+            this.currentStep() === 'UPLOAD_AND_SELECT'
+          ) {
+            // Hydrate late-arriving async parent session only while still idle on Step 1
+            this.restoreCachedSession(session);
+            const staged = session.stagedQuestions || [];
+            if (staged.length > 0) {
+              this.stagedQuestions.set(staged);
+              this.currentStep.set('STAGING_REVIEW');
+            } else {
+              this.currentStep.set('PREVIEW_AND_PAGE');
+            }
+            this.rebuildSessionCanvases(session);
           }
         } else {
           this.wasOpen = false;
@@ -418,9 +444,9 @@ export class AiQuestionExtractionModalComponent {
       !record ||
       token !== this.activeHydrationToken ||
       this.getEffectiveAssessmentId() !== effId ||
-      this.uploadedFile() ||
-      this.currentDataUrl() ||
-      this.stagedQuestions().length > 0
+      this.canPreviewPage() ||
+      this.stagedQuestions().length > 0 ||
+      this.currentStep() !== 'UPLOAD_AND_SELECT'
     ) {
       return;
     }
