@@ -6,6 +6,8 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AssessmentItem } from './assessment-studio.models';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
+import { AiExtractionSessionService } from '../../../core/offline-db/ai-extraction-session.service';
+import { SwrCacheService } from '../../../core/services/swr-cache.service';
 
 describe('AssessmentStudioComponent', () => {
   let component: AssessmentStudioComponent;
@@ -1103,6 +1105,62 @@ describe('AssessmentStudioComponent', () => {
       expect(component.editingQuestionId()).toBe('673000000000000000000008');
       expect(component.activeAssessment()!.questions[0].questionImageUrl).toBe('https://cdn.example.com/q8_diagram.webp');
       expect(component.activeAssessment()!.questions[1].questionImageUrl).toBe('https://cdn.example.com/q9_diagram.webp');
+    });
+
+    it('should auto-persist AI-extracted questions, sync swrCache, and restore persisted file session after refresh', async () => {
+      const sessionService = TestBed.inject(AiExtractionSessionService);
+      const swrCache = TestBed.inject(SwrCacheService);
+      const baseAsm: AssessmentItem = { ...sampleAssessment, questions: [], totalPoints: 0 };
+      component.assessmentsList.set([baseAsm]);
+      component.openEditor(baseAsm, 'QUESTIONS');
+      mockHttpClient.patch.calls.reset();
+
+      const pdfBlob = new Blob(['%PDF-1.4 saved'], { type: 'application/pdf' });
+      await sessionService.saveSession({
+        assessmentId: baseAsm.id,
+        fileName: 'saved_revision.pdf',
+        fileType: 'pdf',
+        fileBlob: pdfBlob,
+        uploadedImages: [],
+        pageNumber: 9,
+        totalPages: 25,
+        currentDataUrl: 'data:image/webp;base64,page9',
+        pageScopeMode: 'CURRENT_PAGE',
+        extractionMode: 'SMART_HYBRID',
+        stagedQuestions: [],
+        currentStep: 'PREVIEW_AND_PAGE',
+        updatedAt: Date.now()
+      });
+
+      component.onQuestionsExtracted([
+        {
+          id: 'q_ext_1',
+          order: 0,
+          type: 'MCQ',
+          textAr: 'سؤال مستخرج من الملف',
+          options: ['أ', 'ب', 'ج', 'د'],
+          correctOptionIndex: 0,
+          points: 5
+        }
+      ]);
+
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      const cachedList = swrCache.get<AssessmentItem[]>(`admin_asm_${baseAsm.curriculum}_${baseAsm.gradeLevel}_${baseAsm.term}`);
+      expect(cachedList?.find((a) => a.id === baseAsm.id)?.questions.length).toBe(1);
+
+      component.closeEditor();
+      (component as any).assessmentFileSessions.set({});
+      sessionService.clearMemoryCache();
+
+      component.openEditor(component.assessmentsList()[0], 'QUESTIONS');
+      await new Promise((r) => setTimeout(r, 80));
+
+      expect(component.activeAssessment()?.questions.length).toBe(1);
+      expect(component.activeAssessment()?.questions[0].textAr).toBe('سؤال مستخرج من الملف');
+      expect(component.cachedFileSession()?.fileName).toBe('saved_revision.pdf');
+      expect(component.cachedFileSession()?.pageNumber).toBe(9);
+
+      await sessionService.deleteSession(baseAsm.id);
     });
   });
 });

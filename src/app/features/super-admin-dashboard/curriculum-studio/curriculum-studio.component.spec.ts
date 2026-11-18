@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { CurriculumStudioComponent } from './curriculum-studio.component';
 import { AssessmentAdminItem, UnitPackageAdminItem } from './curriculum-studio.models';
+import { AiExtractionSessionService } from '../../../core/offline-db/ai-extraction-session.service';
 
 describe('CurriculumStudioComponent', () => {
   let component: CurriculumStudioComponent;
@@ -1027,6 +1028,10 @@ describe('CurriculumStudioComponent', () => {
 
       component.addQuestionToAssessment();
 
+      const patchReq = httpTestingController.expectOne('/api/v1/admin/assessments/asm_test_editor');
+      expect(patchReq.request.method).toBe('PATCH');
+      patchReq.flush({ success: true });
+
       const active = component.activeAssessment();
       expect(active?.questions.length).toBe(1);
       expect(active?.questions[0].moduleIndex).toBe(2);
@@ -1144,6 +1149,90 @@ describe('CurriculumStudioComponent', () => {
         module2TimeMinutes: 30,
         durationMinutes: 65
       }));
+    });
+
+    it('should auto-persist AI-extracted questions in CurriculumStudio and restore both questions and uploaded file on reopen after refresh', async () => {
+      const sessionService = TestBed.inject(AiExtractionSessionService);
+      spyOn(component.assessmentSaved, 'emit');
+
+      const asmId = `asm_curr_persist_${Date.now()}`;
+      const mockAsm: AssessmentAdminItem = {
+        id: asmId,
+        unitId: 'unit_1',
+        lectureId: null,
+        titleAr: 'كويز استخراج وحفظ',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 20,
+        submissionsCount: 0,
+        questions: []
+      };
+
+      await sessionService.saveSession({
+        assessmentId: asmId,
+        fileName: 'curriculum_file.pdf',
+        fileType: 'pdf',
+        fileBlob: new Blob(['%PDF-1.4 unit'], { type: 'application/pdf' }),
+        uploadedImages: [],
+        pageNumber: 12,
+        totalPages: 30,
+        currentDataUrl: 'data:image/webp;base64,p12',
+        pageScopeMode: 'CURRENT_PAGE',
+        extractionMode: 'SMART_HYBRID',
+        stagedQuestions: [],
+        currentStep: 'PREVIEW_AND_PAGE',
+        updatedAt: Date.now()
+      });
+
+      component.openAssessmentEditor(mockAsm);
+      await new Promise((r) => setTimeout(r, 60));
+      expect(component.cachedFileSession()?.fileName).toBe('curriculum_file.pdf');
+      expect(component.cachedFileSession()?.pageNumber).toBe(12);
+
+      component.onQuestionsExtracted([
+        {
+          id: 'q_curr_ext_1',
+          order: 0,
+          type: 'MCQ',
+          textAr: 'سؤال مستخرج في الوحدة',
+          options: ['أ', 'ب', 'ج', 'د'],
+          correctOptionIndex: 1,
+          points: 5
+        }
+      ]);
+
+      const req = httpTestingController.expectOne(`/api/v1/admin/assessments/${asmId}`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body.questions.length).toBe(1);
+      // Do NOT flush yet or flush an error so local draft remains, verifying both close & reopen restoration
+      req.flush('Temporary network error', { status: 500, statusText: 'Server Error' });
+
+      expect(component.assessmentSaved.emit).toHaveBeenCalledWith(jasmine.objectContaining({
+        id: asmId,
+        questions: jasmine.arrayContaining([
+          jasmine.objectContaining({ textAr: 'سؤال مستخرج في الوحدة' })
+        ])
+      }));
+
+      // Exit exam editor without clicking Save (triggers retry auto-persist since previous PATCH failed),
+      // clear in-memory file cache to simulate refresh, and reopen stale mockAsm
+      component.closeAssessmentEditor();
+      const retryReq = httpTestingController.expectOne(`/api/v1/admin/assessments/${asmId}`);
+      expect(retryReq.request.method).toBe('PATCH');
+      retryReq.flush('Temporary network error', { status: 500, statusText: 'Server Error' });
+      (component as any).assessmentFileSessions.set({});
+      sessionService.clearMemoryCache();
+
+      component.openAssessmentEditor({ ...mockAsm, questions: [] });
+      await new Promise((r) => setTimeout(r, 80));
+
+      expect(component.activeAssessment()?.questions.length).toBe(1);
+      expect(component.activeAssessment()?.questions[0].textAr).toBe('سؤال مستخرج في الوحدة');
+      expect(component.cachedFileSession()?.fileName).toBe('curriculum_file.pdf');
+      expect(component.cachedFileSession()?.pageNumber).toBe(12);
+
+      await component.draftService.deleteDraft(asmId);
+      await sessionService.deleteSession(asmId);
     });
   });
 });

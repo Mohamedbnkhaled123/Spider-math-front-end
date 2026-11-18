@@ -27,6 +27,7 @@ import { ISliceResult } from '../../../../shared/components/manual-image-slicer-
 import { cropBoundingBoxToBlob, uploadBlobToCloudinary, applyBoundingBoxPadding } from '../../../../shared/utils/box2d-cropper.util';
 import { LangService } from '../../../../core/seo-theme-i18n/lang.service';
 import { ModalNavigationService } from '../../../../core/services/modal-navigation.service';
+import { AiExtractionSessionService } from '../../../../core/offline-db/ai-extraction-session.service';
 import { AssessmentQuestionItem } from '../assessment-studio.models';
 import {
   AiExtractionMode,
@@ -60,6 +61,7 @@ export class AiQuestionExtractionModalComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   readonly langService = inject(LangService);
   readonly modalNav = inject(ModalNavigationService);
+  private readonly aiExtractionSessionService = inject(AiExtractionSessionService);
 
   // Inputs & Two-Way Model (Bound dynamically from active assessment)
   readonly isOpen = model<boolean>(false);
@@ -70,6 +72,7 @@ export class AiQuestionExtractionModalComponent {
 
   private readonly stagedByAssessment = new Map<string, IStagedQuestion[]>();
   private lastAssessmentId: string | null = null;
+  private activeHydrationToken = 0;
 
   // Outputs
   readonly questionsExtracted = output<AssessmentQuestionItem[]>();
@@ -248,6 +251,7 @@ export class AiQuestionExtractionModalComponent {
     this.currentPageNumber.set(page);
     this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), page);
     this.emitFileSession();
+    this.persistCurrentExtractionState();
   }
 
   // Extraction & Staging State
@@ -312,8 +316,12 @@ export class AiQuestionExtractionModalComponent {
             close: () => this.close()
           });
 
+          const effId = this.getEffectiveAssessmentId();
+          const syncPersisted = this.aiExtractionSessionService.getSessionSync(effId);
+
           if (this.lastAssessmentId !== currentId) {
             this.lastAssessmentId = currentId;
+            this.activeHydrationToken++;
             this.uploadedFile.set(null);
             this.uploadedImages.set([]);
             this.fileType.set(null);
@@ -327,35 +335,201 @@ export class AiQuestionExtractionModalComponent {
             this.rangeStartPage.set(1);
             this.rangeEndPage.set(1);
 
-            const effId = this.getEffectiveAssessmentId();
-            const existingStaged = this.stagedByAssessment.get(effId) || [];
-            this.stagedQuestions.set(existingStaged);
+            const memoryStaged = this.stagedByAssessment.get(effId);
+            const effectiveSession: ICachedFileSession | null =
+              session || (syncPersisted ? this.aiExtractionSessionService.toCachedFileSession(syncPersisted) : null);
+            const restoredStaged =
+              memoryStaged && memoryStaged.length > 0
+                ? memoryStaged
+                : (syncPersisted?.stagedQuestions || effectiveSession?.stagedQuestions || []);
+            this.stagedQuestions.set(restoredStaged);
 
-            if (session) {
-              this.restoreCachedSession(session);
-              this.currentStep.set(existingStaged.length > 0 ? 'STAGING_REVIEW' : 'PREVIEW_AND_PAGE');
+            if (effectiveSession) {
+              this.restoreCachedSession(effectiveSession);
+              this.currentStep.set(restoredStaged.length > 0 ? 'STAGING_REVIEW' : 'PREVIEW_AND_PAGE');
+              this.rebuildSessionCanvases(effectiveSession);
             } else {
-              this.currentStep.set(existingStaged.length > 0 ? 'STAGING_REVIEW' : 'UPLOAD_AND_SELECT');
+              this.currentStep.set(restoredStaged.length > 0 ? 'STAGING_REVIEW' : 'UPLOAD_AND_SELECT');
+              this.hydrateFromIndexedDb(effId, this.activeHydrationToken);
             }
           } else {
             // Reopening for the same assessment
-            if (this.stagedQuestions().length === 0 && this.uploadedFile()) {
-              this.currentStep.set('PREVIEW_AND_PAGE');
+            const memoryStaged = this.stagedByAssessment.get(effId);
+            if (this.stagedQuestions().length === 0 && memoryStaged && memoryStaged.length > 0) {
+              this.stagedQuestions.set(memoryStaged);
             }
-            if (session?.pageNumber) {
+
+            const effectiveSession: ICachedFileSession | null =
+              session || (syncPersisted ? this.aiExtractionSessionService.toCachedFileSession(syncPersisted) : null);
+
+            if (this.stagedQuestions().length === 0 && syncPersisted?.stagedQuestions?.length) {
+              this.stagedQuestions.set(syncPersisted.stagedQuestions);
+            }
+
+            if (effectiveSession && !this.uploadedFile() && !this.currentCanvas && !this.currentDataUrl()) {
+              this.restoreCachedSession(effectiveSession);
+              this.rebuildSessionCanvases(effectiveSession);
+            } else if (session?.pageNumber) {
               this.currentPageNumber.set(session.pageNumber);
             } else {
-              const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), this.fileName());
+              const storedPage = this.getStoredPageFromSessionStorage(effId, this.fileName());
               if (storedPage) {
                 this.currentPageNumber.set(storedPage);
               }
             }
-            if (session && !this.uploadedFile() && !this.currentCanvas) {
-              this.restoreCachedSession(session);
+
+            if (this.stagedQuestions().length > 0) {
+              this.currentStep.set('STAGING_REVIEW');
+            } else if (
+              this.uploadedFile() ||
+              this.currentCanvas ||
+              this.currentDataUrl() ||
+              this.uploadedImages().length > 0
+            ) {
+              this.currentStep.set('PREVIEW_AND_PAGE');
+            } else {
+              this.hydrateFromIndexedDb(effId, ++this.activeHydrationToken);
             }
           }
         }
       });
+    });
+  }
+
+  private async hydrateFromIndexedDb(effId: string, token: number): Promise<void> {
+    const record = await this.aiExtractionSessionService.getSession(effId);
+    if (
+      !record ||
+      token !== this.activeHydrationToken ||
+      this.getEffectiveAssessmentId() !== effId ||
+      this.uploadedFile() ||
+      this.currentDataUrl() ||
+      this.stagedQuestions().length > 0
+    ) {
+      return;
+    }
+
+    const cachedSession = this.aiExtractionSessionService.toCachedFileSession(record);
+    const staged = record.stagedQuestions || [];
+    if (staged.length > 0) {
+      this.stagedByAssessment.set(effId, staged);
+      this.stagedQuestions.set(staged);
+    }
+
+    if (cachedSession.file || cachedSession.dataUrl || cachedSession.uploadedImages?.length) {
+      this.restoreCachedSession(cachedSession);
+      await this.rebuildSessionCanvases(cachedSession);
+    }
+
+    if (staged.length > 0) {
+      this.currentStep.set('STAGING_REVIEW');
+    } else if (this.uploadedFile() || this.currentDataUrl() || this.uploadedImages().length > 0) {
+      this.currentStep.set('PREVIEW_AND_PAGE');
+    }
+
+    if (this.uploadedFile() || this.currentDataUrl() || this.currentCanvas) {
+      this.emitFileSession();
+    }
+    this.cdr.markForCheck();
+  }
+
+  private async createCanvasFromDataUrl(dataUrl: string): Promise<HTMLCanvasElement | null> {
+    if (!isPlatformBrowser(this.platformId) || !dataUrl || !dataUrl.startsWith('data:image/')) {
+      return null;
+    }
+    try {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.setAttribute('dir', 'ltr');
+      canvas.style.direction = 'ltr';
+      canvas.width = img.naturalWidth || img.width || 1;
+      canvas.height = img.naturalHeight || img.height || 1;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        (ctx as CanvasRenderingContext2D).direction = 'ltr';
+        ctx.drawImage(img, 0, 0);
+      }
+      return canvas;
+    } catch {
+      return null;
+    }
+  }
+
+  private async rebuildSessionCanvases(session: ICachedFileSession): Promise<void> {
+    if (session.fileType !== 'image') return;
+
+    if (session.uploadedImages && session.uploadedImages.length > 0) {
+      const rebuilt: Array<{ fileName: string; canvas: HTMLCanvasElement; dataUrl: string }> = [];
+      for (const entry of session.uploadedImages) {
+        const canvas = await this.createCanvasFromDataUrl(entry.dataUrl);
+        if (canvas) {
+          rebuilt.push({ fileName: entry.fileName, canvas, dataUrl: entry.dataUrl });
+        }
+      }
+      if (rebuilt.length > 0) {
+        this.uploadedImages.set(rebuilt);
+        const pageIdx = Math.max(0, Math.min(rebuilt.length - 1, this.currentPageNumber() - 1));
+        this.currentCanvas = rebuilt[pageIdx].canvas;
+        this.currentDataUrl.set(rebuilt[pageIdx].dataUrl);
+        this.emitFileSession();
+        this.cdr.markForCheck();
+      }
+    } else if (session.dataUrl && !this.currentCanvas) {
+      const canvas = await this.createCanvasFromDataUrl(session.dataUrl);
+      if (canvas) {
+        this.currentCanvas = canvas;
+        this.uploadedImages.set([{ fileName: session.fileName || 'image.png', canvas, dataUrl: session.dataUrl }]);
+        this.emitFileSession();
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  persistCurrentExtractionState(): void {
+    const aid = this.getEffectiveAssessmentId();
+    const stagedCopy = this.stagedQuestions().map((q) => ({
+      ...q,
+      options: Array.isArray(q.options) ? [...q.options] : ['', '', '', ''],
+      acceptedAnswers: Array.isArray(q.acceptedAnswers) ? [...q.acceptedAnswers] : undefined,
+      accepted_answers: Array.isArray(q.accepted_answers) ? [...q.accepted_answers] : undefined,
+      box_2d: Array.isArray(q.box_2d) ? ([...q.box_2d] as [number, number, number, number]) : undefined
+    }));
+    if (aid) {
+      this.stagedByAssessment.set(aid, stagedCopy);
+    }
+
+    const fName = this.fileName();
+    const f = this.uploadedFile();
+    const dUrl = this.currentDataUrl();
+    const imgs = this.uploadedImages();
+
+    if (!aid || (!fName && !f && !dUrl && imgs.length === 0 && stagedCopy.length === 0)) {
+      return;
+    }
+
+    void this.aiExtractionSessionService.saveSession({
+      assessmentId: aid,
+      fileName: fName,
+      fileType: this.fileType() || 'pdf',
+      fileBlob: f,
+      uploadedImages: imgs.map((img) => ({ fileName: img.fileName, dataUrl: img.dataUrl })),
+      pageNumber: this.currentPageNumber(),
+      totalPages: this.totalPages(),
+      currentDataUrl: dUrl,
+      lastSelectedRange: {
+        startPage: this.rangeStartPage(),
+        endPage: this.rangeEndPage()
+      },
+      pageScopeMode: this.pageScopeMode(),
+      extractionMode: this.extractionMode(),
+      stagedQuestions: stagedCopy,
+      currentStep: this.currentStep(),
+      updatedAt: Date.now()
     });
   }
 
@@ -373,6 +547,12 @@ export class AiQuestionExtractionModalComponent {
     if (session.totalPages) {
       this.totalPages.set(session.totalPages);
     }
+    if (session.pageScopeMode) {
+      this.pageScopeMode.set(session.pageScopeMode);
+    }
+    if (session.extractionMode) {
+      this.extractionMode.set(session.extractionMode);
+    }
     if (session.lastSelectedRange) {
       const maxTotal = session.totalPages || Math.max(this.totalPages(), session.lastSelectedRange.endPage, session.pageNumber || 1);
       const clampedStart = Math.max(1, Math.min(maxTotal, session.lastSelectedRange.startPage));
@@ -386,6 +566,16 @@ export class AiQuestionExtractionModalComponent {
 
     if (session.file instanceof File) {
       this.uploadedFile.set(session.file);
+    } else if (session.file instanceof Blob && typeof File !== 'undefined') {
+      try {
+        this.uploadedFile.set(
+          new File([session.file], session.fileName || (session.fileType === 'pdf' ? 'document.pdf' : 'image.png'), {
+            type: session.file.type || (session.fileType === 'pdf' ? 'application/pdf' : 'image/png')
+          })
+        );
+      } catch {
+        this.uploadedFile.set(null);
+      }
     }
   }
 
@@ -466,6 +656,8 @@ export class AiQuestionExtractionModalComponent {
     if (isPdf) {
       this.fileType.set('pdf');
       this.currentStep.set('PREVIEW_AND_PAGE');
+      this.emitFileSession();
+      this.persistCurrentExtractionState();
     } else if (isImg) {
       this.fileType.set('image');
       this.processImageFile(file);
@@ -548,6 +740,7 @@ export class AiQuestionExtractionModalComponent {
       this.rangeEndPage.set(Math.min(items.length, this.maxExtractablePages));
       this.currentStep.set('PREVIEW_AND_PAGE');
       this.emitFileSession();
+      this.persistCurrentExtractionState();
     } catch {
       this.errorMessage.set(
         this.langService.isArabic()
@@ -569,6 +762,7 @@ export class AiQuestionExtractionModalComponent {
     this.currentCanvas = entry.canvas;
     this.currentDataUrl.set(entry.dataUrl);
     this.emitFileSession();
+    this.persistCurrentExtractionState();
   }
 
   private async processImageFile(file: File): Promise<void> {
@@ -588,6 +782,7 @@ export class AiQuestionExtractionModalComponent {
       this.totalPages.set(1);
       this.currentStep.set('PREVIEW_AND_PAGE');
       this.emitFileSession();
+      this.persistCurrentExtractionState();
     } catch {
       this.errorMessage.set(
         this.langService.isArabic()
@@ -618,6 +813,7 @@ export class AiQuestionExtractionModalComponent {
     }
     this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), event.pageNumber);
     this.emitFileSession();
+    this.persistCurrentExtractionState();
   }
 
   emitFileSession(): void {
@@ -632,7 +828,14 @@ export class AiQuestionExtractionModalComponent {
       lastSelectedRange: {
         startPage: this.rangeStartPage(),
         endPage: this.rangeEndPage()
-      }
+      },
+      uploadedImages: this.uploadedImages().map((img) => ({
+        fileName: img.fileName,
+        dataUrl: img.dataUrl
+      })),
+      pageScopeMode: this.pageScopeMode(),
+      extractionMode: this.extractionMode(),
+      stagedQuestions: this.stagedQuestions()
     });
   }
 
@@ -921,6 +1124,7 @@ export class AiQuestionExtractionModalComponent {
       }
 
       this.currentStep.set('STAGING_REVIEW');
+      this.persistCurrentExtractionState();
     } catch (err: any) {
       const serverMsg = this.formatExtractionError(err);
       this.errorMessage.set(
@@ -937,12 +1141,14 @@ export class AiQuestionExtractionModalComponent {
 
   toggleAll(checked: boolean): void {
     this.stagedQuestions.update((list) => list.map((q) => ({ ...q, checked })));
+    this.persistCurrentExtractionState();
   }
 
   toggleQuestion(id: string): void {
     this.stagedQuestions.update((list) =>
       list.map((q) => (q.id === id ? { ...q, checked: !q.checked } : q))
     );
+    this.persistCurrentExtractionState();
   }
 
   promptDeleteQuestion(id: string): void {
@@ -962,6 +1168,7 @@ export class AiQuestionExtractionModalComponent {
 
   deleteStagedQuestion(id: string): void {
     this.stagedQuestions.update((list) => list.filter((q) => q.id !== id));
+    this.persistCurrentExtractionState();
   }
 
   promptRemoveCroppedImage(q: IStagedQuestion): void {
@@ -998,6 +1205,7 @@ export class AiQuestionExtractionModalComponent {
           : item
       )
     );
+    this.persistCurrentExtractionState();
   }
 
   setQuestionType(q: IStagedQuestion, type: 'MCQ' | 'ESSAY' | 'INPUT_TEXT'): void {
@@ -1014,10 +1222,7 @@ export class AiQuestionExtractionModalComponent {
       q.accepted_answers = q.acceptedAnswers;
     }
     this.stagedQuestions.update((list) => [...list]);
-    const aid = this.assessmentId();
-    if (aid) {
-      this.stagedByAssessment.set(aid, this.stagedQuestions());
-    }
+    this.persistCurrentExtractionState();
     this.cdr.markForCheck();
   }
 
@@ -1026,10 +1231,7 @@ export class AiQuestionExtractionModalComponent {
     q.acceptedAnswers.push('');
     q.accepted_answers = q.acceptedAnswers;
     this.stagedQuestions.update((list) => [...list]);
-    const aid = this.assessmentId();
-    if (aid) {
-      this.stagedByAssessment.set(aid, this.stagedQuestions());
-    }
+    this.persistCurrentExtractionState();
     this.cdr.markForCheck();
   }
 
@@ -1042,10 +1244,7 @@ export class AiQuestionExtractionModalComponent {
     }
     q.accepted_answers = q.acceptedAnswers;
     this.stagedQuestions.update((list) => [...list]);
-    const aid = this.assessmentId();
-    if (aid) {
-      this.stagedByAssessment.set(aid, this.stagedQuestions());
-    }
+    this.persistCurrentExtractionState();
     this.cdr.markForCheck();
   }
 
@@ -1061,10 +1260,7 @@ export class AiQuestionExtractionModalComponent {
     if (!q.acceptedAnswers) q.acceptedAnswers = [];
     q.acceptedAnswers[index] = visual;
     q.accepted_answers = q.acceptedAnswers;
-    const aid = this.assessmentId();
-    if (aid) {
-      this.stagedByAssessment.set(aid, this.stagedQuestions());
-    }
+    this.persistCurrentExtractionState();
   }
 
   openManualSlicerForQuestion(q: IStagedQuestion): void {
@@ -1094,6 +1290,7 @@ export class AiQuestionExtractionModalComponent {
 
     this.isSlicerOpen.set(false);
     this.activeSlicingQuestion.set(null);
+    this.persistCurrentExtractionState();
     this.cdr.markForCheck();
   }
 
@@ -1139,6 +1336,7 @@ export class AiQuestionExtractionModalComponent {
       target.setSelectionRange(pos, pos);
     }
     q.question_text = visual;
+    this.persistCurrentExtractionState();
   }
 
   onOptionInput(q: IStagedQuestion, index: number, event: Event): void {
@@ -1151,6 +1349,7 @@ export class AiQuestionExtractionModalComponent {
       target.setSelectionRange(pos, pos);
     }
     q.options[index] = visual;
+    this.persistCurrentExtractionState();
   }
 
   onMathKeyboardValueChange(val: string): void {
@@ -1172,12 +1371,65 @@ export class AiQuestionExtractionModalComponent {
   setCorrectOption(q: IStagedQuestion, index: number): void {
     q.correct_option_index = index;
     this.stagedQuestions.update((list) => [...list]);
+    this.persistCurrentExtractionState();
   }
 
   updatePoints(q: IStagedQuestion, rawVal: any): void {
     const num = parseInt(rawVal, 10);
     q.points = isNaN(num) ? 1 : Math.max(1, Math.min(50, num));
     this.stagedQuestions.update((list) => [...list]);
+    this.persistCurrentExtractionState();
+  }
+
+  private sanitizeMcqOptionsForSave(
+    rawOptions: string[] | undefined,
+    rawCorrectIndex: number | undefined
+  ): { options: string[]; correctIndex: number } {
+    const trimmedAll = (rawOptions || []).map((o) => (o || '').trim());
+    const rawSelectedText =
+      typeof rawCorrectIndex === 'number' && rawCorrectIndex >= 0 && rawCorrectIndex < trimmedAll.length
+        ? trimmedAll[rawCorrectIndex]
+        : '';
+
+    const seen = new Set<string>();
+    const uniqueOptions: string[] = [];
+    let resolvedCorrectIndex = -1;
+
+    for (let i = 0; i < trimmedAll.length; i++) {
+      const opt = trimmedAll[i];
+      if (!opt) continue;
+      let candidate = opt;
+      let suffix = 2;
+      while (seen.has(candidate)) {
+        candidate = `${opt} (${suffix++})`;
+      }
+      seen.add(candidate);
+      if (i === rawCorrectIndex) {
+        resolvedCorrectIndex = uniqueOptions.length;
+      }
+      uniqueOptions.push(candidate);
+    }
+
+    let padIdx = 1;
+    while (uniqueOptions.length < 2) {
+      let fallback = this.langService.isArabic() ? `الخيار ${padIdx}` : `Option ${padIdx}`;
+      padIdx++;
+      while (seen.has(fallback)) {
+        fallback = this.langService.isArabic() ? `الخيار ${padIdx++}` : `Option ${padIdx++}`;
+      }
+      seen.add(fallback);
+      uniqueOptions.push(fallback);
+    }
+
+    if (resolvedCorrectIndex === -1) {
+      const textMatchIdx = rawSelectedText ? uniqueOptions.indexOf(rawSelectedText) : -1;
+      resolvedCorrectIndex =
+        textMatchIdx !== -1
+          ? textMatchIdx
+          : Math.min(uniqueOptions.length - 1, Math.max(0, Number(rawCorrectIndex ?? 0)));
+    }
+
+    return { options: uniqueOptions, correctIndex: resolvedCorrectIndex };
   }
 
   // --- Bulk Insertion into Assessment ---
@@ -1203,30 +1455,21 @@ export class AiQuestionExtractionModalComponent {
         let finalImageUrl: string | null = q.question_image_url || null;
 
         // Cloudinary Optimization Constraint:
-        // Upload ONLY checked questions' blobs right now upon confirmation!
+        // Upload ONLY checked questions' blobs right now upon confirmation, with dataUrl fallback if upload fails.
         if (q.localCropBlob && !finalImageUrl) {
-          finalImageUrl = await uploadBlobToCloudinary(q.localCropBlob, 'question', this.http);
-          q.question_image_url = finalImageUrl;
+          try {
+            finalImageUrl = await uploadBlobToCloudinary(q.localCropBlob, 'question', this.http);
+            q.question_image_url = finalImageUrl;
+          } catch {
+            finalImageUrl = q.localCropPreviewUrl || null;
+          }
         }
 
         const isMcq = q.type === 'MCQ';
         const isInputText = q.type === 'INPUT_TEXT';
-        const validOptions = isMcq
-          ? (q.options || []).map((o) => o.trim()).filter((o) => o.length > 0)
-          : [];
-        let finalCorrectIndex = 0;
-
-        if (isMcq && validOptions.length > 0) {
-          const rawSelectedOptionText =
-            q.options && typeof q.correct_option_index === 'number'
-              ? (q.options[q.correct_option_index] || '').trim()
-              : '';
-          const mappedIdx = validOptions.indexOf(rawSelectedOptionText);
-          finalCorrectIndex =
-            mappedIdx !== -1
-              ? mappedIdx
-              : Math.min(validOptions.length - 1, Math.max(0, q.correct_option_index));
-        }
+        const sanitizedMcq = isMcq
+          ? this.sanitizeMcqOptionsForSave(q.options, q.correct_option_index)
+          : { options: [] as string[], correctIndex: 0 };
 
         const validAccepted = isInputText
           ? (q.acceptedAnswers || q.accepted_answers || []).map((a) => (a || '').trim()).filter(Boolean)
@@ -1238,8 +1481,8 @@ export class AiQuestionExtractionModalComponent {
           type: q.type,
           textAr: q.question_text.trim() || (finalImageUrl ? 'سؤال مصور من الملف' : ''),
           questionImageUrl: finalImageUrl,
-          options: validOptions,
-          correctOptionIndex: finalCorrectIndex,
+          options: sanitizedMcq.options,
+          correctOptionIndex: sanitizedMcq.correctIndex,
           acceptedAnswers: isInputText ? (validAccepted && validAccepted.length > 0 ? validAccepted : [q.question_text.trim() || 'إجابة']) : undefined,
           points: q.points > 0 ? q.points : 1,
           explanationAr: ''
@@ -1257,6 +1500,7 @@ export class AiQuestionExtractionModalComponent {
       }
 
       this.currentStep.set('PREVIEW_AND_PAGE');
+      this.persistCurrentExtractionState();
       this.close();
     } catch (uploadErr: any) {
       this.errorMessage.set(
@@ -1274,21 +1518,22 @@ export class AiQuestionExtractionModalComponent {
   goToStep(step: 'UPLOAD_AND_SELECT' | 'PREVIEW_AND_PAGE' | 'STAGING_REVIEW'): void {
     this.errorMessage.set(null);
     this.currentStep.set(step);
+    this.persistCurrentExtractionState();
   }
 
   saveTransientDraft(): void {
-    const aid = this.getEffectiveAssessmentId();
-    if (aid) {
-      this.stagedByAssessment.set(aid, this.stagedQuestions());
-    }
-    if (this.currentCanvas || this.uploadedFile()) {
+    this.persistCurrentExtractionState();
+    if (this.currentCanvas || this.uploadedFile() || this.currentDataUrl()) {
       this.emitFileSession();
     }
   }
 
   close(): void {
-    if (this.uploadedFile() && this.fileName()) {
-      this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), this.currentPageNumber());
+    if (this.uploadedFile() || this.fileName() || this.currentDataUrl() || this.stagedQuestions().length > 0) {
+      if (this.fileName()) {
+        this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), this.currentPageNumber());
+      }
+      this.persistCurrentExtractionState();
       this.emitFileSession();
     }
     this.modalNav.dismissModal('ai-question-extraction-modal');

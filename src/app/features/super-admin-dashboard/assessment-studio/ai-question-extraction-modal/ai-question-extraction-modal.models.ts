@@ -43,6 +43,11 @@ export interface IConfirmationDialogState {
   onConfirm: () => void;
 }
 
+export interface IPersistedImageEntry {
+  fileName: string;
+  dataUrl: string;
+}
+
 export interface ICachedFileSession {
   fileName: string;
   fileType: 'pdf' | 'image';
@@ -52,6 +57,27 @@ export interface ICachedFileSession {
   dataUrl: string | null;
   totalPages?: number;
   lastSelectedRange?: { startPage: number; endPage: number };
+  uploadedImages?: IPersistedImageEntry[];
+  pageScopeMode?: PageScopeMode;
+  extractionMode?: AiExtractionMode;
+  stagedQuestions?: IStagedQuestion[];
+}
+
+export interface IAiExtractionSessionRecord {
+  assessmentId: string;
+  fileName: string;
+  fileType: 'pdf' | 'image';
+  fileBlob: File | Blob | null;
+  uploadedImages: IPersistedImageEntry[];
+  pageNumber: number;
+  totalPages: number;
+  currentDataUrl: string | null;
+  lastSelectedRange?: { startPage: number; endPage: number };
+  pageScopeMode: PageScopeMode;
+  extractionMode: AiExtractionMode;
+  stagedQuestions: IStagedQuestion[];
+  currentStep: 'UPLOAD_AND_SELECT' | 'PREVIEW_AND_PAGE' | 'STAGING_REVIEW';
+  updatedAt: number;
 }
 
 export interface IAiExtractionBackendResponse {

@@ -170,6 +170,7 @@ app-brand-header {
 }
 
 .z-layer-header { z-index: 1200 !important; }        // Sticky Navbar & Sync Banner (Crisp & visible above modal backdrops)
+.z-layer-toast { z-index: 1250 !important; }         // Global Toast Feedback (Always above modals, submodals, dialogs & lightboxes)
 .z-layer-header-dropdown { z-index: 1300 !important; } // Mobile Navigation Menu & Notifications Dropdowns (Above header)
 
 // Highest Lightbox Overlay (Kept below top brand navbar so navbar remains visible & interactive)

@@ -14,10 +14,12 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ModalNavigationService } from '../../../core/services/modal-navigation.service';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
+import { AiExtractionSessionService } from '../../../core/offline-db/ai-extraction-session.service';
 import { AppIconComponent, AppIconName } from '../../../shared/components/app-icon/app-icon.component';
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import {
@@ -958,6 +960,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
   // Assessment Draft & Navigation Services
   readonly draftService = inject(AssessmentDraftService);
+  private readonly aiExtractionSessionService = inject(AiExtractionSessionService);
   readonly modalNav = inject(ModalNavigationService);
   private readonly platformId = inject(PLATFORM_ID);
   readonly pendingDraft = signal<AssessmentDraft | null>(null);
@@ -966,6 +969,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   readonly isAssessmentEditorOpen = signal<boolean>(false);
   readonly activeAssessment = signal<AssessmentAdminItem | null>(null);
   readonly autoRegradeWarning = signal<boolean>(false);
+  private curriculumAutoPersistSub: Subscription | null = null;
+  private closingFromExplicitSave = false;
+  private openedAssessmentSnapshotJson = '';
+  private isDestroyed = false;
 
   readonly stripLatexDelimiters = stripLatexDelimiters;
 
@@ -1028,6 +1035,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.isDestroyed = true;
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
   }
@@ -2852,6 +2860,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
               assessments: unit.assessments.filter((a) => a.id !== assessmentId)
             };
             this.draftService.deleteDraft(assessmentId).catch(() => {});
+            void this.aiExtractionSessionService.deleteSession(assessmentId);
             this.pendingDraft.set(null);
             this.unitUpdated.emit(updatedUnit);
             this.toastTriggered.emit({
@@ -2914,15 +2923,201 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     this.isRefSheetActiveInCreateAssessment.set(false);
   }
 
+  private applyDraftToCurriculumAssessment(base: AssessmentAdminItem, draft: AssessmentDraft): AssessmentAdminItem {
+    const mappedQuestions: QuestionAdminItem[] = Array.isArray(draft.questions)
+      ? draft.questions.map((q, idx) => ({
+          id: q.id || `q_${idx}`,
+          order: q.order || idx + 1,
+          type: (q.type === 'INPUT_TEXT' ? 'INPUT_TEXT' : (q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO' ? 'ESSAY' : 'MCQ')) as any,
+          textAr: q.textAr || '',
+          questionImageUrl: q.questionImageUrl || null,
+          options: q.options || [],
+          correctOptionIndex: q.correctOptionIndex ?? 0,
+          acceptedAnswers: q.acceptedAnswers || [],
+          points: q.points || 5,
+          moduleIndex: q.moduleIndex === 2 ? 2 : 1
+        }))
+      : base.questions;
+
+    return {
+      ...base,
+      titleAr: draft.titleAr || base.titleAr,
+      titleEn: draft.titleEn ?? base.titleEn,
+      calculatorType: draft.calculatorType || base.calculatorType,
+      durationMinutes: draft.durationMinutes || base.durationMinutes,
+      isMultiModule: draft.isMultiModule ?? base.isMultiModule,
+      module1TimeMinutes: draft.module1TimeMinutes ?? base.module1TimeMinutes,
+      module2TimeMinutes: draft.module2TimeMinutes ?? base.module2TimeMinutes,
+      referenceSheetUrl: draft.referenceSheetUrl !== undefined ? (draft.referenceSheetUrl || null) : base.referenceSheetUrl,
+      requiresTeacherReview: draft.requiresTeacherReview ?? base.requiresTeacherReview,
+      questions: mappedQuestions
+    };
+  }
+
+  private hasUnsavedCurriculumComposerInput(): boolean {
+    return (
+      Boolean(this.newQuestionTextAr().trim()) ||
+      Boolean(this.newQuestionImageUrl()) ||
+      this.newQuestionOptions().some((o) => Boolean((o || '').trim())) ||
+      this.newQuestionAcceptedAnswers().some((a) => Boolean((a || '').trim()))
+    );
+  }
+
+  private autoPersistCurriculumAssessmentToBackend(asm: AssessmentAdminItem): void {
+    if (!asm || !asm.id || asm.id === 'curriculum_assessment_draft') return;
+    if (!asm.questions || asm.questions.length === 0) return;
+
+    const sanitizeMcq = (rawOpts: string[] | undefined, rawCorrectIdx: number | undefined): { options: string[]; correctIndex: number } => {
+      const seen = new Set<string>();
+      const trimmed = (rawOpts || []).map((o) => (o || '').trim());
+      const selectedText = typeof rawCorrectIdx === 'number' && rawCorrectIdx >= 0 && rawCorrectIdx < trimmed.length ? trimmed[rawCorrectIdx] : '';
+      const uniqueOpts: string[] = [];
+      let mappedCorrect = -1;
+      for (let i = 0; i < trimmed.length; i++) {
+        const opt = trimmed[i];
+        if (!opt) continue;
+        let candidate = opt;
+        let suffix = 2;
+        while (seen.has(candidate)) {
+          candidate = `${opt} (${suffix++})`;
+        }
+        seen.add(candidate);
+        if (i === rawCorrectIdx) mappedCorrect = uniqueOpts.length;
+        uniqueOpts.push(candidate);
+      }
+      let pad = 1;
+      while (uniqueOpts.length < 2) {
+        let fb = this.langService.isArabic() ? `الخيار ${pad}` : `Option ${pad}`;
+        pad++;
+        while (seen.has(fb)) fb = this.langService.isArabic() ? `الخيار ${pad++}` : `Option ${pad++}`;
+        seen.add(fb);
+        uniqueOpts.push(fb);
+      }
+      if (mappedCorrect === -1) {
+        const idxByText = selectedText ? uniqueOpts.indexOf(selectedText) : -1;
+        mappedCorrect = idxByText !== -1 ? idxByText : Math.min(uniqueOpts.length - 1, Math.max(0, Number(rawCorrectIdx ?? 0)));
+      }
+      return { options: uniqueOpts, correctIndex: mappedCorrect };
+    };
+
+    if (this.curriculumAutoPersistSub) {
+      this.curriculumAutoPersistSub.unsubscribe();
+      this.curriculumAutoPersistSub = null;
+    }
+
+    const isHw = asm.type === 'HOMEWORK';
+    const isMultiMod = !isHw && !!asm.isMultiModule;
+    const mod1Time = isMultiMod ? (Number(asm.module1TimeMinutes) || 35) : null;
+    const mod2Time = isMultiMod ? (Number(asm.module2TimeMinutes) || 35) : null;
+    const computedDuration = isMultiMod
+      ? ((Number(asm.module1TimeMinutes) || 35) + (Number(asm.module2TimeMinutes) || 35))
+      : (asm.durationMinutes || 30);
+    const hasEssay = asm.questions.some((q) => q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO');
+    const requiresTeacherReview = hasEssay ? true : !!asm.requiresTeacherReview;
+
+    const payload = {
+      is_published: true,
+      title_ar: asm.titleAr ? asm.titleAr.trim() : undefined,
+      title_en: asm.titleAr ? asm.titleAr.trim() : undefined,
+      calculator_mode: asm.calculatorType,
+      duration_minutes: computedDuration,
+      time_limit_minutes: computedDuration,
+      is_multi_module: isMultiMod,
+      module_1_time_minutes: mod1Time,
+      module_2_time_minutes: mod2Time,
+      reference_sheet_url: asm.referenceSheetUrl || null,
+      xp_reward: asm.xpReward !== null && asm.xpReward !== undefined ? Number(asm.xpReward) : undefined,
+      requires_teacher_review: requiresTeacherReview,
+      lecture_id: asm.lectureId !== undefined ? (asm.lectureId || null) : undefined,
+      questions: asm.questions.map((q, idx) => {
+        const isEssay = q.type === 'ESSAY' || q.type === 'ESSAY_PHOTO';
+        const isInputText = q.type === 'INPUT_TEXT';
+        const questionType = isEssay ? 'ESSAY_PHOTO' : (isInputText ? 'INPUT_TEXT' : 'MCQ');
+        const validId = q.id && /^[0-9a-fA-F]{24}$/.test(q.id) ? q.id : undefined;
+        const mcqSanitized = (!isEssay && !isInputText)
+          ? sanitizeMcq(q.options, q.correctOptionIndex)
+          : { options: [] as string[], correctIndex: 0 };
+        const accepted = isInputText
+          ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean)
+          : undefined;
+        return {
+          _id: validId,
+          order: q.order || idx + 1,
+          question_type: questionType,
+          question_text: (q.textAr || '').trim() || (isEssay ? 'مسألة مقالية' : 'مسألة رياضية'),
+          question_image_url: q.questionImageUrl || null,
+          options: (isEssay || isInputText) ? [] : mcqSanitized.options,
+          correct_option_index: (isEssay || isInputText) ? undefined : mcqSanitized.correctIndex,
+          accepted_answers: isInputText ? (accepted && accepted.length > 0 ? accepted : [(q.textAr || '').trim() || 'إجابة']) : undefined,
+          points: q.points || 5,
+          module_index: isMultiMod ? (q.moduleIndex === 2 ? 2 : 1) : 1
+        };
+      })
+    };
+
+    let syncDone = false;
+    const sub = this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
+      next: (res) => {
+        syncDone = true;
+        this.curriculumAutoPersistSub = null;
+        this.draftService.lastSavedTimestamp.set(Date.now());
+        if (!this.isDestroyed && res?.data?.questions && Array.isArray(res.data.questions)) {
+          const currentAsm = this.activeAssessment();
+          const serverQuestions = res.data.questions;
+          if (currentAsm && currentAsm.id === asm.id) {
+            const currentEditId = this.editingQuestionId();
+            const updatedQuestions = currentAsm.questions.map((q, idx) => {
+              const matched = serverQuestions.find((sq: any) => sq.order === q.order) || serverQuestions[idx];
+              if (matched && (matched._id || matched.id)) {
+                const newId = (matched._id || matched.id).toString();
+                if (currentEditId === q.id && newId !== q.id) {
+                  this.editingQuestionId.set(newId);
+                }
+                return { ...q, id: newId };
+              }
+              return q;
+            });
+            const refreshedAsm: AssessmentAdminItem = { ...currentAsm, questions: updatedQuestions };
+            this.activeAssessment.set(refreshedAsm);
+            this.assessmentSaved.emit(refreshedAsm);
+            this.openedAssessmentSnapshotJson = JSON.stringify(refreshedAsm);
+          }
+        } else if (!this.isDestroyed && this.activeAssessment()?.id === asm.id) {
+          this.openedAssessmentSnapshotJson = JSON.stringify(this.activeAssessment());
+        }
+        if (this.isDestroyed || !this.hasUnsavedCurriculumComposerInput()) {
+          this.draftService.deleteDraft(asm.id).catch(() => {});
+          if (!this.isDestroyed && (this.pendingDraft()?.draftId === asm.id || this.pendingDraft()?.assessmentId === asm.id)) {
+            this.pendingDraft.set(null);
+          }
+        }
+      },
+      error: () => {
+        syncDone = true;
+        this.curriculumAutoPersistSub = null;
+      }
+    });
+    if (!syncDone && !sub.closed) {
+      this.curriculumAutoPersistSub = sub;
+    }
+  }
+
   openAssessmentEditor(asm: AssessmentAdminItem): void {
-    const cloned = JSON.parse(JSON.stringify(asm));
+    let cloned: AssessmentAdminItem = JSON.parse(JSON.stringify(asm));
     cloned.isMultiModule = !!cloned.isMultiModule;
     cloned.module1TimeMinutes = cloned.module1TimeMinutes ?? 35;
     cloned.module2TimeMinutes = cloned.module2TimeMinutes ?? 35;
+
+    const syncDraft = this.draftService.getDraftSync(cloned.id);
+    if (syncDraft) {
+      cloned = this.applyDraftToCurriculumAssessment(cloned, syncDraft);
+    }
+
+    this.openedAssessmentSnapshotJson = JSON.stringify(cloned);
     this.activeAssessment.set(cloned);
     this.moduleFilterTab.set('ALL');
     this.newQuestionModuleIndex.set(1);
-    this.isRefSheetActiveInCurriculum.set(Boolean(asm.referenceSheetUrl));
+    this.isRefSheetActiveInCurriculum.set(Boolean(cloned.referenceSheetUrl));
     this.autoRegradeWarning.set(false);
     this.cancelQuestionEdit();
     this.isMathKeyboardOpen.set(false);
@@ -2933,11 +3128,67 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       saveDraft: () => this.triggerDraftAutoSave(true),
       close: () => this.closeAssessmentEditor()
     });
+
+    // Restore cached AI extraction file session from memory or IndexedDB after refresh
+    if (cloned.id && !this.assessmentFileSessions()[cloned.id]) {
+      const syncFileRecord = this.aiExtractionSessionService.getSessionSync(cloned.id);
+      if (syncFileRecord && (syncFileRecord.fileName || syncFileRecord.fileBlob || syncFileRecord.currentDataUrl)) {
+        const cached = this.aiExtractionSessionService.toCachedFileSession(syncFileRecord);
+        this.assessmentFileSessions.update((sessions) => ({
+          ...sessions,
+          [cloned.id]: cached
+        }));
+      } else {
+        this.aiExtractionSessionService.getSession(cloned.id).then((persistedRecord) => {
+          if (
+            persistedRecord &&
+            (persistedRecord.fileName || persistedRecord.fileBlob || persistedRecord.currentDataUrl) &&
+            !this.isDestroyed &&
+            this.isAssessmentEditorOpen() &&
+            this.activeAssessment()?.id === cloned.id &&
+            !this.assessmentFileSessions()[cloned.id]
+          ) {
+            const cached = this.aiExtractionSessionService.toCachedFileSession(persistedRecord);
+            this.assessmentFileSessions.update((sessions) => ({
+              ...sessions,
+              [cloned.id]: cached
+            }));
+          }
+        });
+      }
+    }
+
+    // Check IndexedDB draft if newer than synchronous mirror
+    if (cloned.id) {
+      this.draftService.getDraft(cloned.id).then((asyncDraft) => {
+        if (
+          asyncDraft &&
+          !this.isDestroyed &&
+          this.isAssessmentEditorOpen() &&
+          this.activeAssessment()?.id === cloned.id &&
+          (!syncDraft || (asyncDraft.updatedAt || 0) > (syncDraft.updatedAt || 0))
+        ) {
+          const merged = this.applyDraftToCurriculumAssessment(this.activeAssessment()!, asyncDraft);
+          this.activeAssessment.set(merged);
+          this.assessmentSaved.emit(merged);
+          this.isRefSheetActiveInCurriculum.set(Boolean(merged.referenceSheetUrl));
+        }
+      });
+    }
   }
 
   closeAssessmentEditor(): void {
-    if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
+    const currentAsm = this.activeAssessment();
+    if (this.isAssessmentEditorOpen() && currentAsm && !this.closingFromExplicitSave) {
+      this.assessmentSaved.emit(currentAsm);
       this.triggerDraftAutoSave(true);
+      if (
+        currentAsm.questions?.length > 0 &&
+        JSON.stringify(currentAsm) !== this.openedAssessmentSnapshotJson &&
+        !this.curriculumAutoPersistSub
+      ) {
+        this.autoPersistCurriculumAssessmentToBackend(currentAsm);
+      }
     }
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
@@ -2980,7 +3231,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       requiresTeacherReview: hasEssay ? true : asm.requiresTeacherReview
     };
     this.activeAssessment.set(updatedAsm);
+    this.assessmentSaved.emit(updatedAsm);
     this.triggerDraftAutoSave(true);
+    this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
     this.toastTriggered.emit({
       text: this.langService.isArabic()
         ? `تم استخراج وحفظ ${extractedQuestions.length} أسئلة بنجاح`
@@ -3032,7 +3285,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       q.questionImageUrl = result.imageUrl;
       const asm = this.activeAssessment();
       if (asm) {
-        this.activeAssessment.set({ ...asm });
+        const updatedAsm: AssessmentAdminItem = { ...asm };
+        this.activeAssessment.set(updatedAsm);
+        this.assessmentSaved.emit(updatedAsm);
+        this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
       }
     } else {
       this.newQuestionImageUrl.set(result.imageUrl);
@@ -3291,6 +3547,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         requiresTeacherReview: hasEssayAfter ? true : asm.requiresTeacherReview
       };
       this.activeAssessment.set(updatedAsm);
+      this.assessmentSaved.emit(updatedAsm);
 
       if (asm.submissionsCount > 0) {
         this.autoRegradeWarning.set(true);
@@ -3298,6 +3555,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
       this.cancelQuestionEdit();
       this.triggerDraftAutoSave(true);
+      this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
 
       this.toastTriggered.emit({
         text: this.langService.isArabic() ? 'تم تحديث السؤال بنجاح' : 'Question updated successfully',
@@ -3324,9 +3582,11 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         requiresTeacherReview: isEssay ? true : asm.requiresTeacherReview
       };
       this.activeAssessment.set(updatedAsm);
+      this.assessmentSaved.emit(updatedAsm);
 
       this.cancelQuestionEdit();
       this.triggerDraftAutoSave(true);
+      this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
 
       this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
     }
@@ -3340,9 +3600,16 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       'حذف السؤال',
       `حذف السؤال رقم ${order}؟`,
       () => {
-        const filtered = asm.questions.filter((q) => q.order !== order);
-        this.activeAssessment.set({ ...asm, questions: filtered });
+        const filtered = asm.questions
+          .filter((q) => q.order !== order)
+          .map((q, idx) => ({ ...q, order: idx + 1 }));
+        const updatedAsm: AssessmentAdminItem = { ...asm, questions: filtered };
+        this.activeAssessment.set(updatedAsm);
+        this.assessmentSaved.emit(updatedAsm);
         this.triggerDraftAutoSave(true);
+        if (updatedAsm.questions.length > 0) {
+          this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
+        }
         this.toastTriggered.emit({ text: 'تم حذف السؤال', type: 'warning' });
       },
       true,
@@ -3361,6 +3628,11 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   saveAssessmentSettings(): void {
     const asm = this.activeAssessment();
     if (!asm) return;
+
+    if (this.curriculumAutoPersistSub) {
+      this.curriculumAutoPersistSub.unsubscribe();
+      this.curriculumAutoPersistSub = null;
+    }
 
     // 1. Critical Requirement: Cannot save/publish an empty assessment without questions!
     if (!asm.questions || asm.questions.length === 0) {
@@ -3482,7 +3754,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         asm.durationMinutes = computedDuration;
         asm.requiresTeacherReview = requiresTeacherReview;
         this.assessmentSaved.emit(asm);
+        this.closingFromExplicitSave = true;
+        this.openedAssessmentSnapshotJson = JSON.stringify(asm);
         this.isAssessmentEditorOpen.set(false);
+        this.closingFromExplicitSave = false;
         this.toastTriggered.emit({
           text: this.autoRegradeWarning()
             ? 'تم الحفظ وتفعيل إعادة التصحيح'

@@ -41,6 +41,7 @@ import {
 } from '../curriculum-studio/curriculum-studio.models';
 import { AssessmentDraftService } from '../../../core/offline-db/assessment-draft.service';
 import { AssessmentDraft } from '../../../core/offline-db/assessment-draft.models';
+import { AiExtractionSessionService } from '../../../core/offline-db/ai-extraction-session.service';
 import { ModalNavigationService } from '../../../core/services/modal-navigation.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import { UiLayoutService } from '../../../core/services/ui-layout.service';
@@ -106,6 +107,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   readonly draftService = inject(AssessmentDraftService);
+  private readonly aiExtractionSessionService = inject(AiExtractionSessionService);
   private readonly swrCache = inject(SwrCacheService);
   private readonly uiLayoutService = inject(UiLayoutService);
   private readonly modalNav = inject(ModalNavigationService);
@@ -152,6 +154,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
   private autoPersistSub: Subscription | null = null;
+  private closingFromExplicitSave = false;
+  private isDestroyed = false;
 
   // Active Grades & Tracks State
   readonly activeGrades = signal<string[]>([]);
@@ -820,9 +824,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     }));
 
     const updatedQuestions = [...currentQuestions, ...formattedNewQuestions];
+    const hasEssay = updatedQuestions.some((q) => q.type === 'ESSAY' || (q.type as string) === 'ESSAY_PHOTO');
     const updatedAsm: AssessmentItem = {
       ...asm,
       questions: updatedQuestions,
+      requiresTeacherReview: hasEssay ? true : asm.requiresTeacherReview,
       totalPoints: updatedQuestions.reduce((sum, q) => sum + (q.points || 1), 0)
     };
     this.activeAssessment.set(updatedAsm);
@@ -1005,6 +1011,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       list.map((a) => (a.id === cloned.id ? cloned : a))
     );
     const cacheKey = `${cloned.curriculum}_${cloned.gradeLevel}_${cloned.term}`;
+    const updatedList = this.assessmentsList();
     if (ASSESSMENTS_MEMORY_CACHE.has(cacheKey)) {
       const entry = ASSESSMENTS_MEMORY_CACHE.get(cacheKey)!;
       ASSESSMENTS_MEMORY_CACHE.set(cacheKey, {
@@ -1012,6 +1019,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         timestamp: Date.now()
       });
     }
+    this.swrCache.set(`admin_asm_${cacheKey}`, updatedList);
   }
 
   private applyDraftToAssessmentItem(baseItem: AssessmentItem, draft: AssessmentDraft): AssessmentItem {
@@ -1080,20 +1088,38 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     if (!rawTitle) return;
     if (!asm.questions || asm.questions.length === 0) return;
 
-    // Validate all MCQ and INPUT_TEXT questions before auto-persisting to backend
-    for (const q of asm.questions) {
-      if (q.type === 'MCQ') {
-        const opts = (q.options || []).map((o) => (o || '').trim());
-        if (opts.length < 2 || opts.some((o) => !o) || new Set(opts).size < opts.length) {
-          return;
+    const sanitizeMcq = (rawOpts: string[] | undefined, rawCorrectIdx: number | undefined): { options: string[]; correctIndex: number } => {
+      const seen = new Set<string>();
+      const trimmed = (rawOpts || []).map((o) => (o || '').trim());
+      const selectedText = typeof rawCorrectIdx === 'number' && rawCorrectIdx >= 0 && rawCorrectIdx < trimmed.length ? trimmed[rawCorrectIdx] : '';
+      const uniqueOpts: string[] = [];
+      let mappedCorrect = -1;
+      for (let i = 0; i < trimmed.length; i++) {
+        const opt = trimmed[i];
+        if (!opt) continue;
+        let candidate = opt;
+        let suffix = 2;
+        while (seen.has(candidate)) {
+          candidate = `${opt} (${suffix++})`;
         }
-      } else if (q.type === 'INPUT_TEXT') {
-        const accepted = (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean);
-        if (accepted.length === 0) {
-          return;
-        }
+        seen.add(candidate);
+        if (i === rawCorrectIdx) mappedCorrect = uniqueOpts.length;
+        uniqueOpts.push(candidate);
       }
-    }
+      let pad = 1;
+      while (uniqueOpts.length < 2) {
+        let fb = this.langService.isArabic() ? `الخيار ${pad}` : `Option ${pad}`;
+        pad++;
+        while (seen.has(fb)) fb = this.langService.isArabic() ? `الخيار ${pad++}` : `Option ${pad++}`;
+        seen.add(fb);
+        uniqueOpts.push(fb);
+      }
+      if (mappedCorrect === -1) {
+        const idxByText = selectedText ? uniqueOpts.indexOf(selectedText) : -1;
+        mappedCorrect = idxByText !== -1 ? idxByText : Math.min(uniqueOpts.length - 1, Math.max(0, Number(rawCorrectIdx ?? 0)));
+      }
+      return { options: uniqueOpts, correctIndex: mappedCorrect };
+    };
 
     if (this.autoPersistSub) {
       this.autoPersistSub.unsubscribe();
@@ -1142,15 +1168,21 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         const isInputText = q.type === 'INPUT_TEXT';
         const qType = isEssay ? 'ESSAY_PHOTO' : isInputText ? 'INPUT_TEXT' : 'MCQ';
         const validId = q.id && /^[0-9a-fA-F]{24}$/.test(q.id) ? q.id : undefined;
+        const mcqSanitized = (!isEssay && !isInputText)
+          ? sanitizeMcq(q.options, q.correctOptionIndex)
+          : { options: [] as string[], correctIndex: 0 };
+        const accepted = isInputText
+          ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean)
+          : undefined;
         return {
           _id: validId,
           order: q.order || idx + 1,
           question_type: qType,
           question_text: (q.textAr || '').trim() || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
           question_image_url: q.questionImageUrl || null,
-          options: (isEssay || isInputText) ? [] : (q.options || []).map((o) => (o || '').trim()),
-          correct_option_index: (isEssay || isInputText) ? 0 : Math.max(0, Number(q.correctOptionIndex ?? 0)),
-          accepted_answers: isInputText ? (q.acceptedAnswers || []).map((a) => (a || '').trim()).filter(Boolean) : undefined,
+          options: mcqSanitized.options,
+          correct_option_index: mcqSanitized.correctIndex,
+          accepted_answers: isInputText ? (accepted && accepted.length > 0 ? accepted : [(q.textAr || '').trim() || 'إجابة']) : undefined,
           points: Math.max(1, Math.min(50, Number(q.points || 1))),
           module_index: q.moduleIndex === 2 ? 2 : 1,
           model_answer_text: (q.explanationAr || '').trim(),
@@ -1159,14 +1191,16 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       })
     };
 
-    this.autoPersistSub = this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
+    let syncDone = false;
+    const sub = this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/assessments/${asm.id}`, payload).subscribe({
       next: (res) => {
+        syncDone = true;
         this.autoPersistSub = null;
         this.draftService.lastSavedTimestamp.set(Date.now());
-        if (res?.data?.questions && Array.isArray(res.data.questions)) {
+        if (!this.isDestroyed && res?.data?.questions && Array.isArray(res.data.questions)) {
           const currentAsm = this.activeAssessment();
+          const serverQuestions = res.data.questions;
           if (currentAsm && currentAsm.id === asm.id) {
-            const serverQuestions = res.data.questions;
             const currentEditId = this.editingQuestionId();
             const updatedQuestions = currentAsm.questions.map((q, idx) => {
               const matched = serverQuestions.find((sq: any) => sq.order === q.order) || serverQuestions[idx];
@@ -1182,20 +1216,36 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
             const refreshedAsm = { ...currentAsm, questions: updatedQuestions };
             this.activeAssessment.set(refreshedAsm);
             this.syncAssessmentInMemoryList(refreshedAsm);
+          } else {
+            const listItem = this.assessmentsList().find((a) => a.id === asm.id);
+            if (listItem) {
+              const updatedQuestions = listItem.questions.map((q, idx) => {
+                const matched = serverQuestions.find((sq: any) => sq.order === q.order) || serverQuestions[idx];
+                if (matched && (matched._id || matched.id)) {
+                  return { ...q, id: (matched._id || matched.id).toString() };
+                }
+                return q;
+              });
+              this.syncAssessmentInMemoryList({ ...listItem, questions: updatedQuestions });
+            }
           }
         }
-        if (!this.hasUnsavedComposerInput()) {
+        if (this.isDestroyed || !this.hasUnsavedComposerInput()) {
           this.draftService.deleteDraft(asm.id).catch(() => {});
-          if (this.pendingDraft()?.draftId === asm.id || this.pendingDraft()?.assessmentId === asm.id) {
+          if (!this.isDestroyed && (this.pendingDraft()?.draftId === asm.id || this.pendingDraft()?.assessmentId === asm.id)) {
             this.pendingDraft.set(null);
           }
         }
       },
       error: () => {
+        syncDone = true;
         this.autoPersistSub = null;
         // Keep local draft in Dexie + localStorage so nothing is ever lost on network failure
       }
     });
+    if (!syncDone && !sub.closed) {
+      this.autoPersistSub = sub;
+    }
   }
 
   restoreDraft(draft: AssessmentDraft): void {
@@ -1299,10 +1349,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.autoPersistSub) {
-      this.autoPersistSub.unsubscribe();
-      this.autoPersistSub = null;
-    }
+    this.isDestroyed = true;
     this.uiLayoutService.restoreFooter();
     this.isQuestionDrawerOpen.set(false);
     this.isExamOptionsOpen.set(false);
@@ -1918,6 +1965,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
         this.http.delete(`/api/v1/admin/assessments/${item.id}`).subscribe({
           next: async () => {
             await this.draftService.deleteDraft(item.id);
+            void this.aiExtractionSessionService.deleteSession(item.id);
             if (this.pendingDraft()?.draftId === item.id || this.pendingDraft()?.assessmentId === item.id) {
               this.pendingDraft.set(null);
             }
@@ -2023,6 +2071,35 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     });
     this.loadUnitsForEditor(copy.curriculum, copy.gradeLevel, copy.term);
 
+    // Restore cached AI extraction file session synchronously if already in memory, or async from IndexedDB after refresh
+    if (copy.id && !this.assessmentFileSessions()[copy.id]) {
+      const syncFileRecord = this.aiExtractionSessionService.getSessionSync(copy.id);
+      if (syncFileRecord && (syncFileRecord.fileName || syncFileRecord.fileBlob || syncFileRecord.currentDataUrl)) {
+        const cached = this.aiExtractionSessionService.toCachedFileSession(syncFileRecord);
+        this.assessmentFileSessions.update((sessions) => ({
+          ...sessions,
+          [copy.id]: cached
+        }));
+      } else {
+        this.aiExtractionSessionService.getSession(copy.id).then((persistedRecord) => {
+          if (
+            persistedRecord &&
+            (persistedRecord.fileName || persistedRecord.fileBlob || persistedRecord.currentDataUrl) &&
+            !this.isDestroyed &&
+            this.isEditorOpen() &&
+            this.activeAssessment()?.id === copy.id &&
+            !this.assessmentFileSessions()[copy.id]
+          ) {
+            const cached = this.aiExtractionSessionService.toCachedFileSession(persistedRecord);
+            this.assessmentFileSessions.update((sessions) => ({
+              ...sessions,
+              [copy.id]: cached
+            }));
+          }
+        });
+      }
+    }
+
     // Also check async Dexie draft in case IndexedDB holds a newer version than localStorage
     this.draftService.getDraft(copy.id).then((asyncDraft) => {
       if (
@@ -2044,8 +2121,11 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
     const currentAsm = this.activeAssessment();
     if (currentAsm) {
       this.syncAssessmentInMemoryList(currentAsm);
-      if (this.hasUnsavedComposerInput()) {
+      if (!this.closingFromExplicitSave) {
         this.triggerDraftAutoSave(true);
+        if (currentAsm.questions?.length > 0 && !this.isSaving() && !this.autoPersistSub) {
+          this.autoPersistAssessmentToBackend(currentAsm);
+        }
       }
     }
     this.isQuestionDrawerOpen.set(false);
@@ -2640,7 +2720,9 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.isSaving.set(false);
+          this.closingFromExplicitSave = true;
           this.closeEditor();
+          this.closingFromExplicitSave = false;
           this.loadAssessments(true);
           this.pendingDraft.set(null);
           ASSESSMENTS_MEMORY_CACHE.clear();

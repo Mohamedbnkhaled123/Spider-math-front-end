@@ -62,4 +62,19 @@ describe('SuperAdminDashboardComponent', () => {
     expect(desktopBar?.classList.contains('z-20')).toBeTrue();
     expect(desktopBar?.classList.contains('sticky')).toBeFalse();
   });
+
+  it('should render toast notification with z-layer-toast above modals and opaque glass surface', () => {
+    component.triggerToast('تم حذف السؤال', 'warning');
+    fixture.detectChanges();
+
+    const hostEl: HTMLElement = fixture.nativeElement;
+    const toastLayer = hostEl.querySelector('.z-layer-toast') as HTMLElement | null;
+    expect(toastLayer).toBeTruthy();
+    expect(toastLayer?.classList.contains('z-layer-modal')).toBeFalse();
+    expect(toastLayer?.textContent).toContain('تم حذف السؤال');
+
+    const card = toastLayer?.querySelector('.bg-surface-card\\/95');
+    expect(card).toBeTruthy();
+    component.toastMessage.set(null);
+  });
 });

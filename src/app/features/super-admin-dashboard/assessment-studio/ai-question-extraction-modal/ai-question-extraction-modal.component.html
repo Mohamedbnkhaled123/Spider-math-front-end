@@ -339,7 +339,7 @@
             }
 
             <!-- Continue Button -->
-            @if (uploadedFile() || currentCanvas) {
+            @if (uploadedFile() || currentCanvas || currentDataUrl()) {
               <div class="flex justify-end pt-2">
                 <button
                   type="button"

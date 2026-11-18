@@ -4,6 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { PLATFORM_ID } from '@angular/core';
 import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal.component';
 import { IStagedQuestion, ICachedFileSession } from './ai-question-extraction-modal.models';
+import { AiExtractionSessionService } from '../../../../core/offline-db/ai-extraction-session.service';
 
 describe('AiQuestionExtractionModalComponent', () => {
   let component: AiQuestionExtractionModalComponent;
@@ -1016,6 +1017,127 @@ describe('AiQuestionExtractionModalComponent', () => {
       await extractionPromise;
 
       expect(component.errorMessage()).toContain('504');
+    });
+
+    it('should persist uploaded file, last page, and staged questions in IndexedDB across refresh while keeping assessments strictly isolated', async () => {
+      const sessionService = TestBed.inject(AiExtractionSessionService);
+      const asmId = `asm_persist_${Date.now()}`;
+      const otherAsmId = `asm_other_${Date.now()}`;
+
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('assessmentId', asmId);
+      fixture.detectChanges();
+
+      const pdfFile = new File(['%PDF-1.4 sample'], 'persist_exam.pdf', { type: 'application/pdf' });
+      component.handleSelectedFile(pdfFile);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 300;
+      component.onPdfPageRendered({
+        pageNumber: 14,
+        totalPages: 40,
+        canvas,
+        blob: new Blob(['p14'], { type: 'image/webp' }),
+        dataUrl: 'data:image/webp;base64,p14data',
+        width: 200,
+        height: 300
+      });
+
+      const extractPromise = component.startAiExtraction();
+      const req = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      req.flush({
+        success: true,
+        data: {
+          questions: [
+            {
+              question_text: 'سؤال محفوظ من الصفحة 14',
+              options: ['1', '2', '3', '4'],
+              correct_option_index: 2,
+              has_geometry_diagram: false,
+              points: 5
+            }
+          ]
+        }
+      });
+      await extractPromise;
+
+      component.close();
+      await new Promise((r) => setTimeout(r, 80));
+
+      // Simulate full browser reload: destroy component and wipe in-memory cache
+      fixture.destroy();
+      sessionService.clearMemoryCache();
+
+      const fixtureAfterRefresh = TestBed.createComponent(AiQuestionExtractionModalComponent);
+      const compAfterRefresh = fixtureAfterRefresh.componentInstance;
+      fixtureAfterRefresh.componentRef.setInput('isOpen', true);
+      fixtureAfterRefresh.componentRef.setInput('assessmentId', asmId);
+      fixtureAfterRefresh.componentRef.setInput('existingSession', null);
+      fixtureAfterRefresh.detectChanges();
+
+      await new Promise((r) => setTimeout(r, 80));
+      fixtureAfterRefresh.detectChanges();
+
+      expect(compAfterRefresh.fileName()).toBe('persist_exam.pdf');
+      expect(compAfterRefresh.uploadedFile() instanceof File).toBeTrue();
+      expect(compAfterRefresh.currentPageNumber()).toBe(14);
+      expect(compAfterRefresh.totalPages()).toBe(40);
+      expect(compAfterRefresh.stagedQuestions().length).toBe(1);
+      expect(compAfterRefresh.stagedQuestions()[0].question_text).toBe('سؤال محفوظ من الصفحة 14');
+      expect(compAfterRefresh.currentStep()).toBe('STAGING_REVIEW');
+
+      // Switching to another assessment must remain strictly isolated
+      fixtureAfterRefresh.componentRef.setInput('assessmentId', otherAsmId);
+      fixtureAfterRefresh.componentRef.setInput('existingSession', null);
+      fixtureAfterRefresh.detectChanges();
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(compAfterRefresh.fileName()).toBe('');
+      expect(compAfterRefresh.uploadedFile()).toBeNull();
+      expect(compAfterRefresh.currentPageNumber()).toBe(1);
+      expect(compAfterRefresh.stagedQuestions().length).toBe(0);
+      expect(compAfterRefresh.currentStep()).toBe('UPLOAD_AND_SELECT');
+
+      await sessionService.deleteSession(asmId);
+      fixtureAfterRefresh.destroy();
+    });
+
+    it('should disambiguate duplicate MCQ options and pad fewer than 2 options in insertSelectedQuestions', async () => {
+      let emitted: any[] = [];
+      component.questionsExtracted.subscribe((qs) => (emitted = qs));
+
+      component.stagedQuestions.set([
+        {
+          id: 'q_dup_opts',
+          checked: true,
+          question_text: 'سؤال بخيارات مكررة من AI',
+          type: 'MCQ',
+          options: ['4', '4', '8', ''],
+          correct_option_index: 1,
+          points: 2,
+          has_geometry_diagram: false
+        },
+        {
+          id: 'q_one_opt',
+          checked: true,
+          question_text: 'سؤال بخيار واحد',
+          type: 'MCQ',
+          options: ['نعم', '', '', ''],
+          correct_option_index: 0,
+          points: 3,
+          has_geometry_diagram: false
+        }
+      ]);
+      component.isOpen.set(true);
+
+      await component.insertSelectedQuestions();
+
+      expect(emitted.length).toBe(2);
+      expect(emitted[0].options).toEqual(['4', '4 (2)', '8']);
+      expect(emitted[0].correctOptionIndex).toBe(1);
+      expect(emitted[1].options.length).toBe(2);
+      expect(new Set(emitted[1].options).size).toBe(2);
     });
   });
 });
