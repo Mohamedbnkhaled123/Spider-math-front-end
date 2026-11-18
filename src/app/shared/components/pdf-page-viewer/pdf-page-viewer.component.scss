@@ -5,7 +5,7 @@
 }
 
 .pdf-viewer-root {
-  min-height: 480px;
+  min-height: 400px;
 }
 
 .viewer-canvas-viewport,
@@ -23,8 +23,26 @@ canvas {
 }
 
 .canvas-wrapper {
+  max-width: none;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
-  transition: transform 0.15s ease-out;
+}
+
+@media (min-width: 640px) {
+  .canvas-wrapper {
+    max-width: calc(480px * var(--pdf-zoom, 1));
+  }
+}
+
+@media (min-width: 768px) {
+  .canvas-wrapper {
+    max-width: calc(540px * var(--pdf-zoom, 1));
+  }
+}
+
+@media (min-width: 1024px) {
+  .canvas-wrapper {
+    max-width: calc(580px * var(--pdf-zoom, 1));
+  }
 }
 
 .thumbnails-strip {

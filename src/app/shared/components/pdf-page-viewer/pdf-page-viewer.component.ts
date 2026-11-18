@@ -162,6 +162,7 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
 
       const loadingTask = pdfjsLib.getDocument({ data: pdfData });
       this.pdfDoc = await loadingTask.promise;
+      if (this.isDestroyed) return;
 
       const numPages = this.pdfDoc.numPages;
       this.totalPages.set(numPages);
@@ -176,10 +177,11 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
       await this.renderCurrentPage();
 
       // Generate thumbnails in background
-      if (this.showThumbnails()) {
+      if (this.showThumbnails() && !this.isDestroyed) {
         this.generateThumbnails(genId);
       }
     } catch (err: any) {
+      if (this.isDestroyed) return;
       console.error('Failed to load PDF document:', err);
       const msg = this.langService.isArabic()
         ? 'تعذر فتح ملف PDF. تحقق من الملف وأعد المحاولة.'
@@ -215,7 +217,7 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
 
     try {
       const page = await this.pdfDoc.getPage(pageNum);
-      const totalScale = this.scale() * this.zoomFactor();
+      const totalScale = this.scale();
       const viewport = page.getViewport({ scale: totalScale });
 
       const canvas = canvasRef.nativeElement;
@@ -239,12 +241,14 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
 
       await this.currentRenderTask.promise;
       this.currentRenderTask = null;
+      if (this.isDestroyed) return;
 
       // Create WebP blob & dataUrl from crisp 2x High-DPI canvas
       const dataUrl = canvas.toDataURL('image/webp', 0.92);
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((b) => resolve(b || new Blob()), 'image/webp', 0.92);
       });
+      if (this.isDestroyed) return;
 
       this.isRendering.set(false);
 
@@ -352,21 +356,18 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
   zoomIn(): void {
     if (this.zoomFactor() < 2.5) {
       this.zoomFactor.update((z) => Math.min(2.5, Math.round((z + 0.25) * 100) / 100));
-      this.renderCurrentPage();
     }
   }
 
   zoomOut(): void {
     if (this.zoomFactor() > 0.5) {
       this.zoomFactor.update((z) => Math.max(0.5, Math.round((z - 0.25) * 100) / 100));
-      this.renderCurrentPage();
     }
   }
 
   resetZoom(): void {
     if (this.zoomFactor() !== 1.0) {
       this.zoomFactor.set(1.0);
-      this.renderCurrentPage();
     }
   }
 }

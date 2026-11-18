@@ -98,6 +98,7 @@ export class AiQuestionExtractionModalComponent {
   readonly pdfViewer = viewChild<PdfPageViewerComponent>(PdfPageViewerComponent);
 
   // Page Scope & Range State
+  readonly maxExtractablePages = 3;
   readonly pageScopeMode = signal<PageScopeMode>('CURRENT_PAGE');
   readonly rangeStartPage = signal<number>(1);
   readonly rangeEndPage = signal<number>(1);
@@ -109,12 +110,44 @@ export class AiQuestionExtractionModalComponent {
     return Math.max(1, end - start + 1);
   });
 
+  readonly minRangeEndPage = computed(() => {
+    const total = Math.max(1, this.totalPages());
+    return Math.max(1, Math.min(total, this.rangeStartPage()));
+  });
+
+  readonly maxRangeEndPage = computed(() => {
+    const total = Math.max(1, this.totalPages());
+    const start = this.minRangeEndPage();
+    return Math.min(total, start + this.maxExtractablePages - 1);
+  });
+
   readonly isRangeValid = computed(() => {
     if (this.pageScopeMode() === 'CURRENT_PAGE') return true;
     const total = Math.max(1, this.totalPages());
     const start = this.rangeStartPage();
     const end = this.rangeEndPage();
-    return start >= 1 && start <= total && end >= start && end <= total && (end - start + 1) <= 10;
+    return (
+      start >= 1 &&
+      start <= total &&
+      end >= start &&
+      end <= total &&
+      end - start + 1 <= this.maxExtractablePages
+    );
+  });
+
+  readonly rangeValidationError = computed(() => {
+    if (this.pageScopeMode() === 'CURRENT_PAGE') return null;
+    const total = Math.max(1, this.totalPages());
+    const start = this.rangeStartPage();
+    const end = this.rangeEndPage();
+    const isAr = this.langService.isArabic();
+    if (start < 1 || start > total || end < start || end > total) {
+      return isAr ? `(النطاق من 1 إلى ${total})` : `(Range must be 1 - ${total})`;
+    }
+    if (end - start + 1 > this.maxExtractablePages) {
+      return isAr ? `(أقصى حد ${this.maxExtractablePages} صفحات)` : `(Max ${this.maxExtractablePages} pages)`;
+    }
+    return null;
   });
 
   private readonly fallbackDraftId = 'draft_asm_' + Math.random().toString(36).substring(2, 9);
@@ -170,7 +203,15 @@ export class AiQuestionExtractionModalComponent {
     }
   }
 
-  onStartPageChanged(rawVal: any): void {
+  onStartPageInput(rawVal: any): void {
+    const str = String(rawVal ?? '').trim();
+    if (!str) return;
+    const val = parseInt(str, 10);
+    if (isNaN(val)) return;
+    this.rangeStartPage.set(val);
+  }
+
+  onStartPageChanged(rawVal: any, inputEl?: HTMLInputElement): void {
     const total = Math.max(1, this.totalPages());
     let val = parseInt(rawVal, 10);
     if (isNaN(val)) val = 1;
@@ -179,20 +220,28 @@ export class AiQuestionExtractionModalComponent {
     if (this.rangeEndPage() < val) {
       this.rangeEndPage.set(val);
     }
+    if (inputEl) {
+      inputEl.value = String(val);
+    }
   }
 
-  onEndPageChanged(rawVal: any): void {
+  onEndPageInput(rawVal: any): void {
+    const str = String(rawVal ?? '').trim();
+    if (!str) return;
+    const val = parseInt(str, 10);
+    if (isNaN(val)) return;
+    this.rangeEndPage.set(val);
+  }
+
+  onEndPageChanged(rawVal: any, inputEl?: HTMLInputElement): void {
     const total = Math.max(1, this.totalPages());
     let val = parseInt(rawVal, 10);
     if (isNaN(val)) val = this.rangeStartPage();
     val = Math.max(this.rangeStartPage(), Math.min(total, val));
     this.rangeEndPage.set(val);
-  }
-
-  applyPresetCount(count: number): void {
-    const total = Math.max(1, this.totalPages());
-    const start = this.rangeStartPage();
-    this.rangeEndPage.set(Math.min(total, start + count - 1));
+    if (inputEl) {
+      inputEl.value = String(val);
+    }
   }
 
   onPdfPageChanged(page: number): void {
@@ -325,8 +374,14 @@ export class AiQuestionExtractionModalComponent {
       this.totalPages.set(session.totalPages);
     }
     if (session.lastSelectedRange) {
-      this.rangeStartPage.set(session.lastSelectedRange.startPage);
-      this.rangeEndPage.set(session.lastSelectedRange.endPage);
+      const maxTotal = session.totalPages || Math.max(this.totalPages(), session.lastSelectedRange.endPage, session.pageNumber || 1);
+      const clampedStart = Math.max(1, Math.min(maxTotal, session.lastSelectedRange.startPage));
+      const clampedEnd = Math.max(
+        clampedStart,
+        Math.min(maxTotal, clampedStart + this.maxExtractablePages - 1, session.lastSelectedRange.endPage)
+      );
+      this.rangeStartPage.set(clampedStart);
+      this.rangeEndPage.set(clampedEnd);
     }
 
     if (session.file instanceof File) {
@@ -371,8 +426,13 @@ export class AiQuestionExtractionModalComponent {
     if (list.length === 0) return;
 
     const imageFiles = list.filter((f) => f.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp)$/i.test(f.name));
-    if (list.length > 1 && imageFiles.length > 0) {
+    if (imageFiles.length > 1) {
       this.processMultipleImages(imageFiles);
+      return;
+    }
+
+    if (list.length > 1 && imageFiles.length === 1) {
+      this.handleSelectedFile(imageFiles[0]);
       return;
     }
 
@@ -382,10 +442,19 @@ export class AiQuestionExtractionModalComponent {
   handleSelectedFile(file: File): void {
     this.errorMessage.set(null);
     this.uploadedImages.set([]);
+    const isDifferentFile = this.fileName() !== file.name;
+    if (isDifferentFile) {
+      this.pageScopeMode.set('CURRENT_PAGE');
+      this.rangeStartPage.set(1);
+      this.rangeEndPage.set(1);
+      this.currentDataUrl.set(null);
+      this.currentCanvas = null;
+      this.totalPages.set(1);
+    }
     const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), file.name);
     if (storedPage && storedPage >= 1) {
       this.currentPageNumber.set(storedPage);
-    } else if (this.fileName() !== file.name) {
+    } else if (isDifferentFile) {
       this.currentPageNumber.set(1);
     }
     this.uploadedFile.set(file);
@@ -476,7 +545,7 @@ export class AiQuestionExtractionModalComponent {
       this.currentDataUrl.set(items[0].dataUrl);
       this.pageScopeMode.set('PAGE_RANGE');
       this.rangeStartPage.set(1);
-      this.rangeEndPage.set(items.length);
+      this.rangeEndPage.set(Math.min(items.length, this.maxExtractablePages));
       this.currentStep.set('PREVIEW_AND_PAGE');
       this.emitFileSession();
     } catch {
@@ -537,6 +606,16 @@ export class AiQuestionExtractionModalComponent {
     this.currentDataUrl.set(event.dataUrl);
     this.currentPageNumber.set(event.pageNumber);
     this.totalPages.set(event.totalPages);
+    const total = Math.max(1, event.totalPages);
+    if (this.rangeStartPage() > total || this.rangeEndPage() > total) {
+      const clampedStart = Math.max(1, Math.min(total, this.rangeStartPage()));
+      const clampedEnd = Math.max(
+        clampedStart,
+        Math.min(total, clampedStart + this.maxExtractablePages - 1, this.rangeEndPage())
+      );
+      this.rangeStartPage.set(clampedStart);
+      this.rangeEndPage.set(clampedEnd);
+    }
     this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), event.pageNumber);
     this.emitFileSession();
   }
@@ -647,10 +726,16 @@ export class AiQuestionExtractionModalComponent {
     }
 
     if (!this.isRangeValid()) {
+      const total = Math.max(1, this.totalPages());
+      const countExceeds = this.rangeEndPage() - this.rangeStartPage() + 1 > this.maxExtractablePages;
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'نطاق الصفحات غير صالح أو يتجاوز 10 صفحات كحد أقصى.'
-          : 'Invalid page range or exceeds 10 pages maximum.'
+          ? (countExceeds
+              ? `نطاق الصفحات يتجاوز ${this.maxExtractablePages} صفحات كحد أقصى.`
+              : `نطاق الصفحات غير صالح (يجب أن يكون بين 1 و ${total} وبحد أقصى ${this.maxExtractablePages} صفحات).`)
+          : (countExceeds
+              ? `Page range exceeds ${this.maxExtractablePages} pages maximum.`
+              : `Invalid page range (must be between 1 and ${total}, max ${this.maxExtractablePages} pages).`)
       );
       return;
     }
@@ -663,6 +748,15 @@ export class AiQuestionExtractionModalComponent {
       for (let p = this.rangeStartPage(); p <= this.rangeEndPage(); p++) {
         targetPages.push(p);
       }
+    }
+
+    if (targetPages.length > this.maxExtractablePages) {
+      this.errorMessage.set(
+        this.langService.isArabic()
+          ? `أقصى حد ${this.maxExtractablePages} صفحات للاستخراج في المرة الواحدة.`
+          : `Maximum ${this.maxExtractablePages} pages can be extracted at once.`
+      );
+      return;
     }
 
     this.isProcessing.set(true);

@@ -549,31 +549,154 @@ describe('AiQuestionExtractionModalComponent', () => {
       expect(component.isRangeValid()).toBeTrue();
     });
 
-    it('should validate page range boundaries and clamp appropriately', () => {
+    it('should validate page range boundaries with maximum 3 pages and clamp appropriately', () => {
       component.setPageScopeMode('PAGE_RANGE');
       component.onStartPageChanged(8);
       expect(component.rangeStartPage()).toBe(8);
       expect(component.rangeEndPage()).toBe(8);
+      expect(component.maxRangeEndPage()).toBe(10);
 
-      component.onEndPageChanged(12);
-      expect(component.rangeEndPage()).toBe(12);
-      expect(component.selectedPageCount()).toBe(5);
+      // 3 pages (8, 9, 10) is valid
+      component.onEndPageChanged(10);
+      expect(component.rangeEndPage()).toBe(10);
+      expect(component.selectedPageCount()).toBe(3);
       expect(component.isRangeValid()).toBeTrue();
 
-      component.onEndPageChanged(19);
+      // 4 pages (8..11) exceeds maximum 3 pages
+      component.onEndPageChanged(11);
+      expect(component.rangeEndPage()).toBe(11);
+      expect(component.selectedPageCount()).toBe(4);
       expect(component.isRangeValid()).toBeFalse();
+
+      // Out-of-bounds clamping on blur/change
+      component.onEndPageChanged(99);
+      expect(component.rangeEndPage()).toBe(20);
+      expect(component.isRangeValid()).toBeFalse();
+
+      component.onEndPageChanged(NaN);
+      expect(component.rangeEndPage()).toBe(8);
+      expect(component.isRangeValid()).toBeTrue();
     });
 
-    it('should apply preset counts correctly', () => {
+    it('should remove +1/+3/+5 preset buttons, remove star icon from extract button, use compact preview action buttons, and enforce max 3 pages in UI', async () => {
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('assessmentId', 'asm_ui_check');
+      fixture.detectChanges();
+
+      component.fileType.set('pdf');
+      component.totalPages.set(19);
+      component.currentPageNumber.set(6);
+      component.currentDataUrl.set('data:image/webp;base64,mockpage');
+      component.currentStep.set('PREVIEW_AND_PAGE');
       component.setPageScopeMode('PAGE_RANGE');
       component.rangeStartPage.set(3);
-      component.applyPresetCount(3);
+      component.rangeEndPage.set(5);
+      fixture.detectChanges();
+
+      const hostEl = fixture.nativeElement as HTMLElement;
+
+      // 1. +1, +3, +5 preset buttons must not exist
+      expect(hostEl.querySelector('[data-testid="preset-1-btn"]')).toBeNull();
+      expect(hostEl.querySelector('[data-testid="preset-3-btn"]')).toBeNull();
+      expect(hostEl.querySelector('[data-testid="preset-5-btn"]')).toBeNull();
+      const rangeBar = hostEl.querySelector('[data-testid="page-range-controls"]') as HTMLElement;
+      expect(rangeBar).toBeTruthy();
+      expect(rangeBar.querySelectorAll('button').length).toBe(0);
+
+      // 2. Extract button must not contain any star/sparkle icon
+      const extractBtn = hostEl.querySelector('[data-testid="start-ai-extraction-btn"]') as HTMLButtonElement;
+      expect(extractBtn).toBeTruthy();
+      expect(extractBtn.querySelector('app-icon')).toBeNull();
+      expect(extractBtn.querySelector('svg')).toBeNull();
+      expect(extractBtn.disabled).toBeFalse();
+
+      // 3. Preview action buttons container wraps cleanly on mobile, stays single-row on desktop, and buttons use compact styling
+      const actionsContainer = hostEl.querySelector('[data-testid="preview-action-buttons"]') as HTMLElement;
+      expect(actionsContainer.classList.contains('flex-wrap')).toBeTrue();
+      expect(actionsContainer.classList.contains('md:flex-nowrap')).toBeTrue();
+      const manualShortcutBtn = hostEl.querySelector('[data-testid="manual-crop-shortcut-btn"]') as HTMLButtonElement;
+      expect(manualShortcutBtn.classList.contains('whitespace-nowrap')).toBeTrue();
+      expect(manualShortcutBtn.classList.contains('py-1.5')).toBeTrue();
+      expect(extractBtn.classList.contains('whitespace-nowrap')).toBeTrue();
+      expect(extractBtn.classList.contains('py-1.5')).toBeTrue();
+
+      // 4. Exceeding 3 pages (e.g. typing 6 -> pages 3..6 = 4 pages) disables extract button and shows max 3 error
+      const endInput = hostEl.querySelector('[data-testid="range-end-input"]') as HTMLInputElement;
+      expect(endInput.getAttribute('max')).toBe('5');
+      endInput.value = '6';
+      endInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(component.selectedPageCount()).toBe(4);
+      expect(component.isRangeValid()).toBeFalse();
+      expect(extractBtn.disabled).toBeTrue();
+      const limitError = hostEl.querySelector('[data-testid="page-range-limit-error"]') as HTMLElement;
+      expect(limitError).toBeTruthy();
+      expect(limitError.textContent).toContain('3');
+
+      // 5. Calling startAiExtraction directly when range > 3 pages blocks HTTP and shows 3-page error
+      await component.startAiExtraction();
+      httpTestingController.expectNone('/api/v1/assessments/ai-extract-questions');
+      expect(component.errorMessage()).toContain('3');
+
+      // 6. Out-of-bounds or inverted range (e.g. start > end) shows accurate range bounds error rather than max-3 error
+      const startInput = hostEl.querySelector('[data-testid="range-start-input"]') as HTMLInputElement;
+      startInput.value = '8';
+      startInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(component.isRangeValid()).toBeFalse();
+      expect(extractBtn.disabled).toBeTrue();
+      const boundsError = hostEl.querySelector('[data-testid="page-range-limit-error"]') as HTMLElement;
+      expect(boundsError.textContent).toContain('19');
+      expect(boundsError.textContent).not.toContain('أقصى حد 3');
+    });
+
+    it('should clamp cached session range (even without totalPages), reset stale range on file switch, and handle mixed file drop', async () => {
+      component.pageScopeMode.set('PAGE_RANGE');
+      (component as any).restoreCachedSession({
+        fileName: 'big_exam.pdf',
+        fileType: 'pdf',
+        file: null,
+        pageNumber: 3,
+        canvas: null,
+        dataUrl: 'data:image/webp;base64,mock',
+        lastSelectedRange: { startPage: 3, endPage: 8 }
+      });
+
+      expect(component.rangeStartPage()).toBe(3);
       expect(component.rangeEndPage()).toBe(5);
       expect(component.selectedPageCount()).toBe(3);
+      expect(component.isRangeValid()).toBeTrue();
 
-      component.applyPresetCount(5);
-      expect(component.rangeEndPage()).toBe(7);
-      expect(component.selectedPageCount()).toBe(5);
+      // Switching to a different smaller PDF must reset stale range state
+      const smallerPdf = new File(['%PDF-1.4 small'], 'small_5p.pdf', { type: 'application/pdf' });
+      component.handleSelectedFile(smallerPdf);
+      expect(component.pageScopeMode()).toBe('CURRENT_PAGE');
+      expect(component.rangeStartPage()).toBe(1);
+      expect(component.rangeEndPage()).toBe(1);
+
+      const c = document.createElement('canvas');
+      c.width = 10;
+      c.height = 10;
+      spyOn<any>(component, 'loadImageFileToCanvas').and.resolveTo({
+        fileName: 'page.png',
+        canvas: c,
+        dataUrl: 'data:image/webp;base64,img'
+      });
+
+      const imgs = [1, 2, 3, 4, 5].map((i) => new File(['x'], `p${i}.png`, { type: 'image/png' }));
+      await (component as any).processMultipleImages(imgs);
+      expect(component.totalPages()).toBe(5);
+      expect(component.rangeStartPage()).toBe(1);
+      expect(component.rangeEndPage()).toBe(3);
+      expect(component.isRangeValid()).toBeTrue();
+
+      // Dropping 1 image + 1 unrelated file should use single-image path (no "(+0 صور)")
+      const singleImg = new File(['x'], 'only_one.png', { type: 'image/png' });
+      const ignoredTxt = new File(['y'], 'notes.txt', { type: 'text/plain' });
+      spyOn(component, 'handleSelectedFile');
+      component.handleSelectedFiles([singleImg, ignoredTxt]);
+      expect(component.handleSelectedFile).toHaveBeenCalledWith(singleImg);
     });
 
     it('should sequentially extract questions from multiple pages in range', async () => {

@@ -359,8 +359,8 @@
         <!-- ============================================== -->
         @if (currentStep() === 'PREVIEW_AND_PAGE') {
           <div class="space-y-2.5 animate-fade-in">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-surface-card border border-surface-border">
-              <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-surface-card border border-surface-border">
+              <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
                 <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-500 font-bold text-xs">
                   {{ langService.isArabic() ? ('صفحة ' + currentPageNumber() + ' من ' + totalPages()) : ('Page ' + currentPageNumber() + ' of ' + totalPages()) }}
                 </span>
@@ -378,13 +378,13 @@
                 </span>
               </div>
 
-              <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="flex flex-wrap md:flex-nowrap items-center gap-1.5 w-full md:w-auto md:justify-end shrink-0" data-testid="preview-action-buttons">
                 <button
                   type="button"
                   (click)="goToStep('UPLOAD_AND_SELECT')"
-                  class="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  class="flex-auto sm:flex-initial px-2.5 py-1.5 rounded-xl border border-surface-border hover:bg-surface-bg text-text-secondary font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 text-[11px] whitespace-nowrap"
                 >
-                  <app-icon name="rotate-ccw" [size]="13" />
+                  <app-icon name="rotate-ccw" [size]="12" />
                   <span>{{ langService.isArabic() ? 'تغيير الملف' : 'Change File' }}</span>
                 </button>
 
@@ -393,9 +393,9 @@
                     type="button"
                     (click)="useFileForManualSlicing()"
                     [disabled]="isProcessing() || !currentDataUrl()"
-                    class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 text-xs"
+                    class="flex-auto sm:flex-initial px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 text-[11px] whitespace-nowrap"
                   >
-                    <app-icon name="image" [size]="14" />
+                    <app-icon name="image" [size]="13" />
                     <span>
                       {{ langService.isArabic() ? ('قص يدوي لصفحة ' + currentPageNumber()) : ('Crop from Page ' + currentPageNumber()) }}
                     </span>
@@ -405,10 +405,11 @@
                     type="button"
                     (click)="useFileForManualSlicing()"
                     [disabled]="isProcessing() || !currentDataUrl()"
-                    class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
+                    class="flex-auto sm:flex-initial px-2.5 py-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm text-[11px] whitespace-nowrap disabled:opacity-50"
                     [title]="langService.isArabic() ? 'نقل الصفحة للقص اليدوي للمسائل' : 'Transfer page for manual cropping'"
+                    data-testid="manual-crop-shortcut-btn"
                   >
-                    <app-icon name="image" [size]="14" />
+                    <app-icon name="image" [size]="13" />
                     <span>
                       {{ langService.isArabic() ? 'قص يدوي (بدون AI) ←' : 'Manual Crop (No AI) →' }}
                     </span>
@@ -418,15 +419,18 @@
                     type="button"
                     (click)="startAiExtraction()"
                     [disabled]="isProcessing() || !currentDataUrl() || !isRangeValid()"
-                    class="flex-1 sm:flex-initial px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 text-xs"
+                    class="flex-auto sm:flex-initial px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-brand-primary hover:opacity-95 text-white font-bold transition-all cursor-pointer inline-flex items-center justify-center shadow-sm disabled:opacity-50 text-[11px] whitespace-nowrap"
                     data-testid="start-ai-extraction-btn"
                   >
-                    <app-icon name="sparkles" [size]="14" />
                     <span>
                       @if (pageScopeMode() === 'PAGE_RANGE' && totalPages() > 1) {
-                        {{ langService.isArabic()
-                            ? ('استخراج ' + selectedPageCount() + ' صفحات (ص ' + rangeStartPage() + ' - ' + rangeEndPage() + ')')
-                            : ('Extract ' + selectedPageCount() + ' Pages (p. ' + rangeStartPage() + ' - ' + rangeEndPage() + ')') }}
+                        @if (rangeEndPage() < rangeStartPage()) {
+                          {{ langService.isArabic() ? 'استخراج الصفحات' : 'Extract Pages' }}
+                        } @else {
+                          {{ langService.isArabic()
+                              ? (selectedPageCount() === 1 ? ('استخراج صفحة ' + rangeStartPage()) : ('استخراج ' + selectedPageCount() + ' صفحات (ص ' + rangeStartPage() + ' - ' + rangeEndPage() + ')'))
+                              : (selectedPageCount() === 1 ? ('Extract Page ' + rangeStartPage()) : ('Extract ' + selectedPageCount() + ' Pages (p. ' + rangeStartPage() + ' - ' + rangeEndPage() + ')')) }}
+                        }
                       } @else {
                         {{ langService.isArabic() ? ('استخراج صفحة ' + currentPageNumber()) : ('Extract Page ' + currentPageNumber()) }}
                       }
@@ -439,7 +443,7 @@
             <!-- Multi-Page Extraction Scope Controls -->
             @if (totalPages() > 1 && extractionMode() !== 'MANUAL_CROP') {
               <div class="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-surface-card border border-surface-border flex flex-wrap items-center justify-between gap-2.5 text-xs" data-testid="page-scope-bar">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <span class="font-bold text-text-secondary text-xs">
                     {{ langService.isArabic() ? 'نطاق الاستخراج:' : 'Extraction Scope:' }}
                   </span>
@@ -450,7 +454,7 @@
                       [class.bg-brand-primary]="pageScopeMode() === 'CURRENT_PAGE'"
                       [class.text-white]="pageScopeMode() === 'CURRENT_PAGE'"
                       [class.text-text-secondary]="pageScopeMode() !== 'CURRENT_PAGE'"
-                      class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer text-xs"
+                      class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer text-[11px] sm:text-xs whitespace-nowrap"
                       data-testid="scope-current-page-btn"
                     >
                       {{ langService.isArabic() ? 'الصفحة الحالية' : 'Current Page' }}
@@ -461,7 +465,7 @@
                       [class.bg-brand-primary]="pageScopeMode() === 'PAGE_RANGE'"
                       [class.text-white]="pageScopeMode() === 'PAGE_RANGE'"
                       [class.text-text-secondary]="pageScopeMode() !== 'PAGE_RANGE'"
-                      class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer text-xs"
+                      class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer text-[11px] sm:text-xs whitespace-nowrap"
                       data-testid="scope-page-range-btn"
                     >
                       {{ langService.isArabic() ? 'تحديد عدة صفحات' : 'Page Range' }}
@@ -476,11 +480,14 @@
                         {{ langService.isArabic() ? 'من ص:' : 'From:' }}
                       </label>
                       <input
+                        #rangeStartInput
                         type="number"
                         [min]="1"
                         [max]="totalPages()"
                         [value]="rangeStartPage()"
-                        (change)="onStartPageChanged($any($event.target).value)"
+                        (input)="onStartPageInput($any($event.target).value)"
+                        (change)="onStartPageChanged($any($event.target).value, rangeStartInput)"
+                        (blur)="onStartPageChanged($any($event.target).value, rangeStartInput)"
                         class="w-14 px-2 py-1 rounded-lg border border-surface-border bg-surface-bg text-center font-bold text-text-primary text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
                         data-testid="range-start-input"
                       />
@@ -491,50 +498,26 @@
                         {{ langService.isArabic() ? 'إلى ص:' : 'To:' }}
                       </label>
                       <input
+                        #rangeEndInput
                         type="number"
-                        [min]="rangeStartPage()"
-                        [max]="totalPages()"
+                        [min]="minRangeEndPage()"
+                        [max]="maxRangeEndPage()"
                         [value]="rangeEndPage()"
-                        (change)="onEndPageChanged($any($event.target).value)"
+                        (input)="onEndPageInput($any($event.target).value)"
+                        (change)="onEndPageChanged($any($event.target).value, rangeEndInput)"
+                        (blur)="onEndPageChanged($any($event.target).value, rangeEndInput)"
                         class="w-14 px-2 py-1 rounded-lg border border-surface-border bg-surface-bg text-center font-bold text-text-primary text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
                         data-testid="range-end-input"
                       />
                     </div>
 
-                    <div class="flex items-center gap-1">
-                      <button
-                        type="button"
-                        (click)="applyPresetCount(1)"
-                        class="px-2 py-1 rounded-lg border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary text-[11px] font-bold transition-all cursor-pointer"
-                        data-testid="preset-1-btn"
-                      >
-                        +1
-                      </button>
-                      <button
-                        type="button"
-                        (click)="applyPresetCount(3)"
-                        class="px-2 py-1 rounded-lg border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary text-[11px] font-bold transition-all cursor-pointer"
-                        data-testid="preset-3-btn"
-                      >
-                        +3
-                      </button>
-                      <button
-                        type="button"
-                        (click)="applyPresetCount(5)"
-                        class="px-2 py-1 rounded-lg border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary text-[11px] font-bold transition-all cursor-pointer"
-                        data-testid="preset-5-btn"
-                      >
-                        +5
-                      </button>
-                    </div>
-
                     <span class="px-2.5 py-1 rounded-lg bg-brand-primary/10 text-brand-primary font-bold text-[11px]">
-                      {{ langService.isArabic() ? (selectedPageCount() + ' صفحات') : (selectedPageCount() + ' pages') }}
+                      {{ langService.isArabic() ? (selectedPageCount() === 1 ? '1 صفحة' : (selectedPageCount() + ' صفحات')) : (selectedPageCount() === 1 ? '1 page' : (selectedPageCount() + ' pages')) }}
                     </span>
 
-                    @if (!isRangeValid()) {
-                      <span class="text-rose-500 font-bold text-[11px]">
-                        {{ langService.isArabic() ? '(أقصى حد 10 صفحات)' : '(Max 10 pages)' }}
+                    @if (rangeValidationError(); as rangeErr) {
+                      <span class="text-rose-500 font-bold text-[11px]" data-testid="page-range-limit-error">
+                        {{ rangeErr }}
                       </span>
                     }
                   </div>
