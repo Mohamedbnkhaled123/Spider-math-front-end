@@ -53,7 +53,7 @@
   }
 
   <!-- 1. Section Header & Grade-Scoped Filters -->
-  <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4">
+  <div class="p-4 sm:p-6 rounded-3xl spider-rim-glass-card shadow-sm space-y-4">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight flex items-center gap-2">
@@ -321,91 +321,100 @@
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         @for (item of paginatedAssessments(); track item.id) {
-          <div class="p-5 rounded-3xl spider-rim-glass-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+          <div class="p-4 sm:p-5 rounded-3xl spider-rim-glass-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 min-w-0">
             
-            <div class="space-y-3">
-              <!-- Top Badges -->
-              <div class="flex items-center justify-between gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                  {{ item.gradeLevel }}
-                </span>
+            <div class="space-y-3 min-w-0">
+              <!-- Top Badges: Split header status & feature badges cleanly so narrow tablet/mobile cards never clip or squish pills -->
+              <div class="space-y-2 min-w-0">
+                <!-- Row 1: Grade Level + Pricing & Publication Status -->
+                <div class="flex flex-wrap items-center justify-between gap-2 min-w-0" data-testid="assessment-card-header-badges">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 whitespace-nowrap shrink-0">
+                    {{ item.gradeLevel }}
+                  </span>
 
-                <div class="flex items-center gap-1.5">
-                  @if (item.calculatorType === 'DESMOS') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" [title]="langService.isArabic() ? 'آلة ديسموس البيانية مفعلة' : 'Desmos Graphing Calculator Active'">
-                      {{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}
-                    </span>
-                  }
-                  @if (item.referenceSheetUrl) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1" [title]="langService.isArabic() ? 'ورقة قوانين مرفقة' : 'Reference Sheet Attached'">
-                      <app-icon name="file-text" [size]="10" />
-                      <span>{{ langService.isArabic() ? 'ورقة قوانين' : 'Reference Sheet' }}</span>
-                    </span>
-                  }
-                  @if (item.isPlacementTest) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20" [title]="langService.isArabic() ? 'اختبار تحديد مستوى' : 'Placement Test'">
-                      <span>{{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}</span>
-                    </span>
-                  }
-                  @if (item.assessmentType === 'HOMEWORK') {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 flex items-center gap-1" [title]="langService.isArabic() ? 'واجب منزلي' : 'Homework'">
-                      <app-icon name="edit" [size]="10" />
-                      <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
-                    </span>
-                  }
-                  @if (item.assessmentType !== 'HOMEWORK') {
-                    @if (item.isFree) {
-                      <span
-                        (click)="toggleFree(item, $event)"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20"
-                        [title]="langService.isArabic() ? 'اضغط للتحويل إلى خاص' : 'Click to make private'"
-                      >
-                        <app-icon name="unlock" [size]="12" />
-                        <span>مجاني</span>
+                  <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                    @if (item.assessmentType !== 'HOMEWORK') {
+                      @if (item.isFree) {
+                        <span
+                          (click)="toggleFree(item, $event)"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20 whitespace-nowrap shrink-0 transition-colors"
+                          [title]="langService.isArabic() ? 'اضغط للتحويل إلى خاص' : 'Click to make private'"
+                        >
+                          <app-icon name="unlock" [size]="10" />
+                          <span>{{ langService.isArabic() ? 'مجاني' : 'Free' }}</span>
+                        </span>
+                      } @else {
+                        <span
+                          (click)="toggleFree(item, $event)"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted border border-surface-border cursor-pointer hover:bg-surface-border whitespace-nowrap shrink-0 transition-colors"
+                          [title]="langService.isArabic() ? 'اضغط للتحويل إلى مجاني' : 'Click to make free'"
+                        >
+                          <app-icon name="lock" [size]="10" />
+                          <span>{{ langService.isArabic() ? 'خاص' : 'Private' }}</span>
+                        </span>
+                      }
+                    }
+                    @if (item.isPublished) {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 whitespace-nowrap shrink-0">
+                        <app-icon name="check-circle" [size]="10" />
+                        <span>{{ langService.isArabic() ? 'منشور' : 'Published' }}</span>
                       </span>
                     } @else {
-                      <span
-                        (click)="toggleFree(item, $event)"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-surface-bg text-text-muted border border-surface-border cursor-pointer hover:bg-surface-border"
-                        [title]="langService.isArabic() ? 'اضغط للتحويل إلى مجاني' : 'Click to make free'"
-                      >
-                        <app-icon name="lock" [size]="12" />
-                        <span>خاص</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted border border-surface-border whitespace-nowrap shrink-0">
+                        {{ langService.isArabic() ? 'مسودة' : 'Draft' }}
                       </span>
                     }
-                  }
-                  @if (item.isPublished) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
-                      <app-icon name="check-circle" [size]="10" />
-                      <span>{{ langService.isArabic() ? 'منشور' : 'Published' }}</span>
-                    </span>
-                  } @else {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-muted border border-surface-border">
-                      {{ langService.isArabic() ? 'مسودة' : 'Draft' }}
-                    </span>
-                  }
+                  </div>
                 </div>
+
+                <!-- Row 2: Optional Feature Badges (Desmos, Reference Sheet, Placement, Homework) -->
+                @if (item.calculatorType === 'DESMOS' || item.referenceSheetUrl || item.isPlacementTest || item.assessmentType === 'HOMEWORK') {
+                  <div class="flex flex-wrap items-center gap-1.5 min-w-0" data-testid="assessment-card-feature-badges">
+                    @if (item.calculatorType === 'DESMOS') {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 whitespace-nowrap shrink-0" [title]="langService.isArabic() ? 'آلة ديسموس البيانية مفعلة' : 'Desmos Graphing Calculator Active'">
+                        <span>{{ langService.isArabic() ? 'ديسموس' : 'Desmos' }}</span>
+                      </span>
+                    }
+                    @if (item.referenceSheetUrl) {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap shrink-0" [title]="langService.isArabic() ? 'ورقة قوانين مرفقة' : 'Reference Sheet Attached'">
+                        <app-icon name="file-text" [size]="10" />
+                        <span>{{ langService.isArabic() ? 'ورقة قوانين' : 'Reference Sheet' }}</span>
+                      </span>
+                    }
+                    @if (item.isPlacementTest) {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 whitespace-nowrap shrink-0" [title]="langService.isArabic() ? 'اختبار تحديد مستوى' : 'Placement Test'">
+                        <span>{{ langService.isArabic() ? 'تحديد مستوى' : 'Placement' }}</span>
+                      </span>
+                    }
+                    @if (item.assessmentType === 'HOMEWORK') {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 whitespace-nowrap shrink-0" [title]="langService.isArabic() ? 'واجب منزلي' : 'Homework'">
+                        <app-icon name="edit" [size]="10" />
+                        <span>{{ langService.isArabic() ? 'واجب منزلي' : 'Homework' }}</span>
+                      </span>
+                    }
+                  </div>
+                }
               </div>
 
               <!-- Title & Meta -->
-              <div>
-                <h4 class="text-sm font-bold text-text-primary line-clamp-2">
+              <div class="min-w-0">
+                <h4 class="text-sm font-bold text-text-primary line-clamp-2 break-words">
                   {{ item.titleAr }}
                 </h4>
                 @if (item.titleEn && item.titleEn !== item.titleAr) {
-                  <p class="text-xs text-text-muted mt-0.5 font-mono">
+                  <p class="text-xs text-text-muted mt-0.5 font-mono break-words">
                     {{ item.titleEn }}
                   </p>
                 }
                 @if (item.unitTitle || item.lectureTitle) {
                   <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
                     @if (item.unitTitle) {
-                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 truncate max-w-[180px]" [title]="item.unitTitle">
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 truncate max-w-full sm:max-w-[180px]" [title]="item.unitTitle">
                         {{ item.unitTitle }}
                       </span>
                     }
                     @if (item.lectureTitle) {
-                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 truncate max-w-[180px]" [title]="item.lectureTitle">
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 truncate max-w-full sm:max-w-[180px]" [title]="item.lectureTitle">
                         {{ item.lectureTitle }}
                       </span>
                     }
@@ -414,20 +423,20 @@
               </div>
 
               <!-- Metric Pills -->
-              <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-surface-border/60 text-center">
-                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+              <div class="grid grid-cols-4 gap-1 sm:gap-1.5 pt-2 border-t border-surface-border/60 text-center">
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50 min-w-0">
                   <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الأسئلة' : 'Questions' }}</span>
                   <span class="text-xs font-bold text-text-primary font-mono">{{ item.questions.length }}</span>
                 </div>
-                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50 min-w-0">
                   <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الدرجة' : 'Score' }}</span>
                   <span class="text-xs font-bold text-emerald-500 font-mono">{{ item.totalPoints }} {{ langService.isArabic() ? 'ن' : 'Pts' }}</span>
                 </div>
-                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50 min-w-0">
                   <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'الزمن' : 'Time' }}</span>
                   <span class="text-xs font-bold text-text-primary font-mono">{{ item.durationMinutes }} {{ langService.isArabic() ? 'د' : 'min' }}</span>
                 </div>
-                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50">
+                <div class="p-1.5 rounded-xl bg-surface-bg border border-surface-border/50 min-w-0">
                   <span class="text-[9px] text-text-muted block">{{ langService.isArabic() ? 'النجاح' : 'Pass' }}</span>
                   <span class="text-xs font-bold text-brand-primary font-mono">{{ item.passPercentage }}%</span>
                 </div>
@@ -485,11 +494,11 @@
                 <span>{{ langService.isArabic() ? 'معاينة الامتحان' : 'Preview Assessment' }}</span>
               </button>
 
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   (click)="openEditor(item, 'SETTINGS')"
-                  class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-text-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  class="flex-1 min-w-[125px] px-2.5 py-2 rounded-xl text-xs font-bold border border-surface-border hover:border-brand-primary bg-surface-bg hover:bg-brand-primary/5 text-text-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
                   [title]="langService.isArabic() ? 'تعديل كافة إعدادات الامتحان والجدولة' : 'Edit assessment settings & schedule'"
                 >
                   <app-icon name="settings" [size]="13" className="text-brand-primary" />
@@ -499,7 +508,7 @@
                 <button
                   type="button"
                   (click)="openEditor(item, 'QUESTIONS')"
-                  class="flex-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  class="flex-1 min-w-[125px] px-2.5 py-2 rounded-xl text-xs font-bold bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary transition-all flex items-center justify-center gap-1 cursor-pointer"
                   [title]="langService.isArabic() ? 'إدارة وبنك أسئلة هذا الامتحان' : 'Manage questions bank for this assessment'"
                 >
                   <app-icon name="edit" [size]="13" />

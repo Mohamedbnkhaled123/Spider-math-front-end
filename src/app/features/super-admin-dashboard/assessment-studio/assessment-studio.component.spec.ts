@@ -1222,4 +1222,54 @@ describe('AssessmentStudioComponent', () => {
       await component.draftService.deleteDraft(asmId);
     });
   });
+
+  describe('Responsive Assessment Card Badges', () => {
+    it('should split status and feature badges into wrapping flex-wrap rows with whitespace-nowrap pills', () => {
+      const fullBadgeAsm: AssessmentItem = {
+        ...sampleAssessment,
+        id: 'asm_sat_full_badges',
+        curriculum: 'AMERICAN',
+        gradeLevel: 'SAT_MATH',
+        titleAr: 'OCT A',
+        calculatorType: 'DESMOS',
+        referenceSheetUrl: 'https://example.com/ref.pdf',
+        isPlacementTest: true,
+        isFree: true,
+        isPublished: true
+      };
+
+      component.selectedCurriculum.set('AMERICAN');
+      component.selectedGrade.set('SAT_MATH');
+      component.assessmentsList.set([fullBadgeAsm]);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const headerRow = hostEl.querySelector('[data-testid="assessment-card-header-badges"]') as HTMLElement | null;
+      const featureRow = hostEl.querySelector('[data-testid="assessment-card-feature-badges"]') as HTMLElement | null;
+
+      expect(headerRow).toBeTruthy();
+      expect(headerRow?.classList.contains('flex-wrap')).toBeTrue();
+      expect(headerRow?.classList.contains('min-w-0')).toBeTrue();
+      expect(headerRow?.textContent).toContain('SAT_MATH');
+      expect(headerRow?.textContent).toContain('مجاني');
+      expect(headerRow?.textContent).toContain('منشور');
+
+      expect(featureRow).toBeTruthy();
+      expect(featureRow?.classList.contains('flex-wrap')).toBeTrue();
+      expect(featureRow?.classList.contains('min-w-0')).toBeTrue();
+      expect(featureRow?.textContent).toContain('ديسموس');
+      expect(featureRow?.textContent).toContain('ورقة قوانين');
+      expect(featureRow?.textContent).toContain('تحديد مستوى');
+
+      const pills = [
+        ...Array.from(headerRow?.querySelectorAll('span.rounded-full') ?? []),
+        ...Array.from(featureRow?.querySelectorAll('span.rounded-full') ?? [])
+      ];
+      expect(pills.length).toBeGreaterThanOrEqual(6);
+      for (const pill of pills) {
+        expect(pill.classList.contains('whitespace-nowrap')).toBeTrue();
+        expect(pill.classList.contains('shrink-0')).toBeTrue();
+      }
+    });
+  });
 });

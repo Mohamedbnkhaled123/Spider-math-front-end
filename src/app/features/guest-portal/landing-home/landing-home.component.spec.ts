@@ -169,5 +169,36 @@ describe('LandingHomeComponent', () => {
         })
       );
     });
+
+    it('should reserve logical end padding and place chevron at end-3.5 on placement select controls for RTL Arabic', () => {
+      component.isPlacementModalOpen.set(true);
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const curriculumSelect = hostEl.querySelector('[data-testid="placement-curriculum-select"]') as HTMLSelectElement | null;
+      const gradeSelect = hostEl.querySelector('[data-testid="placement-grade-select"]') as HTMLSelectElement | null;
+      const curriculumChevron = hostEl.querySelector('[data-testid="placement-curriculum-chevron"]') as HTMLElement | null;
+      const gradeChevron = hostEl.querySelector('[data-testid="placement-grade-chevron"]') as HTMLElement | null;
+
+      expect(curriculumSelect).toBeTruthy();
+      expect(curriculumSelect?.classList.contains('ps-4')).toBeTrue();
+      expect(curriculumSelect?.classList.contains('pe-10')).toBeTrue();
+      expect(curriculumSelect?.classList.contains('px-4')).toBeFalse();
+
+      expect(gradeSelect).toBeTruthy();
+      expect(gradeSelect?.classList.contains('ps-4')).toBeTrue();
+      expect(gradeSelect?.classList.contains('pe-10')).toBeTrue();
+      expect(gradeSelect?.classList.contains('px-4')).toBeFalse();
+
+      expect(curriculumChevron).toBeTruthy();
+      expect(curriculumChevron?.classList.contains('end-3.5')).toBeTrue();
+      expect(curriculumChevron?.classList.contains('left-3')).toBeFalse();
+      expect(curriculumChevron?.classList.contains('rtl:right-3')).toBeFalse();
+
+      expect(gradeChevron).toBeTruthy();
+      expect(gradeChevron?.classList.contains('end-3.5')).toBeTrue();
+      expect(gradeChevron?.classList.contains('left-3')).toBeFalse();
+      expect(gradeChevron?.classList.contains('rtl:right-3')).toBeFalse();
+    });
   });
 });
