@@ -1,4 +1,4 @@
-<div class="assessment-runner-root max-w-5xl w-full min-h-[calc(100dvh-5rem)] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+<div class="assessment-runner-root max-w-2xl md:max-w-3xl w-full min-h-[calc(100dvh-5rem)] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
   <!-- ========================================================================= -->
   <!-- 1. Offline Sync Shield Status Banner (Animation 4.6)                      -->
@@ -184,21 +184,44 @@
       <!-- 4. Active Question Card (MCQ or Essay Homework)                           -->
       <!-- ========================================================================= -->
       @for (activeKey of [q._id]; track activeKey) {
-      <div class="question-container rounded-3xl spider-rim-glass-card p-6 sm:p-10 shadow-2xl relative">
-        
+      <div class="question-container rounded-3xl spider-rim-glass-card p-6 sm:p-10 shadow-2xl relative min-h-[420px] sm:min-h-[500px] flex flex-col justify-between">
+        <div class="flex-1 flex flex-col">
         <!-- Question Meta Info -->
-        <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-6">
-          <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary flex items-center gap-1.5">
-            @if (bundle().isMultiModule) {
-              <span>
-                {{ langService.isArabic()
-                  ? ((currentModule() === 1 ? 'الموديول الأول: ' : 'الموديول الثاني: ') + 'السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount())
-                  : ((currentModule() === 1 ? 'Module 1: ' : 'Module 2: ') + 'Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-surface-border mb-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary flex items-center gap-1.5">
+              @if (bundle().isMultiModule) {
+                <span>
+                  {{ langService.isArabic()
+                    ? ((currentModule() === 1 ? 'الموديول الأول: ' : 'الموديول الثاني: ') + 'السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount())
+                    : ((currentModule() === 1 ? 'Module 1: ' : 'Module 2: ') + 'Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}
+                </span>
+              } @else {
+                <span>{{ langService.isArabic() ? ('السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount()) : ('Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}</span>
+              }
+            </span>
+
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-bg border border-surface-border text-text-secondary">
+              {{ q.type === 'MCQ'
+                ? (langService.isArabic() ? 'اختيار من متعدد' : 'Multiple Choice')
+                : (q.type === 'INPUT_TEXT'
+                  ? (langService.isArabic() ? 'إدخال نصي' : 'Short Answer')
+                  : (langService.isArabic() ? 'مقالي' : 'Essay')) }}
+            </span>
+
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              {{ langService.isArabic()
+                ? ('تم حل ' + (totalQuestionsCount() - unansweredCount()) + ' من ' + totalQuestionsCount())
+                : ((totalQuestionsCount() - unansweredCount()) + ' of ' + totalQuestionsCount() + ' answered') }}
+            </span>
+
+            @if (q.requiresDesmos) {
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/25 flex items-center gap-1">
+                <app-icon name="calculator" [size]="12" />
+                <span>{{ langService.isArabic() ? 'يدعم ديسموس' : 'Desmos Enabled' }}</span>
               </span>
-            } @else {
-              <span>{{ langService.isArabic() ? ('السؤال ' + (activeQuestionIdx() + 1) + ' من ' + totalQuestionsCount()) : ('Question ' + (activeQuestionIdx() + 1) + ' of ' + totalQuestionsCount()) }}</span>
             }
-          </span>
+          </div>
 
           <span class="text-xs font-bold text-text-muted font-numeric">
             {{ langService.isArabic() ? (q.points + ' درجات') : (q.points + ' Pts') }}
@@ -408,6 +431,7 @@
             <span>{{ submissionWarning() }}</span>
           </div>
         }
+        </div>
 
         <!-- Navigation & Submit Footer Actions -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 mt-8 border-t border-surface-border">

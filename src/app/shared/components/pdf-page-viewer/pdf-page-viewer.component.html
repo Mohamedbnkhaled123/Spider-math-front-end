@@ -1,6 +1,6 @@
 <div class="pdf-viewer-root relative flex flex-col w-full h-full rounded-2xl overflow-hidden bg-slate-950/60 border border-amber-500/20 backdrop-blur-md shadow-2xl">
   <!-- Top Navigation & Zoom Toolbar -->
-  <header class="viewer-toolbar flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-900/80 border-b border-amber-500/20 text-slate-200 z-10">
+  <header class="viewer-toolbar flex flex-wrap items-center justify-between gap-3 px-3.5 py-2 bg-slate-900/80 border-b border-amber-500/20 text-slate-200 z-10">
     <!-- Page Navigation Group -->
     <div class="flex items-center gap-2">
       <button
@@ -74,7 +74,7 @@
   </header>
 
   <!-- Main Canvas Viewport Area -->
-  <main dir="ltr" class="viewer-canvas-viewport relative flex-1 w-full min-h-[380px] overflow-auto flex items-center justify-center p-4 bg-slate-950/90">
+  <main dir="ltr" class="viewer-canvas-viewport relative flex-1 w-full min-h-[440px] sm:min-h-[520px] md:min-h-[580px] overflow-auto flex items-start justify-center p-2.5 sm:p-4 bg-slate-950/90">
     <!-- Loading State Overlay -->
     @if (isLoading() || isRendering()) {
       <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-opacity">
@@ -103,8 +103,8 @@
     }
 
     <!-- The Active Page Canvas -->
-    <div dir="ltr" class="canvas-wrapper relative flex items-center justify-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/60 bg-white">
-      <canvas #mainCanvas dir="ltr" class="block max-w-full h-auto object-contain"></canvas>
+    <div dir="ltr" class="canvas-wrapper relative flex items-center justify-center w-full max-w-full sm:max-w-[480px] md:max-w-[540px] lg:max-w-[580px] mx-auto shadow-2xl rounded-lg overflow-hidden border border-slate-700/60 bg-white">
+      <canvas #mainCanvas dir="ltr" class="block w-full max-w-full h-auto object-contain"></canvas>
     </div>
   </main>
 

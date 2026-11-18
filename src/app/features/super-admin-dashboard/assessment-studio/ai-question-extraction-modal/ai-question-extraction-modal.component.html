@@ -1,14 +1,14 @@
 @if (isOpen()) {
   <div
-    class="fixed inset-0 z-layer-submodal flex items-center justify-center p-2.5 sm:p-4 pt-16 sm:pt-20 bg-black/35 backdrop-blur-sm modal-backdrop overflow-y-auto overscroll-contain"
+    class="fixed inset-0 z-layer-submodal flex items-center justify-center p-2 sm:p-3 md:p-4 bg-black/35 backdrop-blur-sm modal-backdrop overflow-y-auto overscroll-contain"
     (click)="close()"
   >
     <div
-      class="modal-window w-full max-w-5xl h-[calc(100dvh-5.5rem)] sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-10.5rem)] max-h-[calc(100dvh-5.5rem)] sm:max-h-[calc(100dvh-6.5rem)] lg:max-h-[calc(100dvh-10.5rem)] min-h-0 bg-surface-card border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs animate-scale-up"
+      class="modal-window w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-[820px] h-[calc(100dvh-1.5rem)] sm:h-[calc(100dvh-2rem)] md:h-[calc(100dvh-2.5rem)] max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)] md:max-h-[calc(100dvh-2.5rem)] min-h-0 bg-surface-card border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs animate-scale-up"
       (click)="$event.stopPropagation()"
     >
       <!-- MODAL HEADER -->
-      <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-surface-border bg-surface-bg/70 flex items-center justify-between shrink-0">
+      <div class="px-4 py-2.5 sm:py-3 border-b border-surface-border bg-surface-bg/70 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2.5 sm:gap-3">
           <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-brand-primary/20 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
             <app-icon name="sparkles" [size]="18" />
@@ -31,7 +31,7 @@
       </div>
 
       <!-- STEP WIZARD INDICATOR -->
-      <div class="px-5 py-2.5 bg-surface-bg/40 border-b border-surface-border flex items-center justify-between shrink-0 overflow-x-auto no-scrollbar text-[11px]">
+      <div class="px-4 py-2 bg-surface-bg/40 border-b border-surface-border flex items-center justify-between shrink-0 overflow-x-auto no-scrollbar text-[11px]">
         <div class="flex items-center gap-2 sm:gap-4 font-bold">
           <button
             type="button"
@@ -111,7 +111,7 @@
       }
 
       <!-- MODAL BODY -->
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar overscroll-contain">
+      <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 custom-scrollbar overscroll-contain">
 
         <!-- ============================================== -->
         <!-- STEP 1: UPLOAD & MODE SELECTION -->
@@ -357,11 +357,20 @@
         <!-- STEP 2: PDF / IMAGE PAGE PREVIEW & NAVIGATION -->
         <!-- ============================================== -->
         @if (currentStep() === 'PREVIEW_AND_PAGE') {
-          <div class="space-y-4 animate-fade-in">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-card border border-surface-border">
-              <div class="flex items-center gap-2">
+          <div class="space-y-2.5 animate-fade-in">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-surface-card border border-surface-border">
+              <div class="flex flex-wrap items-center gap-2">
                 <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-500 font-bold text-xs">
                   {{ langService.isArabic() ? ('صفحة ' + currentPageNumber() + ' من ' + totalPages()) : ('Page ' + currentPageNumber() + ' of ' + totalPages()) }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/25">
+                  {{ langService.isArabic()
+                    ? (extractionMode() === 'SMART_HYBRID' ? 'النمط الهجين' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'نصوص ومعادلات' : (extractionMode() === 'MANUAL_CROP' ? 'القص اليدوي' : 'قص كامل')))
+                    : (extractionMode() === 'SMART_HYBRID' ? 'Smart Hybrid' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'Text & Formulas' : (extractionMode() === 'MANUAL_CROP' ? 'Manual Crop' : 'Full Image')))
+                  }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-bg text-text-secondary border border-surface-border">
+                  {{ langService.isArabic() ? ('مستخرج: ' + stagedQuestions().length) : ('Staged: ' + stagedQuestions().length) }}
                 </span>
                 <span class="text-text-muted text-[11px]">
                   {{ langService.isArabic() ? 'اختر الصفحة المراد استخراجها:' : 'Select target page:' }}
@@ -428,7 +437,7 @@
 
             <!-- Multi-Page Extraction Scope Controls -->
             @if (fileType() === 'pdf' && totalPages() > 1 && extractionMode() !== 'MANUAL_CROP') {
-              <div class="p-3.5 rounded-2xl bg-surface-card border border-surface-border flex flex-wrap items-center justify-between gap-3 text-xs" data-testid="page-scope-bar">
+              <div class="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-surface-card border border-surface-border flex flex-wrap items-center justify-between gap-2.5 text-xs" data-testid="page-scope-bar">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-text-secondary text-xs">
                     {{ langService.isArabic() ? 'نطاق الاستخراج:' : 'Extraction Scope:' }}
@@ -901,7 +910,7 @@
       </div>
 
       <!-- MODAL FOOTER -->
-      <div class="px-5 py-4 border-t border-surface-border bg-surface-bg/70 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+      <div class="px-4 py-2.5 border-t border-surface-border bg-surface-bg/70 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
         <div class="text-text-muted text-[11px]">
           @if (currentStep() === 'STAGING_REVIEW') {
             <span>

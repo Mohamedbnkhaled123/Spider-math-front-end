@@ -752,5 +752,20 @@ describe('AiQuestionExtractionModalComponent', () => {
       expect(component.fileName()).toBe(fileName);
       expect(component.currentPageNumber()).toBe(30);
     });
+
+    it('should configure narrower width and taller height on modal window for tablet and desktop viewports', () => {
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('assessmentId', 'asm_layout_test');
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const modalWin = hostEl.querySelector('.modal-window');
+      expect(modalWin).toBeTruthy();
+      expect(modalWin?.classList.contains('md:max-w-3xl')).toBeTrue();
+      expect(modalWin?.classList.contains('lg:max-w-[820px]')).toBeTrue();
+      expect(modalWin?.classList.contains('md:h-[calc(100dvh-2.5rem)]')).toBeTrue();
+      expect(modalWin?.classList.contains('max-w-5xl')).toBeFalse();
+      expect(modalWin?.classList.contains('lg:h-[calc(100dvh-10.5rem)]')).toBeFalse();
+    });
   });
 });
