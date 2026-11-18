@@ -440,6 +440,40 @@
               </div>
             </div>
 
+            <!-- Two-Module Target Selector for Step 2 -->
+            @if (isMultiModule()) {
+              <div class="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-brand-primary/5 border border-brand-primary/25 flex flex-wrap items-center justify-between gap-2.5 text-xs" data-testid="ai-module-target-bar">
+                <span class="font-bold text-text-primary flex items-center gap-1.5">
+                  <app-icon name="grid" [size]="14" className="text-brand-primary" />
+                  <span>{{ langService.isArabic() ? 'توجيه الأسئلة المستخرجة إلى:' : 'Target Module for Extracted Questions:' }}</span>
+                </span>
+                <div class="inline-flex rounded-xl p-1 bg-surface-bg border border-surface-border gap-1">
+                  <button
+                    type="button"
+                    (click)="setTargetModuleIndex(1)"
+                    [class.bg-brand-primary]="targetModuleIndex() === 1"
+                    [class.text-white]="targetModuleIndex() === 1"
+                    [class.text-text-secondary]="targetModuleIndex() !== 1"
+                    class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer text-[11px] sm:text-xs whitespace-nowrap"
+                    data-testid="ai-target-module-1"
+                  >
+                    {{ langService.isArabic() ? 'الموديول 1' : 'Module 1' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setTargetModuleIndex(2)"
+                    [class.bg-brand-primary]="targetModuleIndex() === 2"
+                    [class.text-white]="targetModuleIndex() === 2"
+                    [class.text-text-secondary]="targetModuleIndex() !== 2"
+                    class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer text-[11px] sm:text-xs whitespace-nowrap"
+                    data-testid="ai-target-module-2"
+                  >
+                    {{ langService.isArabic() ? 'الموديول 2' : 'Module 2' }}
+                  </button>
+                </div>
+              </div>
+            }
+
             <!-- Multi-Page Extraction Scope Controls -->
             @if (totalPages() > 1 && extractionMode() !== 'MANUAL_CROP') {
               <div class="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-surface-card border border-surface-border flex flex-wrap items-center justify-between gap-2.5 text-xs" data-testid="page-scope-bar">
@@ -603,6 +637,33 @@
                     : (extractionMode() === 'SMART_HYBRID' ? 'Smart Hybrid' : (extractionMode() === 'TEXT_LATEX_ONLY' ? 'Text & Formulas' : (extractionMode() === 'MANUAL_CROP' ? 'Manual Crop' : 'Full Image')))
                   }}
                 </span>
+
+                @if (isMultiModule()) {
+                  <div class="inline-flex items-center rounded-xl p-0.5 bg-surface-bg border border-surface-border gap-0.5 text-[11px]" data-testid="ai-staging-batch-module">
+                    <button
+                      type="button"
+                      (click)="setAllStagedModule(1)"
+                      [class.bg-brand-primary]="targetModuleIndex() === 1"
+                      [class.text-white]="targetModuleIndex() === 1"
+                      [class.text-text-muted]="targetModuleIndex() !== 1"
+                      class="px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap"
+                      data-testid="ai-batch-module-1"
+                    >
+                      {{ langService.isArabic() ? 'الكل ← موديول 1' : 'All -> M1' }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="setAllStagedModule(2)"
+                      [class.bg-brand-primary]="targetModuleIndex() === 2"
+                      [class.text-white]="targetModuleIndex() === 2"
+                      [class.text-text-muted]="targetModuleIndex() !== 2"
+                      class="px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap"
+                      data-testid="ai-batch-module-2"
+                    >
+                      {{ langService.isArabic() ? 'الكل ← موديول 2' : 'All -> M2' }}
+                    </button>
+                  </div>
+                }
               </div>
 
               <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -698,6 +759,34 @@
                           <span>{{ langService.isArabic() ? 'سؤال مقالي' : 'Essay' }}</span>
                         </button>
                       </div>
+
+                      <!-- Per-Question Module Toggle (Two-Module Exams & Quizzes) -->
+                      @if (isMultiModule()) {
+                        <div class="flex items-center rounded-xl bg-surface-bg p-0.5 border border-brand-primary/30" data-testid="ai-staged-question-module-toggle">
+                          <button
+                            type="button"
+                            (click)="setStagedQuestionModule(q, 1)"
+                            class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                            [class.bg-brand-primary]="q.moduleIndex !== 2"
+                            [class.text-white]="q.moduleIndex !== 2"
+                            [class.text-text-muted]="q.moduleIndex === 2"
+                            data-testid="ai-staged-m1-btn"
+                          >
+                            M1
+                          </button>
+                          <button
+                            type="button"
+                            (click)="setStagedQuestionModule(q, 2)"
+                            class="px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                            [class.bg-brand-primary]="q.moduleIndex === 2"
+                            [class.text-white]="q.moduleIndex === 2"
+                            [class.text-text-muted]="q.moduleIndex !== 2"
+                            data-testid="ai-staged-m2-btn"
+                          >
+                            M2
+                          </button>
+                        </div>
+                      }
                     </div>
 
                     <div class="flex items-center gap-3">

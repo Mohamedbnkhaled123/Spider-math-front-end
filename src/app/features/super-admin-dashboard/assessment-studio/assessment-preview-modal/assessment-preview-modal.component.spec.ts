@@ -705,5 +705,65 @@ describe('AssessmentPreviewModalComponent', () => {
       const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
       expect(emojiRegex.test(fixture.nativeElement.innerHTML)).toBeFalse();
     });
+
+    it('should isolate Module 1 and Module 2 during preview simulation and grade both modules in summary', () => {
+      const multiModAssessment: AssessmentItem = {
+        ...pureMcqAssessment,
+        id: 'asm_preview_m2_1',
+        isMultiModule: true,
+        module1TimeMinutes: 25,
+        module2TimeMinutes: 40,
+        durationMinutes: 65,
+        totalPoints: 10,
+        questions: [
+          {
+            id: 'q_m1_1',
+            order: 1,
+            type: 'MCQ',
+            textAr: 'سؤال الموديول الأول',
+            options: ['10', '20', '30', '40'],
+            correctOptionIndex: 0,
+            points: 5,
+            moduleIndex: 1
+          },
+          {
+            id: 'q_m2_1',
+            order: 2,
+            type: 'MCQ',
+            textAr: 'سؤال الموديول الثاني',
+            options: ['أ', 'ب', 'ج', 'د'],
+            correctOptionIndex: 2,
+            points: 5,
+            moduleIndex: 2
+          }
+        ]
+      };
+
+      componentRef.setInput('assessment', multiModAssessment);
+      componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.currentModule()).toBe(1);
+      expect(component.activeModuleCount()).toBe(1);
+      expect(component.currentQuestion()?.id).toBe('q_m1_1');
+      expect(component.simulatedSecondsRemaining()).toBe(25 * 60);
+
+      component.selectOption('q_m1_1', 0);
+      component.advanceToModule2();
+      fixture.detectChanges();
+
+      expect(component.currentModule()).toBe(2);
+      expect(component.activeQuestionIndex()).toBe(0);
+      expect(component.activeModuleCount()).toBe(1);
+      expect(component.currentQuestion()?.id).toBe('q_m2_1');
+      expect(component.simulatedSecondsRemaining()).toBe(40 * 60);
+
+      component.selectOption('q_m2_1', 2);
+      component.finishPreview();
+      fixture.detectChanges();
+
+      expect(component.scoringSummary().autoEarnedPoints).toBe(10);
+      expect(component.scoringSummary().percentage).toBe(100);
+    });
   });
 });

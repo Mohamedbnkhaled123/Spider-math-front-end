@@ -1022,6 +1022,48 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     return questions.filter((q) => (q.moduleIndex === 2 ? 2 : 1) === filter);
   });
 
+  toggleCreateAssessmentMultiModule(): void {
+    this.newAssessmentForm.update((f) => ({
+      ...f,
+      isMultiModule: !f.isMultiModule,
+      module1TimeMinutes: f.module1TimeMinutes || 35,
+      module2TimeMinutes: f.module2TimeMinutes || 35
+    }));
+  }
+
+  toggleEditorMultiModule(): void {
+    const asm = this.activeAssessment();
+    if (!asm) return;
+    const nextMulti = !asm.isMultiModule;
+    const updatedAsm: AssessmentAdminItem = {
+      ...asm,
+      isMultiModule: nextMulti,
+      module1TimeMinutes: asm.module1TimeMinutes || 35,
+      module2TimeMinutes: asm.module2TimeMinutes || 35
+    };
+    this.activeAssessment.set(updatedAsm);
+    this.assessmentSaved.emit(updatedAsm);
+    if (!nextMulti) {
+      this.moduleFilterTab.set('ALL');
+      this.newQuestionModuleIndex.set(1);
+    }
+    this.triggerDraftAutoSave(true);
+  }
+
+  selectModuleFilterTab(tab: 'ALL' | 1 | 2): void {
+    this.moduleFilterTab.set(tab);
+    if (tab === 1 || tab === 2) {
+      this.newQuestionModuleIndex.set(tab);
+    }
+  }
+
+  selectComposerModule(mod: 1 | 2): void {
+    this.newQuestionModuleIndex.set(mod);
+    if (this.moduleFilterTab() !== 'ALL') {
+      this.moduleFilterTab.set(mod);
+    }
+  }
+
   @HostListener('window:beforeunload')
   onBeforeUnload(): void {
     if (this.isAssessmentEditorOpen() && this.activeAssessment()) {
@@ -3210,6 +3252,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
     const currentQuestions = asm.questions || [];
     const startOrder = currentQuestions.length;
+    const defaultMod: 1 | 2 =
+      asm.isMultiModule && (this.moduleFilterTab() === 2 || this.newQuestionModuleIndex() === 2)
+        ? 2
+        : 1;
     const formattedNewQuestions: QuestionAdminItem[] = extractedQuestions.map((q, idx) => ({
       id: q.id || `q_${Date.now()}_${idx}`,
       order: startOrder + idx + 1,
@@ -3220,7 +3266,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       correctOptionIndex: q.correctOptionIndex ?? 0,
       acceptedAnswers: q.acceptedAnswers || [],
       points: q.points || 5,
-      moduleIndex: q.moduleIndex === 2 ? 2 : 1
+      moduleIndex: asm.isMultiModule
+        ? (q.moduleIndex === 2 ? 2 : (q.moduleIndex === 1 ? 1 : defaultMod))
+        : 1
     }));
 
     const updatedQuestions = [...currentQuestions, ...formattedNewQuestions];
@@ -3232,6 +3280,17 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     };
     this.activeAssessment.set(updatedAsm);
     this.assessmentSaved.emit(updatedAsm);
+    if (asm.isMultiModule) {
+      const hasM2 = formattedNewQuestions.some((q) => q.moduleIndex === 2);
+      const hasM1 = formattedNewQuestions.some((q) => q.moduleIndex !== 2);
+      if (hasM2 && hasM1) {
+        this.moduleFilterTab.set('ALL');
+      } else if (hasM2 && this.moduleFilterTab() === 1) {
+        this.selectModuleFilterTab(2);
+      } else if (hasM1 && !hasM2 && this.moduleFilterTab() === 2) {
+        this.selectModuleFilterTab(1);
+      }
+    }
     this.triggerDraftAutoSave(true);
     this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
     this.toastTriggered.emit({
@@ -3265,6 +3324,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         ...sessions,
         [asm.id]: session
       }));
+      if (asm.isMultiModule && session.targetModuleIndex) {
+        this.selectComposerModule(session.targetModuleIndex);
+      }
     }
     this.openManualSlicerForComposer();
   }
@@ -3451,7 +3513,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     });
   }
 
-  cancelQuestionEdit(): void {
+  cancelQuestionEdit(preserveModule = false): void {
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.newQuestionTextAr.set('');
@@ -3461,7 +3523,10 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
     this.newQuestionAcceptedAnswers.set(['']);
     this.newQuestionPoints.set(5);
     this.newQuestionType.set('MCQ');
-    this.newQuestionModuleIndex.set(1);
+    if (!preserveModule) {
+      const filter = this.moduleFilterTab();
+      this.newQuestionModuleIndex.set(filter === 2 ? 2 : 1);
+    }
     this.editingQuestionId.set(null);
   }
 
@@ -3520,7 +3585,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       // UPDATE EXISTING QUESTION (R2)
       const targetIdx = asm.questions.findIndex((q) => (q.id && q.id === editId) || String(q.order) === editId);
       if (targetIdx === -1) {
-        this.cancelQuestionEdit();
+        this.cancelQuestionEdit(true);
         return;
       }
 
@@ -3553,7 +3618,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         this.autoRegradeWarning.set(true);
       }
 
-      this.cancelQuestionEdit();
+      this.cancelQuestionEdit(true);
       this.triggerDraftAutoSave(true);
       this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
 
@@ -3584,7 +3649,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       this.activeAssessment.set(updatedAsm);
       this.assessmentSaved.emit(updatedAsm);
 
-      this.cancelQuestionEdit();
+      this.cancelQuestionEdit(true);
       this.triggerDraftAutoSave(true);
       this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
 

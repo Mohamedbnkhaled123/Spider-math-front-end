@@ -1162,5 +1162,64 @@ describe('AssessmentStudioComponent', () => {
 
       await sessionService.deleteSession(baseAsm.id);
     });
+
+    it('should preserve Module 2 target across consecutive adds on ALL tab and assign AI extracted questions to Module 2', async () => {
+      const asmId = 'asm_studio_m2_flow_1';
+      const baseAsm: AssessmentItem = {
+        ...sampleAssessment,
+        id: asmId,
+        titleAr: 'امتحان شامل موديولين',
+        assessmentType: 'COMPREHENSIVE_EXAM',
+        isMultiModule: false,
+        questions: [],
+        totalPoints: 0
+      };
+
+      component.openEditor(baseAsm, 'QUESTIONS');
+      component.toggleEditorMultiModule();
+      expect(component.activeAssessment()?.isMultiModule).toBeTrue();
+
+      // Clicking filter tab 2 syncs composer target to 2
+      component.selectModuleFilterTab(2);
+      expect(component.newQuestionModuleIndex()).toBe(2);
+
+      // Staying on ALL tab and adding consecutive Module 2 questions must not reset target to 1
+      component.selectModuleFilterTab('ALL');
+      component.selectComposerModule(2);
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('مسألة موديول 2 أولى');
+      component.newQuestionOptions.set(['أ', 'ب', 'ج', 'د']);
+      expect(component.saveQuestion()).toBeTrue();
+      expect(component.newQuestionModuleIndex()).toBe(2);
+
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('مسألة موديول 2 ثانية');
+      component.newQuestionOptions.set(['1', '2', '3', '4']);
+      expect(component.saveQuestion()).toBeTrue();
+
+      expect(component.module2QuestionsCount()).toBe(2);
+      expect(component.module1QuestionsCount()).toBe(0);
+
+      // Extracting AI questions while filter is narrowed to 1 and target is 2 routes them to M2 and switches filter to 2
+      component.selectModuleFilterTab(1);
+      component.selectComposerModule(2);
+      component.onQuestionsExtracted([
+        {
+          id: 'q_ai_studio_m2',
+          order: 0,
+          type: 'MCQ',
+          textAr: 'مسألة AI في الموديول الثاني',
+          options: ['10', '20', '30', '40'],
+          correctOptionIndex: 1,
+          points: 5
+        }
+      ]);
+
+      expect(component.module2QuestionsCount()).toBe(3);
+      expect(component.moduleFilterTab()).toBe(2);
+      expect(component.editorFilteredQuestions().length).toBe(3);
+
+      await component.draftService.deleteDraft(asmId);
+    });
   });
 });

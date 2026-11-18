@@ -4,6 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { PLATFORM_ID } from '@angular/core';
 import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal.component';
 import { IStagedQuestion, ICachedFileSession } from './ai-question-extraction-modal.models';
+import { AssessmentQuestionItem } from '../assessment-studio.models';
 import { AiExtractionSessionService } from '../../../../core/offline-db/ai-extraction-session.service';
 
 describe('AiQuestionExtractionModalComponent', () => {
@@ -1138,6 +1139,53 @@ describe('AiQuestionExtractionModalComponent', () => {
       expect(emitted[0].correctOptionIndex).toBe(1);
       expect(emitted[1].options.length).toBe(2);
       expect(new Set(emitted[1].options).size).toBe(2);
+    });
+
+    it('should honor defaultModuleIndex = 2 in two-module mode and allow per-question module assignment on emit', async () => {
+      const emitted: AssessmentQuestionItem[] = [];
+      component.questionsExtracted.subscribe((qs) => emitted.push(...qs));
+
+      fixture.componentRef.setInput('assessmentId', 'asm_m2_ai_modal');
+      fixture.componentRef.setInput('isMultiModule', true);
+      fixture.componentRef.setInput('defaultModuleIndex', 2);
+      component.isOpen.set(true);
+      fixture.detectChanges();
+
+      expect(component.targetModuleIndex()).toBe(2);
+
+      component.stagedQuestions.set([
+        {
+          id: 'q_m2_1',
+          checked: true,
+          question_text: 'سؤال موديول 2',
+          type: 'MCQ',
+          options: ['1', '2', '3', '4'],
+          correct_option_index: 0,
+          points: 5,
+          has_geometry_diagram: false,
+          moduleIndex: 2
+        },
+        {
+          id: 'q_m2_to_m1',
+          checked: true,
+          question_text: 'سؤال تم تحويله لموديول 1',
+          type: 'MCQ',
+          options: ['5', '6', '7', '8'],
+          correct_option_index: 1,
+          points: 5,
+          has_geometry_diagram: false,
+          moduleIndex: 2
+        }
+      ]);
+
+      const secondQ = component.stagedQuestions()[1];
+      component.setStagedQuestionModule(secondQ, 1);
+
+      await component.insertSelectedQuestions();
+
+      expect(emitted.length).toBe(2);
+      expect(emitted[0].moduleIndex).toBe(2);
+      expect(emitted[1].moduleIndex).toBe(1);
     });
   });
 });

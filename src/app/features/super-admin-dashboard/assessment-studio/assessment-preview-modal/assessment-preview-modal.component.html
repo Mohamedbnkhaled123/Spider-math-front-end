@@ -21,6 +21,14 @@
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
                 {{ langService.isArabic() ? 'محاكاة الطالب' : 'Simulation' }}
               </span>
+              @if (isMultiModule()) {
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30"
+                  data-testid="preview-module-badge"
+                >
+                  {{ langService.isArabic() ? ('الموديول ' + currentModule() + ' من 2') : ('Module ' + currentModule() + ' of 2') }}
+                </span>
+              }
               <h3 class="text-sm sm:text-base font-black text-text-primary truncate max-w-xs sm:max-w-md">
                 {{ asm.titleAr }}
               </h3>
@@ -96,9 +104,11 @@
           <!-- Question Pills Navigation Index -->
           <div class="flex flex-wrap items-center gap-2 pb-2 border-b border-surface-border/60">
             <span class="text-xs font-bold text-text-muted ml-2">
-              {{ langService.isArabic() ? 'فهرس الأسئلة:' : 'Questions:' }}
+              {{ langService.isArabic()
+                ? (isMultiModule() ? ('أسئلة الموديول ' + currentModule() + ':') : 'فهرس الأسئلة:')
+                : (isMultiModule() ? ('Module ' + currentModule() + ' Questions:') : 'Questions:') }}
             </span>
-            @for (q of questions(); track q.id; let idx = $index) {
+            @for (q of activeQuestionList(); track q.id; let idx = $index) {
               <button
                 type="button"
                 (click)="selectQuestion(idx)"
@@ -129,7 +139,7 @@
               <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-surface-border/60">
                 <div class="flex items-center gap-2">
                   <span class="px-3 py-1 rounded-full text-xs font-black bg-brand-primary/10 text-brand-primary font-mono">
-                    {{ langService.isArabic() ? ('السؤال ' + (activeQuestionIndex() + 1) + ' من ' + totalQuestionsCount()) : ('Question ' + (activeQuestionIndex() + 1) + ' of ' + totalQuestionsCount()) }}
+                    {{ langService.isArabic() ? ('السؤال ' + (activeQuestionIndex() + 1) + ' من ' + activeModuleCount()) : ('Question ' + (activeQuestionIndex() + 1) + ' of ' + activeModuleCount()) }}
                   </span>
                   @if (isCurrentQuestionEssay()) {
                     <span
@@ -298,7 +308,7 @@
                 </button>
 
                 <div class="flex items-center gap-2 shrink-0">
-                  @if (activeQuestionIndex() < totalQuestionsCount() - 1) {
+                  @if (activeQuestionIndex() < activeModuleCount() - 1) {
                     <button
                       type="button"
                       (click)="nextQuestion()"
@@ -306,6 +316,27 @@
                       [attr.data-testid]="'preview-next-btn'"
                     >
                       <span>{{ langService.isArabic() ? 'التالي' : 'Next' }}</span>
+                      <app-icon name="arrow-left" [size]="14" />
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="finishPreview()"
+                      class="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-brand-gold/40 hover:bg-brand-gold/10 text-brand-gold text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+                      [title]="langService.isArabic() ? 'إنهاء المعاينة وعرض النتيجة' : 'Finish Preview & Show Results'"
+                      [attr.data-testid]="'preview-finish-btn'"
+                    >
+                      <app-icon name="check" [size]="13" />
+                      <span>{{ langService.isArabic() ? 'إنهاء مبكر' : 'Finish Early' }}</span>
+                    </button>
+                  } @else if (isMultiModule() && currentModule() === 1 && module2Questions().length > 0) {
+                    <button
+                      type="button"
+                      (click)="advanceToModule2()"
+                      class="h-9 sm:h-10 px-4 sm:px-5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
+                      [attr.data-testid]="'preview-next-module-btn'"
+                    >
+                      <span>{{ langService.isArabic() ? 'الانتقال للموديول الثاني' : 'Continue to Module 2' }}</span>
                       <app-icon name="arrow-left" [size]="14" />
                     </button>
 

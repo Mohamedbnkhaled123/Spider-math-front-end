@@ -1682,8 +1682,9 @@
                 </div>
                 <button
                   type="button"
-                  (click)="asm.isMultiModule = !asm.isMultiModule"
+                  (click)="toggleEditorMultiModule()"
                   class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  data-testid="curriculum-editor-multi-module-toggle"
                   [class.bg-brand-primary]="asm.isMultiModule"
                   [class.bg-surface-border]="!asm.isMultiModule"
                 >
@@ -1898,7 +1899,7 @@
                 <div class="p-1 rounded-2xl bg-surface-card border border-surface-border flex items-center gap-1 text-xs">
                   <button
                     type="button"
-                    (click)="moduleFilterTab.set('ALL')"
+                    (click)="selectModuleFilterTab('ALL')"
                     class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     [class.bg-brand-primary]="moduleFilterTab() === 'ALL'"
                     [class.text-white]="moduleFilterTab() === 'ALL'"
@@ -1910,7 +1911,7 @@
 
                   <button
                     type="button"
-                    (click)="moduleFilterTab.set(1)"
+                    (click)="selectModuleFilterTab(1)"
                     class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     [class.bg-brand-primary]="moduleFilterTab() === 1"
                     [class.text-white]="moduleFilterTab() === 1"
@@ -1922,7 +1923,7 @@
 
                   <button
                     type="button"
-                    (click)="moduleFilterTab.set(2)"
+                    (click)="selectModuleFilterTab(2)"
                     class="py-1 px-3 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     [class.bg-brand-primary]="moduleFilterTab() === 2"
                     [class.text-white]="moduleFilterTab() === 2"
@@ -2127,13 +2128,14 @@
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
-                    (click)="newQuestionModuleIndex.set(1)"
+                    (click)="selectComposerModule(1)"
                     class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     [class.border-brand-primary]="newQuestionModuleIndex() === 1"
                     [class.bg-brand-primary/10]="newQuestionModuleIndex() === 1"
                     [class.text-brand-primary]="newQuestionModuleIndex() === 1"
                     [class.border-surface-border]="newQuestionModuleIndex() !== 1"
                     [class.text-text-muted]="newQuestionModuleIndex() !== 1"
+                    data-testid="curriculum-composer-module-1-btn"
                   >
                     <app-icon name="grid" [size]="12" />
                     <span>{{ langService.isArabic() ? 'الموديول 1' : 'Module 1' }}</span>
@@ -2141,13 +2143,14 @@
 
                   <button
                     type="button"
-                    (click)="newQuestionModuleIndex.set(2)"
+                    (click)="selectComposerModule(2)"
                     class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     [class.border-brand-primary]="newQuestionModuleIndex() === 2"
                     [class.bg-brand-primary/10]="newQuestionModuleIndex() === 2"
                     [class.text-brand-primary]="newQuestionModuleIndex() === 2"
                     [class.border-surface-border]="newQuestionModuleIndex() !== 2"
                     [class.text-text-muted]="newQuestionModuleIndex() !== 2"
+                    data-testid="curriculum-composer-module-2-btn"
                   >
                     <app-icon name="grid" [size]="12" />
                     <span>{{ langService.isArabic() ? 'الموديول 2' : 'Module 2' }}</span>
@@ -3607,8 +3610,9 @@
                 </div>
                 <button
                   type="button"
-                  (click)="newAssessmentForm().isMultiModule = !newAssessmentForm().isMultiModule"
+                  (click)="toggleCreateAssessmentMultiModule()"
                   class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  data-testid="curriculum-create-multi-module-toggle"
                   [class.bg-brand-primary]="newAssessmentForm().isMultiModule"
                   [class.bg-surface-border]="!newAssessmentForm().isMultiModule"
                 >
@@ -3813,6 +3817,8 @@
     [curriculum]="selectedCurriculum()"
     [gradeLevel]="selectedGrade()"
     [existingSession]="cachedFileSession()"
+    [isMultiModule]="!!activeAssessment()?.isMultiModule"
+    [defaultModuleIndex]="moduleFilterTab() === 2 ? 2 : newQuestionModuleIndex()"
     (questionsExtracted)="onQuestionsExtracted($event)"
     (fileSessionCached)="onFileSessionCached($event)"
     (manualSlicingRequested)="onManualSlicingRequestedFromExtraction($event)"

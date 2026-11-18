@@ -69,10 +69,14 @@ export class AiQuestionExtractionModalComponent {
   readonly curriculum = input<string>('');
   readonly gradeLevel = input<string>('');
   readonly existingSession = input<ICachedFileSession | null>(null);
+  readonly isMultiModule = input<boolean>(false);
+  readonly defaultModuleIndex = input<1 | 2>(1);
 
   private readonly stagedByAssessment = new Map<string, IStagedQuestion[]>();
   private lastAssessmentId: string | null = null;
+  private wasOpen = false;
   private activeHydrationToken = 0;
+  readonly targetModuleIndex = signal<1 | 2>(1);
 
   // Outputs
   readonly questionsExtracted = output<AssessmentQuestionItem[]>();
@@ -307,9 +311,13 @@ export class AiQuestionExtractionModalComponent {
       const open = this.isOpen();
       const currentId = this.assessmentId();
       const session = this.existingSession();
+      const isMultiMod = this.isMultiModule();
+      const defaultMod = this.defaultModuleIndex();
 
       untracked(() => {
         if (open) {
+          const justOpened = !this.wasOpen;
+          this.wasOpen = true;
           this.modalNav.registerModal({
             id: 'ai-question-extraction-modal',
             saveDraft: () => this.saveTransientDraft(),
@@ -318,6 +326,12 @@ export class AiQuestionExtractionModalComponent {
 
           const effId = this.getEffectiveAssessmentId();
           const syncPersisted = this.aiExtractionSessionService.getSessionSync(effId);
+
+          if (justOpened || this.lastAssessmentId !== currentId) {
+            this.targetModuleIndex.set(isMultiMod ? (defaultMod === 2 ? 2 : 1) : 1);
+          } else if (!isMultiMod) {
+            this.targetModuleIndex.set(1);
+          }
 
           if (this.lastAssessmentId !== currentId) {
             this.lastAssessmentId = currentId;
@@ -391,6 +405,8 @@ export class AiQuestionExtractionModalComponent {
               this.hydrateFromIndexedDb(effId, ++this.activeHydrationToken);
             }
           }
+        } else {
+          this.wasOpen = false;
         }
       });
     });
@@ -528,6 +544,7 @@ export class AiQuestionExtractionModalComponent {
       pageScopeMode: this.pageScopeMode(),
       extractionMode: this.extractionMode(),
       stagedQuestions: stagedCopy,
+      targetModuleIndex: this.targetModuleIndex(),
       currentStep: this.currentStep(),
       updatedAt: Date.now()
     });
@@ -835,7 +852,8 @@ export class AiQuestionExtractionModalComponent {
       })),
       pageScopeMode: this.pageScopeMode(),
       extractionMode: this.extractionMode(),
-      stagedQuestions: this.stagedQuestions()
+      stagedQuestions: this.stagedQuestions(),
+      targetModuleIndex: this.targetModuleIndex()
     });
   }
 
@@ -859,7 +877,8 @@ export class AiQuestionExtractionModalComponent {
       lastSelectedRange: {
         startPage: this.rangeStartPage(),
         endPage: this.rangeEndPage()
-      }
+      },
+      targetModuleIndex: this.targetModuleIndex()
     };
     this.fileSessionCached.emit(session);
     this.manualSlicingRequested.emit(session);
@@ -1071,7 +1090,8 @@ export class AiQuestionExtractionModalComponent {
             box_2d: isTextOnlyMode ? undefined : effectiveBox,
             localCropBlob: isTextOnlyMode ? null : localCropBlob,
             localCropPreviewUrl: isTextOnlyMode ? null : localCropPreviewUrl,
-            question_image_url: null
+            question_image_url: null,
+            moduleIndex: this.isMultiModule() && this.targetModuleIndex() === 2 ? 2 : 1
           });
         }
       }
@@ -1204,6 +1224,27 @@ export class AiQuestionExtractionModalComponent {
             }
           : item
       )
+    );
+    this.persistCurrentExtractionState();
+  }
+
+  setTargetModuleIndex(mod: 1 | 2): void {
+    const next: 1 | 2 = this.isMultiModule() && mod === 2 ? 2 : 1;
+    this.targetModuleIndex.set(next);
+    this.persistCurrentExtractionState();
+  }
+
+  setAllStagedModule(mod: 1 | 2): void {
+    const next: 1 | 2 = this.isMultiModule() && mod === 2 ? 2 : 1;
+    this.targetModuleIndex.set(next);
+    this.stagedQuestions.update((list) => list.map((item) => ({ ...item, moduleIndex: next })));
+    this.persistCurrentExtractionState();
+  }
+
+  setStagedQuestionModule(q: IStagedQuestion, mod: 1 | 2): void {
+    const next: 1 | 2 = this.isMultiModule() && mod === 2 ? 2 : 1;
+    this.stagedQuestions.update((list) =>
+      list.map((item) => (item.id === q.id ? { ...item, moduleIndex: next } : item))
     );
     this.persistCurrentExtractionState();
   }
@@ -1485,7 +1526,10 @@ export class AiQuestionExtractionModalComponent {
           correctOptionIndex: sanitizedMcq.correctIndex,
           acceptedAnswers: isInputText ? (validAccepted && validAccepted.length > 0 ? validAccepted : [q.question_text.trim() || 'إجابة']) : undefined,
           points: q.points > 0 ? q.points : 1,
-          explanationAr: ''
+          explanationAr: '',
+          moduleIndex: this.isMultiModule()
+            ? (q.moduleIndex === 2 ? 2 : (q.moduleIndex === 1 ? 1 : (this.targetModuleIndex() === 2 ? 2 : 1)))
+            : 1
         });
       }
 

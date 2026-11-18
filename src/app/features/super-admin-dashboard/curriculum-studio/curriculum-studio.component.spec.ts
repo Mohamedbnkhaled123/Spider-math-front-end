@@ -1234,5 +1234,71 @@ describe('CurriculumStudioComponent', () => {
       await component.draftService.deleteDraft(asmId);
       await sessionService.deleteSession(asmId);
     });
+
+    it('should keep Module 2 selected across consecutive question additions and sync filter tabs with AI extraction', async () => {
+      const asmId = 'asm_curric_m2_flow_1';
+      const baseAsm: AssessmentAdminItem = {
+        id: asmId,
+        unitId: 'unit_m2_1',
+        titleAr: 'كويز موديولين بالوحدة',
+        type: 'QUIZ',
+        calculatorType: 'NONE',
+        durationMinutes: 70,
+        isMultiModule: false,
+        submissionsCount: 0,
+        questions: []
+      };
+
+      component.openAssessmentEditor(baseAsm);
+      component.toggleEditorMultiModule();
+      expect(component.activeAssessment()?.isMultiModule).toBeTrue();
+
+      // Switch to Module 2 filter tab -> composer module target syncs to 2
+      component.selectModuleFilterTab(2);
+      expect(component.newQuestionModuleIndex()).toBe(2);
+
+      // Switch filter back to ALL, add two consecutive questions targeted at Module 2
+      component.selectModuleFilterTab('ALL');
+      component.selectComposerModule(2);
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('سؤال 1 في الموديول الثاني');
+      component.newQuestionOptions.set(['1', '2', '3', '4']);
+      component.addQuestionToAssessment();
+      httpTestingController.expectOne(`/api/v1/admin/assessments/${asmId}`).flush({ success: true, data: {} });
+
+      expect(component.newQuestionModuleIndex()).toBe(2);
+
+      component.newQuestionType.set('MCQ');
+      component.newQuestionTextAr.set('سؤال 2 في الموديول الثاني');
+      component.newQuestionOptions.set(['5', '6', '7', '8']);
+      component.addQuestionToAssessment();
+      httpTestingController.expectOne(`/api/v1/admin/assessments/${asmId}`).flush({ success: true, data: {} });
+
+      expect(component.module2QuestionsCount()).toBe(2);
+      expect(component.module1QuestionsCount()).toBe(0);
+      expect(component.activeAssessment()?.questions.every((q) => q.moduleIndex === 2)).toBeTrue();
+
+      // Switch filter tab to 1, then extract questions without explicit moduleIndex while composer is still M2
+      component.selectModuleFilterTab(1);
+      component.selectComposerModule(2);
+      component.onQuestionsExtracted([
+        {
+          id: 'q_ai_m2',
+          order: 0,
+          type: 'MCQ',
+          textAr: 'سؤال مستخرج للموديول الثاني',
+          options: ['أ', 'ب', 'ج', 'د'],
+          correctOptionIndex: 0,
+          points: 5
+        }
+      ]);
+      httpTestingController.expectOne(`/api/v1/admin/assessments/${asmId}`).flush({ success: true, data: {} });
+
+      expect(component.module2QuestionsCount()).toBe(3);
+      expect(component.moduleFilterTab()).toBe(2);
+      expect(component.filteredQuestions().length).toBe(3);
+
+      await component.draftService.deleteDraft(asmId);
+    });
   });
 });

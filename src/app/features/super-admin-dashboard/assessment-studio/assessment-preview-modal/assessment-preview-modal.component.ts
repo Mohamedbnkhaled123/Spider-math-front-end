@@ -68,6 +68,7 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
   readonly close = output<void>();
 
   // Interactive Simulation State
+  readonly currentModule = signal<1 | 2>(1);
   readonly activeQuestionIndex = signal<number>(0);
   readonly selectedMcqAnswers = signal<Record<string, number>>({});
   readonly textAnswers = signal<Record<string, string>>({});
@@ -102,16 +103,37 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     this.stopTimer();
   }
 
+  readonly isMultiModule = computed<boolean>(() => {
+    return Boolean(this.assessment()?.isMultiModule);
+  });
+
   readonly questions = computed<AssessmentQuestionItem[]>(() => {
     return this.assessment()?.questions || [];
+  });
+
+  readonly module1Questions = computed<AssessmentQuestionItem[]>(() => {
+    return this.questions().filter((q) => q.moduleIndex !== 2);
+  });
+
+  readonly module2Questions = computed<AssessmentQuestionItem[]>(() => {
+    return this.questions().filter((q) => q.moduleIndex === 2);
+  });
+
+  readonly activeQuestionList = computed<AssessmentQuestionItem[]>(() => {
+    if (!this.isMultiModule()) return this.questions();
+    return this.currentModule() === 2 ? this.module2Questions() : this.module1Questions();
   });
 
   readonly totalQuestionsCount = computed<number>(() => {
     return this.questions().length;
   });
 
+  readonly activeModuleCount = computed<number>(() => {
+    return this.activeQuestionList().length;
+  });
+
   readonly currentQuestion = computed<AssessmentQuestionItem | null>(() => {
-    const list = this.questions();
+    const list = this.activeQuestionList();
     const idx = this.activeQuestionIndex();
     return list[idx] || null;
   });
@@ -227,13 +249,13 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
 
   // Navigation & Answers
   selectQuestion(idx: number): void {
-    if (idx >= 0 && idx < this.totalQuestionsCount()) {
+    if (idx >= 0 && idx < this.activeModuleCount()) {
       this.activeQuestionIndex.set(idx);
     }
   }
 
   nextQuestion(): void {
-    if (this.activeQuestionIndex() < this.totalQuestionsCount() - 1) {
+    if (this.activeQuestionIndex() < this.activeModuleCount() - 1) {
       this.activeQuestionIndex.update((i) => i + 1);
     }
   }
@@ -242,6 +264,16 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     if (this.activeQuestionIndex() > 0) {
       this.activeQuestionIndex.update((i) => i - 1);
     }
+  }
+
+  advanceToModule2(): void {
+    if (!this.isMultiModule() || this.currentModule() === 2 || this.module2Questions().length === 0) {
+      return;
+    }
+    this.currentModule.set(2);
+    this.activeQuestionIndex.set(0);
+    const mod2Duration = this.assessment()?.module2TimeMinutes || 35;
+    this.simulatedSecondsRemaining.set(mod2Duration * 60);
   }
 
   selectOption(questionId: string, optionIndex: number): void {
@@ -361,8 +393,22 @@ export class AssessmentPreviewModalComponent implements OnDestroy {
     this.isCalculatorOpen.set(false);
     this.isRefSheetOpen.set(false);
 
-    const duration = this.assessment()?.durationMinutes || 45;
-    this.simulatedSecondsRemaining.set(duration * 60);
+    const asm = this.assessment();
+    if (asm?.isMultiModule) {
+      const hasM1 = this.module1Questions().length > 0;
+      const hasM2 = this.module2Questions().length > 0;
+      if (!hasM1 && hasM2) {
+        this.currentModule.set(2);
+        this.simulatedSecondsRemaining.set((asm.module2TimeMinutes || 35) * 60);
+      } else {
+        this.currentModule.set(1);
+        this.simulatedSecondsRemaining.set((asm.module1TimeMinutes || 35) * 60);
+      }
+    } else {
+      this.currentModule.set(1);
+      const duration = asm?.durationMinutes || 45;
+      this.simulatedSecondsRemaining.set(duration * 60);
+    }
     this.startTimer();
   }
 

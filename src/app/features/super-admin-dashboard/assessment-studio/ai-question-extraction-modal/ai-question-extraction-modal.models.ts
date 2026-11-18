@@ -33,6 +33,7 @@ export interface IStagedQuestion {
   localCropBlob?: Blob | null;
   localCropPreviewUrl?: string | null;
   question_image_url?: string | null;
+  moduleIndex?: 1 | 2;
 }
 
 export interface IConfirmationDialogState {
@@ -61,6 +62,7 @@ export interface ICachedFileSession {
   pageScopeMode?: PageScopeMode;
   extractionMode?: AiExtractionMode;
   stagedQuestions?: IStagedQuestion[];
+  targetModuleIndex?: 1 | 2;
 }
 
 export interface IAiExtractionSessionRecord {
@@ -76,6 +78,7 @@ export interface IAiExtractionSessionRecord {
   pageScopeMode: PageScopeMode;
   extractionMode: AiExtractionMode;
   stagedQuestions: IStagedQuestion[];
+  targetModuleIndex?: 1 | 2;
   currentStep: 'UPLOAD_AND_SELECT' | 'PREVIEW_AND_PAGE' | 'STAGING_REVIEW';
   updatedAt: number;
 }

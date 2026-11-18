@@ -25,7 +25,8 @@ export class AiExtractionSessionService {
       options: Array.isArray(q.options) ? [...q.options] : ['', '', '', ''],
       acceptedAnswers: Array.isArray(q.acceptedAnswers) ? [...q.acceptedAnswers] : undefined,
       accepted_answers: Array.isArray(q.accepted_answers) ? [...q.accepted_answers] : undefined,
-      box_2d: Array.isArray(q.box_2d) ? ([...q.box_2d] as [number, number, number, number]) : undefined
+      box_2d: Array.isArray(q.box_2d) ? ([...q.box_2d] as [number, number, number, number]) : undefined,
+      moduleIndex: q.moduleIndex === 2 ? 2 : 1
     }));
   }
 
@@ -53,6 +54,7 @@ export class AiExtractionSessionService {
       pageScopeMode: record.pageScopeMode === 'PAGE_RANGE' ? 'PAGE_RANGE' : 'CURRENT_PAGE',
       extractionMode: record.extractionMode || 'SMART_HYBRID',
       stagedQuestions: this.cloneStagedQuestions(record.stagedQuestions),
+      targetModuleIndex: record.targetModuleIndex === 2 ? 2 : 1,
       currentStep: record.currentStep || 'UPLOAD_AND_SELECT',
       updatedAt: record.updatedAt || Date.now()
     };
@@ -165,7 +167,8 @@ export class AiExtractionSessionService {
       uploadedImages: record.uploadedImages?.length ? [...record.uploadedImages] : undefined,
       pageScopeMode: record.pageScopeMode,
       extractionMode: record.extractionMode,
-      stagedQuestions: this.cloneStagedQuestions(record.stagedQuestions)
+      stagedQuestions: this.cloneStagedQuestions(record.stagedQuestions),
+      targetModuleIndex: record.targetModuleIndex === 2 ? 2 : 1
     };
   }
 }
