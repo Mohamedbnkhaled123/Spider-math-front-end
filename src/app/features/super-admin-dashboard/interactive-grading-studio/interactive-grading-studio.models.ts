@@ -42,6 +42,10 @@ export interface AllQuizSubmissionItem {
   parentPhone?: string;
   curriculum: string;
   gradeLevel: string;
+  academicTerm?: string;
+  country?: string;
+  assessmentCurriculum?: string;
+  assessmentGradeLevel?: string;
   assessmentId: string;
   assessmentTitle: string;
   assessmentType: 'QUIZ' | 'EXAM' | 'HOMEWORK';
@@ -75,6 +79,10 @@ export interface PendingEssayGrading {
   studentId: string;
   studentName: string;
   haCode: string;
+  curriculum?: string;
+  gradeLevel?: string;
+  academicTerm?: string;
+  country?: string;
   assessmentId: string;
   assessmentTitle: string;
   questionNumber: number;
@@ -95,6 +103,8 @@ export interface StudentQuizGroup {
   studentName: string;
   gradeLevel: string;
   curriculum: string;
+  academicTerm?: string;
+  country?: string;
   parentPhone?: string;
   totalQuizzes: number;
   publishedQuizzes: number;

@@ -4,7 +4,10 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import {
   InteractiveGradingStudioComponent,
   normalizeForMatch,
-  isTextAnswerEquivalent
+  isTextAnswerEquivalent,
+  normalizeCurriculumCode,
+  normalizeCountryCode,
+  normalizeAcademicTermCode
 } from './interactive-grading-studio.component';
 
 describe('InteractiveGradingStudioComponent', () => {
@@ -32,6 +35,8 @@ describe('InteractiveGradingStudioComponent', () => {
     // Clean up any pending initial requests
     const pendingReqs = httpMock.match('/api/v1/admin/submissions');
     pendingReqs.forEach((req) => req.flush({ success: true, data: { submissions: [], stats: {} } }));
+    const activeGradeReqs = httpMock.match('/api/v1/public/active-grades');
+    activeGradeReqs.forEach((req) => req.flush({ success: true, data: { activeGrades: [], curriculaTracks: [] } }));
   });
 
   it('should create interactive grading studio component', () => {
@@ -436,6 +441,267 @@ describe('InteractiveGradingStudioComponent', () => {
 
       // Question 9 has NO image uploaded and must NOT inherit Question 8 image
       expect(q9.studentSolutionImages?.length).toBe(0);
+    });
+  });
+
+  describe('Academic Categorization Filter Bar (Matching Curriculum Studio)', () => {
+    const sampleCategorizedSubmissions: any[] = [
+      {
+        id: 'sub_egy_1',
+        studentId: 'stu_egy_1',
+        haCode: 'HA2001',
+        studentName: 'يوسف أحمد',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_3',
+        academicTerm: 'TERM_1',
+        country: 'EG',
+        assessmentId: 'asm_e1',
+        assessmentTitle: 'تفاضل ٣ ثانوي ترم ١',
+        status: 'PENDING',
+        totalPoints: 10,
+        finalTotalScore: 5,
+        scorePercentage: 50
+      },
+      {
+        id: 'sub_egy_2',
+        studentId: 'stu_egy_2',
+        haCode: 'HA2002',
+        studentName: 'مريم حسن',
+        curriculum: 'المصري',
+        gradeLevel: 'SEC_3',
+        academicTerm: 'الترم الثاني',
+        country: 'EG',
+        assessmentId: 'asm_e2',
+        assessmentTitle: 'جبر ٣ ثانوي ترم ٢',
+        status: 'PUBLISHED',
+        totalPoints: 10,
+        finalTotalScore: 10,
+        scorePercentage: 100
+      },
+      {
+        id: 'sub_gulf_sa',
+        studentId: 'stu_sa_1',
+        haCode: 'HA2003',
+        studentName: 'فهد القحطاني',
+        curriculum: 'GULF',
+        gradeLevel: 'GRADE_10',
+        academicTerm: 'TERM_1',
+        country: 'SA',
+        assessmentId: 'asm_g1',
+        assessmentTitle: 'رياضيات أول ثانوي السعودية',
+        status: 'PENDING',
+        totalPoints: 10,
+        finalTotalScore: 7,
+        scorePercentage: 70
+      },
+      {
+        id: 'sub_gulf_kw',
+        studentId: 'stu_kw_1',
+        haCode: 'HA2004',
+        studentName: 'ناصر العتيبي',
+        curriculum: 'الخليجي',
+        gradeLevel: 'GRADE_10',
+        academicTerm: 'الترم الأول',
+        country: 'الكويت',
+        assessmentId: 'asm_g2',
+        assessmentTitle: 'رياضيات عاشر الكويت',
+        status: 'PUBLISHED',
+        totalPoints: 10,
+        finalTotalScore: 9,
+        scorePercentage: 90
+      },
+      {
+        id: 'sub_intl_us',
+        studentId: 'stu_us_1',
+        haCode: 'HA2005',
+        studentName: 'Omar Tarek',
+        curriculum: 'INTERNATIONAL',
+        gradeLevel: 'US_GRADE_10',
+        country: 'EG',
+        assessmentId: 'asm_i1',
+        assessmentTitle: 'Geometry Grade 10',
+        status: 'PENDING',
+        totalPoints: 10,
+        finalTotalScore: 6,
+        scorePercentage: 60
+      },
+      {
+        id: 'sub_intl_uk',
+        studentId: 'stu_uk_1',
+        haCode: 'HA2006',
+        studentName: 'Laila Sherif',
+        curriculum: 'INTERNATIONAL',
+        gradeLevel: 'IGCSE_YEAR_10',
+        country: 'EG',
+        assessmentId: 'asm_i2',
+        assessmentTitle: 'IGCSE Year 10 Algebra',
+        status: 'PUBLISHED',
+        totalPoints: 10,
+        finalTotalScore: 10,
+        scorePercentage: 100
+      },
+      {
+        id: 'sub_amer_sat',
+        studentId: 'stu_sat_1',
+        haCode: 'HA2007',
+        studentName: 'Ziad Hany',
+        curriculum: 'AMERICAN',
+        gradeLevel: 'SAT_1',
+        country: 'EG',
+        assessmentId: 'asm_a1',
+        assessmentTitle: 'SAT 1 Digital Mock',
+        status: 'PUBLISHED',
+        totalPoints: 10,
+        finalTotalScore: 9,
+        scorePercentage: 90
+      }
+    ];
+
+    const samplePendingCanvas: any[] = [
+      {
+        id: 'canvas_egy_1',
+        studentId: 'stu_egy_1',
+        studentName: 'يوسف أحمد',
+        haCode: 'HA2001',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_3',
+        academicTerm: 'TERM_1',
+        country: 'EG',
+        assessmentId: 'asm_e1',
+        assessmentTitle: 'تفاضل ٣ ثانوي',
+        questionNumber: 1,
+        questionText: 'سؤال',
+        studentAnswerImageWebp: 'https://cdn.example.com/1.webp',
+        maxScore: 5,
+        awardedScore: 0,
+        generalTeacherNote: '',
+        mistakes: [],
+        status: 'PENDING',
+        submittedAt: '10:00'
+      },
+      {
+        id: 'canvas_gulf_sa',
+        studentId: 'stu_sa_1',
+        studentName: 'فهد القحطاني',
+        haCode: 'HA2003',
+        curriculum: 'GULF',
+        gradeLevel: 'GRADE_10',
+        academicTerm: 'TERM_1',
+        country: 'SA',
+        assessmentId: 'asm_g1',
+        assessmentTitle: 'رياضيات السعودية',
+        questionNumber: 1,
+        questionText: 'سؤال',
+        studentAnswerImageWebp: 'https://cdn.example.com/2.webp',
+        maxScore: 5,
+        awardedScore: 0,
+        generalTeacherNote: '',
+        mistakes: [],
+        status: 'PENDING',
+        submittedAt: '10:05'
+      }
+    ];
+
+    it('should normalize Arabic/English curriculum, country, and term values accurately', () => {
+      expect(normalizeCurriculumCode('المصري')).toBe('EGYPTIAN');
+      expect(normalizeCurriculumCode('GULF')).toBe('GULF');
+      expect(normalizeCurriculumCode('المناهج الدولية')).toBe('INTERNATIONAL');
+      expect(normalizeCurriculumCode('الدبلومة الأمريكية')).toBe('AMERICAN');
+
+      expect(normalizeCountryCode('السعودية')).toBe('SA');
+      expect(normalizeCountryCode('UAE')).toBe('AE');
+      expect(normalizeCountryCode('قطر')).toBe('QA');
+      expect(normalizeCountryCode('الكويت')).toBe('KW');
+
+      expect(normalizeAcademicTermCode('الترم الأول')).toBe('TERM_1');
+      expect(normalizeAcademicTermCode('TERM_2')).toBe('TERM_2');
+    });
+
+    it('should filter by curriculum, grade level, and academic term across groups, stats, and canvas tab', () => {
+      component.allSubmissions.set(sampleCategorizedSubmissions);
+      component.submissionStats.set({
+        totalSubmissions: 7,
+        pendingReviewCount: 3,
+        publishedCount: 4,
+        inProgressCount: 0
+      });
+      fixture.componentRef.setInput('pendingSubmissions', samplePendingCanvas);
+      fixture.detectChanges();
+
+      expect(component.studentGroups().length).toBe(7);
+      expect(component.filteredPendingSubmissions().length).toBe(2);
+
+      // Select Egyptian -> SEC_3 -> TERM_1
+      component.selectCurriculum('EGYPTIAN');
+      expect(component.currentCurriculumHasTerms()).toBeTrue();
+      expect(component.categoryFilteredSubmissions().length).toBe(2);
+      expect(component.filteredPendingSubmissions().length).toBe(1);
+
+      component.selectGrade('SEC_3');
+      expect(component.categoryFilteredSubmissions().length).toBe(2);
+
+      component.selectTerm('TERM_1');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.studentGroups()[0].studentName).toBe('يوسف أحمد');
+      expect(component.displayedStats().pendingReviewCount).toBe(1);
+      expect(component.displayedStats().publishedCount).toBe(0);
+
+      component.selectTerm('TERM_2');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.studentGroups()[0].studentName).toBe('مريم حسن');
+    });
+
+    it('should filter Gulf by country, International by division, and American diploma, then reset cleanly', () => {
+      component.allSubmissions.set(sampleCategorizedSubmissions);
+      component.submissionStats.set({
+        totalSubmissions: 7,
+        pendingReviewCount: 3,
+        publishedCount: 4,
+        inProgressCount: 0
+      });
+      fixture.componentRef.setInput('pendingSubmissions', samplePendingCanvas);
+      fixture.detectChanges();
+
+      // Gulf -> SA vs KW
+      component.selectCurriculum('GULF');
+      expect(component.categoryFilteredSubmissions().length).toBe(2);
+
+      component.selectGulfCountry('SA');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.studentGroups()[0].haCode).toBe('HA2003');
+      expect(component.filteredPendingSubmissions().length).toBe(1);
+
+      component.selectGulfCountry('KW');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.studentGroups()[0].haCode).toBe('HA2004');
+      expect(component.filteredPendingSubmissions().length).toBe(0);
+
+      // International -> American vs British division
+      component.selectCurriculum('INTERNATIONAL');
+      expect(component.currentCurriculumHasTerms()).toBeFalse();
+      expect(component.categoryFilteredSubmissions().length).toBe(2);
+
+      component.selectIntlDivision('AMERICAN_CURRICULUM');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.categoryFilteredSubmissions()[0].gradeLevel).toBe('US_GRADE_10');
+
+      component.selectIntlDivision('BRITISH_CURRICULUM');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.categoryFilteredSubmissions()[0].gradeLevel).toBe('IGCSE_YEAR_10');
+
+      // American Diploma -> SAT_1
+      component.selectCurriculum('AMERICAN');
+      component.selectGrade('SAT_1');
+      expect(component.categoryFilteredSubmissions().length).toBe(1);
+      expect(component.categoryFilteredSubmissions()[0].haCode).toBe('HA2007');
+
+      // Reset all category filters
+      component.resetCategoryFilters();
+      expect(component.hasActiveCategoryFilter()).toBeFalse();
+      expect(component.selectedCurriculum()).toBe('ALL');
+      expect(component.selectedGrade()).toBe('ALL');
+      expect(component.categoryFilteredSubmissions().length).toBe(7);
+      expect(component.filteredPendingSubmissions().length).toBe(2);
     });
   });
 });

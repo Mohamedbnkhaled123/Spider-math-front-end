@@ -25,33 +25,317 @@
       <!-- Total Submissions -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
         <span class="text-[11px] font-bold text-text-muted block">{{ langService.isArabic() ? 'إجمالي التسليمات' : 'Total Submissions' }}</span>
-        <span class="text-xl sm:text-2xl font-black text-brand-primary font-mono mt-0.5 block">
-          {{ submissionStats().totalSubmissions }}
+        <span class="text-xl sm:text-2xl font-black text-brand-primary font-mono mt-0.5 block" data-testid="grading-stat-total">
+          {{ displayedStats().totalSubmissions }}
         </span>
       </div>
 
       <!-- Published / Auto-Graded -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
         <span class="text-[11px] font-bold text-emerald-600 block">{{ langService.isArabic() ? 'مصححة ومعتمدة' : 'Graded & Published' }}</span>
-        <span class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-0.5 block">
-          {{ submissionStats().publishedCount }}
+        <span class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-0.5 block" data-testid="grading-stat-published">
+          {{ displayedStats().publishedCount }}
         </span>
       </div>
 
       <!-- Pending Essay Review -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
         <span class="text-[11px] font-bold text-amber-600 block">{{ langService.isArabic() ? 'بانتظار تصحيح المقالي' : 'Pending Essay Grading' }}</span>
-        <span class="text-xl sm:text-2xl font-black text-amber-600 font-mono mt-0.5 block">
-          {{ submissionStats().pendingReviewCount }}
+        <span class="text-xl sm:text-2xl font-black text-amber-600 font-mono mt-0.5 block" data-testid="grading-stat-pending">
+          {{ displayedStats().pendingReviewCount }}
         </span>
       </div>
 
       <!-- In Progress -->
       <div class="p-4 rounded-2xl border border-surface-border bg-surface-bg/50">
         <span class="text-[11px] font-bold text-blue-500 block">{{ langService.isArabic() ? 'قيد الحل الآن' : 'In Progress' }}</span>
-        <span class="text-xl sm:text-2xl font-black text-blue-500 font-mono mt-0.5 block">
-          {{ submissionStats().inProgressCount }}
+        <span class="text-xl sm:text-2xl font-black text-blue-500 font-mono mt-0.5 block" data-testid="grading-stat-inprogress">
+          {{ displayedStats().inProgressCount }}
         </span>
+      </div>
+    </div>
+
+    <!-- 5-Level Academic Categorization Bar (Matching Curriculum Studio & Assessment Studio) -->
+    <div class="pt-4 border-t border-surface-border space-y-3" data-testid="grading-category-filter-bar">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-black text-text-primary flex items-center gap-1.5">
+          <app-icon name="filter" [size]="14" className="text-brand-primary" />
+          <span>{{ langService.isArabic() ? 'تصنيف التسليمات حسب المنهج والصف:' : 'Categorize by Curriculum & Grade:' }}</span>
+        </span>
+
+        @if (hasActiveCategoryFilter()) {
+          <button
+            type="button"
+            (click)="resetCategoryFilters()"
+            class="px-3 py-1 rounded-xl text-[11px] font-bold border border-surface-border bg-surface-bg text-text-secondary hover:text-brand-primary hover:border-brand-primary transition-all flex items-center gap-1.5 cursor-pointer"
+            data-testid="grading-reset-category-btn"
+          >
+            <app-icon name="rotate-ccw" [size]="12" />
+            <span>{{ langService.isArabic() ? 'عرض الكل' : 'Show All' }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        <!-- 1. Curriculum Selector -->
+        <div class="sm:col-span-6 flex flex-wrap gap-1.5 p-1 rounded-2xl bg-surface-bg border border-surface-border">
+          <button
+            type="button"
+            (click)="selectCurriculum('ALL')"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer"
+            [class.bg-brand-primary]="selectedCurriculum() === 'ALL'"
+            [class.text-white]="selectedCurriculum() === 'ALL'"
+            [class.text-text-secondary]="selectedCurriculum() !== 'ALL'"
+            data-testid="grading-curr-ALL"
+          >
+            {{ langService.isArabic() ? 'جميع المناهج' : 'All Curricula' }}
+          </button>
+
+          <button
+            type="button"
+            (click)="selectCurriculum('EGYPTIAN')"
+            class="flex-1 min-w-[95px] px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate"
+            [class.bg-brand-primary]="selectedCurriculum() === 'EGYPTIAN'"
+            [class.text-white]="selectedCurriculum() === 'EGYPTIAN'"
+            [class.text-text-secondary]="selectedCurriculum() !== 'EGYPTIAN'"
+            [title]="getCurriculumTrackName('EGYPTIAN')"
+            data-testid="grading-curr-EGYPTIAN"
+          >
+            {{ getCurriculumTrackName('EGYPTIAN') }}
+          </button>
+
+          <button
+            type="button"
+            (click)="selectCurriculum('GULF')"
+            class="flex-1 min-w-[95px] px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate"
+            [class.bg-brand-primary]="selectedCurriculum() === 'GULF'"
+            [class.text-white]="selectedCurriculum() === 'GULF'"
+            [class.text-text-secondary]="selectedCurriculum() !== 'GULF'"
+            [title]="getCurriculumTrackName('GULF')"
+            data-testid="grading-curr-GULF"
+          >
+            {{ getCurriculumTrackName('GULF') }}
+          </button>
+
+          <button
+            type="button"
+            (click)="selectCurriculum('INTERNATIONAL')"
+            class="flex-1 min-w-[95px] px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate"
+            [class.bg-brand-primary]="selectedCurriculum() === 'INTERNATIONAL'"
+            [class.text-white]="selectedCurriculum() === 'INTERNATIONAL'"
+            [class.text-text-secondary]="selectedCurriculum() !== 'INTERNATIONAL'"
+            [title]="getCurriculumTrackName('INTERNATIONAL')"
+            data-testid="grading-curr-INTERNATIONAL"
+          >
+            {{ getCurriculumTrackName('INTERNATIONAL') }}
+          </button>
+
+          <button
+            type="button"
+            (click)="selectCurriculum('AMERICAN')"
+            class="flex-1 min-w-[95px] px-2.5 py-1.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer truncate"
+            [class.bg-brand-primary]="selectedCurriculum() === 'AMERICAN'"
+            [class.text-white]="selectedCurriculum() === 'AMERICAN'"
+            [class.text-text-secondary]="selectedCurriculum() !== 'AMERICAN'"
+            [title]="getCurriculumTrackName('AMERICAN')"
+            data-testid="grading-curr-AMERICAN"
+          >
+            {{ getCurriculumTrackName('AMERICAN') }}
+          </button>
+        </div>
+
+        <!-- 2. Grade Level Dropdown -->
+        <div [class]="currentCurriculumHasTerms() ? 'sm:col-span-3' : 'sm:col-span-6'">
+          <select
+            [ngModel]="selectedGrade()"
+            (ngModelChange)="selectGrade($event)"
+            class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-bg text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+            data-testid="grading-grade-select"
+          >
+            <option value="ALL">{{ langService.isArabic() ? 'كل الصفوف الدراسية' : 'All Grade Levels' }}</option>
+            @if (selectedCurriculum() === 'ALL') {
+              @for (group of allTrackGradeGroups(); track group.code) {
+                <optgroup [label]="group.label">
+                  @for (grade of group.grades; track grade.code) {
+                    <option [value]="grade.code">
+                      {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
+              }
+            } @else if (selectedCurriculum() === 'GULF') {
+              @for (stage of getGulfStagesForFilter(); track stage.code) {
+                <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                  @for (grade of getGradesForStageInFilter(stage); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
+              }
+              @if (getOtherGulfGrades().length > 0) {
+                <optgroup [label]="langService.isArabic() ? 'صفوف إضافية' : 'Other Grades'">
+                  @for (grade of getOtherGulfGrades(); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
+              }
+            } @else if (selectedCurriculum() === 'INTERNATIONAL') {
+              @for (stage of getIntlStagesForFilter(); track stage.code) {
+                <optgroup [label]="langService.isArabic() ? stage.nameAr : stage.nameEn">
+                  @for (grade of getGradesForIntlStageInFilter(stage); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
+              }
+              @if (getOtherIntlGrades().length > 0) {
+                <optgroup [label]="langService.isArabic() ? 'صفوف دولية إضافية' : 'Additional Intl Grades'">
+                  @for (grade of getOtherIntlGrades(); track grade.code) {
+                    <option [value]="grade.code">
+                      {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                    </option>
+                  }
+                </optgroup>
+              }
+            } @else {
+              @for (grade of gradeOptions(); track grade.code) {
+                <option [value]="grade.code">
+                  {{ langService.isArabic() ? grade.titleAr : (grade.titleEn || grade.titleAr) }}
+                </option>
+              }
+            }
+          </select>
+        </div>
+
+        <!-- 3. Academic Term Switcher (Egyptian & Gulf only) -->
+        @if (currentCurriculumHasTerms()) {
+          <div class="sm:col-span-3 flex items-center p-1 rounded-xl bg-surface-bg border border-surface-border">
+            <button
+              type="button"
+              (click)="selectTerm('ALL')"
+              class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+              [class.bg-brand-primary]="selectedTerm() === 'ALL'"
+              [class.text-white]="selectedTerm() === 'ALL'"
+              [class.text-text-secondary]="selectedTerm() !== 'ALL'"
+              data-testid="grading-term-ALL"
+            >
+              {{ langService.isArabic() ? 'الكل' : 'All' }}
+            </button>
+            <button
+              type="button"
+              (click)="selectTerm('TERM_1')"
+              class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+              [class.bg-brand-primary]="selectedTerm() === 'TERM_1'"
+              [class.text-white]="selectedTerm() === 'TERM_1'"
+              [class.text-text-secondary]="selectedTerm() !== 'TERM_1'"
+              data-testid="grading-term-TERM_1"
+            >
+              {{ langService.isArabic() ? 'الترم الأول' : 'Term 1' }}
+            </button>
+            <button
+              type="button"
+              (click)="selectTerm('TERM_2')"
+              class="flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-all cursor-pointer"
+              [class.bg-brand-primary]="selectedTerm() === 'TERM_2'"
+              [class.text-white]="selectedTerm() === 'TERM_2'"
+              [class.text-text-secondary]="selectedTerm() !== 'TERM_2'"
+              data-testid="grading-term-TERM_2"
+            >
+              {{ langService.isArabic() ? 'الترم الثاني' : 'Term 2' }}
+            </button>
+          </div>
+        }
+
+        <!-- Gulf Countries Selector when GULF curriculum is active -->
+        @if (selectedCurriculum() === 'GULF') {
+          <div class="sm:col-span-12 flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+            <span class="text-xs font-bold text-text-muted px-1 flex items-center gap-1.5 shrink-0">
+              <app-icon name="globe" [size]="14" className="text-brand-primary" />
+              <span>{{ langService.isArabic() ? 'الدولة:' : 'Country:' }}</span>
+            </span>
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+              <button
+                type="button"
+                (click)="selectGulfCountry('ALL')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center"
+                [class.bg-brand-primary]="selectedGulfCountry() === 'ALL'"
+                [class.text-white]="selectedGulfCountry() === 'ALL'"
+                [class.bg-surface-card]="selectedGulfCountry() !== 'ALL'"
+                [class.text-text-secondary]="selectedGulfCountry() !== 'ALL'"
+                [class.border]="selectedGulfCountry() !== 'ALL'"
+                [class.border-surface-border]="selectedGulfCountry() !== 'ALL'"
+                data-testid="grading-gulf-ALL"
+              >
+                <span>{{ langService.isArabic() ? 'كل دول الخليج' : 'All Gulf' }}</span>
+              </button>
+              @for (country of GULF_COUNTRIES; track country.code) {
+                <button
+                  type="button"
+                  (click)="selectGulfCountry(country.code)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  [class.bg-brand-primary]="selectedGulfCountry() === country.code"
+                  [class.text-white]="selectedGulfCountry() === country.code"
+                  [class.shadow-sm]="selectedGulfCountry() === country.code"
+                  [class.bg-surface-card]="selectedGulfCountry() !== country.code"
+                  [class.text-text-secondary]="selectedGulfCountry() !== country.code"
+                  [class.border]="selectedGulfCountry() !== country.code"
+                  [class.border-surface-border]="selectedGulfCountry() !== country.code"
+                  [attr.data-testid]="'grading-gulf-' + country.code"
+                >
+                  <span class="sm:hidden">{{ langService.isArabic() ? country.shortNameAr : country.shortNameEn }}</span>
+                  <span class="hidden sm:inline">{{ langService.isArabic() ? country.nameAr : country.nameEn }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- International Divisions Selector when INTERNATIONAL curriculum is active -->
+        @if (selectedCurriculum() === 'INTERNATIONAL') {
+          <div class="sm:col-span-12 flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+            <span class="text-xs font-bold text-text-muted px-1 flex items-center gap-1.5 shrink-0">
+              <app-icon name="globe" [size]="14" className="text-brand-primary" />
+              <span>{{ langService.isArabic() ? 'القسم الدولي:' : 'International Division:' }}</span>
+            </span>
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+              <button
+                type="button"
+                (click)="selectIntlDivision('ALL')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center"
+                [class.bg-brand-primary]="selectedIntlDivision() === 'ALL'"
+                [class.text-white]="selectedIntlDivision() === 'ALL'"
+                [class.bg-surface-card]="selectedIntlDivision() !== 'ALL'"
+                [class.text-text-secondary]="selectedIntlDivision() !== 'ALL'"
+                [class.border]="selectedIntlDivision() !== 'ALL'"
+                [class.border-surface-border]="selectedIntlDivision() !== 'ALL'"
+                data-testid="grading-intl-ALL"
+              >
+                <span>{{ langService.isArabic() ? 'كل الأقسام' : 'All Divisions' }}</span>
+              </button>
+              @for (div of getIntlDivisions(); track div.code) {
+                <button
+                  type="button"
+                  (click)="selectIntlDivision(div.code)"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                  [class.bg-brand-primary]="selectedIntlDivision() === div.code"
+                  [class.text-white]="selectedIntlDivision() === div.code"
+                  [class.shadow-sm]="selectedIntlDivision() === div.code"
+                  [class.bg-surface-card]="selectedIntlDivision() !== div.code"
+                  [class.text-text-secondary]="selectedIntlDivision() !== div.code"
+                  [class.border]="selectedIntlDivision() !== div.code"
+                  [class.border-surface-border]="selectedIntlDivision() !== div.code"
+                  [attr.data-testid]="'grading-intl-' + div.code"
+                >
+                  <span>{{ langService.isArabic() ? div.nameAr : (div.nameEn || div.nameAr) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -68,7 +352,7 @@
         [class.text-white]="activeStudioTab() === 'SUBMISSIONS'"
         [class.text-text-secondary]="activeStudioTab() !== 'SUBMISSIONS'"
       >
-        {{ langService.isArabic() ? ('جميع تسليمات الكويزات (' + allSubmissions().length + ')') : ('All Quiz Submissions (' + allSubmissions().length + ')') }}
+        {{ langService.isArabic() ? ('جميع تسليمات الكويزات (' + categoryFilteredSubmissions().length + ')') : ('All Quiz Submissions (' + categoryFilteredSubmissions().length + ')') }}
       </button>
 
       <button
@@ -80,9 +364,9 @@
         [class.text-text-secondary]="activeStudioTab() !== 'CANVAS'"
       >
         <span>{{ langService.isArabic() ? 'تصحيح الواجبات اليدوية' : 'Interactive Canvas Grading' }}</span>
-        @if (pendingSubmissions().length > 0) {
+        @if (filteredPendingSubmissions().length > 0) {
           <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-mono">
-            {{ pendingSubmissions().length }}
+            {{ filteredPendingSubmissions().length }}
           </span>
         }
       </button>
@@ -268,7 +552,7 @@
                           {{ group.haCode }}
                         </span>
                         <span class="text-xs text-text-muted font-bold">
-                          {{ group.gradeLevel }} • {{ group.curriculum }}
+                          {{ getGradeLabel(group.gradeLevel, group.curriculum, group.country) }} • {{ getCurriculumLabel(group.curriculum) }}@if (getCountryLabel(group.country) && getCurriculumLabel(group.curriculum) === getCurriculumTrackName('GULF')) { ({{ getCountryLabel(group.country) }})}@if (getTermLabel(group.academicTerm)) { • {{ getTermLabel(group.academicTerm) }}}
                         </span>
                         @if (group.parentPhone) {
                           <span class="text-xs text-text-muted font-mono flex items-center gap-1" dir="ltr">
@@ -414,7 +698,7 @@
                   {{ sub.haCode }}
                 </span>
                 <span class="text-xs text-text-muted font-bold">
-                  {{ sub.gradeLevel }} • {{ sub.curriculum }}
+                  {{ getGradeLabel(sub.gradeLevel, sub.curriculum, sub.country) }} • {{ getCurriculumLabel(sub.curriculum) }}@if (getCountryLabel(sub.country) && getCurriculumLabel(sub.curriculum) === getCurriculumTrackName('GULF')) { ({{ getCountryLabel(sub.country) }})}@if (getTermLabel(sub.academicTerm)) { • {{ getTermLabel(sub.academicTerm) }}}
                 </span>
                 @if (sub.parentPhone) {
                   <span class="text-xs text-text-muted font-mono flex items-center gap-1" dir="ltr">
@@ -606,14 +890,19 @@
   <!-- TAB 2: CANVAS ESSAY REVIEW -->
   @if (activeStudioTab() === 'CANVAS') {
     <div class="space-y-4">
-      @for (sub of pendingSubmissions(); track sub.id) {
+      @for (sub of filteredPendingSubmissions(); track sub.id) {
         <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div class="space-y-2">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm font-bold text-text-primary">{{ sub.studentName }}</span>
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
                 {{ sub.haCode }}
               </span>
+              @if (sub.curriculum || sub.gradeLevel) {
+                <span class="text-xs text-text-muted font-bold">
+                  {{ getGradeLabel(sub.gradeLevel, sub.curriculum, sub.country) }}@if (getCurriculumLabel(sub.curriculum)) { • {{ getCurriculumLabel(sub.curriculum) }}}@if (getCountryLabel(sub.country) && getCurriculumLabel(sub.curriculum) === getCurriculumTrackName('GULF')) { ({{ getCountryLabel(sub.country) }})}@if (getTermLabel(sub.academicTerm)) { • {{ getTermLabel(sub.academicTerm) }}}
+                </span>
+              }
               <span class="text-xs text-text-muted">• {{ sub.submittedAt }}</span>
             </div>
 

@@ -17,6 +17,21 @@ import { MathFormulaComponent } from '../../../shared/components/math-formula/ma
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
 import {
+  CANONICAL_CURRICULUM_TREE,
+  curriculumHasTerms,
+  findGulfCountry,
+  findInternationalDivision,
+  IGulfStageDefinition,
+  INTERNATIONAL_DIVISIONS_DATA
+} from '../../../core/constants/curriculum-tree.constant';
+import {
+  AcademicTermCode,
+  CurriculumCode,
+  CurriculumTrackItem,
+  GradeOption
+} from '../curriculum-studio/curriculum-studio.models';
+import { sortGradesDescending } from '../curriculum-studio/curriculum-studio.component';
+import {
   GradingMistake,
   PendingEssayGrading,
   AllQuizSubmissionItem,
@@ -24,6 +39,35 @@ import {
   QuestionAnswerDetail,
   StudentQuizGroup
 } from './interactive-grading-studio.models';
+
+export function normalizeCurriculumCode(raw?: string | null): CurriculumCode | '' {
+  const val = (raw || '').trim().toUpperCase();
+  if (!val) return '';
+  if (val === 'EGYPTIAN' || val.includes('مصري')) return 'EGYPTIAN';
+  if (val === 'GULF' || val.includes('خليج')) return 'GULF';
+  if (val === 'INTERNATIONAL' || val.includes('دولي') || val.includes('بريطاني')) return 'INTERNATIONAL';
+  if (val === 'AMERICAN' || val.includes('دبلوم') || val.includes('أمريك') || val.includes('امريك')) return 'AMERICAN';
+  return '';
+}
+
+export function normalizeCountryCode(raw?: string | null): string {
+  const val = (raw || '').trim().toUpperCase();
+  if (!val) return '';
+  if (val === 'SA' || val === 'KSA' || val === 'SAUDI' || val === 'SAUDI ARABIA' || val.includes('سعود')) return 'SA';
+  if (val === 'QA' || val === 'QAT' || val === 'QATAR' || val.includes('قطر')) return 'QA';
+  if (val === 'AE' || val === 'UAE' || val.includes('EMIRATES') || val.includes('إمارات') || val.includes('امارات')) return 'AE';
+  if (val === 'KW' || val === 'KWT' || val === 'KUWAIT' || val.includes('كويت')) return 'KW';
+  if (val === 'EG' || val === 'EGY' || val === 'EGYPT' || val.includes('مصر')) return 'EG';
+  return val;
+}
+
+export function normalizeAcademicTermCode(raw?: string | null): AcademicTermCode | '' {
+  const val = (raw || '').trim().toUpperCase();
+  if (!val) return '';
+  if (val === 'TERM_1' || val === 'TERM 1' || val.includes('أول') || val.includes('اول')) return 'TERM_1';
+  if (val === 'TERM_2' || val === 'TERM 2' || val.includes('ثان')) return 'TERM_2';
+  return '';
+}
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -145,10 +189,413 @@ export class InteractiveGradingStudioComponent implements OnInit {
   private isDragging = false;
   private startX = 0;
   private startY = 0;
+  private isServerFiltered = false;
+
+  // 5-Level Academic Categorization State (Matching Curriculum Studio & Assessment Studio)
+  readonly selectedCurriculum = signal<'ALL' | CurriculumCode>('ALL');
+  readonly selectedGulfCountry = signal<'ALL' | 'SA' | 'QA' | 'AE' | 'KW'>('ALL');
+  readonly selectedIntlDivision = signal<'ALL' | 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'>('ALL');
+  readonly selectedGrade = signal<string>('ALL');
+  readonly selectedTerm = signal<'ALL' | AcademicTermCode>('ALL');
+
+  readonly GULF_COUNTRIES = [
+    { code: 'SA' as const, nameAr: 'المملكة العربية السعودية', shortNameAr: 'السعودية', nameEn: 'Saudi Arabia', shortNameEn: 'Saudi' },
+    { code: 'QA' as const, nameAr: 'دولة قطر', shortNameAr: 'قطر', nameEn: 'Qatar', shortNameEn: 'Qatar' },
+    { code: 'AE' as const, nameAr: 'الإمارات العربية المتحدة', shortNameAr: 'الإمارات', nameEn: 'United Arab Emirates', shortNameEn: 'UAE' },
+    { code: 'KW' as const, nameAr: 'دولة الكويت', shortNameAr: 'الكويت', nameEn: 'Kuwait', shortNameEn: 'Kuwait' }
+  ];
+
+  readonly allCurriculaTracks = signal<CurriculumTrackItem[]>(
+    CANONICAL_CURRICULUM_TREE.map((c) => ({
+      code: c.code as CurriculumCode,
+      nameAr: c.titleAr,
+      nameEn: c.titleEn,
+      divisions: c.code === 'INTERNATIONAL'
+        ? INTERNATIONAL_DIVISIONS_DATA.map((d) => ({
+            code: d.code,
+            nameAr: d.nameAr,
+            nameEn: d.nameEn,
+            iconName: d.iconName,
+            stages: d.stages.map((s) => ({
+              code: s.code,
+              nameAr: s.nameAr,
+              nameEn: s.nameEn,
+              gradeCodes: [...s.gradeCodes]
+            }))
+          }))
+        : undefined,
+      grades: sortGradesDescending(c.grades.map((g) => ({
+        code: g.code,
+        titleAr: g.titleAr,
+        titleEn: g.titleEn
+      })))
+    }))
+  );
+
+  readonly currentCurriculumHasTerms = computed<boolean>(() => {
+    const c = this.selectedCurriculum();
+    return c !== 'ALL' && curriculumHasTerms(c);
+  });
+
+  readonly hasActiveCategoryFilter = computed<boolean>(() =>
+    this.selectedCurriculum() !== 'ALL' ||
+    this.selectedGulfCountry() !== 'ALL' ||
+    this.selectedIntlDivision() !== 'ALL' ||
+    this.selectedGrade() !== 'ALL' ||
+    this.selectedTerm() !== 'ALL'
+  );
+
+  getCurriculumTrackName(code: CurriculumCode): string {
+    const track = this.allCurriculaTracks().find((t) => t.code === code);
+    if (code === 'INTERNATIONAL') {
+      const isLegacy = !track?.nameAr || track.nameAr.includes('البريطانية');
+      if (this.langService.isArabic()) {
+        return !isLegacy ? track!.nameAr : 'المناهج الدولية';
+      }
+      return (!isLegacy && track?.nameEn) ? track.nameEn : 'International Curriculum';
+    }
+    if (this.langService.isArabic()) {
+      return track?.nameAr || code;
+    }
+    return track?.nameEn || track?.nameAr || code;
+  }
+
+  getIntlDivisions(): { code: 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'; nameAr: string; nameEn: string }[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    const configuredDivs = track?.divisions || [];
+    return [
+      {
+        code: 'AMERICAN_CURRICULUM',
+        nameAr: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameAr || 'المنهج الأمريكي',
+        nameEn: configuredDivs.find((d) => d.code === 'AMERICAN_CURRICULUM')?.nameEn || 'American Curriculum'
+      },
+      {
+        code: 'BRITISH_CURRICULUM',
+        nameAr: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameAr || 'المنهج البريطاني',
+        nameEn: configuredDivs.find((d) => d.code === 'BRITISH_CURRICULUM')?.nameEn || 'British Curriculum'
+      }
+    ];
+  }
+
+  private resolveGradesForCurriculum(
+    curr: CurriculumCode,
+    gulfCountry: 'ALL' | 'SA' | 'QA' | 'AE' | 'KW',
+    intlDiv: 'ALL' | 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'
+  ): GradeOption[] {
+    const track = this.allCurriculaTracks().find((t) => t.code === curr);
+    if (curr === 'GULF') {
+      if (gulfCountry !== 'ALL') {
+        const countryData = findGulfCountry(gulfCountry);
+        if (countryData) {
+          const customForCountry = (track?.grades || []).filter(
+            (g) => g.isCustom && (!g.countryCode || g.countryCode === countryData.code)
+          );
+          return [
+            ...countryData.grades.map((g) => ({
+              code: g.code,
+              titleAr: g.titleAr,
+              titleEn: g.titleEn,
+              isCustom: false
+            })),
+            ...customForCountry
+          ];
+        }
+      }
+      return track ? track.grades : [];
+    }
+
+    if (curr === 'INTERNATIONAL') {
+      if (intlDiv !== 'ALL') {
+        const divData = findInternationalDivision(intlDiv);
+        if (divData) {
+          const divCodes = new Set(divData.stages.flatMap((s) => s.gradeCodes));
+          const customForDiv = (track?.grades || []).filter(
+            (g) => g.isCustom && (!g.divisionCode || g.divisionCode === intlDiv)
+          );
+          if (track) {
+            const filtered = track.grades.filter((g) => divCodes.has(g.code));
+            if (filtered.length > 0) return [...filtered, ...customForDiv];
+          }
+          return [
+            ...divData.grades.map((g) => ({
+              code: g.code,
+              titleAr: g.titleAr,
+              titleEn: g.titleEn,
+              isCustom: false
+            })),
+            ...customForDiv
+          ];
+        }
+      }
+      return track ? track.grades : [];
+    }
+
+    return track ? track.grades : [];
+  }
+
+  readonly gradeOptions = computed<GradeOption[]>(() => {
+    const curr = this.selectedCurriculum();
+    if (curr === 'ALL') return [];
+    return this.resolveGradesForCurriculum(curr, this.selectedGulfCountry(), this.selectedIntlDivision());
+  });
+
+  readonly allTrackGradeGroups = computed(() => {
+    return this.allCurriculaTracks().map((track) => ({
+      code: track.code,
+      label: this.getCurriculumTrackName(track.code),
+      grades: track.grades
+    }));
+  });
+
+  getGulfStagesForFilter(): readonly IGulfStageDefinition[] {
+    const countryCode = this.selectedGulfCountry() === 'ALL' ? 'SA' : this.selectedGulfCountry();
+    return findGulfCountry(countryCode)?.stages || [];
+  }
+
+  getGradesForStageInFilter(stage: IGulfStageDefinition): GradeOption[] {
+    const options = this.gradeOptions();
+    return options.filter((g) => stage.gradeCodes.includes(g.code));
+  }
+
+  getOtherGulfGrades(): GradeOption[] {
+    const stageCodes = new Set(this.getGulfStagesForFilter().flatMap((s) => s.gradeCodes));
+    return this.gradeOptions().filter((g) => !stageCodes.has(g.code));
+  }
+
+  getIntlStagesForFilter(): { divCode: string; code: string; nameAr: string; nameEn: string; gradeCodes: readonly string[] }[] {
+    const selectedDiv = this.selectedIntlDivision();
+    const targetDivs = selectedDiv === 'ALL'
+      ? INTERNATIONAL_DIVISIONS_DATA
+      : INTERNATIONAL_DIVISIONS_DATA.filter((d) => d.code === selectedDiv);
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+
+    return targetDivs.flatMap((canonDiv) => {
+      const configuredDiv = track?.divisions?.find((d) => d.code === canonDiv.code);
+      return canonDiv.stages.map((s) => {
+        const configuredStage = configuredDiv?.stages?.find((cs) => cs.code === s.code);
+        const divPrefix = selectedDiv === 'ALL'
+          ? (this.langService.isArabic() ? `${canonDiv.nameAr} - ` : `${canonDiv.nameEn} - `)
+          : '';
+        return {
+          divCode: canonDiv.code,
+          code: `${canonDiv.code}_${s.code}`,
+          nameAr: `${divPrefix}${configuredStage?.nameAr || s.nameAr}`,
+          nameEn: `${divPrefix}${configuredStage?.nameEn || s.nameEn}`,
+          gradeCodes: s.gradeCodes
+        };
+      });
+    });
+  }
+
+  getGradesForIntlStageInFilter(stage: { gradeCodes: readonly string[] }): GradeOption[] {
+    const options = this.gradeOptions();
+    return stage.gradeCodes
+      .map((code) => options.find((g) => g.code === code))
+      .filter((g): g is GradeOption => Boolean(g));
+  }
+
+  getOtherIntlGrades(): GradeOption[] {
+    const allStageCodes = new Set(
+      INTERNATIONAL_DIVISIONS_DATA.flatMap((d) => d.stages.flatMap((s) => s.gradeCodes))
+    );
+    const activeDiv = this.selectedIntlDivision();
+    return this.gradeOptions().filter((g) => {
+      if (allStageCodes.has(g.code)) return false;
+      if (activeDiv !== 'ALL' && g.divisionCode && g.divisionCode !== activeDiv) return false;
+      return true;
+    });
+  }
+
+  detectIntlDivisionForGrade(gradeCode: string): 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM' | null {
+    const clean = (gradeCode || '').trim();
+    if (!clean) return null;
+    for (const div of INTERNATIONAL_DIVISIONS_DATA) {
+      if (div.stages.some((s) => s.gradeCodes.includes(clean))) {
+        return div.code;
+      }
+    }
+    const track = this.allCurriculaTracks().find((t) => t.code === 'INTERNATIONAL');
+    const customGrade = track?.grades.find((g) => g.code === clean);
+    if (customGrade?.divisionCode === 'AMERICAN_CURRICULUM' || customGrade?.divisionCode === 'BRITISH_CURRICULUM') {
+      return customGrade.divisionCode;
+    }
+    return null;
+  }
+
+  getCurriculumLabel(raw?: string): string {
+    const code = normalizeCurriculumCode(raw);
+    if (code) return this.getCurriculumTrackName(code);
+    return raw || '';
+  }
+
+  getCountryLabel(countryRaw?: string): string {
+    const code = normalizeCountryCode(countryRaw);
+    const match = this.GULF_COUNTRIES.find((c) => c.code === code);
+    if (match) return this.langService.isArabic() ? match.shortNameAr : match.shortNameEn;
+    if (code === 'EG') return this.langService.isArabic() ? 'مصر' : 'Egypt';
+    return countryRaw || '';
+  }
+
+  getGradeLabel(gradeCode?: string, curriculumRaw?: string, countryRaw?: string): string {
+    const clean = (gradeCode || '').trim();
+    if (!clean) return '';
+    const normCurr = normalizeCurriculumCode(curriculumRaw);
+    const normCountry = normalizeCountryCode(countryRaw);
+    if (normCurr === 'GULF' && (normCountry === 'SA' || normCountry === 'QA' || normCountry === 'AE' || normCountry === 'KW')) {
+      const countryData = findGulfCountry(normCountry);
+      const found = countryData?.grades.find((g) => g.code === clean);
+      if (found) return this.langService.isArabic() ? found.titleAr : found.titleEn;
+    }
+    for (const track of this.allCurriculaTracks()) {
+      if (normCurr && track.code !== normCurr) continue;
+      const found = track.grades.find((g) => g.code === clean);
+      if (found) return this.langService.isArabic() ? found.titleAr : (found.titleEn || found.titleAr);
+    }
+    for (const track of this.allCurriculaTracks()) {
+      const found = track.grades.find((g) => g.code === clean);
+      if (found) return this.langService.isArabic() ? found.titleAr : (found.titleEn || found.titleAr);
+    }
+    return clean;
+  }
+
+  getTermLabel(termRaw?: string): string {
+    const code = normalizeAcademicTermCode(termRaw);
+    if (code === 'TERM_1') return this.langService.isArabic() ? 'الترم الأول' : 'Term 1';
+    if (code === 'TERM_2') return this.langService.isArabic() ? 'الترم الثاني' : 'Term 2';
+    return '';
+  }
+
+  selectCurriculum(curr: 'ALL' | CurriculumCode): void {
+    this.selectedCurriculum.set(curr);
+    this.selectedGulfCountry.set('ALL');
+    this.selectedIntlDivision.set('ALL');
+    this.selectedGrade.set('ALL');
+    this.selectedTerm.set('ALL');
+    this.currentPage.set(1);
+    this.maybeFetchFilteredFromServer();
+  }
+
+  selectGulfCountry(country: 'ALL' | 'SA' | 'QA' | 'AE' | 'KW'): void {
+    this.selectedGulfCountry.set(country);
+    const scopedGrades = this.gradeOptions();
+    if (this.selectedGrade() !== 'ALL' && !scopedGrades.some((g) => g.code === this.selectedGrade())) {
+      this.selectedGrade.set('ALL');
+    }
+    this.currentPage.set(1);
+    this.maybeFetchFilteredFromServer();
+  }
+
+  selectIntlDivision(div: 'ALL' | 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM'): void {
+    this.selectedIntlDivision.set(div);
+    this.selectedGrade.set('ALL');
+    this.currentPage.set(1);
+    this.maybeFetchFilteredFromServer();
+  }
+
+  selectGrade(gradeCode: string): void {
+    this.selectedGrade.set(gradeCode || 'ALL');
+    this.currentPage.set(1);
+    this.maybeFetchFilteredFromServer();
+  }
+
+  selectTerm(term: 'ALL' | AcademicTermCode): void {
+    this.selectedTerm.set(term);
+    this.currentPage.set(1);
+    this.maybeFetchFilteredFromServer();
+  }
+
+  resetCategoryFilters(): void {
+    this.selectedCurriculum.set('ALL');
+    this.selectedGulfCountry.set('ALL');
+    this.selectedIntlDivision.set('ALL');
+    this.selectedGrade.set('ALL');
+    this.selectedTerm.set('ALL');
+    this.currentPage.set(1);
+    if (this.isServerFiltered) {
+      this.isServerFiltered = false;
+      this.fetchAllSubmissions(true);
+    }
+  }
+
+  matchesCategoryFilters(item: {
+    curriculum?: string | null;
+    gradeLevel?: string | null;
+    academicTerm?: string | null;
+    country?: string | null;
+    assessmentCurriculum?: string | null;
+    assessmentGradeLevel?: string | null;
+  }): boolean {
+    const currFilter = this.selectedCurriculum();
+    const gulfCountryFilter = this.selectedGulfCountry();
+    const intlDivFilter = this.selectedIntlDivision();
+    const gradeFilter = this.selectedGrade();
+    const termFilter = this.selectedTerm();
+
+    const rawCurr = item.assessmentCurriculum || item.curriculum || '';
+    const normCurr = normalizeCurriculumCode(rawCurr);
+    const rawGrade = (item.assessmentGradeLevel || item.gradeLevel || '').trim();
+    const normCountry = normalizeCountryCode(item.country);
+    const normTerm = normalizeAcademicTermCode(item.academicTerm);
+
+    if (currFilter !== 'ALL' && normCurr !== currFilter) {
+      return false;
+    }
+
+    if (currFilter === 'GULF' && gulfCountryFilter !== 'ALL') {
+      const gulfTrack = this.allCurriculaTracks().find((t) => t.code === 'GULF');
+      const customGradeMeta = gulfTrack?.grades.find((g) => g.code === rawGrade && g.isCustom);
+      const gradeMatchesCountry = Boolean(customGradeMeta?.countryCode && customGradeMeta.countryCode === gulfCountryFilter);
+      if (normCountry !== gulfCountryFilter && !gradeMatchesCountry) {
+        return false;
+      }
+    }
+
+    if (currFilter === 'INTERNATIONAL' && intlDivFilter !== 'ALL') {
+      if (this.detectIntlDivisionForGrade(rawGrade) !== intlDivFilter) {
+        return false;
+      }
+    }
+
+    if (gradeFilter !== 'ALL' && rawGrade !== gradeFilter) {
+      return false;
+    }
+
+    if (this.currentCurriculumHasTerms() && termFilter !== 'ALL') {
+      if (normTerm !== termFilter) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  readonly categoryFilteredSubmissions = computed(() =>
+    this.allSubmissions().filter((s) => this.matchesCategoryFilters(s))
+  );
+
+  readonly displayedStats = computed<QuizSubmissionStats>(() => {
+    if (!this.hasActiveCategoryFilter()) {
+      const serverStats = this.submissionStats();
+      if (serverStats.totalSubmissions > 0 || this.allSubmissions().length === 0) {
+        return serverStats;
+      }
+    }
+    const list = this.categoryFilteredSubmissions();
+    return {
+      totalSubmissions: list.length,
+      pendingReviewCount: list.filter((s) => s.status === 'PENDING').length,
+      publishedCount: list.filter((s) => s.status === 'PUBLISHED').length,
+      inProgressCount: list.filter((s) => s.status === 'IN_PROGRESS').length
+    };
+  });
+
+  readonly filteredPendingSubmissions = computed(() =>
+    this.pendingSubmissions().filter((p) => this.matchesCategoryFilters(p))
+  );
 
   // Filtered Submissions List
   readonly filteredSubmissions = computed(() => {
-    let list = this.allSubmissions();
+    let list = this.categoryFilteredSubmissions();
     const status = this.activeStatusFilter();
     if (status !== 'ALL') {
       list = list.filter((s) => s.status === status);
@@ -168,7 +615,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
   // Summary map of quiz counts per student (Total, Published, Pending)
   readonly studentQuizSummaryMap = computed(() => {
     const map = new Map<string, { total: number; published: number; pending: number; inProgress: number; studentName: string; haCode: string }>();
-    for (const s of this.allSubmissions()) {
+    for (const s of this.categoryFilteredSubmissions()) {
       const key = s.studentId || s.haCode || s.studentName;
       const entry = map.get(key) || {
         total: 0,
@@ -230,7 +677,7 @@ export class InteractiveGradingStudioComponent implements OnInit {
     const query = normalizeForMatch(this.searchQuery().trim().toLowerCase());
     const statusFilter = this.activeStatusFilter();
 
-    for (const sub of this.allSubmissions()) {
+    for (const sub of this.categoryFilteredSubmissions()) {
       const key = sub.studentId || sub.haCode || sub.studentName;
       let group = map.get(key);
       if (!group) {
@@ -241,6 +688,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
           studentName: sub.studentName,
           gradeLevel: sub.gradeLevel,
           curriculum: sub.curriculum,
+          academicTerm: sub.academicTerm,
+          country: sub.country,
           parentPhone: sub.parentPhone,
           totalQuizzes: 0,
           publishedQuizzes: 0,
@@ -385,12 +834,79 @@ export class InteractiveGradingStudioComponent implements OnInit {
       if (cachedStats) this.submissionStats.set(cachedStats);
       this.isLoadingSubmissions.set(false);
     }
+    this.loadTracksMetadata();
     this.fetchAllSubmissions();
   }
 
-  fetchAllSubmissions(forceRefresh = false): void {
-    // 1. Instant 0ms Memory Cache Check
-    if (!forceRefresh && submissionsMemoryCache) {
+  private loadTracksMetadata(): void {
+    this.http.get<{ success: boolean; data: any }>('/api/v1/public/active-grades').subscribe({
+      next: (res) => {
+        const remoteTracks = res?.data?.curriculaTracks;
+        if (!Array.isArray(remoteTracks) || remoteTracks.length === 0) return;
+
+        const mergedTracks: CurriculumTrackItem[] = CANONICAL_CURRICULUM_TREE.map((node) => {
+          const t = remoteTracks.find((rt: any) => rt.code === node.code);
+          let divisions = t?.divisions;
+          let nameAr = t?.nameAr || node.titleAr || node.code;
+          let nameEn = t?.nameEn || node.titleEn || nameAr;
+          let grades = Array.isArray(t?.grades) && t.grades.length > 0
+            ? t.grades
+            : node.grades.map((g) => ({ code: g.code, titleAr: g.titleAr, titleEn: g.titleEn }));
+
+          if (node.code === 'INTERNATIONAL') {
+            const isLegacy = !t?.nameAr || t.nameAr.includes('البريطانية');
+            if (isLegacy) {
+              nameAr = 'المناهج الدولية';
+              nameEn = 'International Curriculum';
+            }
+            if (!divisions || divisions.length === 0) {
+              divisions = INTERNATIONAL_DIVISIONS_DATA.map((d) => ({
+                code: d.code,
+                nameAr: d.nameAr,
+                nameEn: d.nameEn,
+                iconName: d.iconName,
+                stages: d.stages.map((s) => ({
+                  code: s.code,
+                  nameAr: s.nameAr,
+                  nameEn: s.nameEn
+                }))
+              }));
+            }
+            if (!grades || grades.length <= 4) {
+              grades = node.grades.map((g) => ({ code: g.code, titleAr: g.titleAr, titleEn: g.titleEn }));
+            }
+          }
+          return {
+            code: node.code as CurriculumCode,
+            nameAr,
+            nameEn,
+            divisions,
+            grades: sortGradesDescending(grades)
+          };
+        });
+        this.allCurriculaTracks.set(mergedTracks);
+      },
+      error: () => {
+        // Fallback to canonical tree defaults silently
+      }
+    });
+  }
+
+  private maybeFetchFilteredFromServer(): void {
+    const serverTotal = this.submissionStats().totalSubmissions;
+    const loadedCount = this.allSubmissions().length;
+    if (this.hasActiveCategoryFilter() && serverTotal > loadedCount) {
+      this.isServerFiltered = true;
+      this.fetchAllSubmissions(true, true);
+    } else if (!this.hasActiveCategoryFilter() && this.isServerFiltered) {
+      this.isServerFiltered = false;
+      this.fetchAllSubmissions(true, false);
+    }
+  }
+
+  fetchAllSubmissions(forceRefresh = false, useActiveCategoryParams = false): void {
+    // 1. Instant 0ms Memory Cache Check (only for unfiltered default feed)
+    if (!forceRefresh && !useActiveCategoryParams && submissionsMemoryCache) {
       this.allSubmissions.set(submissionsMemoryCache.submissions);
       this.submissionStats.set(submissionsMemoryCache.stats);
       this.isLoadingSubmissions.set(false);
@@ -400,15 +916,33 @@ export class InteractiveGradingStudioComponent implements OnInit {
       }
     }
 
-    if (!submissionsMemoryCache) {
+    if (!submissionsMemoryCache || useActiveCategoryParams) {
       this.isLoadingSubmissions.set(true);
     }
 
-    this.http.get<{ success: boolean; data: any }>('/api/v1/admin/submissions').subscribe({
+    let url = '/api/v1/admin/submissions';
+    if (useActiveCategoryParams && this.hasActiveCategoryFilter()) {
+      const params = new URLSearchParams();
+      if (this.selectedCurriculum() !== 'ALL') params.set('curriculum', this.selectedCurriculum());
+      if (this.selectedCurriculum() === 'GULF' && this.selectedGulfCountry() !== 'ALL') {
+        params.set('country', this.selectedGulfCountry());
+      }
+      if (this.selectedCurriculum() === 'INTERNATIONAL' && this.selectedIntlDivision() !== 'ALL') {
+        params.set('intlDivision', this.selectedIntlDivision());
+      }
+      if (this.selectedGrade() !== 'ALL') params.set('gradeLevel', this.selectedGrade());
+      if (this.currentCurriculumHasTerms() && this.selectedTerm() !== 'ALL') {
+        params.set('academicTerm', this.selectedTerm());
+      }
+      params.set('limit', '200');
+      url = `/api/v1/admin/submissions?${params.toString()}`;
+    }
+
+    this.http.get<{ success: boolean; data: any }>(url).subscribe({
       next: (res) => {
         const rawList: any[] = res?.data?.submissions || [];
         const stats = res?.data?.stats;
-        if (stats) {
+        if (stats && !useActiveCategoryParams) {
           this.submissionStats.set(stats);
         }
 
@@ -590,9 +1124,13 @@ export class InteractiveGradingStudioComponent implements OnInit {
             studentId: student._id || student.id || '',
             studentName: student.full_name || 'طالب سبايدر ماث',
             haCode: student.student_code || 'HA1001',
-            parentPhone: student.parent_phone || student.phone_number,
-            curriculum: student.curriculum || 'المصري',
-            gradeLevel: student.grade_level || 'الصف الأول الثانوي',
+            parentPhone: student.parent_phone || student.phone_number || student.phone,
+            curriculum: assessment.curriculum || student.curriculum || 'EGYPTIAN',
+            gradeLevel: assessment.grade_level || student.grade_level || '',
+            academicTerm: assessment.academic_term || student.academic_term || '',
+            country: student.country || '',
+            assessmentCurriculum: assessment.curriculum || '',
+            assessmentGradeLevel: assessment.grade_level || '',
             assessmentId: assessment._id || '',
             assessmentTitle: assessment.title_ar || 'تقييم دراسي',
             assessmentType: assessment.assessment_type || 'QUIZ',
@@ -617,13 +1155,15 @@ export class InteractiveGradingStudioComponent implements OnInit {
         });
 
         this.allSubmissions.set(mapped);
-        this.swrCache.set('admin_all_submissions', mapped);
-        this.swrCache.set('admin_submission_stats', this.submissionStats());
-        submissionsMemoryCache = {
-          submissions: mapped,
-          stats: this.submissionStats(),
-          timestamp: Date.now()
-        };
+        if (!useActiveCategoryParams) {
+          this.swrCache.set('admin_all_submissions', mapped);
+          this.swrCache.set('admin_submission_stats', this.submissionStats());
+          submissionsMemoryCache = {
+            submissions: mapped,
+            stats: this.submissionStats(),
+            timestamp: Date.now()
+          };
+        }
         this.isLoadingSubmissions.set(false);
       },
       error: () => {
