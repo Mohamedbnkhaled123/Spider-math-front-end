@@ -69,28 +69,41 @@
 
   <!-- 2. Students List & Subscriptions State Machine -->
   <div class="space-y-4">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div>
         <h2 class="text-xl font-black text-text-primary tracking-tight font-academic-serif">
           {{ langService.isArabic() ? 'إدارة الطلاب والاشتراكات' : 'Students & Subscriptions' }}
         </h2>
         <p class="text-xs text-text-secondary mt-0.5">
-          {{ langService.isArabic() ? 'تصنيف الحسابات والبحث وتفعيل الوحدات.' : 'Filter accounts, search & activate units.' }}
+          {{ langService.isArabic() ? 'تصنيف الحسابات، ترقية الصفوف والترم، وتفعيل الوحدات.' : 'Filter accounts, promote terms/grades & activate units.' }}
         </p>
       </div>
 
-      <!-- Instant Search Input -->
-      <div class="relative w-full sm:w-72">
-        <input
-          type="text"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="onSearchChange($event)"
-          [placeholder]="langService.isArabic() ? 'بحث بالاسم، الكود، الهاتف، أو البريد...' : 'Search by name, HA code, phone, or email...'"
-          class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
-        />
-        <span class="absolute right-3.5 top-3 text-text-muted">
-          <app-icon name="target" [size]="14" />
-        </span>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+        <!-- Manual Academic Promotion Button -->
+        <button
+          type="button"
+          (click)="openPromotionModal('GRADE')"
+          data-testid="open-promotion-modal-btn"
+          class="px-4 py-2.5 rounded-xl font-black text-xs text-white bg-gradient-spider shadow-sm hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+        >
+          <app-icon name="graduation-cap" [size]="15" />
+          <span>{{ langService.isArabic() ? 'ترقية الطلاب (الترم / الصف)' : 'Promote Students (Term / Grade)' }}</span>
+        </button>
+
+        <!-- Instant Search Input -->
+        <div class="relative w-full sm:w-64">
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchChange($event)"
+            [placeholder]="langService.isArabic() ? 'بحث بالاسم، الكود، الهاتف، أو البريد...' : 'Search by name, HA code, phone, or email...'"
+            class="w-full ps-4 pe-10 py-2.5 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+          />
+          <span class="absolute end-3.5 top-3 text-text-muted pointer-events-none">
+            <app-icon name="target" [size]="14" />
+          </span>
+        </div>
       </div>
     </div>
 
@@ -155,6 +168,25 @@
             {{ userCounts().inactiveStudents }}
           </span>
         }
+      </button>
+
+      <button
+        type="button"
+        (click)="setCategory('ARCHIVED')"
+        data-testid="tab-archived-students"
+        class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 shadow-sm"
+        [class.bg-slate-600]="activeCategory() === 'ARCHIVED'"
+        [class.text-white]="activeCategory() === 'ARCHIVED'"
+        [class.border-slate-600]="activeCategory() === 'ARCHIVED'"
+        [class.bg-surface-card]="activeCategory() !== 'ARCHIVED'"
+        [class.text-text-secondary]="activeCategory() !== 'ARCHIVED'"
+        [class.border-surface-border]="activeCategory() !== 'ARCHIVED'"
+      >
+        <app-icon name="graduation-cap" [size]="13" />
+        <span>{{ langService.isArabic() ? 'الأرشيف / الخريجون' : 'Archived / Graduates' }}</span>
+        <span class="px-1.5 py-0.5 rounded-full text-[10px]" [class.bg-white/20]="activeCategory() === 'ARCHIVED'" [class.bg-surface-bg]="activeCategory() !== 'ARCHIVED'">
+          {{ userCounts().archived }}
+        </span>
       </button>
 
       <button
@@ -276,8 +308,18 @@
                 @if (student.role === 'PARENT') {
                   <span class="text-text-muted font-mono text-xs">—</span>
                 } @else {
-                  <div>{{ student.curriculum }}</div>
-                  <div class="text-[11px] text-text-muted mt-0.5">{{ student.gradeLevel }}</div>
+                  <div class="font-bold text-text-primary">{{ formatStudentCurriculumLabel(student) }}</div>
+                  <div class="flex flex-wrap items-center gap-1 mt-0.5">
+                    <span class="text-[11px] text-text-muted">{{ formatStudentGradeLabel(student) }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-surface-bg border border-surface-border text-[9px] font-bold text-text-secondary">
+                      {{ formatStudentTermLabel(student) }}
+                    </span>
+                    @if (student.isArchived) {
+                      <span class="px-1.5 py-0.5 rounded bg-slate-500/15 border border-slate-500/30 text-[9px] font-bold text-slate-600 dark:text-slate-300">
+                        {{ langService.isArabic() ? 'خريج / أرشيف' : 'Archived' }}
+                      </span>
+                    }
+                  </div>
                 }
               </td>
 
@@ -316,6 +358,26 @@
                     <span class="text-text-muted text-[11px] font-medium px-2 py-1 rounded-lg bg-surface-bg border border-surface-border">
                       {{ langService.isArabic() ? 'حساب ولي أمر' : 'Parent Account' }}
                     </span>
+                  } @else if (student.isArchived) {
+                    <button
+                      type="button"
+                      (click)="toggleArchiveStudent(student, false)"
+                      [disabled]="isUpdatingArchiveStudentId() === student.id"
+                      data-testid="restore-archived-student-btn"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/30 text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <app-icon name="rotate-ccw" [size]="12" />
+                      <span>{{ langService.isArabic() ? 'استعادة من الأرشيف' : 'Restore' }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="openPermanentDeleteModal(student)"
+                      data-testid="delete-archived-student-btn"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-rose-500/30 text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      <app-icon name="trash" [size]="12" />
+                      <span>{{ langService.isArabic() ? 'حذف نهائي' : 'Delete Permanently' }}</span>
+                    </button>
                   } @else {
                     <!-- Unified Units Button -->
                     <button
@@ -486,8 +548,8 @@
               @if (student.role === 'PARENT') {
                 <span class="text-xs text-text-muted block mt-0.5 truncate">—</span>
               } @else {
-                <span class="text-xs font-bold text-text-primary block mt-0.5 truncate">{{ student.curriculum }}</span>
-                <span class="text-[10px] text-text-muted block truncate">{{ student.gradeLevel }}</span>
+                <span class="text-xs font-bold text-text-primary block mt-0.5 truncate">{{ formatStudentCurriculumLabel(student) }}</span>
+                <span class="text-[10px] text-text-muted block truncate">{{ formatStudentGradeLabel(student) }} • {{ formatStudentTermLabel(student) }}</span>
               }
             </div>
 
@@ -534,6 +596,24 @@
               <div class="w-full text-center py-1 text-xs text-text-muted font-medium">
                 {{ langService.isArabic() ? 'حساب ولي أمر (متابعة فقط)' : 'Parent Account (View Only)' }}
               </div>
+            } @else if (student.isArchived) {
+              <button
+                type="button"
+                (click)="toggleArchiveStudent(student, false)"
+                [disabled]="isUpdatingArchiveStudentId() === student.id"
+                class="flex-1 min-w-[120px] px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-center transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <app-icon name="rotate-ccw" [size]="13" />
+                <span>{{ langService.isArabic() ? 'استعادة من الأرشيف' : 'Restore' }}</span>
+              </button>
+              <button
+                type="button"
+                (click)="openPermanentDeleteModal(student)"
+                class="flex-1 min-w-[100px] px-3 py-1.5 rounded-xl text-xs font-bold border border-rose-500/40 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 text-center transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <app-icon name="trash" [size]="13" />
+                <span>{{ langService.isArabic() ? 'حذف نهائي' : 'Delete' }}</span>
+              </button>
             } @else {
               <!-- Unified Units Button -->
               <button
@@ -975,6 +1055,546 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 5. Manual Academic Promotion Modal (Term vs Grade + Select All + Exclude) -->
+  <!-- ========================================================================= -->
+  @if (isPromotionModalOpen()) {
+    <div
+      class="fixed inset-0 z-layer-modal bg-black/45 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto"
+      data-testid="academic-promotion-modal"
+      (click)="closePromotionModal()"
+    >
+      <div
+        class="relative w-full max-w-4xl max-h-[calc(100dvh-5.5rem)] min-h-0 flex flex-col rounded-3xl spider-rim-glass-card bg-surface-card shadow-2xl border border-surface-border text-xs"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-4 sm:p-5 border-b border-surface-border shrink-0 gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-10 h-10 rounded-2xl bg-brand-primary/15 border border-brand-primary/30 text-brand-primary flex items-center justify-center shrink-0">
+              <app-icon name="graduation-cap" [size]="20" />
+            </span>
+            <div class="min-w-0">
+              <h3 class="font-black text-sm sm:text-base text-text-primary truncate">
+                {{ promotionStage() === 'SELECT'
+                  ? (langService.isArabic() ? 'الترقية اليدوية للطلاب (الترم أو الصف الدراسي)' : 'Manual Student Academic Promotion')
+                  : (langService.isArabic() ? 'قرار تخرج الطلاب — أرشفة أم حذف نهائي؟' : 'Student Graduation Decision — Archive or Delete?') }}
+              </h3>
+              <p class="text-[11px] text-text-muted mt-0.5">
+                {{ promotionStage() === 'SELECT'
+                  ? (langService.isArabic() ? 'اختاري نوع الترقية ثم حددي الكل واستثني من رسب أو ألغى الاشتراك يدوياً.' : 'Choose promotion mode, select all, and exclude specific students manually.')
+                  : (langService.isArabic() ? 'حددي مصير كل طالب أنهى الصف الأخير في منهجه قبل حفظ التعديلات.' : 'Choose whether to archive or permanently delete each graduating student.') }}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="closePromotionModal()"
+            class="w-8 h-8 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0"
+          >
+            <app-icon name="x" [size]="16" />
+          </button>
+        </div>
+
+        <!-- Stage 1: Select Mode & Students -->
+        @if (promotionStage() === 'SELECT') {
+          <div class="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
+
+            <!-- Mode Selector: Term vs Grade -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                (click)="setPromotionMode('TERM')"
+                data-testid="promo-mode-term"
+                class="p-3.5 rounded-2xl border text-start transition-all cursor-pointer flex items-start gap-3"
+                [class.border-brand-primary]="promotionMode() === 'TERM'"
+                [class.bg-brand-primary/10]="promotionMode() === 'TERM'"
+                [class.border-surface-border]="promotionMode() !== 'TERM'"
+                [class.bg-surface-bg]="promotionMode() !== 'TERM'"
+              >
+                <span
+                  class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                  [class.bg-brand-primary]="promotionMode() === 'TERM'"
+                  [class.text-white]="promotionMode() === 'TERM'"
+                  [class.bg-surface-card]="promotionMode() !== 'TERM'"
+                  [class.text-text-muted]="promotionMode() !== 'TERM'"
+                >
+                  <app-icon name="rotate-cw" [size]="16" />
+                </span>
+                <div class="min-w-0 space-y-0.5">
+                  <div class="font-black text-xs sm:text-sm text-text-primary">
+                    {{ langService.isArabic() ? 'ترقية الترم الدراسي (الترم الأول -> الثاني)' : 'Academic Term Promotion (Term 1 -> Term 2)' }}
+                  </div>
+                  <p class="text-[11px] text-text-muted leading-relaxed">
+                    {{ langService.isArabic()
+                      ? 'متاح للمناهج ذات الفصول (المصري والخليجي فقط). المناهج بدون ترم مثل SAT والدولي تُستبعد تلقائياً.'
+                      : 'Only for term-based curricula (Egyptian & Gulf). Term-less tracks like SAT & International are skipped automatically.' }}
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="setPromotionMode('GRADE')"
+                data-testid="promo-mode-grade"
+                class="p-3.5 rounded-2xl border text-start transition-all cursor-pointer flex items-start gap-3"
+                [class.border-brand-primary]="promotionMode() === 'GRADE'"
+                [class.bg-brand-primary/10]="promotionMode() === 'GRADE'"
+                [class.border-surface-border]="promotionMode() !== 'GRADE'"
+                [class.bg-surface-bg]="promotionMode() !== 'GRADE'"
+              >
+                <span
+                  class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                  [class.bg-brand-primary]="promotionMode() === 'GRADE'"
+                  [class.text-white]="promotionMode() === 'GRADE'"
+                  [class.bg-surface-card]="promotionMode() !== 'GRADE'"
+                  [class.text-text-muted]="promotionMode() !== 'GRADE'"
+                >
+                  <app-icon name="arrow-up" [size]="16" />
+                </span>
+                <div class="min-w-0 space-y-0.5">
+                  <div class="font-black text-xs sm:text-sm text-text-primary">
+                    {{ langService.isArabic() ? 'ترقية الصف الدراسي (للصف الأعلى)' : 'Grade Level Promotion (Next Grade)' }}
+                  </div>
+                  <p class="text-[11px] text-text-muted leading-relaxed">
+                    {{ langService.isArabic()
+                      ? 'ينقل الطلاب للصف الأعلى ويعيد الترم للأول. طلاب نهاية المرحلة (مثل 3 ثانوي أو Grade 12 أو SAT) يدخلون شاشة التخرج.'
+                      : 'Advances students to the next grade. Final-grade students prompt for graduation (Archive vs Permanent Delete).' }}
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            <!-- Filters & Search Inside Modal -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 p-3 rounded-2xl bg-surface-bg border border-surface-border">
+              <div class="sm:col-span-4">
+                <select
+                  [ngModel]="promotionCurriculumFilter()"
+                  (ngModelChange)="setPromotionCurriculumFilter($event)"
+                  data-testid="promo-curriculum-filter"
+                  class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-card text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+                >
+                  <option value="ALL">{{ langService.isArabic() ? 'كل المناهج' : 'All Curricula' }}</option>
+                  <option value="EGYPTIAN">{{ langService.isArabic() ? 'المنهج المصري' : 'Egyptian' }}</option>
+                  <option value="GULF">{{ langService.isArabic() ? 'المنهج الخليجي' : 'Gulf' }}</option>
+                  <option value="INTERNATIONAL">{{ langService.isArabic() ? 'المناهج الدولية' : 'International' }}</option>
+                  <option value="AMERICAN">{{ langService.isArabic() ? 'SAT / الدبلومة الأمريكية' : 'SAT / American' }}</option>
+                </select>
+              </div>
+
+              <div class="sm:col-span-4">
+                <select
+                  [ngModel]="promotionGradeFilter()"
+                  (ngModelChange)="promotionGradeFilter.set($event)"
+                  data-testid="promo-grade-filter"
+                  class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-card text-xs font-bold text-text-primary focus:outline-none focus:border-brand-primary"
+                >
+                  <option value="ALL">{{ langService.isArabic() ? 'كل الصفوف الدراسية' : 'All Grades' }}</option>
+                  @for (opt of promotionGradeFilterOptions(); track opt.code) {
+                    <option [value]="opt.code">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="sm:col-span-4">
+                <input
+                  type="text"
+                  [ngModel]="promotionSearchQuery()"
+                  (ngModelChange)="promotionSearchQuery.set($event)"
+                  data-testid="promo-search-input"
+                  [placeholder]="langService.isArabic() ? 'بحث باسم الطالب أو HAxxxx...' : 'Search name or HAxxxx...'"
+                  class="w-full px-3 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+            </div>
+
+            <!-- Select All & Exclusion Helper Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-2xl border border-surface-border bg-surface-bg/70">
+              <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-xs text-text-primary select-none">
+                <input
+                  type="checkbox"
+                  data-testid="promo-select-all-checkbox"
+                  [checked]="isAllEligibleInViewSelected()"
+                  [disabled]="promotionStats().eligibleInView === 0"
+                  (change)="toggleSelectAllPromotion()"
+                  class="w-4 h-4 accent-brand-primary rounded cursor-pointer disabled:opacity-40"
+                />
+                <span>{{ langService.isArabic() ? 'تحديد الكل المؤهلين في القائمة (Select All)' : 'Select All Eligible' }}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-brand-primary/15 text-brand-primary">
+                  {{ promotionStats().eligibleInView }}
+                </span>
+              </label>
+
+              <div class="flex flex-wrap items-center gap-2">
+                @if (promotionStats().inactiveInSelected > 0) {
+                  <button
+                    type="button"
+                    (click)="excludeInactiveFromSelection()"
+                    data-testid="promo-exclude-inactive-btn"
+                    class="px-2.5 py-1 rounded-xl text-[11px] font-bold border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                  >
+                    {{ langService.isArabic()
+                      ? ('استثناء غير المشتركين (' + promotionStats().inactiveInSelected + ')')
+                      : ('Exclude Inactive (' + promotionStats().inactiveInSelected + ')') }}
+                  </button>
+                }
+
+                <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                  {{ langService.isArabic() ? ('محدد للترقية: ' + promotionStats().selectedTotal) : ('Selected: ' + promotionStats().selectedTotal) }}
+                </span>
+
+                @if (promotionStats().excludedCount > 0) {
+                  <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/25">
+                    {{ langService.isArabic() ? ('مستثنى: ' + promotionStats().excludedCount) : ('Excluded: ' + promotionStats().excludedCount) }}
+                  </span>
+                }
+
+                @if (promotionStats().selectedGraduating > 0) {
+                  <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    {{ langService.isArabic() ? ('خريجون: ' + promotionStats().selectedGraduating) : ('Graduating: ' + promotionStats().selectedGraduating) }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Students Checklist -->
+            <div class="space-y-2 max-h-80 overflow-y-auto pe-1">
+              @for (row of promotionRows(); track row.student.id) {
+                <div
+                  data-testid="promo-student-row"
+                  [attr.data-student-id]="row.student.id"
+                  class="p-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all"
+                  [class.border-brand-primary/50]="promotionSelectedIds().has(row.student.id)"
+                  [class.bg-brand-primary/5]="promotionSelectedIds().has(row.student.id)"
+                  [class.border-surface-border]="!promotionSelectedIds().has(row.student.id)"
+                  [class.bg-surface-bg]="row.eval.eligible && !promotionSelectedIds().has(row.student.id)"
+                  [class.opacity-60]="!row.eval.eligible"
+                >
+                  <div class="flex items-start sm:items-center gap-3 min-w-0">
+                    <input
+                      type="checkbox"
+                      data-testid="promo-student-checkbox"
+                      [checked]="promotionSelectedIds().has(row.student.id)"
+                      [disabled]="!row.eval.eligible"
+                      (change)="toggleStudentPromotionSelection(row.student.id)"
+                      class="w-4 h-4 mt-0.5 sm:mt-0 accent-brand-primary rounded cursor-pointer disabled:cursor-not-allowed shrink-0"
+                    />
+
+                    <div class="min-w-0 space-y-0.5">
+                      <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="font-bold text-text-primary text-xs sm:text-sm">{{ row.student.name }}</span>
+                        <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-surface-card border border-surface-border text-brand-primary">
+                          {{ row.student.haCode }}
+                        </span>
+                        @if (row.student.subscriptionStatus === 'ACTIVE') {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            {{ langService.isArabic() ? 'اشتراك نشط' : 'Active' }}
+                          </span>
+                        } @else if (row.student.subscriptionStatus === 'FROZEN') {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            {{ langService.isArabic() ? 'مجمّد' : 'Frozen' }}
+                          </span>
+                        } @else {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                            {{ langService.isArabic() ? 'غير مشترك / ملغي' : 'Cancelled / Inactive' }}
+                          </span>
+                        }
+                      </div>
+
+                      <div class="text-[11px] text-text-muted flex flex-wrap items-center gap-1.5">
+                        <span class="font-semibold text-text-secondary">{{ formatStudentCurriculumLabel(row.student) }}</span>
+                        <span>•</span>
+                        <span>{{ formatStudentGradeLabel(row.student) }}</span>
+                        <span>•</span>
+                        <span>{{ formatStudentTermLabel(row.student) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Outcome / Eligibility Preview Badge -->
+                  <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                    @if (!row.eval.eligible) {
+                      <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-surface-card text-text-muted border border-surface-border">
+                        {{ langService.isArabic() ? row.eval.reasonAr : row.eval.reasonEn }}
+                      </span>
+                    } @else if (row.eval.isGraduating) {
+                      <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                        <app-icon name="graduation-cap" [size]="12" />
+                        <span>{{ langService.isArabic() ? 'تخرج — نهاية المرحلة' : 'Graduating — Final Grade' }}</span>
+                      </span>
+                    } @else if (promotionMode() === 'TERM') {
+                      <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                        {{ langService.isArabic() ? 'الترم الأول -> الترم الثاني' : 'Term 1 -> Term 2' }}
+                      </span>
+                    } @else {
+                      <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/25">
+                        {{ formatGradeCodeLabel(row.eval.currentCurriculum, row.eval.currentGrade) }} -> {{ formatGradeCodeLabel(row.eval.currentCurriculum, row.eval.nextGrade) }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="p-8 text-center rounded-2xl bg-surface-bg border border-surface-border text-xs text-text-muted">
+                  {{ langService.isArabic() ? 'لا يوجد طلاب مطابقون للتصفية الحالية.' : 'No students match the current filter.' }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Modal Footer (Select Stage) -->
+          <div class="p-4 border-t border-surface-border flex flex-wrap items-center justify-between gap-2 shrink-0">
+            <span class="text-[11px] text-text-muted">
+              {{ langService.isArabic()
+                ? 'لن يتم تعديل أي طالب غير محدد أو مستثنى.'
+                : 'Unchecked or excluded students remain untouched.' }}
+            </span>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="closePromotionModal()"
+                class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              >
+                {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+              </button>
+              <button
+                type="button"
+                (click)="proceedFromPromotionSelection()"
+                data-testid="promo-continue-btn"
+                [disabled]="promotionStats().selectedTotal === 0 || isExecutingPromotion()"
+                class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+              >
+                @if (isExecutingPromotion()) {
+                  <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>{{ langService.isArabic() ? 'جاري التنفيذ...' : 'Executing...' }}</span>
+                } @else if (promotionStats().selectedGraduating > 0) {
+                  <span>{{ langService.isArabic() ? ('متابعة لمراجعة التخرج (' + promotionStats().selectedTotal + ')') : ('Review Graduation (' + promotionStats().selectedTotal + ')') }}</span>
+                } @else {
+                  <app-icon name="check-circle" [size]="14" />
+                  <span>{{ langService.isArabic() ? ('تنفيذ الترقية (' + promotionStats().selectedTotal + ')') : ('Apply Promotion (' + promotionStats().selectedTotal + ')') }}</span>
+                }
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Stage 2: Graduation Review (Archive vs Permanent Delete) -->
+          <div class="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
+            <div
+              data-testid="graduation-prompt-banner"
+              class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+            >
+              <app-icon name="graduation-cap" [size]="20" className="text-amber-500 shrink-0 mt-0.5" />
+              <div class="space-y-1">
+                <h4 class="font-black text-xs sm:text-sm text-text-primary">
+                  {{ selectedGraduatingRows().length === 1
+                    ? (langService.isArabic() ? 'تم تخرج هذا الطالب — هل تريدين وضعه في الأرشيف أم حذف سجل الطالب نهائياً؟' : 'This student has graduated — archive or permanently delete their record?')
+                    : (langService.isArabic()
+                        ? ('تم تخرج هؤلاء الطلاب (' + selectedGraduatingRows().length + ' طالب) — هل تريدين وضعهم في الأرشيف أم حذف سجلاتهم نهائياً؟')
+                        : (selectedGraduatingRows().length + ' students have graduated — archive or permanently delete?')) }}
+                </h4>
+                <p class="text-[11px] text-text-secondary leading-relaxed">
+                  {{ langService.isArabic()
+                    ? 'الأرشيف يحفظ بيانات الطالب ودرجاته السابقة مع إمكانية الاستعادة لاحقاً، بينما الحذف النهائي يمسح السجل بالكامل ولا يمكن التراجع عنه.'
+                    : 'Archiving preserves historical records with restore capability; permanent deletion removes all account records irreversibly.' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Bulk Decision Helpers -->
+            <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-2xl bg-surface-bg border border-surface-border">
+              <span class="font-bold text-[11px] text-text-secondary">
+                {{ langService.isArabic() ? 'تطبيق جماعي للخريجين:' : 'Apply bulk action:' }}
+              </span>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  (click)="setAllGraduationDecisions('ARCHIVE')"
+                  data-testid="grad-bulk-archive-btn"
+                  class="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/30 hover:bg-brand-primary/20 transition-colors cursor-pointer"
+                >
+                  {{ langService.isArabic() ? 'وضع الجميع في الأرشيف' : 'Archive All' }}
+                </button>
+                <button
+                  type="button"
+                  (click)="setAllGraduationDecisions('DELETE')"
+                  data-testid="grad-bulk-delete-btn"
+                  class="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                >
+                  {{ langService.isArabic() ? 'حذف الجميع نهائياً' : 'Delete All Permanently' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Per-Graduating Student Decision List -->
+            <div class="space-y-2.5 max-h-72 overflow-y-auto pe-1">
+              @for (row of selectedGraduatingRows(); track row.student.id) {
+                <div
+                  [attr.data-graduating-student-id]="row.student.id"
+                  class="p-3.5 rounded-2xl bg-surface-bg border border-surface-border flex flex-col md:flex-row md:items-center justify-between gap-3"
+                >
+                  <div class="min-w-0 space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-black text-xs sm:text-sm text-text-primary">{{ row.student.name }}</span>
+                      <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-surface-card border border-surface-border text-brand-primary">
+                        {{ row.student.haCode }}
+                      </span>
+                    </div>
+                    <div class="text-[11px] text-text-muted">
+                      {{ formatStudentCurriculumLabel(row.student) }} • {{ formatStudentGradeLabel(row.student) }}
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      (click)="setGraduationDecision(row.student.id, 'ARCHIVE')"
+                      data-testid="grad-decision-archive"
+                      class="px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer"
+                      [class.bg-brand-primary]="graduationDecisions()[row.student.id] === 'ARCHIVE'"
+                      [class.text-white]="graduationDecisions()[row.student.id] === 'ARCHIVE'"
+                      [class.border-brand-primary]="graduationDecisions()[row.student.id] === 'ARCHIVE'"
+                      [class.bg-surface-card]="graduationDecisions()[row.student.id] !== 'ARCHIVE'"
+                      [class.text-text-secondary]="graduationDecisions()[row.student.id] !== 'ARCHIVE'"
+                      [class.border-surface-border]="graduationDecisions()[row.student.id] !== 'ARCHIVE'"
+                    >
+                      {{ langService.isArabic() ? 'وضع في الأرشيف' : 'Move to Archive' }}
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="setGraduationDecision(row.student.id, 'DELETE')"
+                      data-testid="grad-decision-delete"
+                      class="px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer"
+                      [class.bg-rose-600]="graduationDecisions()[row.student.id] === 'DELETE'"
+                      [class.text-white]="graduationDecisions()[row.student.id] === 'DELETE'"
+                      [class.border-rose-600]="graduationDecisions()[row.student.id] === 'DELETE'"
+                      [class.bg-surface-card]="graduationDecisions()[row.student.id] !== 'DELETE'"
+                      [class.text-rose-500]="graduationDecisions()[row.student.id] !== 'DELETE'"
+                      [class.border-rose-500/30]="graduationDecisions()[row.student.id] !== 'DELETE'"
+                    >
+                      {{ langService.isArabic() ? 'حذف نهائي' : 'Delete Permanently' }}
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="setGraduationDecision(row.student.id, 'SKIP')"
+                      data-testid="grad-decision-skip"
+                      class="px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer"
+                      [class.bg-slate-600]="graduationDecisions()[row.student.id] === 'SKIP'"
+                      [class.text-white]="graduationDecisions()[row.student.id] === 'SKIP'"
+                      [class.border-slate-600]="graduationDecisions()[row.student.id] === 'SKIP'"
+                      [class.bg-surface-card]="graduationDecisions()[row.student.id] !== 'SKIP'"
+                      [class.text-text-muted]="graduationDecisions()[row.student.id] !== 'SKIP'"
+                      [class.border-surface-border]="graduationDecisions()[row.student.id] !== 'SKIP'"
+                    >
+                      {{ langService.isArabic() ? 'استثناء (بدون تغيير)' : 'Skip' }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (selectedGraduatingDeleteCount() > 0) {
+              <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[11px] font-bold flex items-start gap-2">
+                <app-icon name="alert-triangle" [size]="16" className="shrink-0 mt-0.5" />
+                <span>
+                  {{ langService.isArabic()
+                    ? ('تحذير: تم تحديد ' + selectedGraduatingDeleteCount() + ' طالب للحذف النهائي من قاعدة البيانات — سيتم مسح حساباتهم واشتراكاتهم وإجاباتهم نهائياً ولا يمكن التراجع.')
+                    : ('Warning: ' + selectedGraduatingDeleteCount() + ' student(s) marked for irreversible permanent deletion.') }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Modal Footer (Graduation Review Stage) -->
+          <div class="p-4 border-t border-surface-border flex flex-wrap items-center justify-between gap-2 shrink-0">
+            <button
+              type="button"
+              (click)="promotionStage.set('SELECT')"
+              [disabled]="isExecutingPromotion()"
+              class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            >
+              {{ langService.isArabic() ? 'رجوع للقائمة' : 'Back to List' }}
+            </button>
+
+            <button
+              type="button"
+              (click)="executePromotion()"
+              data-testid="promo-confirm-execute-btn"
+              [disabled]="isExecutingPromotion()"
+              class="px-5 py-2 rounded-xl bg-gradient-spider text-white font-black shadow-sm disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
+            >
+              @if (isExecutingPromotion()) {
+                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span>{{ langService.isArabic() ? 'جاري التنفيذ...' : 'Executing...' }}</span>
+              } @else {
+                <app-icon name="check-circle" [size]="14" />
+                <span>{{ langService.isArabic() ? 'اعتماد وتنفيذ الترقية والتخرج' : 'Confirm & Execute' }}</span>
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 6. Confirm Permanent Delete of Archived Student                           -->
+  <!-- ========================================================================= -->
+  @if (studentPendingPermanentDelete(); as student) {
+    <div
+      class="fixed inset-0 z-layer-modal bg-black/45 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto"
+      data-testid="confirm-permanent-delete-modal"
+      (click)="closePermanentDeleteModal()"
+    >
+      <div
+        class="w-full max-w-md rounded-3xl border border-rose-500/30 bg-surface-card p-5 shadow-2xl space-y-4 text-xs"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-start gap-3">
+          <span class="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-500 flex items-center justify-center shrink-0">
+            <app-icon name="alert-triangle" [size]="20" />
+          </span>
+          <div class="space-y-1">
+            <h3 class="font-black text-sm text-text-primary">
+              {{ langService.isArabic() ? 'تأكيد حذف سجل الطالب نهائياً' : 'Confirm Permanent Student Deletion' }}
+            </h3>
+            <p class="text-[11px] text-text-secondary leading-relaxed">
+              {{ langService.isArabic()
+                ? ('هل أنتِ متأكدة من حذف حساب "' + student.name + '" (' + student.haCode + ') نهائياً؟ سيتم مسح الاشتراكات والإجابات وسجل التقدم بالكامل.')
+                : ('Are you sure you want to permanently delete "' + student.name + '" (' + student.haCode + ')? All subscriptions and submissions will be erased.') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="closePermanentDeleteModal()"
+            [disabled]="isDeletingStudent()"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-secondary hover:text-text-primary cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+          </button>
+          <button
+            type="button"
+            (click)="confirmPermanentDelete()"
+            data-testid="confirm-permanent-delete-btn"
+            [disabled]="isDeletingStudent()"
+            class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            @if (isDeletingStudent()) {
+              <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span>{{ langService.isArabic() ? 'جاري الحذف...' : 'Deleting...' }}</span>
+            } @else {
+              <app-icon name="trash" [size]="13" />
+              <span>{{ langService.isArabic() ? 'حذف نهائي من قاعدة البيانات' : 'Delete Permanently' }}</span>
+            }
+          </button>
+        </div>
       </div>
     </div>
   }

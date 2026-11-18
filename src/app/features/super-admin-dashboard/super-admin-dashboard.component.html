@@ -511,6 +511,8 @@
             [availableUnits]="unitsList()"
             [isLoading]="isLoading()"
             (studentUpdated)="onStudentUpdated($event)"
+            (studentsDeleted)="onStudentsDeleted($event)"
+            (studentsReloadRequested)="onStudentsReloadRequested()"
             (deviceApproved)="onDeviceApproved($event)"
             (deviceRejected)="onDeviceRejected($event)"
             (toastTriggered)="showToast($event.text, $event.type)"

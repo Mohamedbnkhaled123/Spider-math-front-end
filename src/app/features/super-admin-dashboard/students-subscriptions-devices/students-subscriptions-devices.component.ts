@@ -14,10 +14,21 @@ import { HttpClient } from '@angular/common/http';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import {
+  GraduationDecision,
   PendingDeviceRequest,
+  PromoteStudentsResponse,
+  PromotionMode,
   StudentAdminSummary
 } from './students-subscriptions-devices.models';
 import { formatLastSeen } from '../../../core/utils/last-seen.util';
+import {
+  curriculumSupportsTerms,
+  evaluateStudentForPromotion,
+  getCurriculumDisplayLabel,
+  getGradeDisplayLabel,
+  getTermDisplayLabel,
+  normalizePromotionCurriculum
+} from './student-promotion.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -50,6 +61,8 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
   // Outputs
   readonly studentUpdated = output<StudentAdminSummary>();
+  readonly studentsDeleted = output<string[]>();
+  readonly studentsReloadRequested = output<void>();
   readonly deviceApproved = output<PendingDeviceRequest>();
   readonly deviceRejected = output<PendingDeviceRequest>();
   readonly toastTriggered = output<{ text: string; type: 'success' | 'warning' | 'error' }>();
@@ -58,7 +71,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
   readonly searchQuery = signal<string>('');
 
   // User Category Filter (Strictly students and parents, admins/teachers are never students)
-  readonly activeCategory = signal<'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS'>('ALL');
+  readonly activeCategory = signal<'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'ARCHIVED' | 'PARENTS'>('ALL');
 
   // Filter out any Admin / Teacher accounts from the student management view
   readonly sanitizedStudents = computed(() => {
@@ -73,10 +86,12 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
 
   readonly userCounts = computed(() => {
     const list = this.sanitizedStudents();
+    const isActiveStudent = (s: StudentAdminSummary) => (s.role === 'STUDENT' || !s.role) && !s.isArchived;
     return {
-      all: list.length,
-      activeStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && s.hasActiveSubscription).length,
-      inactiveStudents: list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription).length,
+      all: list.filter((s) => !s.isArchived).length,
+      activeStudents: list.filter((s) => isActiveStudent(s) && s.hasActiveSubscription).length,
+      inactiveStudents: list.filter((s) => isActiveStudent(s) && !s.hasActiveSubscription).length,
+      archived: list.filter((s) => (s.role === 'STUDENT' || !s.role) && !!s.isArchived).length,
       parents: list.filter((s) => s.role === 'PARENT').length
     };
   });
@@ -127,12 +142,17 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     let list = this.sanitizedStudents();
 
     // 1. Category Filter
-    if (cat === 'ACTIVE_STUDENTS') {
-      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && s.hasActiveSubscription);
-    } else if (cat === 'INACTIVE_STUDENTS') {
-      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.hasActiveSubscription);
+    if (cat === 'ARCHIVED') {
+      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !!s.isArchived);
     } else if (cat === 'PARENTS') {
       list = list.filter((s) => s.role === 'PARENT');
+    } else if (cat === 'ACTIVE_STUDENTS') {
+      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.isArchived && s.hasActiveSubscription);
+    } else if (cat === 'INACTIVE_STUDENTS') {
+      list = list.filter((s) => (s.role === 'STUDENT' || !s.role) && !s.isArchived && !s.hasActiveSubscription);
+    } else {
+      // ALL excludes archived students so active lists stay uncluttered
+      list = list.filter((s) => !s.isArchived);
     }
 
     // 2. Search Query Filter
@@ -185,7 +205,7 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'PARENTS'): void {
+  setCategory(cat: 'ALL' | 'ACTIVE_STUDENTS' | 'INACTIVE_STUDENTS' | 'ARCHIVED' | 'PARENTS'): void {
     this.activeCategory.set(cat);
     this.currentPage.set(1);
   }
@@ -646,5 +666,459 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
         });
       }
     });
+  }
+
+  // =========================================================================
+  // Manual Academic Promotion (Term vs Grade), Select All & Graduation Flow
+  // =========================================================================
+  readonly isPromotionModalOpen = signal<boolean>(false);
+  readonly promotionStage = signal<'SELECT' | 'GRADUATION_REVIEW'>('SELECT');
+  readonly promotionMode = signal<PromotionMode>('GRADE');
+  readonly promotionCurriculumFilter = signal<string>('ALL');
+  readonly promotionGradeFilter = signal<string>('ALL');
+  readonly promotionSearchQuery = signal<string>('');
+  readonly promotionSelectedIds = signal<Set<string>>(new Set());
+  readonly promotionExcludedIds = signal<Set<string>>(new Set());
+  readonly graduationDecisions = signal<Record<string, GraduationDecision>>({});
+  readonly isExecutingPromotion = signal<boolean>(false);
+
+  // Archived Lifecycle Modals & Flags
+  readonly studentPendingPermanentDelete = signal<StudentAdminSummary | null>(null);
+  readonly isDeletingStudent = signal<boolean>(false);
+  readonly isUpdatingArchiveStudentId = signal<string | null>(null);
+
+  readonly nonArchivedStudentCandidates = computed(() =>
+    this.sanitizedStudents().filter((s) => (s.role === 'STUDENT' || !s.role) && !s.isArchived)
+  );
+
+  readonly promotionGradeFilterOptions = computed(() => {
+    const currFilter = this.promotionCurriculumFilter();
+    const seen = new Set<string>();
+    const options: Array<{ code: string; curriculum: string; label: string }> = [];
+    const isAr = this.langService.isArabic();
+
+    for (const s of this.nonArchivedStudentCandidates()) {
+      const effCurr = normalizePromotionCurriculum(s.curriculum, s.gradeLevel);
+      if (currFilter !== 'ALL' && effCurr !== currFilter) continue;
+      const gradeCode = (s.gradeLevel || '').trim().toUpperCase();
+      if (!gradeCode || gradeCode === '—' || seen.has(gradeCode)) continue;
+      seen.add(gradeCode);
+      options.push({
+        code: gradeCode,
+        curriculum: effCurr,
+        label: getGradeDisplayLabel(effCurr, gradeCode, isAr)
+      });
+    }
+    return options;
+  });
+
+  readonly promotionRows = computed(() => {
+    const mode = this.promotionMode();
+    const currFilter = this.promotionCurriculumFilter();
+    const gradeFilter = this.promotionGradeFilter();
+    const q = this.promotionSearchQuery().trim().toLowerCase();
+
+    return this.nonArchivedStudentCandidates()
+      .filter((s) => {
+        const effCurr = normalizePromotionCurriculum(s.curriculum, s.gradeLevel);
+        if (currFilter !== 'ALL' && effCurr !== currFilter) return false;
+        const normGrade = (s.gradeLevel || '').trim().toUpperCase();
+        if (gradeFilter !== 'ALL' && normGrade !== gradeFilter) return false;
+        if (!q) return true;
+        return (
+          s.name.toLowerCase().includes(q) ||
+          s.haCode.toLowerCase().includes(q) ||
+          (s.email && s.email.toLowerCase().includes(q))
+        );
+      })
+      .map((student) => ({
+        student,
+        eval: evaluateStudentForPromotion(student, mode)
+      }));
+  });
+
+  readonly eligiblePromotionRows = computed(() =>
+    this.promotionRows().filter((r) => r.eval.eligible)
+  );
+
+  readonly selectedEligibleRows = computed(() => {
+    const mode = this.promotionMode();
+    const selectedSet = this.promotionSelectedIds();
+    return this.nonArchivedStudentCandidates()
+      .map((student) => ({
+        student,
+        eval: evaluateStudentForPromotion(student, mode)
+      }))
+      .filter((r) => r.eval.eligible && selectedSet.has(r.student.id));
+  });
+
+  readonly selectedGraduatingRows = computed(() =>
+    this.selectedEligibleRows().filter((r) => r.eval.isGraduating)
+  );
+
+  readonly selectedGraduatingDeleteCount = computed(() => {
+    const decisions = this.graduationDecisions();
+    return this.selectedGraduatingRows().filter((r) => decisions[r.student.id] === 'DELETE').length;
+  });
+
+  readonly isAllEligibleInViewSelected = computed(() => {
+    const eligible = this.eligiblePromotionRows();
+    const selected = this.promotionSelectedIds();
+    return eligible.length > 0 && eligible.every((r) => selected.has(r.student.id));
+  });
+
+  readonly promotionStats = computed(() => {
+    const rows = this.promotionRows();
+    const eligibleInView = rows.filter((r) => r.eval.eligible);
+    const selected = this.selectedEligibleRows();
+    const selectedGraduating = selected.filter((r) => r.eval.isGraduating);
+    const inactiveInSelected = selected.filter((r) => r.student.subscriptionStatus !== 'ACTIVE').length;
+
+    return {
+      totalInView: rows.length,
+      eligibleInView: eligibleInView.length,
+      ineligibleInView: rows.length - eligibleInView.length,
+      selectedTotal: selected.length,
+      selectedPromotable: selected.length - selectedGraduating.length,
+      selectedGraduating: selectedGraduating.length,
+      excludedCount: this.promotionExcludedIds().size,
+      inactiveInSelected
+    };
+  });
+
+  openPromotionModal(defaultMode: PromotionMode = 'GRADE'): void {
+    this.promotionMode.set(defaultMode);
+    this.promotionStage.set('SELECT');
+    this.promotionCurriculumFilter.set('ALL');
+    this.promotionGradeFilter.set('ALL');
+    this.promotionSearchQuery.set('');
+    this.promotionSelectedIds.set(new Set());
+    this.promotionExcludedIds.set(new Set());
+    this.graduationDecisions.set({});
+    this.isPromotionModalOpen.set(true);
+  }
+
+  closePromotionModal(): void {
+    if (this.isExecutingPromotion()) return;
+    this.isPromotionModalOpen.set(false);
+    this.promotionStage.set('SELECT');
+  }
+
+  setPromotionMode(mode: PromotionMode): void {
+    this.promotionMode.set(mode);
+    this.promotionStage.set('SELECT');
+    this.graduationDecisions.set({});
+
+    // Drop any previously checked students that are ineligible in the newly chosen mode
+    const validSelected = new Set<string>();
+    const prevSelected = this.promotionSelectedIds();
+    for (const s of this.nonArchivedStudentCandidates()) {
+      if (prevSelected.has(s.id) && evaluateStudentForPromotion(s, mode).eligible) {
+        validSelected.add(s.id);
+      }
+    }
+    this.promotionSelectedIds.set(validSelected);
+  }
+
+  setPromotionCurriculumFilter(curr: string): void {
+    this.promotionCurriculumFilter.set(curr);
+    this.promotionGradeFilter.set('ALL');
+  }
+
+  toggleSelectAllPromotion(): void {
+    const visibleEligibleIds = this.eligiblePromotionRows().map((r) => r.student.id);
+    if (visibleEligibleIds.length === 0) return;
+
+    const nextSelected = new Set(this.promotionSelectedIds());
+    const nextExcluded = new Set(this.promotionExcludedIds());
+
+    if (this.isAllEligibleInViewSelected()) {
+      for (const id of visibleEligibleIds) {
+        nextSelected.delete(id);
+      }
+    } else {
+      for (const id of visibleEligibleIds) {
+        nextSelected.add(id);
+        nextExcluded.delete(id);
+      }
+    }
+
+    this.promotionSelectedIds.set(nextSelected);
+    this.promotionExcludedIds.set(nextExcluded);
+  }
+
+  toggleStudentPromotionSelection(studentId: string): void {
+    const student = this.nonArchivedStudentCandidates().find((s) => s.id === studentId);
+    if (!student || !evaluateStudentForPromotion(student, this.promotionMode()).eligible) {
+      return;
+    }
+
+    const nextSelected = new Set(this.promotionSelectedIds());
+    const nextExcluded = new Set(this.promotionExcludedIds());
+
+    if (nextSelected.has(studentId)) {
+      nextSelected.delete(studentId);
+      nextExcluded.add(studentId);
+    } else {
+      nextSelected.add(studentId);
+      nextExcluded.delete(studentId);
+    }
+
+    this.promotionSelectedIds.set(nextSelected);
+    this.promotionExcludedIds.set(nextExcluded);
+  }
+
+  excludeInactiveFromSelection(): void {
+    const nextSelected = new Set(this.promotionSelectedIds());
+    const nextExcluded = new Set(this.promotionExcludedIds());
+
+    for (const r of this.selectedEligibleRows()) {
+      if (r.student.subscriptionStatus !== 'ACTIVE') {
+        nextSelected.delete(r.student.id);
+        nextExcluded.add(r.student.id);
+      }
+    }
+
+    this.promotionSelectedIds.set(nextSelected);
+    this.promotionExcludedIds.set(nextExcluded);
+  }
+
+  proceedFromPromotionSelection(): void {
+    const selected = this.selectedEligibleRows();
+    if (selected.length === 0) {
+      this.toastTriggered.emit({
+        text: this.langService.isArabic()
+          ? 'يرجى تحديد طالب واحد على الأقل للترقية'
+          : 'Please select at least one eligible student',
+        type: 'warning'
+      });
+      return;
+    }
+
+    const graduating = selected.filter((r) => r.eval.isGraduating);
+    if (graduating.length > 0) {
+      const decisions = { ...this.graduationDecisions() };
+      for (const r of graduating) {
+        if (!decisions[r.student.id]) {
+          decisions[r.student.id] = 'ARCHIVE';
+        }
+      }
+      this.graduationDecisions.set(decisions);
+      this.promotionStage.set('GRADUATION_REVIEW');
+      return;
+    }
+
+    this.executePromotion();
+  }
+
+  setGraduationDecision(studentId: string, decision: GraduationDecision): void {
+    this.graduationDecisions.update((prev) => ({
+      ...prev,
+      [studentId]: decision
+    }));
+  }
+
+  setAllGraduationDecisions(decision: GraduationDecision): void {
+    const next: Record<string, GraduationDecision> = {};
+    for (const r of this.selectedGraduatingRows()) {
+      next[r.student.id] = decision;
+    }
+    this.graduationDecisions.set(next);
+  }
+
+  executePromotion(): void {
+    const selected = this.selectedEligibleRows();
+    if (selected.length === 0 || this.isExecutingPromotion()) return;
+
+    const studentIds = selected.map((r) => r.student.id);
+    const excludedStudentIds = Array.from(this.promotionExcludedIds());
+    const gradMap: Record<string, GraduationDecision> = {};
+    const currentDecisions = this.graduationDecisions();
+
+    for (const r of selected) {
+      if (r.eval.isGraduating) {
+        gradMap[r.student.id] = currentDecisions[r.student.id] || 'ARCHIVE';
+      }
+    }
+
+    this.isExecutingPromotion.set(true);
+    this.http.post<{ success: boolean; data: PromoteStudentsResponse }>('/api/v1/admin/users/students/promote', {
+      mode: this.promotionMode(),
+      studentIds,
+      excludedStudentIds,
+      graduationDecisions: gradMap
+    }).subscribe({
+      next: (res) => {
+        this.isExecutingPromotion.set(false);
+        const result = res?.data;
+        if (result) {
+          this.applyPromotionResultUpdates(result);
+          this.toastTriggered.emit({
+            text: this.formatPromotionSummaryToast(result),
+            type: 'success'
+          });
+        }
+        this.isPromotionModalOpen.set(false);
+        this.promotionStage.set('SELECT');
+        this.studentsReloadRequested.emit();
+      },
+      error: (err) => {
+        this.isExecutingPromotion.set(false);
+        if (err?.status === 409 && err?.error?.error?.details?.requiresGraduationDecision) {
+          const decisions = { ...this.graduationDecisions() };
+          for (const g of err.error.error.details.graduatingStudents || []) {
+            if (!decisions[g.studentId]) decisions[g.studentId] = 'ARCHIVE';
+          }
+          this.graduationDecisions.set(decisions);
+          this.promotionStage.set('GRADUATION_REVIEW');
+          return;
+        }
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر تنفيذ عملية الترقية.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
+  private applyPromotionResultUpdates(result: PromoteStudentsResponse): void {
+    const currentById = new Map(this.sanitizedStudents().map((s) => [s.id, s]));
+
+    for (const item of result.promoted || []) {
+      const existing = currentById.get(item.studentId);
+      if (!existing) continue;
+      this.studentUpdated.emit({
+        ...existing,
+        gradeLevel: item.toGrade || existing.gradeLevel,
+        academicTerm: (item.toTerm ?? existing.academicTerm ?? null) as 'TERM_1' | 'TERM_2' | null
+      });
+    }
+
+    const nowIso = new Date().toISOString();
+    for (const item of result.archived || []) {
+      const existing = currentById.get(item.studentId);
+      if (!existing) continue;
+      this.studentUpdated.emit({
+        ...existing,
+        isArchived: true,
+        archivedAt: nowIso,
+        graduationStatus: 'GRADUATED',
+        graduatedFromGrade: item.fromGrade || existing.gradeLevel,
+        graduatedAt: nowIso,
+        isLeaderboardHidden: true
+      });
+    }
+
+    if ((result.deleted || []).length > 0) {
+      this.studentsDeleted.emit(result.deleted.map((d) => d.studentId));
+    }
+  }
+
+  private formatPromotionSummaryToast(result: PromoteStudentsResponse): string {
+    const isAr = this.langService.isArabic();
+    const parts: string[] = [];
+    if (result.promotedCount > 0) {
+      parts.push(isAr ? `ترقية ${result.promotedCount}` : `Promoted ${result.promotedCount}`);
+    }
+    if (result.archivedCount > 0) {
+      parts.push(isAr ? `أرشفة ${result.archivedCount}` : `Archived ${result.archivedCount}`);
+    }
+    if (result.deletedCount > 0) {
+      parts.push(isAr ? `حذف ${result.deletedCount}` : `Deleted ${result.deletedCount}`);
+    }
+    if (result.skippedCount > 0) {
+      parts.push(isAr ? `تخطي ${result.skippedCount}` : `Skipped ${result.skippedCount}`);
+    }
+    return parts.length > 0
+      ? (isAr ? `اكتملت العملية: ${parts.join(' • ')}` : `Completed: ${parts.join(' | ')}`)
+      : (isAr ? 'لم يتم تعديل أي طالب' : 'No students updated');
+  }
+
+  toggleArchiveStudent(student: StudentAdminSummary, archived: boolean): void {
+    if (student.role === 'PARENT' || this.isUpdatingArchiveStudentId() === student.id) return;
+    this.isUpdatingArchiveStudentId.set(student.id);
+
+    this.http.patch<{ success: boolean; data: any }>(`/api/v1/admin/users/students/${student.id}/archive`, {
+      archived
+    }).subscribe({
+      next: () => {
+        this.isUpdatingArchiveStudentId.set(null);
+        const nowIso = new Date().toISOString();
+        this.studentUpdated.emit({
+          ...student,
+          isArchived: archived,
+          archivedAt: archived ? nowIso : null,
+          graduationStatus: archived ? 'GRADUATED' : 'ACTIVE',
+          graduatedFromGrade: archived ? (student.graduatedFromGrade || student.gradeLevel) : student.graduatedFromGrade,
+          isLeaderboardHidden: archived ? true : false
+        });
+        this.studentsReloadRequested.emit();
+        this.toastTriggered.emit({
+          text: archived
+            ? (this.langService.isArabic() ? `تم وضع ${student.name} في الأرشيف` : `Archived ${student.name}`)
+            : (this.langService.isArabic() ? `تمت استعادة ${student.name} من الأرشيف` : `Restored ${student.name} from archive`),
+          type: 'success'
+        });
+      },
+      error: (err) => {
+        this.isUpdatingArchiveStudentId.set(null);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر تحديث حالة الأرشفة.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
+  openPermanentDeleteModal(student: StudentAdminSummary): void {
+    if (student.role === 'PARENT') return;
+    this.studentPendingPermanentDelete.set(student);
+  }
+
+  closePermanentDeleteModal(): void {
+    if (this.isDeletingStudent()) return;
+    this.studentPendingPermanentDelete.set(null);
+  }
+
+  confirmPermanentDelete(): void {
+    const target = this.studentPendingPermanentDelete();
+    if (!target || this.isDeletingStudent()) return;
+
+    this.isDeletingStudent.set(true);
+    this.http.delete<{ success: boolean; data: any }>(`/api/v1/admin/users/students/${target.id}`).subscribe({
+      next: () => {
+        this.isDeletingStudent.set(false);
+        this.studentPendingPermanentDelete.set(null);
+        this.studentsDeleted.emit([target.id]);
+        this.studentsReloadRequested.emit();
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? `تم حذف سجل الطالب ${target.name} نهائياً`
+            : `Permanently deleted student ${target.name}`,
+          type: 'warning'
+        });
+      },
+      error: (err) => {
+        this.isDeletingStudent.set(false);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر حذف سجل الطالب.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
+  formatStudentCurriculumLabel(student: StudentAdminSummary): string {
+    return getCurriculumDisplayLabel(student.curriculum, student.gradeLevel, this.langService.isArabic());
+  }
+
+  formatStudentGradeLabel(student: StudentAdminSummary): string {
+    return getGradeDisplayLabel(student.curriculum, student.gradeLevel, this.langService.isArabic());
+  }
+
+  formatStudentTermLabel(student: StudentAdminSummary): string {
+    return getTermDisplayLabel(student.curriculum, student.gradeLevel, student.academicTerm, this.langService.isArabic());
+  }
+
+  formatGradeCodeLabel(curriculum: string | null | undefined, gradeCode: string | null | undefined): string {
+    return getGradeDisplayLabel(curriculum, gradeCode, this.langService.isArabic());
+  }
+
+  studentHasTerms(student: StudentAdminSummary): boolean {
+    return curriculumSupportsTerms(student.curriculum, student.gradeLevel);
   }
 }

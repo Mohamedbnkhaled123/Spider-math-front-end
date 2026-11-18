@@ -285,6 +285,13 @@ export class SuperAdminDashboardComponent implements OnInit {
               parentPhone: u.parent_phone,
               curriculum: roleCurriculum,
               gradeLevel: roleGrade,
+              academicTerm: (u.academic_term || u.academicTerm || 'TERM_1') as 'TERM_1' | 'TERM_2',
+              country: u.country || 'EG',
+              isArchived: !!(u.is_archived ?? u.isArchived),
+              archivedAt: u.archived_at || u.archivedAt || null,
+              graduationStatus: u.graduation_status || u.graduationStatus || 'ACTIVE',
+              graduatedFromGrade: u.graduated_from_grade || u.graduatedFromGrade || null,
+              graduatedAt: u.graduated_at || u.graduatedAt || null,
               hasActiveSubscription: !!u.has_active_subscription,
               subscriptionStatus: u.has_active_subscription ? 'ACTIVE' : 'CANCELLED',
               totalXp: u.total_xp || 0,
@@ -816,9 +823,25 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Student & Device Events
   onStudentUpdated(student: StudentAdminSummary): void {
-    this.studentsList.update((list) =>
-      list.map((s) => (s.id === student.id ? student : s))
-    );
+    this.studentsList.update((list) => {
+      const updated = list.map((s) => (s.id === student.id ? student : s));
+      this.swrCache.set('admin_students_list', updated);
+      return updated;
+    });
+  }
+
+  onStudentsDeleted(deletedIds: string[]): void {
+    if (!deletedIds || deletedIds.length === 0) return;
+    const deletedSet = new Set(deletedIds);
+    this.studentsList.update((list) => {
+      const remaining = list.filter((s) => !deletedSet.has(s.id));
+      this.swrCache.set('admin_students_list', remaining);
+      return remaining;
+    });
+  }
+
+  onStudentsReloadRequested(): void {
+    this.fetchRealAtlasData();
   }
 
   onDeviceApproved(dev: PendingDeviceRequest): void {
