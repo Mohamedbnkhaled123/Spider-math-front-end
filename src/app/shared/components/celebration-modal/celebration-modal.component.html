@@ -46,7 +46,7 @@
         <!-- Student Engraved Plaque -->
         <div class="abs plaque">
           <div class="rank">{{ computedRankTitle() }}</div>
-          <div id="celebration-student-name" class="name">{{ studentName() }}</div>
+          <div id="celebration-student-name" class="name" [style.fontSize]="nameFontSize()">{{ studentName() }}</div>
           <div class="msg">{{ computedMessage() }}</div>
         </div>
 

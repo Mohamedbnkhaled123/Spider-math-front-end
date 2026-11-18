@@ -304,5 +304,31 @@ describe('CelebrationModalComponent', () => {
       expect(component.computedRankTitle()).not.toContain('العلامة الكاملة');
       expect(component.computedRankTitle()).toBe('المركز الثاني • أداء متميز');
     });
+
+    it('should scale student name font size proportionally and render the full name cleanly', () => {
+      fixture.componentRef.setInput('score', 20);
+      fixture.componentRef.setInput('totalScore', 20);
+      fixture.componentRef.setInput('studentName', 'المهندسة / هبة عبدالوهاب');
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.detectChanges();
+
+      expect(component.nameFontSize()).toBe('3.4cqw');
+      const nameEl: HTMLElement | null = fixture.nativeElement.querySelector('#celebration-student-name');
+      expect(nameEl).toBeTruthy();
+      expect(nameEl?.textContent?.trim()).toBe('المهندسة / هبة عبدالوهاب');
+      expect(nameEl?.style.fontSize).toBe('3.4cqw');
+
+      fixture.componentRef.setInput('studentName', 'طالب متميز');
+      fixture.detectChanges();
+      expect(component.nameFontSize()).toBe('4.6cqw');
+
+      fixture.componentRef.setInput('studentName', 'أحمد محمد محمود إبراهيم عبد الرحمن');
+      fixture.detectChanges();
+      expect(component.nameFontSize()).toBe('2.9cqw');
+
+      fixture.componentRef.setInput('studentName', 'أحمد محمد محمود إبراهيم عبد الرحمن الشافعي');
+      fixture.detectChanges();
+      expect(component.nameFontSize()).toBe('2.5cqw');
+    });
   });
 });

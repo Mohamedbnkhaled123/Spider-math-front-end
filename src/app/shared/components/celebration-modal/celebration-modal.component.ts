@@ -188,6 +188,15 @@ export class CelebrationModalComponent implements OnDestroy {
     return this.selectedCelebrationPhrase();
   });
 
+  readonly nameFontSize = computed<string>(() => {
+    const len = (this.studentName() || '').trim().length;
+    if (len <= 12) return '4.6cqw';
+    if (len <= 18) return '4.0cqw';
+    if (len <= 26) return '3.4cqw';
+    if (len <= 34) return '2.9cqw';
+    return '2.5cqw';
+  });
+
   constructor() {
     effect(() => {
       const open = this.isOpen();

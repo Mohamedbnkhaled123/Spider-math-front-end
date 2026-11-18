@@ -170,52 +170,64 @@
 
 /* Plaque */
 .plaque {
-  left: 17%;
-  width: 66%;
-  top: 43%;
-  height: 14%;
+  left: 15%;
+  width: 70%;
+  top: 42.5%;
+  height: 15%;
+  padding: 0.4cqw 1.8cqw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.3cqw;
   text-align: center;
   overflow: hidden;
-  line-height: 1.25;
+  line-height: 1.18;
   border-radius: 12px;
 }
 
 .plaque .rank {
-  font-size: 3.9cqw;
+  font-size: 3.1cqw;
   font-weight: 900;
   color: #fff;
   background: linear-gradient(#4a1d7a, #2b0f4d);
-  padding: 0.3cqw 3.5cqw;
+  padding: 0.2cqw 2.8cqw;
   border-radius: 9cqw;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 217, 112, 0.6);
-  margin-bottom: 0.5cqw;
-}
-
-.plaque .name {
-  font-size: 7.4cqw;
-  font-weight: 900;
-  color: #fff;
-  -webkit-text-stroke: 1.2cqw #2b0f4d;
-  paint-order: stroke fill;
-  text-shadow: 0 0.4cqw 0.8cqw rgba(0, 0, 0, 0.6);
-  max-width: 95%;
+  margin-bottom: 0.15cqw;
+  max-width: 96%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.plaque .name {
+  font-size: 4.0cqw;
+  font-weight: 900;
+  color: #fff7d6;
+  -webkit-text-stroke: 0.65cqw #2b0f4d;
+  paint-order: stroke fill;
+  text-shadow: 0 0.3cqw 0.7cqw rgba(0, 0, 0, 0.65);
+  max-width: 98%;
+  width: 100%;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
+  padding: 0 0.6cqw;
+}
+
 .plaque .msg {
-  font-size: 4cqw;
+  font-size: 3.1cqw;
   font-weight: 800;
   color: #fff;
-  -webkit-text-stroke: 0.9cqw #2b0f4d;
+  -webkit-text-stroke: 0.55cqw #2b0f4d;
   paint-order: stroke fill;
-  text-shadow: 0 0.3cqw 0.6cqw rgba(0, 0, 0, 0.6);
-  max-width: 95%;
+  text-shadow: 0 0.25cqw 0.5cqw rgba(0, 0, 0, 0.6);
+  max-width: 96%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
