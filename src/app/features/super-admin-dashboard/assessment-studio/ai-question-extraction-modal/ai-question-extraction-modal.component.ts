@@ -10,7 +10,8 @@ import {
   inject,
   PLATFORM_ID,
   effect,
-  untracked
+  untracked,
+  viewChild
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +30,7 @@ import { ModalNavigationService } from '../../../../core/services/modal-navigati
 import { AssessmentQuestionItem } from '../assessment-studio.models';
 import {
   AiExtractionMode,
+  PageScopeMode,
   IStagedQuestion,
   ICachedFileSession,
   IAiExtractionBackendResponse,
@@ -90,6 +92,113 @@ export class AiQuestionExtractionModalComponent {
   readonly totalPages = signal<number>(1);
   readonly currentDataUrl = signal<string | null>(null);
   currentCanvas: HTMLCanvasElement | null = null;
+
+  // PDF Viewer ViewChild
+  readonly pdfViewer = viewChild<PdfPageViewerComponent>(PdfPageViewerComponent);
+
+  // Page Scope & Range State
+  readonly pageScopeMode = signal<PageScopeMode>('CURRENT_PAGE');
+  readonly rangeStartPage = signal<number>(1);
+  readonly rangeEndPage = signal<number>(1);
+
+  readonly selectedPageCount = computed(() => {
+    if (this.pageScopeMode() === 'CURRENT_PAGE') return 1;
+    const start = this.rangeStartPage();
+    const end = this.rangeEndPage();
+    return Math.max(1, end - start + 1);
+  });
+
+  readonly isRangeValid = computed(() => {
+    if (this.pageScopeMode() === 'CURRENT_PAGE') return true;
+    const total = Math.max(1, this.totalPages());
+    const start = this.rangeStartPage();
+    const end = this.rangeEndPage();
+    return start >= 1 && start <= total && end >= start && end <= total && (end - start + 1) <= 10;
+  });
+
+  private readonly fallbackDraftId = 'draft_asm_' + Math.random().toString(36).substring(2, 9);
+
+  getEffectiveAssessmentId(): string {
+    return (this.assessmentId() || '').trim() || this.fallbackDraftId;
+  }
+
+  private getStorageKey(assessmentId: string, fileName: string): string {
+    const aid = (assessmentId || '').trim() || this.fallbackDraftId;
+    const cleanFile = (fileName || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `spider_math_pdf_page_${aid}_${cleanFile}`;
+  }
+
+  persistPageToSessionStorage(assessmentId: string, fileName: string, page: number): void {
+    if (!isPlatformBrowser(this.platformId) || !fileName) return;
+    try {
+      const key = this.getStorageKey(assessmentId, fileName);
+      sessionStorage.setItem(key, JSON.stringify({
+        assessmentId: (assessmentId || '').trim() || this.fallbackDraftId,
+        fileName,
+        lastPage: page,
+        updatedAt: Date.now()
+      }));
+    } catch {
+      // ignore storage write errors
+    }
+  }
+
+  getStoredPageFromSessionStorage(assessmentId: string, fileName: string): number | null {
+    if (!isPlatformBrowser(this.platformId) || !fileName) return null;
+    try {
+      const key = this.getStorageKey(assessmentId, fileName);
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.lastPage === 'number' && parsed.lastPage >= 1) {
+        return parsed.lastPage;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
+  setPageScopeMode(mode: PageScopeMode): void {
+    this.pageScopeMode.set(mode);
+    if (mode === 'PAGE_RANGE') {
+      const cur = this.currentPageNumber();
+      const total = Math.max(1, this.totalPages());
+      this.rangeStartPage.set(cur);
+      this.rangeEndPage.set(Math.min(total, cur + 1));
+    }
+  }
+
+  onStartPageChanged(rawVal: any): void {
+    const total = Math.max(1, this.totalPages());
+    let val = parseInt(rawVal, 10);
+    if (isNaN(val)) val = 1;
+    val = Math.max(1, Math.min(total, val));
+    this.rangeStartPage.set(val);
+    if (this.rangeEndPage() < val) {
+      this.rangeEndPage.set(val);
+    }
+  }
+
+  onEndPageChanged(rawVal: any): void {
+    const total = Math.max(1, this.totalPages());
+    let val = parseInt(rawVal, 10);
+    if (isNaN(val)) val = this.rangeStartPage();
+    val = Math.max(this.rangeStartPage(), Math.min(total, val));
+    this.rangeEndPage.set(val);
+  }
+
+  applyPresetCount(count: number): void {
+    const total = Math.max(1, this.totalPages());
+    const start = this.rangeStartPage();
+    this.rangeEndPage.set(Math.min(total, start + count - 1));
+  }
+
+  onPdfPageChanged(page: number): void {
+    this.currentPageNumber.set(page);
+    this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), page);
+    this.emitFileSession();
+  }
 
   // Extraction & Staging State
   readonly isProcessing = signal<boolean>(false);
@@ -163,8 +272,12 @@ export class AiQuestionExtractionModalComponent {
             this.currentDataUrl.set(null);
             this.currentCanvas = null;
             this.errorMessage.set(null);
+            this.pageScopeMode.set('CURRENT_PAGE');
+            this.rangeStartPage.set(1);
+            this.rangeEndPage.set(1);
 
-            const existingStaged = this.stagedByAssessment.get(currentId) || [];
+            const effId = this.getEffectiveAssessmentId();
+            const existingStaged = this.stagedByAssessment.get(effId) || [];
             this.stagedQuestions.set(existingStaged);
 
             if (session) {
@@ -173,8 +286,22 @@ export class AiQuestionExtractionModalComponent {
             } else {
               this.currentStep.set(existingStaged.length > 0 ? 'STAGING_REVIEW' : 'UPLOAD_AND_SELECT');
             }
-          } else if (session && !this.uploadedFile() && !this.currentCanvas) {
-            this.restoreCachedSession(session);
+          } else {
+            // Reopening for the same assessment
+            if (this.stagedQuestions().length === 0 && this.uploadedFile()) {
+              this.currentStep.set('PREVIEW_AND_PAGE');
+            }
+            if (session?.pageNumber) {
+              this.currentPageNumber.set(session.pageNumber);
+            } else {
+              const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), this.fileName());
+              if (storedPage) {
+                this.currentPageNumber.set(storedPage);
+              }
+            }
+            if (session && !this.uploadedFile() && !this.currentCanvas) {
+              this.restoreCachedSession(session);
+            }
           }
         }
       });
@@ -184,9 +311,21 @@ export class AiQuestionExtractionModalComponent {
   private restoreCachedSession(session: ICachedFileSession): void {
     this.fileName.set(session.fileName);
     this.fileType.set(session.fileType);
-    this.currentPageNumber.set(session.pageNumber || 1);
+    let pageNum = session.pageNumber || 1;
+    const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), session.fileName);
+    if (storedPage) {
+      pageNum = storedPage;
+    }
+    this.currentPageNumber.set(pageNum);
     this.currentCanvas = session.canvas;
     this.currentDataUrl.set(session.dataUrl);
+    if (session.totalPages) {
+      this.totalPages.set(session.totalPages);
+    }
+    if (session.lastSelectedRange) {
+      this.rangeStartPage.set(session.lastSelectedRange.startPage);
+      this.rangeEndPage.set(session.lastSelectedRange.endPage);
+    }
 
     if (session.file instanceof File) {
       this.uploadedFile.set(session.file);
@@ -227,6 +366,12 @@ export class AiQuestionExtractionModalComponent {
 
   handleSelectedFile(file: File): void {
     this.errorMessage.set(null);
+    const storedPage = this.getStoredPageFromSessionStorage(this.getEffectiveAssessmentId(), file.name);
+    if (storedPage && storedPage >= 1) {
+      this.currentPageNumber.set(storedPage);
+    } else if (this.fileName() !== file.name) {
+      this.currentPageNumber.set(1);
+    }
     this.uploadedFile.set(file);
     this.fileName.set(file.name);
 
@@ -306,6 +451,7 @@ export class AiQuestionExtractionModalComponent {
     this.currentDataUrl.set(event.dataUrl);
     this.currentPageNumber.set(event.pageNumber);
     this.totalPages.set(event.totalPages);
+    this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), event.pageNumber);
     this.emitFileSession();
   }
 
@@ -316,7 +462,12 @@ export class AiQuestionExtractionModalComponent {
       file: this.uploadedFile(),
       pageNumber: this.currentPageNumber(),
       canvas: this.currentCanvas,
-      dataUrl: this.currentDataUrl()
+      dataUrl: this.currentDataUrl(),
+      totalPages: this.totalPages(),
+      lastSelectedRange: {
+        startPage: this.rangeStartPage(),
+        endPage: this.rangeEndPage()
+      }
     });
   }
 
@@ -335,7 +486,12 @@ export class AiQuestionExtractionModalComponent {
       file: this.uploadedFile(),
       pageNumber: this.currentPageNumber(),
       canvas: this.currentCanvas,
-      dataUrl: this.currentDataUrl()
+      dataUrl: this.currentDataUrl(),
+      totalPages: this.totalPages(),
+      lastSelectedRange: {
+        startPage: this.rangeStartPage(),
+        endPage: this.rangeEndPage()
+      }
     };
     this.fileSessionCached.emit(session);
     this.manualSlicingRequested.emit(session);
@@ -350,110 +506,144 @@ export class AiQuestionExtractionModalComponent {
       return;
     }
 
-    const dataUrl = this.currentDataUrl();
-    if (!dataUrl) {
+    if (!this.isRangeValid()) {
       this.errorMessage.set(
         this.langService.isArabic()
-          ? 'انتظري حتى اكتمال تحميل الصفحة.'
-          : 'Wait for page to load.'
+          ? 'نطاق الصفحات غير صالح أو يتجاوز 10 صفحات كحد أقصى.'
+          : 'Invalid page range or exceeds 10 pages maximum.'
       );
       return;
     }
 
+    const targetPages: number[] = [];
+    if (this.pageScopeMode() === 'CURRENT_PAGE' || this.fileType() !== 'pdf') {
+      targetPages.push(this.currentPageNumber());
+    } else {
+      for (let p = this.rangeStartPage(); p <= this.rangeEndPage(); p++) {
+        targetPages.push(p);
+      }
+    }
+
     this.isProcessing.set(true);
     this.errorMessage.set(null);
-    this.processingMessage.set(
-      this.langService.isArabic()
-        ? 'جاري التحليل بالذكاء الاصطناعي...'
-        : 'AI is analyzing the page...'
-    );
+
+    const allExtractedStaged: IStagedQuestion[] = [];
+    const isTextOnlyMode = this.extractionMode() === 'TEXT_LATEX_ONLY';
+    const customKey = this.customApiKey().trim();
+    const headers: Record<string, string> = {};
+    if (customKey) {
+      headers['x-gemini-api-key'] = customKey;
+    }
 
     try {
-      const payload: Record<string, any> = {
-        imageBase64: dataUrl,
-        mimeType: 'image/webp',
-        mode: this.extractionMode(),
-        curriculum: this.curriculum(),
-        gradeLevel: this.gradeLevel()
-      };
+      for (let idx = 0; idx < targetPages.length; idx++) {
+        const p = targetPages[idx];
+        this.processingMessage.set(
+          this.langService.isArabic()
+            ? `جاري استخراج صفحة ${p} من ${this.totalPages()} (${idx + 1} من ${targetPages.length})...`
+            : `Extracting page ${p} of ${this.totalPages()} (${idx + 1} of ${targetPages.length})...`
+        );
 
-      const headers: Record<string, string> = {};
-      const customKey = this.customApiKey().trim();
-      if (customKey) {
-        payload['apiKey'] = customKey;
-        headers['x-gemini-api-key'] = customKey;
+        let pageDataUrl: string | null = null;
+        let pageCanvas: HTMLCanvasElement | null = null;
+
+        if (p === this.currentPageNumber() && this.currentDataUrl()) {
+          pageDataUrl = this.currentDataUrl();
+          pageCanvas = this.currentCanvas;
+        } else {
+          const viewer = this.pdfViewer();
+          if (!viewer) {
+            throw new Error('PDF viewer is not available');
+          }
+          const rendered = await viewer.renderPageToDataUrl(p);
+          pageDataUrl = rendered.dataUrl;
+          pageCanvas = rendered.canvas;
+        }
+
+        const payload: Record<string, any> = {
+          imageBase64: pageDataUrl,
+          mimeType: 'image/webp',
+          mode: this.extractionMode(),
+          curriculum: this.curriculum(),
+          gradeLevel: this.gradeLevel()
+        };
+        if (customKey) {
+          payload['apiKey'] = customKey;
+        }
+
+        const res = await firstValueFrom(
+          this.http.post<IAiExtractionBackendResponse>(
+            '/api/v1/assessments/ai-extract-questions',
+            payload,
+            { headers }
+          )
+        );
+
+        const rawQuestions = res?.data?.questions || [];
+
+        for (let i = 0; i < rawQuestions.length; i++) {
+          const rawQ = rawQuestions[i];
+          let localCropBlob: Blob | null = null;
+          let localCropPreviewUrl: string | null = null;
+          let effectiveBox = isTextOnlyMode ? undefined : rawQ.box_2d;
+
+          if (effectiveBox && pageCanvas && isPlatformBrowser(this.platformId) && !isTextOnlyMode) {
+            try {
+              effectiveBox = applyBoundingBoxPadding(effectiveBox, 0.08, 16);
+              const cropRes = await cropBoundingBoxToBlob(pageCanvas, effectiveBox);
+              localCropBlob = cropRes.blob;
+              localCropPreviewUrl = cropRes.dataUrl;
+            } catch (cropErr) {
+              console.warn('Auto-crop bounding box skipped:', cropErr);
+            }
+          }
+
+          const validRawOptions = Array.isArray(rawQ.options)
+            ? rawQ.options.map((o) => (o || '').trim()).filter((o) => o.length > 0)
+            : [];
+          const isActuallyMcq = validRawOptions.length >= 2;
+
+          allExtractedStaged.push({
+            id: `staged_${Date.now()}_${p}_${i}_${Math.random().toString(36).substring(2, 7)}`,
+            checked: true,
+            pageNumber: p,
+            pageDataUrl: pageDataUrl,
+            question_text: rawQ.question_text || '',
+            type: isActuallyMcq ? 'MCQ' : 'ESSAY',
+            options: isActuallyMcq ? [...rawQ.options] : ['', '', '', ''],
+            correct_option_index: rawQ.correct_option_index ?? 0,
+            points: rawQ.points > 0 ? rawQ.points : 1,
+            has_geometry_diagram: !isTextOnlyMode && (Boolean(rawQ.has_geometry_diagram) || Boolean(effectiveBox)),
+            box_2d: isTextOnlyMode ? undefined : effectiveBox,
+            localCropBlob: isTextOnlyMode ? null : localCropBlob,
+            localCropPreviewUrl: isTextOnlyMode ? null : localCropPreviewUrl,
+            question_image_url: null
+          });
+        }
       }
 
-      const res = await firstValueFrom(
-        this.http.post<IAiExtractionBackendResponse>(
-          '/api/v1/assessments/ai-extract-questions',
-          payload,
-          { headers }
-        )
-      );
-
-      const rawQuestions = res?.data?.questions || [];
-
-      if (rawQuestions.length === 0) {
+      if (allExtractedStaged.length === 0) {
         this.errorMessage.set(
           this.langService.isArabic()
-            ? 'لا توجد أسئلة واضحة.'
-            : 'No questions found.'
+            ? 'لم يتم العثور على أي أسئلة في الصفحات المحددة.'
+            : 'No questions found in selected pages.'
         );
-        this.isProcessing.set(false);
         return;
       }
 
-      // Process and auto-crop diagrams locally without uploading to Cloudinary
-      const stagedList: IStagedQuestion[] = [];
-      const isTextOnlyMode = this.extractionMode() === 'TEXT_LATEX_ONLY';
-
-      for (let i = 0; i < rawQuestions.length; i++) {
-        const rawQ = rawQuestions[i];
-        let localCropBlob: Blob | null = null;
-        let localCropPreviewUrl: string | null = null;
-        let effectiveBox = isTextOnlyMode ? undefined : rawQ.box_2d;
-
-        if (effectiveBox && this.currentCanvas && isPlatformBrowser(this.platformId) && !isTextOnlyMode) {
-          try {
-            // Apply generous safe margin padding (8%, min 16 units) so corner labels (A, B, C, D) are never cut off
-            effectiveBox = applyBoundingBoxPadding(effectiveBox, 0.08, 16);
-            const cropRes = await cropBoundingBoxToBlob(this.currentCanvas, effectiveBox);
-            localCropBlob = cropRes.blob;
-            localCropPreviewUrl = cropRes.dataUrl;
-          } catch (cropErr) {
-            console.warn('Auto-crop bounding box skipped:', cropErr);
-          }
-        }
-
-        const validRawOptions = Array.isArray(rawQ.options)
-          ? rawQ.options.map((o) => (o || '').trim()).filter((o) => o.length > 0)
-          : [];
-        const isActuallyMcq = validRawOptions.length >= 2;
-
-        stagedList.push({
-          id: `staged_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}`,
-          checked: true,
-          pageNumber: this.currentPageNumber(),
-          pageDataUrl: dataUrl,
-          question_text: rawQ.question_text || '',
-          type: isActuallyMcq ? 'MCQ' : 'ESSAY',
-          options: isActuallyMcq ? [...rawQ.options] : ['', '', '', ''],
-          correct_option_index: rawQ.correct_option_index ?? 0,
-          points: rawQ.points > 0 ? rawQ.points : 1,
-          has_geometry_diagram: !isTextOnlyMode && (Boolean(rawQ.has_geometry_diagram) || Boolean(effectiveBox)),
-          box_2d: isTextOnlyMode ? undefined : effectiveBox,
-          localCropBlob: isTextOnlyMode ? null : localCropBlob,
-          localCropPreviewUrl: isTextOnlyMode ? null : localCropPreviewUrl,
-          question_image_url: null
-        });
-      }
-
-      // Preserve previously staged questions from other pages; refresh active page
+      // Update staged questions: replace entries for targetPages, preserve others
+      const targetPagesSet = new Set(targetPages);
       this.stagedQuestions.update((prev) => {
-        const otherPages = prev.filter((q) => q.pageNumber !== this.currentPageNumber());
-        return [...otherPages, ...stagedList];
+        const otherPages = prev.filter((q) => !q.pageNumber || !targetPagesSet.has(q.pageNumber));
+        return [...otherPages, ...allExtractedStaged];
       });
+
+      // Advance current page to the last page extracted
+      const lastPage = targetPages[targetPages.length - 1];
+      this.currentPageNumber.set(lastPage);
+      this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), lastPage);
+      this.emitFileSession();
+
       this.currentStep.set('STAGING_REVIEW');
     } catch (err: any) {
       let serverMsg = 'Server error';
@@ -796,11 +986,12 @@ export class AiQuestionExtractionModalComponent {
 
       const unselected = this.stagedQuestions().filter((q) => !q.checked);
       this.stagedQuestions.set(unselected);
-      const aid = this.assessmentId();
+      const aid = this.getEffectiveAssessmentId();
       if (aid) {
         this.stagedByAssessment.set(aid, unselected);
       }
 
+      this.currentStep.set('PREVIEW_AND_PAGE');
       this.close();
     } catch (uploadErr: any) {
       this.errorMessage.set(
@@ -821,7 +1012,7 @@ export class AiQuestionExtractionModalComponent {
   }
 
   saveTransientDraft(): void {
-    const aid = this.assessmentId();
+    const aid = this.getEffectiveAssessmentId();
     if (aid) {
       this.stagedByAssessment.set(aid, this.stagedQuestions());
     }
@@ -831,6 +1022,10 @@ export class AiQuestionExtractionModalComponent {
   }
 
   close(): void {
+    if (this.uploadedFile() && this.fileName()) {
+      this.persistPageToSessionStorage(this.getEffectiveAssessmentId(), this.fileName(), this.currentPageNumber());
+      this.emitFileSession();
+    }
     this.modalNav.dismissModal('ai-question-extraction-modal');
     this.isOpen.set(false);
     this.cancelled.emit();

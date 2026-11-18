@@ -251,4 +251,42 @@ describe('PlacementExamRunnerComponent', () => {
       }));
     });
   });
+
+  describe('Coming Soon State UI Verification', () => {
+    it('should display coming soon card with centered clock icon and correct subtitle when no exam exists', () => {
+      component.isLoading.set(false);
+      component.studentExamFinished.set(false);
+      component.examData.set({
+        assessment_id: '',
+        hasTest: false,
+        title: 'امتحان تحديد المستوى',
+        curriculum: 'EGYPTIAN',
+        grade_level: 'SEC_1',
+        academic_term: 'TERM_1',
+        total_questions: 0,
+        time_limit_minutes: 15,
+        questions: []
+      });
+      fixture.detectChanges();
+
+      const hostEl: HTMLElement = fixture.nativeElement;
+      const comingSoonCard = hostEl.querySelector('[data-testid="placement-coming-soon-card"]');
+      expect(comingSoonCard).toBeTruthy();
+
+      const iconContainer = hostEl.querySelector('.w-16.h-16.rounded-2xl');
+      expect(iconContainer).toBeTruthy();
+      expect(iconContainer?.classList.contains('shrink-0')).toBeTrue();
+      expect(iconContainer?.classList.contains('mx-auto')).toBeTrue();
+
+      const subtitle = hostEl.querySelector('[data-testid="placement-coming-soon-subtitle"]');
+      expect(subtitle?.textContent?.trim()).toContain('سيتم انشاء هذا الاختبار قريبا كن علي تواصل معنا');
+
+      const allButtons = Array.from(hostEl.querySelectorAll('button'));
+      const sec3Button = allButtons.find(b => b.textContent?.includes('اختبار 3 ثانوي') || b.textContent?.includes('Sec 3 Exam'));
+      expect(sec3Button).toBeUndefined();
+
+      const navBtn = hostEl.querySelector('[data-testid="placement-coming-soon-nav-btn"]');
+      expect(navBtn).toBeTruthy();
+    });
+  });
 });

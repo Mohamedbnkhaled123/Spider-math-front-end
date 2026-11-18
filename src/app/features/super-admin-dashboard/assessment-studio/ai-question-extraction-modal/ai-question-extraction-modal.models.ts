@@ -7,6 +7,15 @@ import { AssessmentQuestionItem } from '../assessment-studio.models';
 
 export type AiExtractionMode = 'TEXT_LATEX_ONLY' | 'FULL_IMAGE_CROP' | 'SMART_HYBRID' | 'MANUAL_CROP';
 
+export type PageScopeMode = 'CURRENT_PAGE' | 'PAGE_RANGE';
+
+export interface IPageRangeConfig {
+  mode: PageScopeMode;
+  startPage: number;
+  endPage: number;
+  pageCount: number;
+}
+
 export interface IStagedQuestion {
   id: string;
   checked: boolean;
@@ -41,6 +50,8 @@ export interface ICachedFileSession {
   pageNumber: number;
   canvas: HTMLCanvasElement | null;
   dataUrl: string | null;
+  totalPages?: number;
+  lastSelectedRange?: { startPage: number; endPage: number };
 }
 
 export interface IAiExtractionBackendResponse {

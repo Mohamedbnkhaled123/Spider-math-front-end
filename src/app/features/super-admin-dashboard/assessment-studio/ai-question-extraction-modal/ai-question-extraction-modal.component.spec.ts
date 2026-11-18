@@ -527,4 +527,230 @@ describe('AiQuestionExtractionModalComponent', () => {
     expect(component.currentPageNumber()).toBe(2);
     expect(component.currentStep()).toBe('UPLOAD_AND_SELECT');
   });
+
+  describe('Multi-Page Extraction & Page Range Controls', () => {
+    beforeEach(() => {
+      component.totalPages.set(20);
+      component.currentPageNumber.set(5);
+    });
+
+    it('should initialize with CURRENT_PAGE mode and 1 selected page count', () => {
+      expect(component.pageScopeMode()).toBe('CURRENT_PAGE');
+      expect(component.selectedPageCount()).toBe(1);
+      expect(component.isRangeValid()).toBeTrue();
+    });
+
+    it('should switch to PAGE_RANGE mode and configure default range', () => {
+      component.setPageScopeMode('PAGE_RANGE');
+      expect(component.pageScopeMode()).toBe('PAGE_RANGE');
+      expect(component.rangeStartPage()).toBe(5);
+      expect(component.rangeEndPage()).toBe(6);
+      expect(component.selectedPageCount()).toBe(2);
+      expect(component.isRangeValid()).toBeTrue();
+    });
+
+    it('should validate page range boundaries and clamp appropriately', () => {
+      component.setPageScopeMode('PAGE_RANGE');
+      component.onStartPageChanged(8);
+      expect(component.rangeStartPage()).toBe(8);
+      expect(component.rangeEndPage()).toBe(8);
+
+      component.onEndPageChanged(12);
+      expect(component.rangeEndPage()).toBe(12);
+      expect(component.selectedPageCount()).toBe(5);
+      expect(component.isRangeValid()).toBeTrue();
+
+      component.onEndPageChanged(19);
+      expect(component.isRangeValid()).toBeFalse();
+    });
+
+    it('should apply preset counts correctly', () => {
+      component.setPageScopeMode('PAGE_RANGE');
+      component.rangeStartPage.set(3);
+      component.applyPresetCount(3);
+      expect(component.rangeEndPage()).toBe(5);
+      expect(component.selectedPageCount()).toBe(3);
+
+      component.applyPresetCount(5);
+      expect(component.rangeEndPage()).toBe(7);
+      expect(component.selectedPageCount()).toBe(5);
+    });
+
+    it('should sequentially extract questions from multiple pages in range', async () => {
+      component.setPageScopeMode('PAGE_RANGE');
+      component.rangeStartPage.set(1);
+      component.rangeEndPage.set(2);
+      component.totalPages.set(10);
+      component.fileType.set('pdf');
+      component.currentPageNumber.set(1);
+
+      const mockCanvas1 = document.createElement('canvas');
+      mockCanvas1.width = 100;
+      mockCanvas1.height = 100;
+      component.currentCanvas = mockCanvas1;
+      component.currentDataUrl.set('data:image/webp;base64,page1');
+
+      const mockCanvas2 = document.createElement('canvas');
+      mockCanvas2.width = 100;
+      mockCanvas2.height = 100;
+      const mockViewer = {
+        renderPageToDataUrl: jasmine.createSpy('renderPageToDataUrl').and.resolveTo({
+          canvas: mockCanvas2,
+          dataUrl: 'data:image/webp;base64,page2'
+        })
+      };
+      (component as any).pdfViewer = () => mockViewer;
+
+      const extractionPromise = component.startAiExtraction();
+
+      const req1 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      expect(req1.request.body.imageBase64).toBe('data:image/webp;base64,page1');
+      req1.flush({
+        success: true,
+        data: {
+          questions: [
+            {
+              question_text: 'Question from page 1',
+              options: ['A', 'B', 'C', 'D'],
+              correct_option_index: 0,
+              has_geometry_diagram: false,
+              points: 1
+            }
+          ],
+          count: 1
+        }
+      });
+
+      await new Promise(r => setTimeout(r, 10));
+
+      const req2 = httpTestingController.expectOne('/api/v1/assessments/ai-extract-questions');
+      expect(req2.request.body.imageBase64).toBe('data:image/webp;base64,page2');
+      req2.flush({
+        success: true,
+        data: {
+          questions: [
+            {
+              question_text: 'Question from page 2',
+              options: ['1', '2', '3', '4'],
+              correct_option_index: 1,
+              has_geometry_diagram: false,
+              points: 2
+            }
+          ],
+          count: 1
+        }
+      });
+
+      await extractionPromise;
+
+      expect(component.stagedQuestions().length).toBe(2);
+      expect(component.stagedQuestions()[0].pageNumber).toBe(1);
+      expect(component.stagedQuestions()[0].question_text).toBe('Question from page 1');
+      expect(component.stagedQuestions()[1].pageNumber).toBe(2);
+      expect(component.stagedQuestions()[1].question_text).toBe('Question from page 2');
+      expect(component.currentPageNumber()).toBe(2);
+      expect(component.currentStep()).toBe('STAGING_REVIEW');
+    });
+  });
+
+  describe('PDF Page Memory & Session Isolation', () => {
+    it('should persist page to sessionStorage on page change and restore it', () => {
+      const assessmentId = 'asm_test_session_1';
+      const fileName = 'unit3_math.pdf';
+      (component as any).assessmentId = () => assessmentId;
+      component.fileName.set(fileName);
+
+      component.onPdfPageChanged(7);
+      expect(component.currentPageNumber()).toBe(7);
+
+      const stored = component.getStoredPageFromSessionStorage(assessmentId, fileName);
+      expect(stored).toBe(7);
+    });
+
+    it('should reset currentPageNumber to 1 when a different file is selected', () => {
+      component.fileName.set('original_book.pdf');
+      component.currentPageNumber.set(15);
+
+      const newFile = new File(['content'], 'new_chapter.pdf', { type: 'application/pdf' });
+      component.handleSelectedFile(newFile);
+
+      expect(component.fileName()).toBe('new_chapter.pdf');
+      expect(component.currentPageNumber()).toBe(1);
+    });
+
+    it('should return to PREVIEW_AND_PAGE step after insertSelectedQuestions', () => {
+      component.currentStep.set('STAGING_REVIEW');
+      component.stagedQuestions.set([
+        {
+          id: 'q_test_1',
+          checked: true,
+          question_text: 'Sample question',
+          type: 'MCQ',
+          options: ['A', 'B'],
+          correct_option_index: 0,
+          points: 1,
+          has_geometry_diagram: false
+        }
+      ]);
+
+      component.insertSelectedQuestions();
+
+      expect(component.currentStep()).toBe('PREVIEW_AND_PAGE');
+      expect(component.isOpen()).toBeFalse();
+    });
+
+    it('should use fallbackDraftId so empty assessmentId drafts never collide', () => {
+      (component as any).assessmentId = () => '';
+      const effId = component.getEffectiveAssessmentId();
+      expect(effId).toBeTruthy();
+      expect(effId.startsWith('draft_asm_')).toBeTrue();
+    });
+
+    it('should strictly isolate sessions between different assessments so assessment 2 does not inherit assessment 1 file or page', () => {
+      const sessionAsm1: ICachedFileSession = {
+        fileName: 'quiz1_exam.pdf',
+        fileType: 'pdf',
+        file: new File(['mock content'], 'quiz1_exam.pdf', { type: 'application/pdf' }),
+        pageNumber: 30,
+        canvas: document.createElement('canvas'),
+        dataUrl: 'data:image/webp;base64,mock',
+        totalPages: 45
+      };
+
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('assessmentId', 'assessment_quiz_1');
+      fixture.componentRef.setInput('existingSession', sessionAsm1);
+      fixture.detectChanges();
+
+      expect(component.fileName()).toBe('quiz1_exam.pdf');
+      expect(component.currentPageNumber()).toBe(30);
+
+      // Now switch to Assessment 2 (e.g. homework) with NO session
+      fixture.componentRef.setInput('assessmentId', 'assessment_homework_2');
+      fixture.componentRef.setInput('existingSession', null);
+      fixture.detectChanges();
+
+      // Assessment 2 must start fresh on UPLOAD_AND_SELECT with empty file and page 1
+      expect(component.fileName()).toBe('');
+      expect(component.uploadedFile()).toBeNull();
+      expect(component.currentPageNumber()).toBe(1);
+      expect(component.currentStep()).toBe('UPLOAD_AND_SELECT');
+      expect(component.currentCanvas).toBeNull();
+      expect(component.currentDataUrl()).toBeNull();
+    });
+
+    it('should restore last viewed page when re-selecting the same file for the assessment', () => {
+      const assessmentId = 'asm_test_restore_page';
+      const fileName = 'unit_math_40_pages.pdf';
+      (component as any).assessmentId = () => assessmentId;
+
+      component.persistPageToSessionStorage(assessmentId, fileName, 30);
+
+      const file = new File(['mock pdf content'], fileName, { type: 'application/pdf' });
+      component.handleSelectedFile(file);
+
+      expect(component.fileName()).toBe(fileName);
+      expect(component.currentPageNumber()).toBe(30);
+    });
+  });
 });

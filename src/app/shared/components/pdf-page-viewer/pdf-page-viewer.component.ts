@@ -72,6 +72,15 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
       if (!isPlatformBrowser(this.platformId) || !src) return;
       this.loadDocument(src);
     });
+
+    // Reactively navigate to initialPage if updated after document load
+    effect(() => {
+      const page = this.initialPage();
+      if (!isPlatformBrowser(this.platformId) || !this.pdfDoc || this.isDestroyed) return;
+      if (page >= 1 && page <= this.totalPages() && page !== this.currentPage()) {
+        this.goToPage(page);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -295,6 +304,28 @@ export class PdfPageViewerComponent implements OnInit, OnDestroy {
         // Skip failed thumbnail
       }
     }
+  }
+
+  async renderPageToDataUrl(
+    pageNum: number,
+    scale = 2.0
+  ): Promise<{ canvas: HTMLCanvasElement; dataUrl: string }> {
+    if (!this.pdfDoc) {
+      throw new Error('PDF document not loaded');
+    }
+    const page = await this.pdfDoc.getPage(pageNum);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('dir', 'ltr');
+    canvas.style.direction = 'ltr';
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Cannot acquire canvas 2D context');
+    (ctx as CanvasRenderingContext2D).direction = 'ltr';
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const dataUrl = canvas.toDataURL('image/webp', 0.92);
+    return { canvas, dataUrl };
   }
 
   goToPage(num: number): void {
