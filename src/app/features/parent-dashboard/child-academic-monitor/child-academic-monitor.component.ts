@@ -5,8 +5,14 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.component';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
-import { ChildAcademicReport, AssessmentCategoryType, ChildSubmissionSummary } from './child-academic-monitor.models';
+import { ChildAcademicReport, AssessmentCategoryType, ChildSubmissionSummary, ChildUnitWatchMetric } from './child-academic-monitor.models';
 import { formatLastSeen } from '../../../core/utils/last-seen.util';
+import {
+  hasArabicChars,
+  sanitizeEnglishText,
+  pickLocalizedLabel,
+  formatLocalizedDuration
+} from '../../../core/utils/bilingual-display.util';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -232,9 +238,9 @@ export class ChildAcademicMonitorComponent {
           return {
             submissionId: s.submissionId || s._id,
             assessmentTitleAr: s.titleAr || s.assessmentTitleAr || 'تقييم دراسي',
-            assessmentTitleEn: s.titleEn || s.assessmentTitleEn || 'Assessment',
+            assessmentTitleEn: sanitizeEnglishText(s.titleEn || s.assessmentTitleEn, s.titleAr || s.assessmentTitleAr, 'Assessment'),
             unitTitleAr: s.unitTitleAr || 'الوحدة الدراسية',
-            unitTitleEn: s.unitTitleEn,
+            unitTitleEn: sanitizeEnglishText(s.unitTitleEn, s.unitTitleAr, 'Course Unit'),
             unitId: s.unitPackageId || s.unitId,
             category,
             scorePercentage: s.percentage ?? s.scorePercentage ?? 0,
@@ -257,11 +263,12 @@ export class ChildAcademicMonitorComponent {
         const mappedUnits = rawUnits.map((u: any) => ({
           unitId: u.unitPackageId || u.unitId || '',
           unitTitleAr: u.unitTitleAr || 'الوحدة الدراسية',
-          unitTitleEn: u.unitTitleEn || '',
+          unitTitleEn: sanitizeEnglishText(u.unitTitleEn, u.unitTitleAr, 'Course Unit'),
           watchPercentage: u.watchPercentage ?? 0,
           completedLectures: u.completedLectures ?? 0,
           totalLectures: u.totalLectures ?? 0,
-          subscriptionExpiresAt: u.expiresAt ? new Date(u.expiresAt).toLocaleDateString('ar-EG') : (u.subscriptionExpiresAt || 'ساري'),
+          subscriptionExpiresAt: u.expiresAt ? new Date(u.expiresAt).toLocaleDateString('ar-EG') : (u.subscriptionExpiresAt || ''),
+          subscriptionExpiresAtIso: u.expiresAt || undefined,
           isExpired: u.isExpired ?? (u.daysRemaining !== undefined ? u.daysRemaining <= 0 : false),
           lectures: Array.isArray(u.lectures) ? u.lectures.map((lec: any) => {
             const hasVideo = !!(lec.encryptedVideoId || lec.youtube_video_id || lec.youtube_url || lec.youtubeUrl || lec.video_duration_sec);
@@ -271,7 +278,7 @@ export class ChildAcademicMonitorComponent {
               lectureId: lec.lectureId || lec._id,
               order: lec.order || 1,
               titleAr: lec.titleAr || lec.lecture_title_ar || 'محاضرة',
-              titleEn: lec.titleEn || lec.lecture_title_en || '',
+              titleEn: sanitizeEnglishText(lec.titleEn || lec.lecture_title_en, lec.titleAr || lec.lecture_title_ar, `Lecture ${lec.order || 1}`),
               durationMinutes: durMinutes,
               videoDurationSec: durSec,
               isCompleted: !!lec.isCompleted,
@@ -390,13 +397,27 @@ export class ChildAcademicMonitorComponent {
     return !this.extractYoutubeId(url) && (url.includes('/post/') || url.includes('/community'));
   }
 
+  pickText(arVal?: string | null, enVal?: string | null, englishFallback = ''): string {
+    return pickLocalizedLabel(this.langService.isArabic(), arVal, enVal, englishFallback);
+  }
+
+  formatUnitExpiryLabel(unit: ChildUnitWatchMetric): string {
+    const isAr = this.langService.isArabic();
+    if (unit.isExpired) {
+      return isAr ? 'الاشتراك منتهي' : 'Subscription Expired';
+    }
+    if (unit.subscriptionExpiresAtIso) {
+      const formatted = new Date(unit.subscriptionExpiresAtIso).toLocaleDateString(isAr ? 'ar-EG' : 'en-US');
+      return isAr ? `ساري حتى ${formatted}` : `Valid until ${formatted}`;
+    }
+    if (unit.subscriptionExpiresAt && unit.subscriptionExpiresAt !== 'ساري') {
+      if (isAr) return `ساري حتى ${unit.subscriptionExpiresAt}`;
+      if (!hasArabicChars(unit.subscriptionExpiresAt)) return `Valid until ${unit.subscriptionExpiresAt}`;
+    }
+    return isAr ? 'ساري' : 'Active';
+  }
+
   formatDuration(seconds?: number): string {
-    const totalSec = Math.max(0, Math.round(seconds || 0));
-    if (totalSec <= 0) return '00:00';
-    const mins = Math.floor(totalSec / 60);
-    const secs = totalSec % 60;
-    if (mins === 0) return `${secs} ثانية`;
-    if (secs === 0) return `${mins} دقيقة`;
-    return `${mins} د و ${secs} ث`;
+    return formatLocalizedDuration(this.langService.isArabic(), seconds);
   }
 }

@@ -20,6 +20,7 @@ export interface ChildUnitWatchMetric {
   completedLectures: number;
   totalLectures: number;
   subscriptionExpiresAt: string;
+  subscriptionExpiresAtIso?: string;
   isExpired: boolean;
   lectures?: Array<{
     lectureId: string;

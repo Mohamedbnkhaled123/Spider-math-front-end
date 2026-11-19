@@ -250,7 +250,7 @@
 
           <!-- Glowing XP Pill -->
           <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-card border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm whitespace-nowrap shrink-0">
-            <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
+            <span>{{ authService.currentUser()?.total_xp ?? 0 }} {{ langService.isArabic() ? 'نقطة' : 'XP' }}</span>
           </span>
 
           <!-- Direct Role-Based "لوحة التحكم" Dashboard CTA Button -->
@@ -329,7 +329,7 @@
         <div class="flex items-center gap-2">
           @if (authService.isAuthenticated()) {
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-bg border border-brand-gold/30 text-xs font-bold text-brand-gold font-numeric shadow-sm whitespace-nowrap shrink-0">
-              <span>{{ authService.currentUser()?.total_xp ?? 0 }} XP</span>
+              <span>{{ authService.currentUser()?.total_xp ?? 0 }} {{ langService.isArabic() ? 'نقطة' : 'XP' }}</span>
             </span>
           }
 

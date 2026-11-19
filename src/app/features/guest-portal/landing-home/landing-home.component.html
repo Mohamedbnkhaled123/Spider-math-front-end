@@ -77,12 +77,6 @@
         <!-- =================================================================== -->
 
         <div class="lg:col-span-7 text-center lg:text-start">
-          @if (heroBadge()) {
-            <div data-testid="hero-cms-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-5 shadow-sm">
-              <span>{{ heroBadge() }}</span>
-            </div>
-          }
-
           <!-- Luxury Academic Headline (Dynamic CMS; supports line breaks with gold emphasis on line 2) -->
           <h1 data-testid="hero-cms-headline" class="font-academic-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] mb-6">
             @for (line of heroHeadlineLines(); track $index; let idx = $index) {
@@ -110,18 +104,6 @@
               >
                 <span>{{ heroCtaPrimary() }}</span>
               </button>
-
-              @if (heroCtaSecondary()) {
-                <button
-                  type="button"
-                  (click)="openPlacementModal()"
-                  data-testid="hero-cms-cta-secondary"
-                  class="btn-spider-secondary px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <app-icon name="target" [size]="16" />
-                  <span>{{ heroCtaSecondary() }}</span>
-                </button>
-              }
             }
           </div>
         </div>

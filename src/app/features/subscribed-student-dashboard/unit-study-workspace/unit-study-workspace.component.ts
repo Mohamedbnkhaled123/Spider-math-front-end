@@ -18,6 +18,11 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { ProtectedYoutubePlayerComponent } from '../../../shared/components/protected-youtube-player/protected-youtube-player.component';
 import { ProtectedPdfCanvasComponent } from '../../../shared/components/protected-pdf-canvas/protected-pdf-canvas.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import {
+  sanitizeEnglishText,
+  pickLocalizedLabel,
+  formatLocalizedDuration
+} from '../../../core/utils/bilingual-display.util';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { LessonLectureItem, UnitWorkspaceData, UnitAssessmentItem } from './unit-study-workspace.models';
@@ -203,7 +208,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
             _id: l._id,
             order: l.order_index ?? idx + 1,
             titleAr: l.lecture_title_ar || l.title_ar,
-            titleEn: l.lecture_title_en || l.title_en || '',
+            titleEn: sanitizeEnglishText(l.lecture_title_en || l.title_en, l.lecture_title_ar || l.title_ar, `Lecture ${l.order_index ?? idx + 1}`),
             durationMinutes: durMinutes,
             videoDurationSec: durSec,
             encryptedVideoId: hasVideo ? (l.youtube_video_id || l.youtube_encrypted_id || l.encryptedVideoId || '') : '',
@@ -228,7 +233,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
             lectureId: a.lecture_id ? (a.lecture_id._id || a.lecture_id).toString() : (a.lectureId || null),
             lectureTitle: matchedLec ? (matchedLec.lecture_title_ar || matchedLec.title_ar || matchedLec.title) : (a.lecture_id?.lecture_title_ar || null),
             titleAr: a.title_ar,
-            titleEn: a.title_en || '',
+            titleEn: sanitizeEnglishText(a.title_en, a.title_ar, 'Assessment'),
             assessmentType: a.assessment_type || 'QUIZ',
             totalPoints: a.total_points || 0,
             timeLimitMinutes: a.time_limit_minutes || 30,
@@ -242,7 +247,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
         const freshWorkspace: UnitWorkspaceData = {
           unitId: unit?._id || targetUnitId,
           titleAr: unit?.title_ar || '',
-          titleEn: unit?.title_en || '',
+          titleEn: sanitizeEnglishText(unit?.title_en, unit?.title_ar, 'Study Unit'),
           curriculum: unit?.curriculum || 'EGYPTIAN',
           gradeLevel: unit?.grade_level || 'SEC_3',
           term: unit?.academic_term || 'TERM_1',
@@ -363,18 +368,12 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  pickText(arVal?: string | null, enVal?: string | null, englishFallback = ''): string {
+    return pickLocalizedLabel(this.langService.isArabic(), arVal, enVal, englishFallback);
+  }
+
   formatDuration(seconds?: number): string {
-    const totalSec = Math.max(0, Math.round(seconds || 0));
-    if (totalSec <= 0) return '00:00';
-    const mins = Math.floor(totalSec / 60);
-    const secs = totalSec % 60;
-    if (mins === 0) {
-      return `${secs} ثانية`;
-    }
-    if (secs === 0) {
-      return `${mins} دقيقة`;
-    }
-    return `${mins} د و ${secs} ث`;
+    return formatLocalizedDuration(this.langService.isArabic(), seconds);
   }
 
   getAssessmentForLecture(assessmentId?: string): UnitAssessmentItem | undefined {
@@ -384,7 +383,7 @@ export class UnitStudyWorkspaceComponent implements OnInit, OnDestroy {
 
   async startAssessment(assessmentId: string, title?: string, returnHome?: boolean): Promise<void> {
     const asm = this.getAssessmentForLecture(assessmentId) || this.workspaceData().assessments.find(a => a._id === assessmentId);
-    const displayTitle = title || asm?.titleAr || asm?.titleEn || '';
+    const displayTitle = title || this.pickText(asm?.titleAr, asm?.titleEn, '');
 
     const confirmed = await this.confirmDialogService.confirm({
       title: this.langService.isArabic() ? 'بدء الاختبار' : 'Start Exam',

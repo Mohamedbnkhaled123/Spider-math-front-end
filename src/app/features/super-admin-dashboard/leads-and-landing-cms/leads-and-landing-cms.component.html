@@ -360,25 +360,14 @@
             <h4>{{ langService.isArabic() ? 'الواجهة الرئيسية' : 'Hero Section (Arabic)' }}</h4>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة الواجهة الرئيسية:' : 'Hero Badge (Arabic):' }}</label>
-              <input
-                type="text"
-                [(ngModel)]="editableCms().heroBadgeAr"
-                [placeholder]="langService.isArabic() ? 'مثال: ✦ المنظومة الهندسية الرائدة' : 'e.g.: Spider Math ✦ Engineering Excellence'"
-                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-              />
-            </div>
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الزر الأساسي:' : 'Primary Action Button (Arabic):' }}</label>
-              <input
-                type="text"
-                [(ngModel)]="editableCms().heroCtaPrimaryAr"
-                [placeholder]="langService.isArabic() ? 'مثال: اختار منهجك وابدأ الآن' : 'e.g.: Choose Your Curriculum & Start'"
-                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-              />
-            </div>
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الزر الأساسي:' : 'Primary Action Button (Arabic):' }}</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroCtaPrimaryAr"
+              [placeholder]="langService.isArabic() ? 'مثال: اختار منهجك وابدأ الآن' : 'e.g.: Choose Your Curriculum & Start'"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
           </div>
 
           <div>
@@ -402,16 +391,6 @@
               [placeholder]="langService.isArabic() ? 'الوصف التوضيحي تحت العنوان الرئيسي...' : 'Subheadline description...'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
             ></textarea>
-          </div>
-
-          <div>
-            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص الزر الثانوي:' : 'Secondary Action Button (Arabic):' }}</label>
-            <input
-              type="text"
-              [(ngModel)]="editableCms().heroCtaSecondaryAr"
-              [placeholder]="langService.isArabic() ? 'مثال: امتحان تحديد المستوى المجاني' : 'e.g.: Free Placement Test'"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-            />
           </div>
         </div>
 
@@ -819,25 +798,14 @@
             <h4>Hero Section (English)</h4>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">Hero Badge Text:</label>
-              <input
-                type="text"
-                [(ngModel)]="editableCms().heroBadgeEn"
-                placeholder="e.g.: Spider Math✦ Engineering Excellence"
-                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-              />
-            </div>
-            <div>
-              <label class="block font-bold text-text-secondary mb-1">Primary CTA Button Text:</label>
-              <input
-                type="text"
-                [(ngModel)]="editableCms().heroCtaPrimaryEn"
-                placeholder="e.g.: Choose Your Curriculum & Begin"
-                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-              />
-            </div>
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Primary CTA Button Text:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().heroCtaPrimaryEn"
+              placeholder="e.g.: Choose Your Curriculum & Begin"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
           </div>
 
           <div>
@@ -861,16 +829,6 @@
               placeholder="e.g.: Interactive learning for Egyptian, Gulf, International, and American Curriculums..."
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary leading-relaxed"
             ></textarea>
-          </div>
-
-          <div>
-            <label class="block font-bold text-text-secondary mb-1">Secondary CTA Button Text:</label>
-            <input
-              type="text"
-              [(ngModel)]="editableCms().heroCtaSecondaryEn"
-              placeholder="e.g.: Free Placement Test"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
-            />
           </div>
         </div>
 

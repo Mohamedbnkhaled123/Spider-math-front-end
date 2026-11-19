@@ -17,6 +17,12 @@ import { ConfirmDialogService } from '../../../core/services/confirm-dialog.serv
 import { AuthService, IUserDto } from '../../../core/auth/auth.service';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import {
+  hasArabicChars as checkArabicChars,
+  sanitizeEnglishText as cleanEnglishText,
+  pickLocalizedLabel,
+  formatLocalizedDuration
+} from '../../../core/utils/bilingual-display.util';
+import {
   AcademicTermCode,
   curriculumHasTerms,
   findCurriculumByCode,
@@ -504,7 +510,9 @@ export class StudentOverviewComponent implements OnInit {
                     order: lec.order_index ?? idx + 1,
                     unitId: u._id,
                     unitTitleAr: u.titleAr,
+                    unitTitleEn: this.sanitizeEnglishText(u.titleEn, u.titleAr, 'Course Unit'),
                     titleAr: lec.lecture_title_ar || lec.title_ar,
+                    titleEn: this.sanitizeEnglishText(lec.lecture_title_en || lec.title_en, lec.lecture_title_ar || lec.title_ar, `Lecture ${lec.order_index ?? idx + 1}`),
                     durationMinutes: durMinutes,
                     videoDurationSec: hasVideo ? (lec.video_duration_sec || (durMinutes * 60)) : 0,
                     isWatched: !!lec.isCompleted,
@@ -531,7 +539,8 @@ export class StudentOverviewComponent implements OnInit {
                           isActive: !!cRes.data.isSubscribed,
                           subscriptionExpiresAt: cRes.data.subscriptionExpiresAt
                             ? new Date(cRes.data.subscriptionExpiresAt).toLocaleDateString('ar-EG')
-                            : (cRes.data.isSubscribed ? 'ساري' : 'غير مفعل'),
+                            : undefined,
+                          subscriptionExpiresAtIso: cRes.data.subscriptionExpiresAt || undefined,
                           isExpired: cRes.data.isExpired ?? false,
                           lectures: unitLectures
                         }
@@ -565,11 +574,12 @@ export class StudentOverviewComponent implements OnInit {
           const mapped = notifs.map((n: any) => ({
             id: n._id,
             titleAr: n.title_ar,
-            titleEn: n.title_en || n.title_ar,
+            titleEn: this.sanitizeEnglishText(n.title_en, n.title_ar, 'Notification'),
             messageAr: n.message_ar,
-            messageEn: n.message_en || n.message_ar,
+            messageEn: this.sanitizeEnglishText(n.message_en, n.message_ar, ''),
             type: n.notification_type || 'SYSTEM_BROADCAST',
-            timestamp: new Date(n.createdAt).toLocaleTimeString('ar-EG'),
+            timestamp: new Date(n.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+            createdAtIso: n.createdAt,
             isRead: !!n.is_read,
             actionUrl: n.action_url || '/student'
           }));
@@ -648,18 +658,27 @@ export class StudentOverviewComponent implements OnInit {
       const canRetake = match ? (completedAttemptsCount < maxAttempts) : false;
 
       let dueDateAr = asm.time_limit_minutes ? `${asm.time_limit_minutes} دقيقة` : 'متاح للحل الآن';
+      let dueDateEn = asm.time_limit_minutes ? `${asm.time_limit_minutes} min` : 'Available now';
       let isUrgent = false;
       let canStart = true;
       let statusNote: string | undefined = undefined;
+      let statusNoteEn: string | undefined = undefined;
 
       if (match) {
         canStart = canRetake;
         dueDateAr = canRetake
           ? `متاح إعادة المحاولة (${completedAttemptsCount} / ${maxAttempts})`
           : 'تم التسليم بنجاح';
-        statusNote = (match.status === 'PENDING_REVIEW' || match.score === null || match.score === undefined || (match as any).isPending)
+        dueDateEn = canRetake
+          ? `Retake available (${completedAttemptsCount} / ${maxAttempts})`
+          : 'Submitted Successfully';
+        const isPendingMatch = match.status === 'PENDING_REVIEW' || match.score === null || match.score === undefined || (match as any).isPending;
+        statusNote = isPendingMatch
           ? 'تم التسليم — في انتظار التصحيح اليدوي'
           : `تم التسليم — الدرجة: ${match.score} / ${match.maxScore}`;
+        statusNoteEn = isPendingMatch
+          ? 'Submitted — Pending manual grading'
+          : `Submitted — Score: ${match.score} / ${match.maxScore}`;
       } else {
         if (asm.available_until) {
           const untilDate = new Date(asm.available_until);
@@ -668,14 +687,18 @@ export class StudentOverviewComponent implements OnInit {
 
           if (diffMs < 0) {
             dueDateAr = 'انتهى موعد التسليم';
+            dueDateEn = 'Deadline passed';
             canStart = false;
             statusNote = 'انتهى الوقت المحدد لهذا الكويز';
+            statusNoteEn = 'Time window has closed for this quiz';
           } else if (diffHours <= 24) {
             isUrgent = true;
             const hoursLeft = Math.max(1, Math.round(diffHours));
             dueDateAr = `ينتهي خلال ${hoursLeft} ساعة`;
+            dueDateEn = `Ends in ${hoursLeft}h`;
           } else {
             dueDateAr = `متاح حتى ${untilDate.toLocaleDateString('ar-EG')}`;
+            dueDateEn = `Available until ${untilDate.toLocaleDateString('en-US')}`;
           }
         }
 
@@ -683,47 +706,64 @@ export class StudentOverviewComponent implements OnInit {
           const fromDate = new Date(asm.available_from);
           if (now < fromDate) {
             dueDateAr = `يبدأ: ${fromDate.toLocaleDateString('ar-EG')} ${fromDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+            dueDateEn = `Starts: ${fromDate.toLocaleDateString('en-US')} ${fromDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
             canStart = false;
             statusNote = 'لم يحن موعد الكويز';
+            statusNoteEn = 'Not open yet';
           }
         }
       }
 
       let categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' | 'GENERAL_QUIZ' = 'LECTURE_QUIZ';
       let categoryLabelAr = 'كويز تفاعلي';
+      let categoryLabelEn = 'Interactive Quiz';
       let unitTitleAr = '';
+      let unitTitleEn = '';
 
       if (asm.assessment_type === 'COMPREHENSIVE_EXAM' || asm.category === 'FULL_EXAM') {
         categoryType = 'COMPREHENSIVE_EXAM';
         categoryLabelAr = 'امتحان شامل';
+        categoryLabelEn = 'Comprehensive Exam';
         unitTitleAr = 'امتحان شامل للمرحلة';
+        unitTitleEn = 'Comprehensive Exam';
       } else if (asm.assessment_type === 'HOMEWORK' || asm.category === 'HOMEWORK') {
         categoryType = 'HOMEWORK';
         categoryLabelAr = 'واجب منزلي';
+        categoryLabelEn = 'Homework';
         unitTitleAr = asm.unit_package_id?.title_ar || asm.unit_package_id?.title_en || 'واجب الوحدة';
+        unitTitleEn = this.sanitizeEnglishText(asm.unit_package_id?.title_en, asm.unit_package_id?.title_ar, 'Unit Homework');
       } else if (!asm.unit_package_id && !asm.lecture_id) {
         categoryType = 'GENERAL_QUIZ';
         categoryLabelAr = 'كويز عام';
+        categoryLabelEn = 'General Quiz';
         unitTitleAr = 'كويز عام للمرحلة';
+        unitTitleEn = 'General Quiz';
       } else {
         categoryType = 'LECTURE_QUIZ';
         categoryLabelAr = 'كويز درس';
+        categoryLabelEn = 'Lesson Quiz';
         unitTitleAr = asm.unit_package_id?.title_ar || asm.unit_package_id?.title_en || 'كويز درس الوحدة';
+        unitTitleEn = this.sanitizeEnglishText(asm.unit_package_id?.title_en, asm.unit_package_id?.title_ar, 'Lesson Quiz');
       }
 
       return {
         id: asm._id,
         titleAr: asm.title_ar,
+        titleEn: this.sanitizeEnglishText(asm.title_en, asm.title_ar, categoryLabelEn),
         unitTitleAr,
+        unitTitleEn,
         categoryType,
         categoryLabelAr,
+        categoryLabelEn,
         questionsCount: asm.questions?.length || 0,
         totalPoints: asm.total_points || (asm.questions?.length ? asm.questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 1), 0) : 20),
         xpReward: asm.xp_reward || 50,
         dueDateAr,
+        dueDateEn,
         isUrgent,
         canStart,
         statusNote,
+        statusNoteEn,
         assessmentUrl: `/student/assessments/${asm._id}`,
         isCompleted: !!match,
         submissionId: match ? (match.submissionId || match.id) : undefined,
@@ -769,7 +809,7 @@ export class StudentOverviewComponent implements OnInit {
             mapped.push({
               rank: mapped.length + 1,
               studentId: user._id,
-              studentName: user.full_name + ' (أنت)',
+              studentName: user.full_name,
               haCode: currentCode,
               totalXp: user.total_xp ?? 0,
               isCurrentUser: true
@@ -787,7 +827,7 @@ export class StudentOverviewComponent implements OnInit {
           const fallback = [{
             rank: 1,
             studentId: user._id,
-            studentName: user.full_name + ' (أنت)',
+            studentName: user.full_name,
             haCode: currentCode,
             totalXp: user.total_xp ?? 0,
             isCurrentUser: true
@@ -862,12 +902,16 @@ export class StudentOverviewComponent implements OnInit {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.profileErrorMessage.set('اختر صورة صالحة (JPG, PNG, WebP)');
+      this.profileErrorMessage.set(
+        this.langService.isArabic() ? 'اختر صورة صالحة' : 'Choose a valid image (JPG, PNG, WebP)'
+      );
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      this.profileErrorMessage.set('الحد الأقصى لحجم الصورة 5MB');
+      this.profileErrorMessage.set(
+        this.langService.isArabic() ? 'الحد الأقصى لحجم الصورة 5 ميجابايت' : 'Maximum image size is 5MB'
+      );
       return;
     }
 
@@ -912,14 +956,18 @@ export class StudentOverviewComponent implements OnInit {
     const country = this.editCountry();
 
     if (!name || name.length < 3) {
-      this.profileErrorMessage.set('اكتب الاسم ثلاثياً');
+      this.profileErrorMessage.set(
+        this.langService.isArabic() ? 'اكتب الاسم ثلاثياً' : 'Enter your full name'
+      );
       return;
     }
 
     if (phone) {
       const val = validatePhoneNumber(phone, country);
       if (!val.isValid) {
-        this.profileErrorMessage.set(`رقم هاتف الطالب: ${val.messageAr}`);
+        this.profileErrorMessage.set(
+          this.langService.isArabic() ? `رقم هاتف الطالب: ${val.messageAr}` : `Student phone: ${val.messageEn}`
+        );
         return;
       }
     }
@@ -927,14 +975,16 @@ export class StudentOverviewComponent implements OnInit {
     if (parentPhone) {
       const val = validatePhoneNumber(parentPhone, country);
       if (!val.isValid) {
-        this.profileErrorMessage.set(`رقم هاتف ولي الأمر: ${val.messageAr}`);
+        this.profileErrorMessage.set(
+          this.langService.isArabic() ? `رقم هاتف ولي الأمر: ${val.messageAr}` : `Parent phone: ${val.messageEn}`
+        );
         return;
       }
     }
 
     if (phone && parentPhone && arePhoneNumbersIdentical(phone, parentPhone, country)) {
       this.profileErrorMessage.set(
-        'يجب اختلاف رقم ولي الأمر عن الطالب.'
+        this.langService.isArabic() ? 'يجب اختلاف رقم ولي الأمر عن الطالب.' : 'Parent phone must differ from student phone.'
       );
       return;
     }
@@ -976,7 +1026,7 @@ export class StudentOverviewComponent implements OnInit {
             avatarUrl: resolvedAvatar
           };
           this.authService.updateCurrentUser(patch);
-          this.profileSuccessMessage.set('تم الحفظ');
+          this.profileSuccessMessage.set(this.langService.isArabic() ? 'تم الحفظ' : 'Saved');
           setTimeout(() => {
             if (this.isProfileModalOpen()) {
               this.closeProfileModal();
@@ -989,19 +1039,102 @@ export class StudentOverviewComponent implements OnInit {
         this.profileErrorMessage.set(
           err?.error?.error?.message ||
           err?.error?.message ||
-          'تعذر الحفظ. تحقق من البيانات.'
+          (this.langService.isArabic() ? 'تعذر الحفظ. تحقق من البيانات.' : 'Could not save. Please check your details.')
         );
       }
     });
   }
 
+  hasArabicChars(value?: string | null): boolean {
+    return checkArabicChars(value);
+  }
+
+  sanitizeEnglishText(enVal?: string | null, arVal?: string | null, fallback = ''): string {
+    return cleanEnglishText(enVal, arVal, fallback);
+  }
+
+  pickBilingual(arVal?: string | null, enVal?: string | null, englishFallback = ''): string {
+    return pickLocalizedLabel(this.langService.isArabic(), arVal, enVal, englishFallback);
+  }
+
+  formatUnitExpiryLabel(unit: EnrolledUnitSummary): string {
+    const isAr = this.langService.isArabic();
+    if (unit.isExpired) {
+      return isAr ? 'الاشتراك منتهي' : 'Subscription Expired';
+    }
+    if (unit.subscriptionExpiresAtIso) {
+      const formatted = new Date(unit.subscriptionExpiresAtIso).toLocaleDateString(isAr ? 'ar-EG' : 'en-US');
+      return isAr ? `ساري حتى ${formatted}` : `Valid until ${formatted}`;
+    }
+    if (unit.subscriptionExpiresAt && unit.subscriptionExpiresAt !== 'ساري' && unit.subscriptionExpiresAt !== 'غير مفعل') {
+      if (isAr) return `ساري حتى ${unit.subscriptionExpiresAt}`;
+      if (!this.hasArabicChars(unit.subscriptionExpiresAt)) return `Valid until ${unit.subscriptionExpiresAt}`;
+    }
+    return isAr ? 'اشتراك مفعل' : 'Active Subscription';
+  }
+
+  formatNotificationTime(notif: StudentNotificationItem): string {
+    const isAr = this.langService.isArabic();
+    if (notif.createdAtIso) {
+      return new Date(notif.createdAtIso).toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    if (isAr) return notif.timestamp || '';
+    return this.hasArabicChars(notif.timestamp) ? '' : (notif.timestamp || '');
+  }
+
+  getGradeBadgeLabel(grade: StudentCompletedGradeItem): string {
+    const isAr = this.langService.isArabic();
+    const isPending = grade.isPending || grade.status === 'PENDING_REVIEW' || grade.score === null;
+    if (isAr) {
+      if (grade.gradeLabelAr) {
+        return grade.gradeLabelAr.replace(/\s*\([^)]*[A-Za-z][^)]*\)/g, '').trim() || (isPending ? 'في انتظار التصحيح اليدوي' : 'معتمد');
+      }
+      return isPending ? 'في انتظار التصحيح اليدوي' : 'معتمد';
+    }
+    if (grade.gradeLabelEn && !this.hasArabicChars(grade.gradeLabelEn)) {
+      return grade.gradeLabelEn;
+    }
+    if (isPending) return 'Pending Manual Review';
+    const rawAr = (grade.gradeLabelAr || '').trim();
+    if (rawAr.startsWith('ممتاز')) return 'Excellent';
+    if (rawAr.startsWith('جيد جداً')) return 'Very Good';
+    if (rawAr.startsWith('جيد')) return 'Good';
+    if (rawAr.startsWith('يحتاج')) return 'Needs Review';
+    return 'Approved';
+  }
+
+  getGradedByLabel(grade: StudentCompletedGradeItem): string {
+    const isAr = this.langService.isArabic();
+    const isPending = grade.isPending || grade.status === 'PENDING_REVIEW' || grade.score === null;
+    if (isAr) {
+      return grade.gradedByAr || grade.gradedBy || (isPending ? 'في انتظار التصحيح اليدوي' : 'م/ هبة عبدالوهاب');
+    }
+    if (grade.gradedByEn && !this.hasArabicChars(grade.gradedByEn)) {
+      return grade.gradedByEn;
+    }
+    return isPending ? 'Pending Manual Review' : 'Eng. Heba Abdelwahab';
+  }
+
+  getGradedDateLabel(grade: StudentCompletedGradeItem): string {
+    const isAr = this.langService.isArabic();
+    if (grade.gradedAtIso) {
+      return new Date(grade.gradedAtIso).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { dateStyle: 'medium' });
+    }
+    if (isAr) return grade.gradedDateAr || '';
+    if (grade.gradedDateEn && !this.hasArabicChars(grade.gradedDateEn)) return grade.gradedDateEn;
+    return this.hasArabicChars(grade.gradedDateAr) ? '' : (grade.gradedDateAr || '');
+  }
+
+  getLeaderboardDisplayName(entry: LeaderboardRankEntry): string {
+    const baseName = (entry.studentName || '').replace(/\s*\(أنت\)\s*$/, '').replace(/\s*\(You\)\s*$/, '').trim();
+    if (!entry.isCurrentUser) return baseName;
+    return this.langService.isArabic() ? `${baseName} (أنت)` : `${baseName} (You)`;
+  }
+
   formatDuration(seconds?: number): string {
-    const totalSec = Math.max(0, Math.round(seconds || 0));
-    if (totalSec <= 0) return '00:00';
-    const mins = Math.floor(totalSec / 60);
-    const secs = totalSec % 60;
-    if (mins === 0) return `${secs} ثانية`;
-    if (secs === 0) return `${mins} دقيقة`;
-    return `${mins} د و ${secs} ث`;
+    return formatLocalizedDuration(this.langService.isArabic(), seconds);
   }
 }

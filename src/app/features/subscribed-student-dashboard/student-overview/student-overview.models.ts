@@ -24,11 +24,13 @@ export interface EnrolledUnitSummary {
   isActive: boolean;
   accessScope?: 'FULL' | 'ASSESSMENTS_ONLY';
   subscriptionExpiresAt?: string;
+  subscriptionExpiresAtIso?: string;
   isExpired?: boolean;
   lectures?: Array<{
     id: string;
     order: number;
     titleAr: string;
+    titleEn?: string;
     durationMinutes: number;
     videoDurationSec?: number;
     isWatched: boolean;
@@ -55,6 +57,7 @@ export interface StudentNotificationItem {
   messageEn: string;
   type: 'HOMEWORK_GRADED' | 'NEW_LECTURE' | 'XP_AWARD' | 'ANNOUNCEMENT';
   timestamp: string;
+  createdAtIso?: string;
   isRead: boolean;
   actionUrl?: string;
 }
@@ -63,7 +66,9 @@ export interface StudentLectureItem {
   id: string;
   unitId: string;
   unitTitleAr: string;
+  unitTitleEn?: string;
   titleAr: string;
+  titleEn?: string;
   durationMinutes: number;
   videoDurationSec?: number;
   isWatched: boolean;
@@ -75,16 +80,21 @@ export interface StudentLectureItem {
 export interface StudentDueQuizItem {
   id: string;
   titleAr: string;
+  titleEn?: string;
   unitTitleAr: string;
+  unitTitleEn?: string;
   categoryType: 'LECTURE_QUIZ' | 'HOMEWORK' | 'COMPREHENSIVE_EXAM' | 'GENERAL_QUIZ';
   categoryLabelAr: string;
+  categoryLabelEn?: string;
   questionsCount: number;
   totalPoints: number;
   xpReward: number;
   dueDateAr: string;
+  dueDateEn?: string;
   isUrgent?: boolean;
   canStart?: boolean;
   statusNote?: string;
+  statusNoteEn?: string;
   assessmentUrl: string;
   isCompleted?: boolean;
   submissionId?: string;
@@ -105,15 +115,22 @@ export interface StudentCompletedGradeItem {
   maxAttempts?: number;
   attemptNumber?: number;
   titleAr: string;
+  titleEn?: string;
   unitTitleAr: string;
+  unitTitleEn?: string;
   score: number | null;
   maxScore: number;
   percentage: number | null;
   gradeLabelAr: string;
+  gradeLabelEn?: string;
   status?: string;
   isPending?: boolean;
   gradedBy: string;
+  gradedByAr?: string;
+  gradedByEn?: string;
   gradedDateAr: string;
+  gradedDateEn?: string;
+  gradedAtIso?: string;
   feedbackUrl: string;
 }
 

@@ -13,9 +13,9 @@
         <span>{{ returnToHome() ? (langService.isArabic() ? 'الرئيسية' : 'Home') : (langService.isArabic() ? 'لوحة الطالب' : 'Dashboard') }}</span>
       </a>
 
-      @if (feedback().unitTitleAr) {
+      @if (pickText(feedback().unitTitleAr, feedback().unitTitleEn, 'Course Unit')) {
         <span class="text-xs text-text-muted shrink-0">|</span>
-        <span class="text-xs font-bold text-brand-secondary truncate min-w-0 max-w-[200px] sm:max-w-xs md:max-w-md">{{ feedback().unitTitleAr }}</span>
+        <span class="text-xs font-bold text-brand-secondary truncate min-w-0 max-w-[200px] sm:max-w-xs md:max-w-md">{{ pickText(feedback().unitTitleAr, feedback().unitTitleEn, 'Course Unit') }}</span>
       }
     </div>
 
@@ -46,7 +46,7 @@
       <span>{{ langService.isArabic() ? 'تقرير التقييم' : 'Evaluation Report' }}</span>
     </div>
     <h1 class="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-academic-serif">
-      {{ feedback().assessmentTitleAr }}
+      {{ pickText(feedback().assessmentTitleAr, feedback().assessmentTitleEn, 'Assessment Feedback') }}
     </h1>
   </div>
 
@@ -224,9 +224,9 @@
                 {{ scorePercentage() }}%
               </span>
             </div>
-            @if (feedback().gradedAt) {
+            @if (formattedGradedAt()) {
               <span class="text-[11px] text-text-muted mt-2 block font-numeric">
-                {{ langService.isArabic() ? ('تاريخ الاعتماد: ' + feedback().gradedAt) : ('Graded on: ' + feedback().gradedAt) }}
+                {{ langService.isArabic() ? ('تاريخ الاعتماد: ' + formattedGradedAt()) : ('Graded on: ' + formattedGradedAt()) }}
               </span>
             }
 

@@ -99,10 +99,10 @@
             <app-icon name="award" [size]="18" className="text-amber-400" />
             <div>
               <div class="text-[10px] text-text-muted font-bold">
-                {{ langService.isArabic() ? 'نقاط XP' : 'XP' }}
+                {{ langService.isArabic() ? 'نقاط التميز' : 'XP' }}
               </div>
               <div class="text-sm font-black font-mono text-gold-accent">
-                +{{ rep.totalXp | number }} XP
+                +{{ rep.totalXp | number }} {{ langService.isArabic() ? 'نقطة' : 'XP' }}
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@
           <div class="unit-metric-card rounded-2xl spider-rim-glass-card p-5 shadow-sm hover:border-gold-accent/40 transition-all duration-300 hover:-translate-y-1">
             <div class="flex items-start justify-between gap-3 mb-3">
               <h4 class="text-sm font-bold text-text-primary leading-snug">
-                {{ langService.isArabic() ? unit.unitTitleAr : (unit.unitTitleEn || unit.unitTitleAr) }}
+                {{ pickText(unit.unitTitleAr, unit.unitTitleEn, 'Course Unit') }}
               </h4>
               <span
                 class="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0"
@@ -151,7 +151,7 @@
                 [class.bg-rose-500/10]="unit.isExpired"
                 [class.text-rose-500]="unit.isExpired"
               >
-                {{ unit.isExpired ? (langService.isArabic() ? 'الاشتراك منتهي' : 'Subscription Expired') : (langService.isArabic() ? ('ساري حتى ' + unit.subscriptionExpiresAt) : ('Valid until ' + unit.subscriptionExpiresAt)) }}
+                {{ formatUnitExpiryLabel(unit) }}
               </span>
             </div>
 
@@ -209,7 +209,7 @@
                             {{ lec.order }}
                           </span>
                           <div class="min-w-0">
-                            <span class="font-bold text-text-primary block truncate">{{ langService.isArabic() ? lec.titleAr : (lec.titleEn || lec.titleAr) }}</span>
+                            <span class="font-bold text-text-primary block truncate">{{ pickText(lec.titleAr, lec.titleEn, 'Lecture') }}</span>
                             <span class="text-[10px] text-text-muted font-mono">{{ formatDuration(lec.videoDurationSec) }}</span>
                           </div>
                         </div>
@@ -508,12 +508,12 @@
 
                 <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-bg text-text-secondary border border-surface-border flex items-center gap-1">
                   <app-icon name="book-open" [size]="12" />
-                  <span>{{ sub.unitTitleAr }}</span>
+                  <span>{{ pickText(sub.unitTitleAr, sub.unitTitleEn, 'Course Unit') }}</span>
                 </span>
               </div>
 
               <h4 class="text-base font-bold text-text-primary">
-                {{ langService.isArabic() ? sub.assessmentTitleAr : (sub.assessmentTitleEn || sub.assessmentTitleAr) }}
+                {{ pickText(sub.assessmentTitleAr, sub.assessmentTitleEn, 'Assessment') }}
               </h4>
             </div>
 
@@ -783,12 +783,12 @@
               }
 
               <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-surface-bg text-text-secondary border border-surface-border">
-                {{ revSub.unitTitleAr }}
+                {{ pickText(revSub.unitTitleAr, revSub.unitTitleEn, 'Course Unit') }}
               </span>
             </div>
 
             <h3 class="text-base sm:text-lg font-black text-text-primary">
-              {{ langService.isArabic() ? revSub.assessmentTitleAr : (revSub.assessmentTitleEn || revSub.assessmentTitleAr) }}
+              {{ pickText(revSub.assessmentTitleAr, revSub.assessmentTitleEn, 'Assessment') }}
             </h3>
 
             <div class="text-xs text-text-secondary font-mono flex items-center gap-2">

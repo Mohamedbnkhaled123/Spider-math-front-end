@@ -174,8 +174,9 @@ describe('LandingHomeComponent', () => {
 
       const el: HTMLElement = fixture.nativeElement;
 
-      // Hero section
-      expect(el.querySelector('[data-testid="hero-cms-badge"]')?.textContent).toContain('منصة سبايدر المحدثة');
+      // Hero section: pill badge and secondary CTA are intentionally omitted
+      expect(el.querySelector('[data-testid="hero-cms-badge"]')).toBeNull();
+      expect(el.querySelector('[data-testid="hero-cms-cta-secondary"]')).toBeNull();
       const heroSpans = el.querySelectorAll('[data-testid="hero-cms-headline"] span');
       expect(heroSpans.length).toBe(3);
       expect(heroSpans[0]?.textContent?.trim()).toBe('السطر الأول');
@@ -184,7 +185,6 @@ describe('LandingHomeComponent', () => {
       expect(heroSpans[2]?.textContent?.trim()).toBe('السطر الثالث');
       expect(el.querySelector('[data-testid="hero-cms-subheadline"]')?.textContent?.trim()).toBe('وصف فرعي تجريبي من لوحة التحكم');
       expect(el.querySelector('[data-testid="hero-cms-cta-primary"]')?.textContent?.trim()).toBe('تصفح المقررات');
-      expect(el.querySelector('[data-testid="hero-cms-cta-secondary"]')?.textContent).toContain('اختبار تحديد المستوى المباشر');
 
       // About headline
       const aboutSpans = el.querySelectorAll('[data-testid="about-cms-headline"] span');
@@ -207,17 +207,6 @@ describe('LandingHomeComponent', () => {
       expect(el.querySelector('[data-testid="testimonials-section-badge"]')?.textContent).toContain('انطباعات الطلاب');
       expect(el.querySelector('[data-testid="testimonials-section-title"]')?.textContent?.trim()).toBe('تجارب حقيقية لطلابنا');
       expect(el.querySelector('[data-testid="testimonials-section-subtitle"]')?.textContent?.trim()).toBe('آراء منشورة ومعتمدة.');
-
-      // Clearing optional Hero badge & secondary CTA hides them
-      component.landingData.set({
-        ...component.landingData()!,
-        heroBadgeAr: '',
-        heroCtaSecondaryAr: ''
-      });
-      fixture.detectChanges();
-
-      expect(el.querySelector('[data-testid="hero-cms-badge"]')).toBeNull();
-      expect(el.querySelector('[data-testid="hero-cms-cta-secondary"]')).toBeNull();
     });
   });
 

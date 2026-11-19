@@ -18,6 +18,7 @@ import { CelebrationModalComponent } from '../../../shared/components/celebratio
 import { getRandomCelebrationPhrase } from '../../../shared/components/celebration-modal/celebration-messages.data';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
+import { hasArabicChars, pickLocalizedLabel } from '../../../core/utils/bilingual-display.util';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CustomMistakeItem, SubmissionFeedbackData } from './submission-feedback-viewer.models';
 
@@ -79,6 +80,7 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
     assessmentTitleAr: 'تقييم دراسي',
     assessmentTitleEn: 'Assessment Feedback',
     unitTitleAr: 'الوحدة الدراسية',
+    unitTitleEn: 'Course Unit',
     resultVisibility: 'HIDDEN_PENDING_TEACHER',
     mcqAutoScore: 0,
     essayManualScore: 0,
@@ -121,16 +123,32 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
   readonly reviewTimeRemaining = computed(() => {
     const f = this.feedback();
     if (!f.hasEssayQuestions || !f.reviewExpiresAt || f.isReviewExpired) return null;
+    const isAr = this.langService.isArabic();
     const diff = new Date(f.reviewExpiresAt).getTime() - Date.now();
-    if (diff <= 0) return 'انتهت فترة المراجعة';
+    if (diff <= 0) return isAr ? 'انتهت' : 'Expired';
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
     const remainingHours = hours % 24;
     if (days > 0) {
-      return `متبقي ${days} يوم و ${remainingHours} ساعة`;
+      return isAr ? `${days} يوم و ${remainingHours} ساعة` : `${days}d ${remainingHours}h`;
     }
-    return `متبقي ${hours} ساعة`;
+    return isAr ? `${hours} ساعة` : `${hours}h`;
   });
+
+  readonly formattedGradedAt = computed(() => {
+    const f = this.feedback();
+    const isAr = this.langService.isArabic();
+    if (f.gradedAtIso) {
+      return new Date(f.gradedAtIso).toLocaleString(isAr ? 'ar-EG' : 'en-US');
+    }
+    if (!f.gradedAt) return '';
+    if (isAr) return f.gradedAt;
+    return hasArabicChars(f.gradedAt) ? '' : f.gradedAt;
+  });
+
+  pickText(arVal?: string | null, enVal?: string | null, englishFallback = ''): string {
+    return pickLocalizedLabel(this.langService.isArabic(), arVal, enVal, englishFallback);
+  }
 
   readonly totalQuestionsCount = computed(() => this.feedback().questionsReview.length);
   readonly correctQuestionsCount = computed(
@@ -222,13 +240,15 @@ export class SubmissionFeedbackViewerComponent implements OnInit {
             assessmentTitleAr: data.assessmentTitleAr || 'تقييم دراسي',
             assessmentTitleEn: data.assessmentTitleEn || 'Assessment Feedback',
             unitTitleAr: data.unitTitleAr || 'الوحدة الدراسية',
+            unitTitleEn: data.unitTitleEn || 'Course Unit',
             resultVisibility: data.resultVisibility || 'HIDDEN_PENDING_TEACHER',
             mcqAutoScore: data.mcqAutoScore ?? 0,
             essayManualScore: data.essayManualScore ?? 0,
             finalTotalScore: data.finalTotalScore ?? 0,
             maxScore: data.maxScore ?? 20,
             scorePercentage: data.scorePercentage ?? 0,
-            gradedAt: data.gradedAt ? new Date(data.gradedAt).toLocaleString('ar-EG') : '',
+            gradedAt: data.gradedAt ? new Date(data.gradedAt).toLocaleString(this.langService.isArabic() ? 'ar-EG' : 'en-US') : '',
+            gradedAtIso: data.gradedAt || undefined,
             hasEssayQuestions: data.hasEssayQuestions ?? false,
             isReviewExpired: data.isReviewExpired ?? false,
             reviewExpiresAt: data.reviewExpiresAt || null,

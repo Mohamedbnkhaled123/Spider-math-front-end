@@ -50,6 +50,7 @@ export interface SubmissionFeedbackData {
   assessmentTitleAr: string;
   assessmentTitleEn: string;
   unitTitleAr: string;
+  unitTitleEn?: string;
   resultVisibility: 'HIDDEN_PENDING_TEACHER' | 'PUBLISHED_TO_STUDENT_AND_PARENT';
   mcqAutoScore?: number | null;
   essayManualScore?: number | null;
@@ -57,6 +58,7 @@ export interface SubmissionFeedbackData {
   maxScore: number;
   scorePercentage?: number | null;
   gradedAt?: string;
+  gradedAtIso?: string;
   hasEssayQuestions?: boolean;
   isReviewExpired?: boolean;
   reviewExpiresAt?: string | null;

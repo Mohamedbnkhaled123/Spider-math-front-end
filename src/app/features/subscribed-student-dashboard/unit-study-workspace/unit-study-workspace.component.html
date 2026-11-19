@@ -46,7 +46,7 @@
           </span>
         </div>
         <h1 class="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-academic-serif">
-          {{ workspaceData().titleAr }}
+          {{ pickText(workspaceData().titleAr, workspaceData().titleEn, 'Study Unit') }}
         </h1>
         <p class="text-xs text-text-secondary mt-1">
           {{ langService.isArabic() ? 'محاضرات وتمارين تفاعلية.' : 'Interactive lectures and practice.' }}
@@ -171,7 +171,7 @@
                 </span>
 
                 <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
-                  {{ lec.titleAr }}
+                  {{ pickText(lec.titleAr, lec.titleEn, 'Lecture') }}
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
@@ -193,7 +193,7 @@
                 </span>
 
                 <h3 class="text-base sm:text-lg font-black text-white mb-2 max-w-lg">
-                  {{ lec.titleAr }}
+                  {{ pickText(lec.titleAr, lec.titleEn, 'Lecture') }}
                 </h3>
 
                 <p class="text-xs text-text-secondary max-w-md mb-6 leading-relaxed">
@@ -259,7 +259,7 @@
                   <app-icon name="file-text" [size]="28" />
                 </div>
                 <p class="text-sm font-bold text-text-secondary">
-                  {{ langService.isArabic() ? 'لا تتوفر ملزمة PDF لهذه المحاضرة' : 'No PDF handout available' }}
+                  {{ langService.isArabic() ? 'لا تتوفر ملزمة لهذه المحاضرة' : 'No PDF handout available' }}
                 </p>
                 @if (lec.encryptedVideoId || playbackToken()) {
                   <button
@@ -286,12 +286,12 @@
               @if (lec.isCompleted) {
                 <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
                   <app-icon name="check-circle" [size]="13" />
-                  <span>{{ langService.isArabic() ? 'تم الإنجاز (+50 XP)' : 'Completed (+50 XP)' }}</span>
+                  <span>{{ langService.isArabic() ? 'تم الإنجاز (+50 نقطة)' : 'Completed (+50 XP)' }}</span>
                 </span>
               }
             </div>
             <h3 class="text-base font-black text-text-primary">
-              {{ lec.titleAr }}
+              {{ pickText(lec.titleAr, lec.titleEn, 'Lecture') }}
             </h3>
           </div>
 
@@ -329,7 +329,7 @@
                 </a>
                 <button
                   type="button"
-                  (click)="startAssessment(asmId, linkedAsm?.titleAr, returnToHome())"
+                  (click)="startAssessment(asmId, pickText(linkedAsm?.titleAr, linkedAsm?.titleEn, ''), returnToHome())"
                   class="px-4 py-2.5 rounded-xl font-black text-xs btn-gold-metallic text-slate-950 shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   <app-icon name="rotate-ccw" [size]="15" />
@@ -338,7 +338,7 @@
               } @else {
                 <button
                   type="button"
-                  (click)="startAssessment(asmId, linkedAsm?.titleAr, returnToHome())"
+                  (click)="startAssessment(asmId, pickText(linkedAsm?.titleAr, linkedAsm?.titleEn, ''), returnToHome())"
                   class="px-5 py-3 rounded-xl font-bold text-xs btn-gold-metallic shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
                 >
                   <app-icon name="award" [size]="16" />
@@ -402,7 +402,7 @@
                   } @else if (item.googleDrivePdfFileId) {
                     <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center gap-1">
                       <app-icon name="file-text" [size]="9" />
-                      <span>{{ langService.isArabic() ? 'ملف PDF' : 'PDF' }}</span>
+                      <span>{{ langService.isArabic() ? 'ملف' : 'PDF' }}</span>
                     </span>
                   }
                   @if (item.isCompleted) {
@@ -414,7 +414,7 @@
               <h4 class="text-xs font-bold text-text-primary leading-snug"
                 [class.text-brand-primary]="selectedLectureId() === item._id"
               >
-                {{ item.titleAr }}
+                {{ pickText(item.titleAr, item.titleEn, 'Lecture') }}
               </h4>
 
               <!-- Mini Progress Bar (Only for video lectures) -->
@@ -443,7 +443,7 @@
                   } @else {
                     <button
                       type="button"
-                      (click)="$event.stopPropagation(); startAssessment(item.assessmentId ?? ('asm_' + item._id), playlistAsm?.titleAr)"
+                      (click)="$event.stopPropagation(); startAssessment(item.assessmentId ?? ('asm_' + item._id), pickText(playlistAsm?.titleAr, playlistAsm?.titleEn, ''))"
                       class="w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-brand-primary dark:text-brand-accent bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <app-icon name="award" [size]="13" />
@@ -514,7 +514,7 @@
                 </div>
 
                 <h3 class="text-sm font-black text-text-primary mb-2">
-                  {{ asm.titleAr }}
+                  {{ pickText(asm.titleAr, asm.titleEn, 'Assessment') }}
                 </h3>
 
                 <div class="flex items-center gap-3 text-[11px] text-text-muted font-numeric">
@@ -565,7 +565,7 @@
                   <div class="flex flex-col gap-2">
                     <button
                       type="button"
-                      (click)="startAssessment(asm._id, asm.titleAr)"
+                      (click)="startAssessment(asm._id, pickText(asm.titleAr, asm.titleEn, ''))"
                       class="w-full py-2.5 px-4 rounded-xl font-black text-xs btn-gold-metallic text-slate-950 shadow-gold-glow hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <app-icon name="rotate-ccw" [size]="14" />
@@ -584,7 +584,7 @@
                 } @else if (asm.studentAttemptStatus?.timeWindowState === 'OPEN') {
                   <button
                     type="button"
-                    (click)="startAssessment(asm._id, asm.titleAr)"
+                    (click)="startAssessment(asm._id, pickText(asm.titleAr, asm.titleEn, ''))"
                     class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-brand-primary hover:bg-brand-primary-hover shadow-brand-glow transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <app-icon name="play" [size]="14" />
