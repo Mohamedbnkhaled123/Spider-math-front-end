@@ -1,11 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { LeadsAndLandingCmsComponent } from './leads-and-landing-cms.component';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 
 describe('LeadsAndLandingCmsComponent', () => {
   let component: LeadsAndLandingCmsComponent;
   let fixture: ComponentFixture<LeadsAndLandingCmsComponent>;
+  let httpMock: HttpTestingController;
+  let discoveryService: PublicDiscoveryService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,6 +21,8 @@ describe('LeadsAndLandingCmsComponent', () => {
 
     fixture = TestBed.createComponent(LeadsAndLandingCmsComponent);
     component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    discoveryService = TestBed.inject(PublicDiscoveryService);
     fixture.componentRef.setInput('leadsList', []);
     fixture.componentRef.setInput('cmsConfig', {
       heroHeadlineAr: 'Hero Title',
@@ -119,5 +124,49 @@ describe('LeadsAndLandingCmsComponent', () => {
     expect(deleteBtn?.classList.contains('shrink-0')).toBeTrue();
     expect(deleteBtn?.classList.contains('whitespace-nowrap')).toBeTrue();
     expect(textSpan?.classList.contains('break-words')).toBeTrue();
+  });
+
+  it('should render new dynamic CMS section fields across AR, EN, and HONOR_BOARD tabs', () => {
+    const hostEl = fixture.nativeElement as HTMLElement;
+
+    expect(hostEl.querySelector('[data-testid="cms-about-headline-ar"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-placement-ribbon-ar"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-schedule-title-ar"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-testimonials-title-ar"]')).toBeTruthy();
+
+    component.activeCmsTab.set('EN');
+    fixture.detectChanges();
+    expect(hostEl.querySelector('[data-testid="cms-about-headline-en"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-placement-ribbon-en"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-schedule-title-en"]')).toBeTruthy();
+    expect(hostEl.querySelector('[data-testid="cms-testimonials-title-en"]')).toBeTruthy();
+
+    component.activeCmsTab.set('HONOR_BOARD');
+    fixture.detectChanges();
+    expect(hostEl.querySelector('[data-testid="cms-honor-cta-title-ar"]')).toBeTruthy();
+  });
+
+  it('should invalidate PublicDiscoveryService landing cache when saveCms succeeds', () => {
+    const invalidateSpy = spyOn(discoveryService, 'invalidateLandingCache').and.callThrough();
+    const emittedConfigs: any[] = [];
+    component.cmsConfigSaved.subscribe((cfg) => emittedConfigs.push(cfg));
+
+    component.editableCms.update((cfg) => ({
+      ...cfg,
+      placementRibbonAr: 'تقييم مجاني',
+      placementHeadlineAr: 'اختبر مستواك الآن',
+      testimonialsTitleAr: 'تجارب الطلاب'
+    }));
+
+    component.saveCms();
+
+    const req = httpMock.expectOne('/api/v1/admin/cms-config');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body.placementRibbonAr).toBe('تقييم مجاني');
+    req.flush({ success: true, data: component.editableCms() });
+
+    expect(invalidateSpy).toHaveBeenCalled();
+    expect(emittedConfigs.length).toBe(1);
+    expect(emittedConfigs[0].placementHeadlineAr).toBe('اختبر مستواك الآن');
   });
 });

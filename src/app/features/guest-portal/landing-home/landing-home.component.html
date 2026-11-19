@@ -77,29 +77,51 @@
         <!-- =================================================================== -->
 
         <div class="lg:col-span-7 text-center lg:text-start">
-          <!-- 3-Line Luxury Academic Headline (Exact Image 2) -->
-          <h1 class="font-academic-serif text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6">
-            <span class="block text-text-primary">{{ langService.isArabic() ? 'التميز' : 'Advanced' }}</span>
-            <span class="block text-gold-accent">{{ langService.isArabic() ? 'الرياضي الهندسي' : 'Mathematics' }}</span>
-            <span class="block text-text-primary">{{ langService.isArabic() ? 'المتقدم' : 'Mastery' }}</span>
+          @if (heroBadge()) {
+            <div data-testid="hero-cms-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-5 shadow-sm">
+              <span>{{ heroBadge() }}</span>
+            </div>
+          }
+
+          <!-- Luxury Academic Headline (Dynamic CMS; supports line breaks with gold emphasis on line 2) -->
+          <h1 data-testid="hero-cms-headline" class="font-academic-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] mb-6">
+            @for (line of heroHeadlineLines(); track $index; let idx = $index) {
+              <span
+                class="block"
+                [class.text-gold-accent]="heroHeadlineLines().length > 1 && idx === 1"
+                [class.text-text-primary]="!(heroHeadlineLines().length > 1 && idx === 1)"
+              >{{ line }}</span>
+            }
           </h1>
 
-          <!-- Dynamic Subheadline (Exact Image 2) -->
-          <p class="text-base sm:text-lg lg:text-xl font-normal text-text-secondary max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-            <span class="block">{{ langService.isArabic() ? 'إعداد جامعي وتميز أكاديمي' : 'University-Prep & Academic Excellence' }}</span>
-            <span class="block text-text-muted text-sm sm:text-base mt-1">{{ langService.isArabic() ? '(الثانوية العامة • IGCSE • SAT)' : '(Thanweya Amma • IGCSE • SAT)' }}</span>
+          <!-- Dynamic Subheadline -->
+          <p data-testid="hero-cms-subheadline" class="text-base sm:text-lg lg:text-xl font-normal text-text-secondary max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed whitespace-pre-line">
+            {{ heroSubheadline() }}
           </p>
 
-          <!-- Primary & Secondary CTAs (Exact Image 2) -->
+          <!-- Primary & Secondary CTAs -->
           <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-4">
             @if (!isStudentLoggedIn()) {
               <button
                 type="button"
                 (click)="scrollToSection('curriculum-section')"
+                data-testid="hero-cms-cta-primary"
                 class="btn-gold-metallic px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2.5 shadow-lg active:scale-[0.98] transition-transform cursor-pointer"
               >
-                <span>{{ langService.isArabic() ? 'استكشف المناهج' : 'Explore Curricula' }}</span>
+                <span>{{ heroCtaPrimary() }}</span>
               </button>
+
+              @if (heroCtaSecondary()) {
+                <button
+                  type="button"
+                  (click)="openPlacementModal()"
+                  data-testid="hero-cms-cta-secondary"
+                  class="btn-spider-secondary px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <app-icon name="target" [size]="16" />
+                  <span>{{ heroCtaSecondary() }}</span>
+                </button>
+              }
             }
           </div>
         </div>
@@ -155,12 +177,16 @@
         <!-- =================================================================== -->
 
         <div class="lg:col-span-6 text-center lg:text-start">
-          <!-- 3-Line Luxury Academic Headline (as in Mockups 3 & 4) -->
+          <!-- Luxury Academic Headline (Dynamic CMS; supports line breaks with gold emphasis on line 2) -->
 
-          <h2 class="font-academic-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-            <span class="block text-text-primary">{{ langService.isArabic() ? 'تعلم تفاعلي' : 'Interactive' }}</span>
-            <span class="block text-gold-accent">{{ langService.isArabic() ? 'المفاهيم أولاً' : 'Concept-First' }}</span>
-            <span class="block text-text-primary">{{ langService.isArabic() ? 'بمنهجية هندسية' : 'Learning' }}</span>
+          <h2 data-testid="about-cms-headline" class="font-academic-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+            @for (line of aboutHeadlineLines(); track $index; let idx = $index) {
+              <span
+                class="block"
+                [class.text-gold-accent]="aboutHeadlineLines().length > 1 && idx === 1"
+                [class.text-text-primary]="!(aboutHeadlineLines().length > 1 && idx === 1)"
+              >{{ line }}</span>
+            }
           </h2>
           <!-- Descriptive Subtitle -->
 
@@ -271,30 +297,46 @@
           <div class="hidden sm:block absolute -top-10 -left-10 w-36 sm:w-72 h-36 sm:h-72 bg-amber-400/20 dark:bg-brand-secondary/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
           <div class="hidden sm:block absolute -bottom-10 -right-10 w-36 sm:w-72 h-36 sm:h-72 bg-brand-gold/20 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none"></div>
 
-          <!-- Free Ribbon on Corner -->
-          <div class="placement-corner-ribbon-wrapper" [class.is-rtl]="langService.isArabic()" aria-hidden="true">
-            <div class="placement-corner-ribbon" [class.is-rtl]="langService.isArabic()">
-              <span class="ribbon-sparkle">✦</span>
-              <span>{{ langService.isArabic() ? 'مجاني' : 'Free' }}</span>
+          <!-- Free / Custom Corner Ribbon -->
+          @if (placementSection().ribbon) {
+            <div class="placement-corner-ribbon-wrapper" [class.is-rtl]="langService.isArabic()" aria-hidden="true">
+              <div class="placement-corner-ribbon" [class.is-rtl]="langService.isArabic()" data-testid="placement-section-ribbon">
+                <span class="ribbon-sparkle">✦</span>
+                <span>{{ placementSection().ribbon }}</span>
+              </div>
             </div>
-          </div>
+          }
 
           <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 lg:gap-12">
             <!-- Left Column: Content -->
-            <div class="w-full lg:max-w-2xl space-y-3 sm:space-y-4 text-start">
-              <!-- Headline with Academic Serif & Gold Accent -->
-              <h2 class="font-academic-serif text-xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight leading-snug sm:leading-tight lg:leading-[1.2]">
-                @if (langService.isArabic()) {
-                  اكتشف <span class="text-gold-accent">مستواك</span> في <span class="text-gold-accent">5 دقائق</span>
-                } @else {
-                  Discover Your <span class="text-gold-accent">Level</span> in <span class="text-gold-accent">5 Minutes</span>
-                }
+            <div class="w-full lg:max-w-2xl space-y-3 sm:space-y-4 text-start pe-12 sm:pe-14 lg:pe-0">
+              @if (placementSection().badge) {
+                <div data-testid="placement-section-badge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-[11px] font-bold">
+                  <app-icon name="target" [size]="13" className="shrink-0" />
+                  <span>{{ placementSection().badge }}</span>
+                </div>
+              }
+
+              <!-- Headline (Dynamic CMS) -->
+              <h2 data-testid="placement-section-headline" class="font-academic-serif text-xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight leading-snug sm:leading-tight lg:leading-[1.2]">
+                {{ placementSection().headline }}
               </h2>
 
-              <!-- Subtitle -->
-              <p class="text-xs sm:text-sm lg:text-base text-text-secondary leading-relaxed font-normal max-w-xl">
+              <!-- Subtitle (Dynamic CMS) -->
+              <p data-testid="placement-section-subtitle" class="text-xs sm:text-sm lg:text-base text-text-secondary leading-relaxed font-normal max-w-xl">
                 {{ placementSection().subtitle }}
               </p>
+
+              @if (placementFeatures().length > 0) {
+                <div data-testid="placement-section-features" class="flex flex-wrap items-center gap-2 pt-1">
+                  @for (feat of placementFeatures(); track $index) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-bg/70 border border-surface-border text-[11px] font-bold text-text-secondary">
+                      <app-icon name="check" [size]="12" className="text-brand-gold shrink-0" />
+                      <span>{{ feat }}</span>
+                    </span>
+                  }
+                </div>
+              }
             </div>
 
             <!-- Right Column: Glowing Gold Metallic Button -->
@@ -308,7 +350,7 @@
                   (click)="openPlacementModal()"
                   class="btn-gold-metallic relative w-auto inline-flex items-center justify-center px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base gap-2 sm:gap-2.5 shadow-lg hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
                 >
-                  <span>{{ langService.isArabic() ? 'ابدأ الآن' : 'Start now' }}</span>
+                  <span data-testid="placement-section-cta-text">{{ placementSection().cta }}</span>
                   <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
                 </button>
               </div>
@@ -688,16 +730,20 @@
 
         @if (!isStudentLoggedIn()) {
           <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-12 px-4">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-3 shadow-sm">
-              <app-icon name="target" [size]="14" />
-              <span>{{ langService.isArabic() ? 'المسار التعليمي' : 'Your Track' }}</span>
-            </div>
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight font-academic-serif">
-              {{ langService.isArabic() ? 'المناهج المعتمدة 2026 / 2027' : 'Curriculum Tracks 2026 / 2027' }}
+            @if (curriculumSection().badge) {
+              <div data-testid="curriculum-section-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-bold mb-3 shadow-sm">
+                <app-icon name="target" [size]="14" />
+                <span>{{ curriculumSection().badge }}</span>
+              </div>
+            }
+            <h2 data-testid="curriculum-section-title" class="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight font-academic-serif">
+              {{ curriculumSection().title }}
             </h2>
-            <p class="text-xs sm:text-sm text-text-secondary mt-2 max-w-xl mx-auto leading-relaxed">
-              {{ langService.isArabic() ? 'اختر مساراً للاستعراض.' : 'Select a track to explore.' }}
-            </p>
+            @if (curriculumSection().subtitle) {
+              <p data-testid="curriculum-section-subtitle" class="text-xs sm:text-sm text-text-secondary mt-2 max-w-xl mx-auto leading-relaxed">
+                {{ curriculumSection().subtitle }}
+              </p>
+            }
           </div>
         }
 
@@ -971,6 +1017,12 @@
     <div class="w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-layer-content">
       <!-- Section Header -->
       <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+        @if (hallOfFameSection().badge) {
+          <div data-testid="hall-of-fame-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/25 text-brand-gold text-xs font-bold mb-4 shadow-sm">
+            <app-icon name="award" [size]="14" />
+            <span>{{ hallOfFameSection().badge }}</span>
+          </div>
+        }
         <h2 class="font-academic-serif text-3xl sm:text-5xl font-black text-text-primary tracking-tight">
           <span class="text-gold-accent">{{ hallOfFameSection().title }}</span>
           <span class="inline-flex items-center text-brand-gold ml-2 align-middle">
@@ -1228,21 +1280,20 @@
       <div class="w-full min-w-0 max-w-3xl mx-auto mt-14 text-center p-8 sm:p-10 rounded-[2rem] spider-rim-glass-card border border-surface-border relative overflow-hidden shadow-xl">
         <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-gold/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="relative z-10 space-y-3">
-          <h4 class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary">
-            {{ langService.isArabic() ? 'انضم لقائمة الشرف' : 'Join the Honor Roll' }}
+          <h4 data-testid="honor-cta-title" class="font-academic-serif text-xl sm:text-2xl font-black text-text-primary">
+            {{ hallOfFameSection().ctaTitle }}
           </h4>
-          <p class="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
-            {{ langService.isArabic()
-              ? 'ابدأ تحديد المستوى لتقييم مستواك.'
-              : 'Start placement test to evaluate your level.' }}
+          <p data-testid="honor-cta-subtitle" class="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
+            {{ hallOfFameSection().ctaSubtitle }}
           </p>
           <div class="pt-3">
             <a
               routerLink="/placement-test"
+              data-testid="honor-cta-button"
               class="btn-gold-metallic inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
             >
               <app-icon name="target" [size]="18" />
-              <span>{{ langService.isArabic() ? 'تحديد المستوى' : 'Start Placement' }}</span>
+              <span>{{ hallOfFameSection().ctaButton }}</span>
               <app-icon [name]="langService.isArabic() ? 'arrow-left' : 'arrow-right'" [size]="16" />
             </a>
           </div>
@@ -1259,20 +1310,22 @@
 
       <!-- Section Header -->
       <div class="text-center max-w-3xl mx-auto mb-14 space-y-4">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/25 text-brand-gold text-xs font-bold tracking-wide uppercase">
-          <app-icon name="message-circle" [size]="14" />
-          <span>{{ langService.isArabic() ? 'قصص النجاح' : 'Success Stories' }}</span>
-        </div>
+        @if (testimonialsSection().badge) {
+          <div data-testid="testimonials-section-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/25 text-brand-gold text-xs font-bold tracking-wide uppercase">
+            <app-icon name="message-circle" [size]="14" />
+            <span>{{ testimonialsSection().badge }}</span>
+          </div>
+        }
 
-        <h2 class="text-2xl sm:text-4xl font-black font-academic-serif text-text-primary tracking-tight">
-          {{ langService.isArabic() ? 'آراء الطلاب وأولياء الأمور' : 'Student & Parent Reviews' }}
+        <h2 data-testid="testimonials-section-title" class="text-2xl sm:text-4xl font-black font-academic-serif text-text-primary tracking-tight">
+          {{ testimonialsSection().title }}
         </h2>
 
-        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
-          {{ langService.isArabic()
-            ? 'تجارب طلابنا وأولياء الأمور.'
-            : 'Real student reviews.' }}
-        </p>
+        @if (testimonialsSection().subtitle) {
+          <p data-testid="testimonials-section-subtitle" class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+            {{ testimonialsSection().subtitle }}
+          </p>
+        }
 
         <!-- Add Review Action Button -->
         <div class="pt-2">

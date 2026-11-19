@@ -77,6 +77,10 @@ export interface CmsConfigAdminItem {
   teacherWhatsappCtaAr?: string;
   teacherWhatsappCtaEn?: string;
 
+  // About Section
+  aboutHeadlineAr?: string;
+  aboutHeadlineEn?: string;
+
   // Curriculum Section
   curriculumBadgeAr?: string;
   curriculumBadgeEn?: string;
@@ -86,6 +90,8 @@ export interface CmsConfigAdminItem {
   curriculumSubtitleEn?: string;
 
   // Placement Test Section
+  placementRibbonAr?: string;
+  placementRibbonEn?: string;
   placementBadgeAr?: string;
   placementBadgeEn?: string;
   placementHeadlineAr?: string;
@@ -124,7 +130,21 @@ export interface CmsConfigAdminItem {
   hallOfFameTitleEn?: string;
   hallOfFameSubtitleAr?: string;
   hallOfFameSubtitleEn?: string;
+  honorCtaTitleAr?: string;
+  honorCtaTitleEn?: string;
+  honorCtaSubtitleAr?: string;
+  honorCtaSubtitleEn?: string;
+  honorCtaButtonAr?: string;
+  honorCtaButtonEn?: string;
   honorBoardList?: HonorBoardItem[];
+
+  // Testimonials Section
+  testimonialsBadgeAr?: string;
+  testimonialsBadgeEn?: string;
+  testimonialsTitleAr?: string;
+  testimonialsTitleEn?: string;
+  testimonialsSubtitleAr?: string;
+  testimonialsSubtitleEn?: string;
 
   // General & Contact
   supportWhatsapp?: string;

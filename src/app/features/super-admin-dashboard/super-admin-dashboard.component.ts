@@ -15,6 +15,7 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
 import { AuthService } from '../../core/auth/auth.service';
 import { LangService } from '../../core/seo-theme-i18n/lang.service';
 import { SwrCacheService } from '../../core/services/swr-cache.service';
+import { PublicDiscoveryService } from '../../core/services/public-discovery.service';
 import { CurriculumCode, AcademicTermCode, CANONICAL_CURRICULUM_TREE, curriculumHasTerms } from '../../core/constants/curriculum-tree.constant';
 
 // Subcomponents Partitioned as per Phase 14
@@ -65,6 +66,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly http = inject(HttpClient);
   private readonly swrCache = inject(SwrCacheService);
+  private readonly discoveryService = inject(PublicDiscoveryService);
   readonly authService = inject(AuthService);
   readonly langService = inject(LangService);
 
@@ -519,22 +521,27 @@ export class SuperAdminDashboardComponent implements OnInit {
         if (res?.data) {
           const raw = res.data;
           const current = this.cmsConfig();
+          const pickStr = (camel: unknown, snake: unknown, fallback = ''): string =>
+            typeof camel === 'string' ? camel : typeof snake === 'string' ? snake : fallback;
           this.cmsConfig.set({
-            announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || current.announcementBannerText,
-            announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || current.announcementBannerTextEn,
+            announcementBannerText: pickStr(raw.announcementBannerText, raw.announcement_banner_text, current.announcementBannerText || ''),
+            announcementBannerTextEn: pickStr(raw.announcementBannerTextEn, raw.announcement_banner_text_en, current.announcementBannerTextEn || ''),
             isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? true,
 
             heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || current.heroHeadlineAr,
             heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || current.heroHeadlineEn,
             heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || current.heroSubheadlineAr,
             heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || current.heroSubheadlineEn,
-            heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || current.heroBadgeAr,
-            heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || current.heroBadgeEn,
+            heroBadgeAr: pickStr(raw.heroBadgeAr, raw.hero_badge_ar, current.heroBadgeAr || ''),
+            heroBadgeEn: pickStr(raw.heroBadgeEn, raw.hero_badge_en, current.heroBadgeEn || ''),
             heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || current.heroCtaPrimaryAr,
             heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || current.heroCtaPrimaryEn,
-            heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || current.heroCtaSecondaryAr,
-            heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || current.heroCtaSecondaryEn,
+            heroCtaSecondaryAr: pickStr(raw.heroCtaSecondaryAr, raw.hero_cta_secondary_ar, current.heroCtaSecondaryAr || ''),
+            heroCtaSecondaryEn: pickStr(raw.heroCtaSecondaryEn, raw.hero_cta_secondary_en, current.heroCtaSecondaryEn || ''),
             heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || current.heroVideoUrl || '',
+
+            aboutHeadlineAr: raw.aboutHeadlineAr || raw.about_headline_ar || current.aboutHeadlineAr || '',
+            aboutHeadlineEn: raw.aboutHeadlineEn || raw.about_headline_en || current.aboutHeadlineEn || '',
 
             teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || current.teacherNameAr,
             teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || current.teacherNameEn,
@@ -555,25 +562,27 @@ export class SuperAdminDashboardComponent implements OnInit {
             teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || current.teacherWhatsappCtaAr,
             teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || current.teacherWhatsappCtaEn,
 
-            curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || current.curriculumBadgeAr,
-            curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || current.curriculumBadgeEn,
+            curriculumBadgeAr: pickStr(raw.curriculumBadgeAr, raw.curriculum_badge_ar, current.curriculumBadgeAr || ''),
+            curriculumBadgeEn: pickStr(raw.curriculumBadgeEn, raw.curriculum_badge_en, current.curriculumBadgeEn || ''),
             curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || current.curriculumTitleAr,
             curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || current.curriculumTitleEn,
-            curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || current.curriculumSubtitleAr,
-            curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || current.curriculumSubtitleEn,
+            curriculumSubtitleAr: pickStr(raw.curriculumSubtitleAr, raw.curriculum_subtitle_ar, current.curriculumSubtitleAr || ''),
+            curriculumSubtitleEn: pickStr(raw.curriculumSubtitleEn, raw.curriculum_subtitle_en, current.curriculumSubtitleEn || ''),
 
-            placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || current.placementBadgeAr,
-            placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || current.placementBadgeEn,
+            placementRibbonAr: pickStr(raw.placementRibbonAr, raw.placement_ribbon_ar, current.placementRibbonAr || ''),
+            placementRibbonEn: pickStr(raw.placementRibbonEn, raw.placement_ribbon_en, current.placementRibbonEn || ''),
+            placementBadgeAr: pickStr(raw.placementBadgeAr, raw.placement_badge_ar, current.placementBadgeAr || ''),
+            placementBadgeEn: pickStr(raw.placementBadgeEn, raw.placement_badge_en, current.placementBadgeEn || ''),
             placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || current.placementHeadlineAr,
             placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || current.placementHeadlineEn,
             placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || current.placementSubtitleAr,
             placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || current.placementSubtitleEn,
-            placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || current.placementFeature1Ar,
-            placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || current.placementFeature1En,
-            placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || current.placementFeature2Ar,
-            placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || current.placementFeature2En,
-            placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || current.placementFeature3Ar,
-            placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || current.placementFeature3En,
+            placementFeature1Ar: pickStr(raw.placementFeature1Ar, raw.placement_feature_1_ar, current.placementFeature1Ar || ''),
+            placementFeature1En: pickStr(raw.placementFeature1En, raw.placement_feature_1_en, current.placementFeature1En || ''),
+            placementFeature2Ar: pickStr(raw.placementFeature2Ar, raw.placement_feature_2_ar, current.placementFeature2Ar || ''),
+            placementFeature2En: pickStr(raw.placementFeature2En, raw.placement_feature_2_en, current.placementFeature2En || ''),
+            placementFeature3Ar: pickStr(raw.placementFeature3Ar, raw.placement_feature_3_ar, current.placementFeature3Ar || ''),
+            placementFeature3En: pickStr(raw.placementFeature3En, raw.placement_feature_3_en, current.placementFeature3En || ''),
             placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || current.placementCtaAr,
             placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || current.placementCtaEn,
 
@@ -610,12 +619,24 @@ export class SuperAdminDashboardComponent implements OnInit {
                   }))
                 : []),
             landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || [],
-            hallOfFameBadgeAr: raw.hallOfFameBadgeAr || raw.hall_of_fame_badge_ar || current.hallOfFameBadgeAr || '',
-            hallOfFameBadgeEn: raw.hallOfFameBadgeEn || raw.hall_of_fame_badge_en || current.hallOfFameBadgeEn || '',
+            hallOfFameBadgeAr: pickStr(raw.hallOfFameBadgeAr, raw.hall_of_fame_badge_ar, current.hallOfFameBadgeAr || ''),
+            hallOfFameBadgeEn: pickStr(raw.hallOfFameBadgeEn, raw.hall_of_fame_badge_en, current.hallOfFameBadgeEn || ''),
             hallOfFameTitleAr: raw.hallOfFameTitleAr || raw.hall_of_fame_title_ar || current.hallOfFameTitleAr || '',
             hallOfFameTitleEn: raw.hallOfFameTitleEn || raw.hall_of_fame_title_en || current.hallOfFameTitleEn || '',
             hallOfFameSubtitleAr: raw.hallOfFameSubtitleAr || raw.hall_of_fame_subtitle_ar || current.hallOfFameSubtitleAr || '',
             hallOfFameSubtitleEn: raw.hallOfFameSubtitleEn || raw.hall_of_fame_subtitle_en || current.hallOfFameSubtitleEn || '',
+            honorCtaTitleAr: raw.honorCtaTitleAr || raw.honor_cta_title_ar || current.honorCtaTitleAr || '',
+            honorCtaTitleEn: raw.honorCtaTitleEn || raw.honor_cta_title_en || current.honorCtaTitleEn || '',
+            honorCtaSubtitleAr: raw.honorCtaSubtitleAr || raw.honor_cta_subtitle_ar || current.honorCtaSubtitleAr || '',
+            honorCtaSubtitleEn: raw.honorCtaSubtitleEn || raw.honor_cta_subtitle_en || current.honorCtaSubtitleEn || '',
+            honorCtaButtonAr: raw.honorCtaButtonAr || raw.honor_cta_button_ar || current.honorCtaButtonAr || '',
+            honorCtaButtonEn: raw.honorCtaButtonEn || raw.honor_cta_button_en || current.honorCtaButtonEn || '',
+            testimonialsBadgeAr: pickStr(raw.testimonialsBadgeAr, raw.testimonials_badge_ar, current.testimonialsBadgeAr || ''),
+            testimonialsBadgeEn: pickStr(raw.testimonialsBadgeEn, raw.testimonials_badge_en, current.testimonialsBadgeEn || ''),
+            testimonialsTitleAr: raw.testimonialsTitleAr || raw.testimonials_title_ar || current.testimonialsTitleAr || '',
+            testimonialsTitleEn: raw.testimonialsTitleEn || raw.testimonials_title_en || current.testimonialsTitleEn || '',
+            testimonialsSubtitleAr: pickStr(raw.testimonialsSubtitleAr, raw.testimonials_subtitle_ar, current.testimonialsSubtitleAr || ''),
+            testimonialsSubtitleEn: pickStr(raw.testimonialsSubtitleEn, raw.testimonials_subtitle_en, current.testimonialsSubtitleEn || ''),
             honorBoardList: Array.isArray(raw.honorBoardList)
               ? raw.honorBoardList
               : (Array.isArray(raw.honor_board_list) ? raw.honor_board_list : (current.honorBoardList || []))
@@ -881,6 +902,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   onCmsConfigSaved(saved: CmsConfigAdminItem): void {
     this.cmsConfig.set(saved);
     this.swrCache.set('admin_cms_config', saved);
+    this.discoveryService.invalidateLandingCache();
   }
 
   triggerToast(text: string, type: 'success' | 'warning' | 'error' = 'success'): void {

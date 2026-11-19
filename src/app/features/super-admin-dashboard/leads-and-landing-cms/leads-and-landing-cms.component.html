@@ -354,7 +354,7 @@
         </div>
 
         <!-- 2. الواجهة الرئيسية (Hero Section - عربي) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="grid" [size]="16" />
             <h4>{{ langService.isArabic() ? 'الواجهة الرئيسية' : 'Hero Section (Arabic)' }}</h4>
@@ -383,12 +383,15 @@
 
           <div>
             <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'العنوان الرئيسي الكبير:' : 'Main Headline (Arabic):' }}</label>
-            <input
-              type="text"
+            <textarea
+              rows="2"
               [(ngModel)]="editableCms().heroHeadlineAr"
               [placeholder]="langService.isArabic() ? 'العنوان الرئيسي للمنصة...' : 'Platform main headline...'"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm"
-            />
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm leading-relaxed"
+            ></textarea>
+            <p class="text-[11px] text-text-muted mt-1">
+              {{ langService.isArabic() ? 'كل سطر يظهر منفصلاً، والسطر الثاني باللون الذهبي' : 'Each line renders separately; line 2 is highlighted in gold.' }}
+            </p>
           </div>
 
           <div>
@@ -417,6 +420,20 @@
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
             <h4>{{ langService.isArabic() ? 'نبذة المعلمة ومؤهلاتها' : 'Teacher Profile & Bio (Arabic)' }}</h4>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان قسم التعريف بالفيديو:' : 'About & Video Section Headline (Arabic):' }}</label>
+            <textarea
+              rows="2"
+              data-testid="cms-about-headline-ar"
+              [(ngModel)]="editableCms().aboutHeadlineAr"
+              [placeholder]="langService.isArabic() ? 'تعلم تفاعلي&#10;المفاهيم أولاً&#10;بمنهجية هندسية' : 'Teacher intro section headline...'"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm leading-relaxed"
+            ></textarea>
+            <p class="text-[11px] text-text-muted mt-1">
+              {{ langService.isArabic() ? 'كل سطر يظهر منفصلاً، والسطر الثاني باللون الذهبي' : 'Each line renders separately; line 2 is highlighted in gold.' }}
+            </p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -502,7 +519,7 @@
         </div>
 
         <!-- 4. قسم اختبار تحديد المستوى (Placement Test - عربي) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="target" [size]="16" />
             <h4>{{ langService.isArabic() ? 'قسم امتحان تحديد المستوى' : 'Placement Test Section (Arabic)' }}</h4>
@@ -519,14 +536,25 @@
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر بدء الاختبار:' : 'Start Test Button Text (Arabic):' }}</label>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شريط الزاوية الذهبي (اختياري):' : 'Corner Gold Ribbon (Optional):' }}</label>
               <input
                 type="text"
-                [(ngModel)]="editableCms().placementCtaAr"
-                [placeholder]="langService.isArabic() ? 'مثال: ابدأ اختبار تحديد المستوى الآن' : 'e.g.: Start Placement Test Now'"
+                data-testid="cms-placement-ribbon-ar"
+                [(ngModel)]="editableCms().placementRibbonAr"
+                [placeholder]="langService.isArabic() ? 'مجاني (اتركيه فارغاً لإخفاء الشريط)' : 'Free (leave blank to hide ribbon)'"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'نص زر بدء الاختبار:' : 'Start Test Button Text (Arabic):' }}</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().placementCtaAr"
+              [placeholder]="langService.isArabic() ? 'مثال: ابدأ اختبار تحديد المستوى الآن' : 'e.g.: Start Placement Test Now'"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
           </div>
 
           <div>
@@ -619,8 +647,48 @@
           </div>
         </div>
 
-        <!-- 6. قسم الباقات والاشتراكات (Pricing - عربي) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <!-- 6. قسم جدول المواعيد والحصص (Schedules - عربي) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <app-icon name="clock" [size]="16" />
+            <h4>{{ langService.isArabic() ? 'قسم جدول المواعيد والحصص' : 'Live Schedule Section (Arabic)' }}</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة القسم:' : 'Section Badge (Arabic):' }}</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().scheduleBadgeAr"
+                [placeholder]="langService.isArabic() ? 'مثال: جدول المواعيد والحصص' : 'e.g.: Live Lecture Schedule'"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان القسم:' : 'Section Title (Arabic):' }}</label>
+              <input
+                type="text"
+                data-testid="cms-schedule-title-ar"
+                [(ngModel)]="editableCms().scheduleTitleAr"
+                [placeholder]="langService.isArabic() ? 'مثال: مواعيد المحاضرات والبث المباشر' : 'e.g.: Class Timetable'"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الوصف الفرعي لجدول المواعيد:' : 'Schedule Subtitle (Arabic):' }}</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().scheduleSubtitleAr"
+              [placeholder]="langService.isArabic() ? 'مثال: يتم تحديث المواعيد وفقاً للتوقيت المحلي لمدينة القاهرة' : 'e.g.: Cairo Local Time (GMT+2)'"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 7. قسم الباقات والاشتراكات (Pricing - عربي) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-amber-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="award" [size]="16" />
             <h4>{{ langService.isArabic() ? 'قسم الباقات والاشتراكات' : 'Tuition Packages Section (Arabic)' }}</h4>
@@ -653,6 +721,46 @@
               type="text"
               [(ngModel)]="editableCms().pricingSubtitleAr"
               [placeholder]="langService.isArabic() ? 'مثال: خطط دراسية مرنة ومراجعات نهائية مكثفة تضمن لك التفوق بأفضل الأسعار' : 'e.g.: Flexible study plans and intensive final revisions'"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 8. قسم آراء الطلاب وأولياء الأمور (Testimonials - عربي) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-brand-gold font-black text-sm pb-2 border-b border-surface-border">
+            <app-icon name="message-circle" [size]="16" />
+            <h4>{{ langService.isArabic() ? 'قسم آراء الطلاب وأولياء الأمور' : 'Testimonials Section (Arabic)' }}</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'شارة القسم:' : 'Section Badge (Arabic):' }}</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().testimonialsBadgeAr"
+                [placeholder]="langService.isArabic() ? 'مثال: قصص النجاح' : 'e.g.: Success Stories'"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'عنوان القسم:' : 'Section Title (Arabic):' }}</label>
+              <input
+                type="text"
+                data-testid="cms-testimonials-title-ar"
+                [(ngModel)]="editableCms().testimonialsTitleAr"
+                [placeholder]="langService.isArabic() ? 'مثال: آراء الطلاب وأولياء الأمور' : 'e.g.: Student & Parent Reviews'"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">{{ langService.isArabic() ? 'الوصف التقديمي لقسم الآراء:' : 'Testimonials Subtitle (Arabic):' }}</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().testimonialsSubtitleAr"
+              [placeholder]="langService.isArabic() ? 'مثال: تجارب طلابنا وأولياء الأمور.' : 'e.g.: Real student reviews.'"
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
             />
           </div>
@@ -705,7 +813,7 @@
         </div>
 
         <!-- 2. Hero Section (English) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="grid" [size]="16" />
             <h4>Hero Section (English)</h4>
@@ -734,12 +842,15 @@
 
           <div>
             <label class="block font-bold text-text-secondary mb-1">Main Headline (H1):</label>
-            <input
-              type="text"
+            <textarea
+              rows="2"
               [(ngModel)]="editableCms().heroHeadlineEn"
-              placeholder="e.g.: Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab"
-              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm"
-            />
+              placeholder="e.g.: Advanced&#10;Mathematics&#10;Mastery"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm leading-relaxed"
+            ></textarea>
+            <p class="text-[11px] text-text-muted mt-1">
+              Each new line displays separately; line 2 is highlighted in gold.
+            </p>
           </div>
 
           <div>
@@ -768,6 +879,20 @@
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
             <h4>Teacher Profile & Qualifications (English)</h4>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">About & Video Section Headline (English):</label>
+            <textarea
+              rows="2"
+              data-testid="cms-about-headline-en"
+              [(ngModel)]="editableCms().aboutHeadlineEn"
+              placeholder="Interactive&#10;Concept-First&#10;Learning"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-black text-sm leading-relaxed"
+            ></textarea>
+            <p class="text-[11px] text-text-muted mt-1">
+              Each new line displays separately; line 2 is highlighted in gold.
+            </p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -853,7 +978,7 @@
         </div>
 
         <!-- 4. Placement Diagnostic Test (English) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="target" [size]="16" />
             <h4>Placement & Diagnostic Test Section (English)</h4>
@@ -870,14 +995,25 @@
               />
             </div>
             <div>
-              <label class="block font-bold text-text-secondary mb-1">CTA Button Text:</label>
+              <label class="block font-bold text-text-secondary mb-1">Corner Gold Ribbon (Optional):</label>
               <input
                 type="text"
-                [(ngModel)]="editableCms().placementCtaEn"
-                placeholder="e.g.: Start Diagnostic Assessment Now"
+                data-testid="cms-placement-ribbon-en"
+                [(ngModel)]="editableCms().placementRibbonEn"
+                placeholder="Free (leave blank to hide ribbon)"
                 class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
               />
             </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">CTA Button Text:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().placementCtaEn"
+              placeholder="e.g.: Start Diagnostic Assessment Now"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+            />
           </div>
 
           <div>
@@ -932,7 +1068,7 @@
         </div>
 
         <!-- 5. Curriculum Section (English) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-emerald-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="book-open" [size]="16" />
             <h4>Curriculum Explorer Section (English)</h4>
@@ -970,8 +1106,48 @@
           </div>
         </div>
 
-        <!-- 6. Tuition Packages Section (English) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <!-- 6. Live Schedule Section (English) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-cyan-600 font-black text-sm pb-2 border-b border-surface-border">
+            <app-icon name="clock" [size]="16" />
+            <h4>Live Schedule Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().scheduleBadgeEn"
+                placeholder="e.g.: Live Lecture Schedule"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Title:</label>
+              <input
+                type="text"
+                data-testid="cms-schedule-title-en"
+                [(ngModel)]="editableCms().scheduleTitleEn"
+                placeholder="e.g.: Class Timetable & Streaming Schedule"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Schedule Subtitle:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().scheduleSubtitleEn"
+              placeholder="e.g.: Times shown in Cairo Local Time (GMT+2)"
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 7. Tuition Packages Section (English) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-amber-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="award" [size]="16" />
             <h4>Tuition & Revision Packages Section (English)</h4>
@@ -1004,6 +1180,46 @@
               type="text"
               [(ngModel)]="editableCms().pricingSubtitleEn"
               placeholder="e.g.: Flexible study units and intensive final revisions..."
+              class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
+            />
+          </div>
+        </div>
+
+        <!-- 8. Testimonials Section (English) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+          <div class="flex items-center gap-2 text-brand-gold font-black text-sm pb-2 border-b border-surface-border">
+            <app-icon name="message-circle" [size]="16" />
+            <h4>Testimonials Section (English)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Badge:</label>
+              <input
+                type="text"
+                [(ngModel)]="editableCms().testimonialsBadgeEn"
+                placeholder="e.g.: Success Stories"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Section Title:</label>
+              <input
+                type="text"
+                data-testid="cms-testimonials-title-en"
+                [(ngModel)]="editableCms().testimonialsTitleEn"
+                placeholder="e.g.: Student & Parent Reviews"
+                class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Testimonials Subtitle:</label>
+            <input
+              type="text"
+              [(ngModel)]="editableCms().testimonialsSubtitleEn"
+              placeholder="e.g.: Real student reviews."
               class="w-full px-4 py-2.5 rounded-xl border border-surface-border bg-surface-card text-text-primary"
             />
           </div>
@@ -1715,6 +1931,82 @@
                 class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
                 placeholder="Elite students who achieved perfect scores and mathematical excellence across all academic curricula."
               />
+            </div>
+          </div>
+
+          <!-- Honor Roll Join Banner CTA Subsection -->
+          <div class="pt-4 mt-2 border-t border-surface-border space-y-3">
+            <h5 class="text-xs font-black text-text-primary">
+              {{ langService.isArabic() ? 'بنر الانضمام لقائمة الشرف (أسفل القسم)' : 'Join the Honor Roll CTA Banner' }}
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'عنوان بنر الانضمام (عربي):' : 'Banner Title (AR):' }}
+                </label>
+                <input
+                  type="text"
+                  data-testid="cms-honor-cta-title-ar"
+                  [(ngModel)]="editableCms().honorCtaTitleAr"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="انضم لقائمة الشرف"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'عنوان بنر الانضمام (إنجليزي):' : 'Banner Title (EN):' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="editableCms().honorCtaTitleEn"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="Join the Honor Roll"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'وصف بنر الانضمام (عربي):' : 'Banner Subtitle (AR):' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="editableCms().honorCtaSubtitleAr"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="ابدأ تحديد المستوى لتقييم مستواك."
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'وصف بنر الانضمام (إنجليزي):' : 'Banner Subtitle (EN):' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="editableCms().honorCtaSubtitleEn"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="Start placement test to evaluate your level."
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'نص زر بنر الانضمام (عربي):' : 'Banner Button (AR):' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="editableCms().honorCtaButtonAr"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="تحديد المستوى"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-text-secondary">
+                  {{ langService.isArabic() ? 'نص زر بنر الانضمام (إنجليزي):' : 'Banner Button (EN):' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="editableCms().honorCtaButtonEn"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-surface-border bg-surface-bg text-text-primary text-xs focus:outline-none focus:border-brand-primary"
+                  placeholder="Start Placement"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -82,33 +82,142 @@ describe('LandingHomeComponent', () => {
       expect(flexContainer?.classList.contains('md:flex-row')).toBeFalse();
     });
 
-    it('should render corner ribbon with Free or مجاني text and not render old pill badge', () => {
+    it('should render corner ribbon, badge, features, and dynamically reflect Placement CMS updates and clears', () => {
+      component.langService.setLanguage('ar');
+      fixture.detectChanges();
+
       const placementSec: HTMLElement | null = fixture.nativeElement.querySelector('#placement-test-section');
-      const ribbonWrapper = placementSec?.querySelector('.placement-corner-ribbon-wrapper');
-      expect(ribbonWrapper).toBeTruthy();
-
-      const ribbon = placementSec?.querySelector('.placement-corner-ribbon');
+      const ribbon = placementSec?.querySelector('[data-testid="placement-section-ribbon"]');
       expect(ribbon).toBeTruthy();
-      const ribbonText = ribbon?.textContent || '';
-      expect(ribbonText.includes('Free') || ribbonText.includes('مجاني')).toBeTrue();
+      expect(ribbon?.textContent || '').toContain('مجاني');
 
-      // Ensure the old inline pill badge with target icon is removed
-      const oldBadge = placementSec?.querySelector('.max-w-2xl .rounded-full.bg-brand-gold\\/15');
-      expect(oldBadge).toBeNull();
+      expect(placementSec?.querySelector('[data-testid="placement-section-badge"]')).toBeTruthy();
+      expect(placementSec?.querySelector('[data-testid="placement-section-features"]')).toBeTruthy();
+
+      const current = component.landingData()!;
+      component.landingData.set({
+        ...current,
+        placementRibbonAr: 'تقييم مجاني',
+        placementBadgeAr: 'تشخيص فوري للمهارات',
+        placementHeadlineAr: 'اختبر مستواك المخصص الآن',
+        placementSubtitleAr: 'وصف تشخيصي محدث من لوحة التحكم.',
+        placementFeature1Ar: 'نتيجة فورية',
+        placementFeature2Ar: 'تحليل شامل',
+        placementFeature3Ar: '',
+        placementCtaAr: 'انطلق الآن'
+      });
+      fixture.detectChanges();
+
+      expect(placementSec?.querySelector('[data-testid="placement-section-ribbon"]')?.textContent).toContain('تقييم مجاني');
+      expect(placementSec?.querySelector('[data-testid="placement-section-badge"]')?.textContent).toContain('تشخيص فوري للمهارات');
+      expect(placementSec?.querySelector('[data-testid="placement-section-headline"]')?.textContent?.trim()).toBe('اختبر مستواك المخصص الآن');
+      expect(placementSec?.querySelector('[data-testid="placement-section-subtitle"]')?.textContent?.trim()).toBe('وصف تشخيصي محدث من لوحة التحكم.');
+      expect(placementSec?.querySelector('[data-testid="placement-section-cta-text"]')?.textContent?.trim()).toBe('انطلق الآن');
+      const featureChips = placementSec?.querySelectorAll('[data-testid="placement-section-features"] > span');
+      expect(featureChips?.length).toBe(2);
+
+      // Clearing optional badge, ribbon, and features hides them cleanly
+      component.landingData.set({
+        ...current,
+        placementRibbonAr: '',
+        placementBadgeAr: '',
+        placementFeature1Ar: '',
+        placementFeature2Ar: '',
+        placementFeature3Ar: ''
+      });
+      fixture.detectChanges();
+
+      expect(placementSec?.querySelector('[data-testid="placement-section-ribbon"]')).toBeNull();
+      expect(placementSec?.querySelector('[data-testid="placement-section-badge"]')).toBeNull();
+      expect(placementSec?.querySelector('[data-testid="placement-section-features"]')).toBeNull();
     });
 
-    it('should render compact placement CTA button with "Start now" or "ابدأ الآن"', () => {
+    it('should render compact placement CTA button controlled by CMS placementCtaAr/En', () => {
+      component.langService.setLanguage('ar');
+      fixture.detectChanges();
+
       const placementSec: HTMLElement | null = fixture.nativeElement.querySelector('#placement-test-section');
       const btn = placementSec?.querySelector('button.btn-gold-metallic');
       expect(btn).toBeTruthy();
 
       const btnText = btn?.textContent || '';
       expect(btnText.includes('ابدأ الآن') || btnText.includes('Start now')).toBeTrue();
-      expect(btnText).not.toContain('Free Placement & Diagnostic Assessment');
-
-      // Verify compact styling on small screens
       expect(btn?.classList.contains('w-full')).toBeFalse();
       expect(btn?.classList.contains('inline-flex')).toBeTrue();
+    });
+  });
+
+  describe('Dynamic CMS Binding Across All Landing Sections', () => {
+    it('should bind Hero, About, Curricula, Honor Board CTA, and Testimonials headings to CMS data', () => {
+      component.langService.setLanguage('ar');
+      const base = component.landingData()!;
+      component.landingData.set({
+        ...base,
+        heroBadgeAr: 'منصة سبايدر المحدثة',
+        heroHeadlineAr: 'السطر الأول\nالسطر الذهبي\nالسطر الثالث',
+        heroSubheadlineAr: 'وصف فرعي تجريبي من لوحة التحكم',
+        heroCtaPrimaryAr: 'تصفح المقررات',
+        heroCtaSecondaryAr: 'اختبار تحديد المستوى المباشر',
+        aboutHeadlineAr: 'شرح مبسط\nالرياضيات بوضوح\nتفوق مستمر',
+        curriculumBadgeAr: 'مساراتنا الجديدة',
+        curriculumTitleAr: 'المناهج المعتمدة للعام الجديد',
+        curriculumSubtitleAr: 'اختر الصف والمنهج المحدث',
+        hallOfFameBadgeAr: 'أوائل المنصة المعتمدون',
+        honorCtaTitleAr: 'سجل إنجازك معنا',
+        honorCtaSubtitleAr: 'ابدأ رحلة التفوق من تحديد المستوى.',
+        honorCtaButtonAr: 'خض الاختبار الآن',
+        testimonialsBadgeAr: 'انطباعات الطلاب',
+        testimonialsTitleAr: 'تجارب حقيقية لطلابنا',
+        testimonialsSubtitleAr: 'آراء منشورة ومعتمدة.'
+      });
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+
+      // Hero section
+      expect(el.querySelector('[data-testid="hero-cms-badge"]')?.textContent).toContain('منصة سبايدر المحدثة');
+      const heroSpans = el.querySelectorAll('[data-testid="hero-cms-headline"] span');
+      expect(heroSpans.length).toBe(3);
+      expect(heroSpans[0]?.textContent?.trim()).toBe('السطر الأول');
+      expect(heroSpans[1]?.textContent?.trim()).toBe('السطر الذهبي');
+      expect(heroSpans[1]?.classList.contains('text-gold-accent')).toBeTrue();
+      expect(heroSpans[2]?.textContent?.trim()).toBe('السطر الثالث');
+      expect(el.querySelector('[data-testid="hero-cms-subheadline"]')?.textContent?.trim()).toBe('وصف فرعي تجريبي من لوحة التحكم');
+      expect(el.querySelector('[data-testid="hero-cms-cta-primary"]')?.textContent?.trim()).toBe('تصفح المقررات');
+      expect(el.querySelector('[data-testid="hero-cms-cta-secondary"]')?.textContent).toContain('اختبار تحديد المستوى المباشر');
+
+      // About headline
+      const aboutSpans = el.querySelectorAll('[data-testid="about-cms-headline"] span');
+      expect(aboutSpans.length).toBe(3);
+      expect(aboutSpans[1]?.textContent?.trim()).toBe('الرياضيات بوضوح');
+      expect(aboutSpans[1]?.classList.contains('text-gold-accent')).toBeTrue();
+
+      // Curricula section header
+      expect(el.querySelector('[data-testid="curriculum-section-badge"]')?.textContent).toContain('مساراتنا الجديدة');
+      expect(el.querySelector('[data-testid="curriculum-section-title"]')?.textContent?.trim()).toBe('المناهج المعتمدة للعام الجديد');
+      expect(el.querySelector('[data-testid="curriculum-section-subtitle"]')?.textContent?.trim()).toBe('اختر الصف والمنهج المحدث');
+
+      // Hall of Fame badge & CTA
+      expect(el.querySelector('[data-testid="hall-of-fame-badge"]')?.textContent).toContain('أوائل المنصة المعتمدون');
+      expect(el.querySelector('[data-testid="honor-cta-title"]')?.textContent?.trim()).toBe('سجل إنجازك معنا');
+      expect(el.querySelector('[data-testid="honor-cta-subtitle"]')?.textContent?.trim()).toBe('ابدأ رحلة التفوق من تحديد المستوى.');
+      expect(el.querySelector('[data-testid="honor-cta-button"]')?.textContent).toContain('خض الاختبار الآن');
+
+      // Testimonials section header
+      expect(el.querySelector('[data-testid="testimonials-section-badge"]')?.textContent).toContain('انطباعات الطلاب');
+      expect(el.querySelector('[data-testid="testimonials-section-title"]')?.textContent?.trim()).toBe('تجارب حقيقية لطلابنا');
+      expect(el.querySelector('[data-testid="testimonials-section-subtitle"]')?.textContent?.trim()).toBe('آراء منشورة ومعتمدة.');
+
+      // Clearing optional Hero badge & secondary CTA hides them
+      component.landingData.set({
+        ...component.landingData()!,
+        heroBadgeAr: '',
+        heroCtaSecondaryAr: ''
+      });
+      fixture.detectChanges();
+
+      expect(el.querySelector('[data-testid="hero-cms-badge"]')).toBeNull();
+      expect(el.querySelector('[data-testid="hero-cms-cta-secondary"]')).toBeNull();
     });
   });
 

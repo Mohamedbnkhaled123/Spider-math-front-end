@@ -21,6 +21,7 @@ import {
 } from './leads-and-landing-cms.models';
 import { STUDENT_PRESET_AVATARS } from '../../../core/constants/student-avatars.constant';
 import { TestimonialsService, AdminTestimonialItem } from '../../../core/services/testimonials.service';
+import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 
 /**
  * Spider Math Educational Platform (v2.2)
@@ -42,6 +43,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
   readonly langService = inject(LangService);
   private readonly http = inject(HttpClient);
   private readonly testimonialsService = inject(TestimonialsService);
+  private readonly discoveryService = inject(PublicDiscoveryService);
 
   // Inputs
   readonly leadsList = input.required<LeadAdminItem[]>();
@@ -106,6 +108,9 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     teacherWhatsappCtaAr: '',
     teacherWhatsappCtaEn: '',
 
+    aboutHeadlineAr: '',
+    aboutHeadlineEn: '',
+
     curriculumBadgeAr: '',
     curriculumBadgeEn: '',
     curriculumTitleAr: '',
@@ -113,6 +118,8 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     curriculumSubtitleAr: '',
     curriculumSubtitleEn: '',
 
+    placementRibbonAr: 'مجاني',
+    placementRibbonEn: 'Free',
     placementBadgeAr: '',
     placementBadgeEn: '',
     placementHeadlineAr: '',
@@ -148,7 +155,20 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     hallOfFameTitleEn: 'Academic Hall of Fame & Honor Roll',
     hallOfFameSubtitleAr: 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.',
     hallOfFameSubtitleEn: 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.',
+    honorCtaTitleAr: 'انضم لقائمة الشرف',
+    honorCtaTitleEn: 'Join the Honor Roll',
+    honorCtaSubtitleAr: 'ابدأ تحديد المستوى لتقييم مستواك.',
+    honorCtaSubtitleEn: 'Start placement test to evaluate your level.',
+    honorCtaButtonAr: 'تحديد المستوى',
+    honorCtaButtonEn: 'Start Placement',
     honorBoardList: [],
+
+    testimonialsBadgeAr: 'قصص النجاح',
+    testimonialsBadgeEn: 'Success Stories',
+    testimonialsTitleAr: 'آراء الطلاب وأولياء الأمور',
+    testimonialsTitleEn: 'Student & Parent Reviews',
+    testimonialsSubtitleAr: 'تجارب طلابنا وأولياء الأمور.',
+    testimonialsSubtitleEn: 'Real student reviews.',
 
     supportWhatsapp: '01012345678',
     supportTelegram: '',
@@ -333,6 +353,7 @@ export class LeadsAndLandingCmsComponent implements OnInit {
     const payload = this.editableCms();
     this.http.put('/api/v1/admin/cms-config', payload).subscribe({
       next: () => {
+        this.discoveryService.invalidateLandingCache();
         this.cmsConfigSaved.emit(payload);
         this.toastTriggered.emit({
           text: 'تم حفظ ونشر التعديلات',

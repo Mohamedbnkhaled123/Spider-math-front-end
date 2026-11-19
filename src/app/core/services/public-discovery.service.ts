@@ -100,6 +100,26 @@ export class PublicDiscoveryService {
   }
 
   /**
+   * Clears both the RxJS replay cache and persisted SWR cache for landing CMS data.
+   */
+  invalidateLandingCache(): void {
+    this.landingData$ = undefined;
+    this.swrCache.remove('public_landing_data');
+  }
+
+  private pickOpt(camelVal: unknown, snakeVal: unknown, fallback: string): string {
+    if (typeof camelVal === 'string') return camelVal;
+    if (typeof snakeVal === 'string') return snakeVal;
+    return fallback;
+  }
+
+  private pickReq(camelVal: unknown, snakeVal: unknown, fallback: string): string {
+    if (typeof camelVal === 'string' && camelVal.trim().length > 0) return camelVal;
+    if (typeof snakeVal === 'string' && snakeVal.trim().length > 0) return snakeVal;
+    return fallback;
+  }
+
+  /**
    * Returns immediate default landing data for synchronous initial render (zero CLS).
    * Uses `isAnnouncementActive: false` by default so the top announcement ribbon does not
    * flash and collapse when the production CMS returns `isAnnouncementActive: false`.
@@ -150,23 +170,26 @@ export class PublicDiscoveryService {
           }));
 
           return {
-            heroHeadlineAr: raw.heroHeadlineAr || raw.hero_headline_ar || fallback.heroHeadlineAr,
-            heroHeadlineEn: raw.heroHeadlineEn || raw.hero_headline_en || fallback.heroHeadlineEn,
-            heroSubheadlineAr: raw.heroSubheadlineAr || raw.hero_subheadline_ar || fallback.heroSubheadlineAr,
-            heroSubheadlineEn: raw.heroSubheadlineEn || raw.hero_subheadline_en || fallback.heroSubheadlineEn,
+            heroHeadlineAr: this.pickReq(raw.heroHeadlineAr, raw.hero_headline_ar, fallback.heroHeadlineAr || ''),
+            heroHeadlineEn: this.pickReq(raw.heroHeadlineEn, raw.hero_headline_en, fallback.heroHeadlineEn || ''),
+            heroSubheadlineAr: this.pickReq(raw.heroSubheadlineAr, raw.hero_subheadline_ar, fallback.heroSubheadlineAr || ''),
+            heroSubheadlineEn: this.pickReq(raw.heroSubheadlineEn, raw.hero_subheadline_en, fallback.heroSubheadlineEn || ''),
             heroVideoUrl: raw.heroVideoUrl || raw.hero_video_url || fallback.heroVideoUrl || '',
-            announcementBannerText: raw.announcementBannerText || raw.announcement_banner_text || fallback.announcementBannerText,
+            announcementBannerText: this.pickOpt(raw.announcementBannerText, raw.announcement_banner_text, fallback.announcementBannerText || ''),
             isAnnouncementActive: raw.isAnnouncementActive ?? raw.is_announcement_active ?? fallback.isAnnouncementActive,
             activeAcademicYear: raw.activeAcademicYear || raw.active_academic_year || fallback.activeAcademicYear,
             activeAcademicTerm: raw.activeAcademicTerm || raw.active_academic_term || fallback.activeAcademicTerm || 'TERM_1',
-            announcementBannerTextEn: raw.announcementBannerTextEn || raw.announcement_banner_text_en || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦',
+            announcementBannerTextEn: this.pickOpt(raw.announcementBannerTextEn, raw.announcement_banner_text_en, fallback.announcementBannerTextEn || ''),
 
-            heroBadgeAr: raw.heroBadgeAr || raw.hero_badge_ar || 'Spider Math✦ المنظومة الهندسية الرائدة',
-            heroBadgeEn: raw.heroBadgeEn || raw.hero_badge_en || 'Spider Math✦ Engineering Excellence',
-            heroCtaPrimaryAr: raw.heroCtaPrimaryAr || raw.hero_cta_primary_ar || 'اختار منهجك وابدأ الآن',
-            heroCtaPrimaryEn: raw.heroCtaPrimaryEn || raw.hero_cta_primary_en || 'Choose Your Curriculum & Begin',
-            heroCtaSecondaryAr: raw.heroCtaSecondaryAr || raw.hero_cta_secondary_ar || 'امتحان تحديد المستوى المجاني',
-            heroCtaSecondaryEn: raw.heroCtaSecondaryEn || raw.hero_cta_secondary_en || 'Free Placement Test',
+            heroBadgeAr: this.pickOpt(raw.heroBadgeAr, raw.hero_badge_ar, fallback.heroBadgeAr || ''),
+            heroBadgeEn: this.pickOpt(raw.heroBadgeEn, raw.hero_badge_en, fallback.heroBadgeEn || ''),
+            heroCtaPrimaryAr: this.pickReq(raw.heroCtaPrimaryAr, raw.hero_cta_primary_ar, fallback.heroCtaPrimaryAr || ''),
+            heroCtaPrimaryEn: this.pickReq(raw.heroCtaPrimaryEn, raw.hero_cta_primary_en, fallback.heroCtaPrimaryEn || ''),
+            heroCtaSecondaryAr: this.pickOpt(raw.heroCtaSecondaryAr, raw.hero_cta_secondary_ar, fallback.heroCtaSecondaryAr || ''),
+            heroCtaSecondaryEn: this.pickOpt(raw.heroCtaSecondaryEn, raw.hero_cta_secondary_en, fallback.heroCtaSecondaryEn || ''),
+
+            aboutHeadlineAr: this.pickReq(raw.aboutHeadlineAr, raw.about_headline_ar, fallback.aboutHeadlineAr || ''),
+            aboutHeadlineEn: this.pickReq(raw.aboutHeadlineEn, raw.about_headline_en, fallback.aboutHeadlineEn || ''),
 
             teacherNameAr: raw.teacherNameAr || raw.teacher_name_ar || fallback.teacherBio.nameAr,
             teacherNameEn: raw.teacherNameEn || raw.teacher_name_en || fallback.teacherBio.nameEn,
@@ -192,27 +215,29 @@ export class PublicDiscoveryService {
             teacherWhatsappCtaAr: raw.teacherWhatsappCtaAr || raw.teacher_whatsapp_cta_ar || 'تواصل مباشرة مع فريق م/ هبة عبر واتساب',
             teacherWhatsappCtaEn: raw.teacherWhatsappCtaEn || raw.teacher_whatsapp_cta_en || 'Direct WhatsApp Consultation',
 
-            curriculumBadgeAr: raw.curriculumBadgeAr || raw.curriculum_badge_ar || 'المسارات الأكاديمية والمناهج',
-            curriculumBadgeEn: raw.curriculumBadgeEn || raw.curriculum_badge_en || 'Academic Tracks & Curriculums',
-            curriculumTitleAr: raw.curriculumTitleAr || raw.curriculum_title_ar || 'اختر منهجك الدراسي وابدأ رحلة التفوق',
-            curriculumTitleEn: raw.curriculumTitleEn || raw.curriculum_title_en || 'Choose Your Curriculum & Begin Mastery',
-            curriculumSubtitleAr: raw.curriculumSubtitleAr || raw.curriculum_subtitle_ar || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي',
-            curriculumSubtitleEn: raw.curriculumSubtitleEn || raw.curriculum_subtitle_en || 'Comprehensive educational tracks designed with high engineering standards',
+            curriculumBadgeAr: this.pickOpt(raw.curriculumBadgeAr, raw.curriculum_badge_ar, fallback.curriculumBadgeAr || ''),
+            curriculumBadgeEn: this.pickOpt(raw.curriculumBadgeEn, raw.curriculum_badge_en, fallback.curriculumBadgeEn || ''),
+            curriculumTitleAr: this.pickReq(raw.curriculumTitleAr, raw.curriculum_title_ar, fallback.curriculumTitleAr || ''),
+            curriculumTitleEn: this.pickReq(raw.curriculumTitleEn, raw.curriculum_title_en, fallback.curriculumTitleEn || ''),
+            curriculumSubtitleAr: this.pickOpt(raw.curriculumSubtitleAr, raw.curriculum_subtitle_ar, fallback.curriculumSubtitleAr || ''),
+            curriculumSubtitleEn: this.pickOpt(raw.curriculumSubtitleEn, raw.curriculum_subtitle_en, fallback.curriculumSubtitleEn || ''),
 
-            placementBadgeAr: raw.placementBadgeAr || raw.placement_badge_ar || 'اختبار تحديد المستوى وتشخيص المهارات الرياضية',
-            placementBadgeEn: raw.placementBadgeEn || raw.placement_badge_en || 'Free Placement & Diagnostic Assessment',
-            placementHeadlineAr: raw.placementHeadlineAr || raw.placement_headline_ar || 'ابدأ اختبار تحديد المستوى واكتشف نقاط قوتك وضعفك',
-            placementHeadlineEn: raw.placementHeadlineEn || raw.placement_headline_en || 'Assess Your Skills & Discover Your Strengths',
-            placementSubtitleAr: raw.placementSubtitleAr || raw.placement_subtitle_ar || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.',
-            placementSubtitleEn: raw.placementSubtitleEn || raw.placement_subtitle_en || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.',
-            placementFeature1Ar: raw.placementFeature1Ar || raw.placement_feature_1_ar || 'تقييم ذكي ومباشر',
-            placementFeature1En: raw.placementFeature1En || raw.placement_feature_1_en || 'Instant Diagnostic Feedback',
-            placementFeature2Ar: raw.placementFeature2Ar || raw.placement_feature_2_ar || 'تقرير مفصل بنقاط القوة والضعف',
-            placementFeature2En: raw.placementFeature2En || raw.placement_feature_2_en || 'Strengths & Weaknesses Report',
-            placementFeature3Ar: raw.placementFeature3Ar || raw.placement_feature_3_ar || 'متابعة شخصية من م/ هبة عبدالوهاب',
-            placementFeature3En: raw.placementFeature3En || raw.placement_feature_3_en || 'Eng. Heba Follow-up',
-            placementCtaAr: raw.placementCtaAr || raw.placement_cta_ar || 'ابدأ الآن',
-            placementCtaEn: raw.placementCtaEn || raw.placement_cta_en || 'Start now',
+            placementRibbonAr: this.pickOpt(raw.placementRibbonAr, raw.placement_ribbon_ar, fallback.placementRibbonAr || ''),
+            placementRibbonEn: this.pickOpt(raw.placementRibbonEn, raw.placement_ribbon_en, fallback.placementRibbonEn || ''),
+            placementBadgeAr: this.pickOpt(raw.placementBadgeAr, raw.placement_badge_ar, fallback.placementBadgeAr || ''),
+            placementBadgeEn: this.pickOpt(raw.placementBadgeEn, raw.placement_badge_en, fallback.placementBadgeEn || ''),
+            placementHeadlineAr: this.pickReq(raw.placementHeadlineAr, raw.placement_headline_ar, fallback.placementHeadlineAr || ''),
+            placementHeadlineEn: this.pickReq(raw.placementHeadlineEn, raw.placement_headline_en, fallback.placementHeadlineEn || ''),
+            placementSubtitleAr: this.pickReq(raw.placementSubtitleAr, raw.placement_subtitle_ar, fallback.placementSubtitleAr || ''),
+            placementSubtitleEn: this.pickReq(raw.placementSubtitleEn, raw.placement_subtitle_en, fallback.placementSubtitleEn || ''),
+            placementFeature1Ar: this.pickOpt(raw.placementFeature1Ar, raw.placement_feature_1_ar, fallback.placementFeature1Ar || ''),
+            placementFeature1En: this.pickOpt(raw.placementFeature1En, raw.placement_feature_1_en, fallback.placementFeature1En || ''),
+            placementFeature2Ar: this.pickOpt(raw.placementFeature2Ar, raw.placement_feature_2_ar, fallback.placementFeature2Ar || ''),
+            placementFeature2En: this.pickOpt(raw.placementFeature2En, raw.placement_feature_2_en, fallback.placementFeature2En || ''),
+            placementFeature3Ar: this.pickOpt(raw.placementFeature3Ar, raw.placement_feature_3_ar, fallback.placementFeature3Ar || ''),
+            placementFeature3En: this.pickOpt(raw.placementFeature3En, raw.placement_feature_3_en, fallback.placementFeature3En || ''),
+            placementCtaAr: this.pickReq(raw.placementCtaAr, raw.placement_cta_ar, fallback.placementCtaAr || ''),
+            placementCtaEn: this.pickReq(raw.placementCtaEn, raw.placement_cta_en, fallback.placementCtaEn || ''),
 
             scheduleBadgeAr: raw.scheduleBadgeAr || raw.schedule_badge_ar || 'جدول المواعيد والحصص',
             scheduleBadgeEn: raw.scheduleBadgeEn || raw.schedule_badge_en || 'Live Lecture Schedule',
@@ -261,12 +286,24 @@ export class PublicDiscoveryService {
             landingUnitIds: raw.landingUnitIds || raw.landing_unit_ids || [],
             activeGrades: raw.activeGrades || raw.active_grades || ['SEC_3'],
             curriculaTracks: raw.curriculaTracks || raw.curricula_tracks || [],
-            hallOfFameBadgeAr: raw.hallOfFameBadgeAr || raw.hall_of_fame_badge_ar || fallback.hallOfFameBadgeAr,
-            hallOfFameBadgeEn: raw.hallOfFameBadgeEn || raw.hall_of_fame_badge_en || fallback.hallOfFameBadgeEn,
-            hallOfFameTitleAr: raw.hallOfFameTitleAr || raw.hall_of_fame_title_ar || fallback.hallOfFameTitleAr,
-            hallOfFameTitleEn: raw.hallOfFameTitleEn || raw.hall_of_fame_title_en || fallback.hallOfFameTitleEn,
-            hallOfFameSubtitleAr: raw.hallOfFameSubtitleAr || raw.hall_of_fame_subtitle_ar || fallback.hallOfFameSubtitleAr,
-            hallOfFameSubtitleEn: raw.hallOfFameSubtitleEn || raw.hall_of_fame_subtitle_en || fallback.hallOfFameSubtitleEn,
+            hallOfFameBadgeAr: this.pickOpt(raw.hallOfFameBadgeAr, raw.hall_of_fame_badge_ar, fallback.hallOfFameBadgeAr || ''),
+            hallOfFameBadgeEn: this.pickOpt(raw.hallOfFameBadgeEn, raw.hall_of_fame_badge_en, fallback.hallOfFameBadgeEn || ''),
+            hallOfFameTitleAr: this.pickReq(raw.hallOfFameTitleAr, raw.hall_of_fame_title_ar, fallback.hallOfFameTitleAr || ''),
+            hallOfFameTitleEn: this.pickReq(raw.hallOfFameTitleEn, raw.hall_of_fame_title_en, fallback.hallOfFameTitleEn || ''),
+            hallOfFameSubtitleAr: this.pickReq(raw.hallOfFameSubtitleAr, raw.hall_of_fame_subtitle_ar, fallback.hallOfFameSubtitleAr || ''),
+            hallOfFameSubtitleEn: this.pickReq(raw.hallOfFameSubtitleEn, raw.hall_of_fame_subtitle_en, fallback.hallOfFameSubtitleEn || ''),
+            honorCtaTitleAr: this.pickReq(raw.honorCtaTitleAr, raw.honor_cta_title_ar, fallback.honorCtaTitleAr || ''),
+            honorCtaTitleEn: this.pickReq(raw.honorCtaTitleEn, raw.honor_cta_title_en, fallback.honorCtaTitleEn || ''),
+            honorCtaSubtitleAr: this.pickReq(raw.honorCtaSubtitleAr, raw.honor_cta_subtitle_ar, fallback.honorCtaSubtitleAr || ''),
+            honorCtaSubtitleEn: this.pickReq(raw.honorCtaSubtitleEn, raw.honor_cta_subtitle_en, fallback.honorCtaSubtitleEn || ''),
+            honorCtaButtonAr: this.pickReq(raw.honorCtaButtonAr, raw.honor_cta_button_ar, fallback.honorCtaButtonAr || ''),
+            honorCtaButtonEn: this.pickReq(raw.honorCtaButtonEn, raw.honor_cta_button_en, fallback.honorCtaButtonEn || ''),
+            testimonialsBadgeAr: this.pickOpt(raw.testimonialsBadgeAr, raw.testimonials_badge_ar, fallback.testimonialsBadgeAr || ''),
+            testimonialsBadgeEn: this.pickOpt(raw.testimonialsBadgeEn, raw.testimonials_badge_en, fallback.testimonialsBadgeEn || ''),
+            testimonialsTitleAr: this.pickReq(raw.testimonialsTitleAr, raw.testimonials_title_ar, fallback.testimonialsTitleAr || ''),
+            testimonialsTitleEn: this.pickReq(raw.testimonialsTitleEn, raw.testimonials_title_en, fallback.testimonialsTitleEn || ''),
+            testimonialsSubtitleAr: this.pickOpt(raw.testimonialsSubtitleAr, raw.testimonials_subtitle_ar, fallback.testimonialsSubtitleAr || ''),
+            testimonialsSubtitleEn: this.pickOpt(raw.testimonialsSubtitleEn, raw.testimonials_subtitle_en, fallback.testimonialsSubtitleEn || ''),
             honorBoardList: (raw.honorBoardList && raw.honorBoardList.length > 0)
               ? raw.honorBoardList
               : (raw.honor_board_list && raw.honor_board_list.length > 0)
@@ -718,15 +755,46 @@ export class PublicDiscoveryService {
 
   private getFallbackLandingData(): IPublicLandingData {
     return {
-      heroHeadlineAr: 'تعلم الرياضيات بأعلى المعايير الهندسية مع المهندسة هبة عبد الوهاب',
-      heroHeadlineEn: 'Master Mathematics with Engineering Standards — Eng. Heba Abdel-Wahab',
-      heroSubheadlineAr: 'منصة تفاعلية مخصصة للثانوية العامة والأنظمة الدولية بنظام حماية متطور واستراتيجيات ديسموس البيانية.',
-      heroSubheadlineEn: 'Interactive learning for Egyptian, Gulf, International, and American Curriculums with Desmos graphing strategies.',
+      heroHeadlineAr: 'التميز\nالرياضي الهندسي\nالمتقدم',
+      heroHeadlineEn: 'Advanced\nMathematics\nMastery',
+      heroSubheadlineAr: 'إعداد جامعي وتميز أكاديمي\n(الثانوية العامة • IGCSE • SAT)',
+      heroSubheadlineEn: 'University-Prep & Academic Excellence\n(Thanweya Amma • IGCSE • SAT)',
+      heroBadgeAr: 'Spider Math✦ المنظومة الهندسية الرائدة',
+      heroBadgeEn: 'Spider Math✦ Engineering Excellence',
+      heroCtaPrimaryAr: 'استكشف المناهج',
+      heroCtaPrimaryEn: 'Explore Curricula',
+      heroCtaSecondaryAr: 'امتحان تحديد المستوى المجاني',
+      heroCtaSecondaryEn: 'Free Placement Test',
       heroVideoUrl: 'https://www.youtube.com/watch?v=AOtzdDq7vrI',
       announcementBannerText: '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦',
+      announcementBannerTextEn: '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦',
       isAnnouncementActive: true,
       activeAcademicYear: '2026 / 2027',
       activeAcademicTerm: 'TERM_1',
+      aboutHeadlineAr: 'تعلم تفاعلي\nالمفاهيم أولاً\nبمنهجية هندسية',
+      aboutHeadlineEn: 'Interactive\nConcept-First\nLearning',
+      curriculumBadgeAr: 'المسارات الأكاديمية والمناهج',
+      curriculumBadgeEn: 'Academic Tracks & Curriculums',
+      curriculumTitleAr: 'اختر منهجك الدراسي وابدأ رحلة التفوق',
+      curriculumTitleEn: 'Choose Your Curriculum & Begin Mastery',
+      curriculumSubtitleAr: 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي',
+      curriculumSubtitleEn: 'Comprehensive educational tracks designed with high engineering standards',
+      placementRibbonAr: 'مجاني',
+      placementRibbonEn: 'Free',
+      placementBadgeAr: 'اختبار تحديد المستوى وتشخيص المهارات الرياضية',
+      placementBadgeEn: 'Free Placement & Diagnostic Assessment',
+      placementHeadlineAr: 'اكتشف مستواك في 5 دقائق',
+      placementHeadlineEn: 'Discover Your Level in 5 Minutes',
+      placementSubtitleAr: 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.',
+      placementSubtitleEn: 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.',
+      placementFeature1Ar: 'تقييم ذكي ومباشر',
+      placementFeature1En: 'Instant Diagnostic Feedback',
+      placementFeature2Ar: 'تقرير مفصل بنقاط القوة والضعف',
+      placementFeature2En: 'Strengths & Weaknesses Report',
+      placementFeature3Ar: 'متابعة شخصية من م/ هبة عبدالوهاب',
+      placementFeature3En: 'Eng. Heba Follow-up',
+      placementCtaAr: 'ابدأ الآن',
+      placementCtaEn: 'Start now',
       teacherBio: {
         nameAr: 'المهندسة / هبة عبدالوهاب',
         nameEn: 'Eng. Heba Abdel-Wahab',

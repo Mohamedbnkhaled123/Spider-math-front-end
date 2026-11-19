@@ -174,6 +174,9 @@ export interface IPublicLandingData {
   teacherWhatsappCtaAr?: string;
   teacherWhatsappCtaEn?: string;
 
+  aboutHeadlineAr?: string;
+  aboutHeadlineEn?: string;
+
   curriculumBadgeAr?: string;
   curriculumBadgeEn?: string;
   curriculumTitleAr?: string;
@@ -181,6 +184,8 @@ export interface IPublicLandingData {
   curriculumSubtitleAr?: string;
   curriculumSubtitleEn?: string;
 
+  placementRibbonAr?: string;
+  placementRibbonEn?: string;
   placementBadgeAr?: string;
   placementBadgeEn?: string;
   placementHeadlineAr?: string;
@@ -216,7 +221,20 @@ export interface IPublicLandingData {
   hallOfFameTitleEn?: string;
   hallOfFameSubtitleAr?: string;
   hallOfFameSubtitleEn?: string;
+  honorCtaTitleAr?: string;
+  honorCtaTitleEn?: string;
+  honorCtaSubtitleAr?: string;
+  honorCtaSubtitleEn?: string;
+  honorCtaButtonAr?: string;
+  honorCtaButtonEn?: string;
   honorBoardList?: IHonorBoardItem[];
+
+  testimonialsBadgeAr?: string;
+  testimonialsBadgeEn?: string;
+  testimonialsTitleAr?: string;
+  testimonialsTitleEn?: string;
+  testimonialsSubtitleAr?: string;
+  testimonialsSubtitleEn?: string;
 
   teacherBio: ITeacherBio;
   schedules: IScheduleItem[];

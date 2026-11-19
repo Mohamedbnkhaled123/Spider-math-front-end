@@ -277,18 +277,34 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly heroHeadline = computed<string>(() => {
     const data = this.landingData();
     if (this.langService.isArabic()) {
-      return data?.heroHeadlineAr || 'التميز الرياضي المتقدم';
+      return data?.heroHeadlineAr?.trim() || 'التميز\nالرياضي الهندسي\nالمتقدم';
     }
 
-    return data?.heroHeadlineEn || 'Advanced Mathematics Mastery';
+    return data?.heroHeadlineEn?.trim() || 'Advanced\nMathematics\nMastery';
+  });
+  readonly heroHeadlineLines = computed<string[]>(() => {
+    return this.heroHeadline()
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
   });
   readonly heroSubheadline = computed<string>(() => {
     const data = this.landingData();
     if (this.langService.isArabic()) {
-      return data?.heroSubheadlineAr || 'تأهيل أكاديمي متفوق للجامعات والثانوية العامة والأنظمة الدولية (ثانوية عامة • IGCSE • SAT).';
+      return data?.heroSubheadlineAr?.trim() || 'إعداد جامعي وتميز أكاديمي\n(الثانوية العامة • IGCSE • SAT)';
     }
 
-    return data?.heroSubheadlineEn || 'University-Prep & High School Excellence (Thanweya Amma • IGCSE • SAT)';
+    return data?.heroSubheadlineEn?.trim() || 'University-Prep & Academic Excellence\n(Thanweya Amma • IGCSE • SAT)';
+  });
+  readonly aboutHeadlineLines = computed<string[]>(() => {
+    const data = this.landingData();
+    const raw = this.langService.isArabic()
+      ? (data?.aboutHeadlineAr?.trim() || 'تعلم تفاعلي\nالمفاهيم أولاً\nبمنهجية هندسية')
+      : (data?.aboutHeadlineEn?.trim() || 'Interactive\nConcept-First\nLearning');
+    return raw
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
   });
   readonly academicYearText = computed<string>(() => {
     const year = this.landingData()?.activeAcademicYear || '2026 / 2027';
@@ -301,9 +317,12 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly announcement = computed<{ text: string; isActive: boolean }>(() => {
     const data = this.landingData();
     const isAr = this.langService.isArabic();
-    const text = isAr
-      ? (data?.announcementBannerText || '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦')
-      : (data?.announcementBannerTextEn || '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦');
+    const rawText = isAr ? data?.announcementBannerText : data?.announcementBannerTextEn;
+    const text = rawText !== undefined
+      ? rawText.trim()
+      : (isAr
+        ? '✦ خصم 20% لفترة محدودة على اشتراك باقات الترم الأول بمناسبة تدشين المنصة ✦'
+        : '✦ 20% Limited Discount on Term 1 Master Packages for Platform Launch ✦');
     return {
       text,
       isActive: !!(data?.isAnnouncementActive && text)
@@ -311,21 +330,31 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   });
   readonly heroBadge = computed<string>(() => {
     const data = this.landingData();
-    return this.langService.isArabic()
-      ? (data?.heroBadgeAr || 'Spider Math✦ المنظومة الهندسية الرائدة')
-      : (data?.heroBadgeEn || 'Spider Math✦ Engineering Excellence');
+    if (this.langService.isArabic()) {
+      return data?.heroBadgeAr !== undefined
+        ? data.heroBadgeAr.trim()
+        : 'Spider Math✦ المنظومة الهندسية الرائدة';
+    }
+    return data?.heroBadgeEn !== undefined
+      ? data.heroBadgeEn.trim()
+      : 'Spider Math✦ Engineering Excellence';
   });
   readonly heroCtaPrimary = computed<string>(() => {
     const data = this.landingData();
     return this.langService.isArabic()
-      ? (data?.heroCtaPrimaryAr || 'استكشف المناهج')
-      : (data?.heroCtaPrimaryEn || 'Explore Curricula');
+      ? (data?.heroCtaPrimaryAr?.trim() || 'استكشف المناهج')
+      : (data?.heroCtaPrimaryEn?.trim() || 'Explore Curricula');
   });
   readonly heroCtaSecondary = computed<string>(() => {
     const data = this.landingData();
-    return this.langService.isArabic()
-      ? (data?.heroCtaSecondaryAr || 'تواصل مع المساعد الذكي')
-      : (data?.heroCtaSecondaryEn || 'Speak to AI Tutor');
+    if (this.langService.isArabic()) {
+      return data?.heroCtaSecondaryAr !== undefined
+        ? data.heroCtaSecondaryAr.trim()
+        : 'امتحان تحديد المستوى المجاني';
+    }
+    return data?.heroCtaSecondaryEn !== undefined
+      ? data.heroCtaSecondaryEn.trim()
+      : 'Free Placement Test';
   });
   readonly teacherProfile = computed(() => {
     const data = this.landingData();
@@ -368,42 +397,49 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const isAr = this.langService.isArabic();
     return {
       badge: isAr
-        ? (data?.curriculumBadgeAr || 'المسارات الأكاديمية والمناهج')
-        : (data?.curriculumBadgeEn || 'Academic Tracks & Curriculums'),
+        ? (data?.curriculumBadgeAr !== undefined ? data.curriculumBadgeAr.trim() : 'المسارات الأكاديمية والمناهج')
+        : (data?.curriculumBadgeEn !== undefined ? data.curriculumBadgeEn.trim() : 'Academic Tracks & Curriculums'),
       title: isAr
-        ? (data?.curriculumTitleAr || 'اختر منهجك الدراسي وابدأ رحلة التفوق')
-        : (data?.curriculumTitleEn || 'Choose Your Curriculum & Begin Mastery'),
+        ? (data?.curriculumTitleAr?.trim() || 'اختر منهجك الدراسي وابدأ رحلة التفوق')
+        : (data?.curriculumTitleEn?.trim() || 'Choose Your Curriculum & Begin Mastery'),
       subtitle: isAr
-        ? (data?.curriculumSubtitleAr || 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي')
-        : (data?.curriculumSubtitleEn || 'Comprehensive educational tracks designed with high engineering standards')
+        ? (data?.curriculumSubtitleAr !== undefined ? data.curriculumSubtitleAr.trim() : 'مناهج تعليمية متكاملة مصممة بأعلى معايير الجودة لتناسب نظامك الدراسي')
+        : (data?.curriculumSubtitleEn !== undefined ? data.curriculumSubtitleEn.trim() : 'Comprehensive educational tracks designed with high engineering standards')
     };
   });
   readonly placementSection = computed(() => {
     const data = this.landingData();
     const isAr = this.langService.isArabic();
     return {
+      ribbon: isAr
+        ? (data?.placementRibbonAr !== undefined ? data.placementRibbonAr.trim() : 'مجاني')
+        : (data?.placementRibbonEn !== undefined ? data.placementRibbonEn.trim() : 'Free'),
       badge: isAr
-        ? (data?.placementBadgeAr || 'اختبار تحديد المستوى وتشخيص المهارات')
-        : (data?.placementBadgeEn || 'Diagnostic Skill Assessment'),
+        ? (data?.placementBadgeAr !== undefined ? data.placementBadgeAr.trim() : 'اختبار تحديد المستوى وتشخيص المهارات')
+        : (data?.placementBadgeEn !== undefined ? data.placementBadgeEn.trim() : 'Diagnostic Skill Assessment'),
       headline: isAr
-        ? (data?.placementHeadlineAr || 'اكتشف مستواك الحقيقي في الرياضيات خلال 5 دقائق')
-        : (data?.placementHeadlineEn || 'Discover Your True Math Level in 5 Minutes'),
+        ? (data?.placementHeadlineAr?.trim() || 'اكتشف مستواك في 5 دقائق')
+        : (data?.placementHeadlineEn?.trim() || 'Discover Your Level in 5 Minutes'),
       subtitle: isAr
-        ? (data?.placementSubtitleAr || 'احصل على خارطة طريق ذكية ومخصصة لاحتياجاتك تركز على نقاط قوتك وتعالج الفجوات.')
-        : (data?.placementSubtitleEn || 'Get a personalized AI study roadmap tailored to your strengths and gaps.'),
+        ? (data?.placementSubtitleAr?.trim() || 'تقييم تشخيصي تفاعلي ذكي يقيس مهاراتك التأسيسية وحل المسائل التحليلية لتحديد خطتك الأكاديمية بدقة وبإشراف مباشر من المهندسة هبة عبدالوهاب.')
+        : (data?.placementSubtitleEn?.trim() || 'Interactive diagnostic assessment designed to evaluate core foundational concepts and analytical problem solving with instant insights.'),
       feature1: isAr
-        ? (data?.placementFeature1Ar || 'تقييم ذكي ومباشر')
-        : (data?.placementFeature1En || 'Instant Diagnostic Feedback'),
+        ? (data?.placementFeature1Ar !== undefined ? data.placementFeature1Ar.trim() : 'تقييم ذكي ومباشر')
+        : (data?.placementFeature1En !== undefined ? data.placementFeature1En.trim() : 'Instant Diagnostic Feedback'),
       feature2: isAr
-        ? (data?.placementFeature2Ar || 'تقرير مفصل بنقاط القوة والضعف')
-        : (data?.placementFeature2En || 'Strengths & Weaknesses Report'),
+        ? (data?.placementFeature2Ar !== undefined ? data.placementFeature2Ar.trim() : 'تقرير مفصل بنقاط القوة والضعف')
+        : (data?.placementFeature2En !== undefined ? data.placementFeature2En.trim() : 'Strengths & Weaknesses Report'),
       feature3: isAr
-        ? (data?.placementFeature3Ar || 'متابعة شخصية من م/ هبة عبدالوهاب')
-        : (data?.placementFeature3En || 'Eng. Heba Follow-up'),
+        ? (data?.placementFeature3Ar !== undefined ? data.placementFeature3Ar.trim() : 'متابعة شخصية من م/ هبة عبدالوهاب')
+        : (data?.placementFeature3En !== undefined ? data.placementFeature3En.trim() : 'Eng. Heba Follow-up'),
       cta: isAr
-        ? (data?.placementCtaAr || 'ابدأ الآن')
-        : (data?.placementCtaEn || 'Start now')
+        ? (data?.placementCtaAr?.trim() || 'ابدأ الآن')
+        : (data?.placementCtaEn?.trim() || 'Start now')
     };
+  });
+  readonly placementFeatures = computed<string[]>(() => {
+    const s = this.placementSection();
+    return [s.feature1, s.feature2, s.feature3].filter(Boolean);
   });
   readonly heroVideoAriaLabel = computed<string>(() => {
     return this.langService.isArabic()
@@ -698,14 +734,38 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const isAr = this.langService.isArabic();
     return {
       badge: isAr
-        ? (data?.hallOfFameBadgeAr || 'لوحة الشرف • أبطال الرياضيات')
-        : (data?.hallOfFameBadgeEn || 'Hall of Fame • Top Math Masters'),
+        ? (data?.hallOfFameBadgeAr !== undefined ? data.hallOfFameBadgeAr.trim() : 'لوحة الشرف • أبطال الرياضيات')
+        : (data?.hallOfFameBadgeEn !== undefined ? data.hallOfFameBadgeEn.trim() : 'Hall of Fame • Top Math Masters'),
       title: isAr
-        ? (data?.hallOfFameTitleAr || 'لوحة الشرف والتفوق الأكاديمي')
-        : (data?.hallOfFameTitleEn || 'Academic Hall of Fame & Honor Roll'),
+        ? (data?.hallOfFameTitleAr?.trim() || 'لوحة الشرف والتفوق الأكاديمي')
+        : (data?.hallOfFameTitleEn?.trim() || 'Academic Hall of Fame & Honor Roll'),
       subtitle: isAr
-        ? (data?.hallOfFameSubtitleAr || 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.')
-        : (data?.hallOfFameSubtitleEn || 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.')
+        ? (data?.hallOfFameSubtitleAr?.trim() || 'نخبة طلابنا الذين حققوا العلامات الكاملة وأعلى مراتب التميز والذكاء الرياضي.')
+        : (data?.hallOfFameSubtitleEn?.trim() || 'Elite students who achieved perfect scores and mathematical excellence across all academic curricula.'),
+      ctaTitle: isAr
+        ? (data?.honorCtaTitleAr?.trim() || 'انضم لقائمة الشرف')
+        : (data?.honorCtaTitleEn?.trim() || 'Join the Honor Roll'),
+      ctaSubtitle: isAr
+        ? (data?.honorCtaSubtitleAr?.trim() || 'ابدأ تحديد المستوى لتقييم مستواك.')
+        : (data?.honorCtaSubtitleEn?.trim() || 'Start placement test to evaluate your level.'),
+      ctaButton: isAr
+        ? (data?.honorCtaButtonAr?.trim() || 'تحديد المستوى')
+        : (data?.honorCtaButtonEn?.trim() || 'Start Placement')
+    };
+  });
+  readonly testimonialsSection = computed(() => {
+    const data = this.landingData();
+    const isAr = this.langService.isArabic();
+    return {
+      badge: isAr
+        ? (data?.testimonialsBadgeAr !== undefined ? data.testimonialsBadgeAr.trim() : 'قصص النجاح')
+        : (data?.testimonialsBadgeEn !== undefined ? data.testimonialsBadgeEn.trim() : 'Success Stories'),
+      title: isAr
+        ? (data?.testimonialsTitleAr?.trim() || 'آراء الطلاب وأولياء الأمور')
+        : (data?.testimonialsTitleEn?.trim() || 'Student & Parent Reviews'),
+      subtitle: isAr
+        ? (data?.testimonialsSubtitleAr !== undefined ? data.testimonialsSubtitleAr.trim() : 'تجارب طلابنا وأولياء الأمور.')
+        : (data?.testimonialsSubtitleEn !== undefined ? data.testimonialsSubtitleEn.trim() : 'Real student reviews.')
     };
   });
   ngOnInit(): void {
