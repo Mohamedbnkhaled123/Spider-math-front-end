@@ -65,6 +65,7 @@ export interface AllQuizSubmissionItem {
   essayAnswers?: Array<{ question_id: string; points_earned: number; decision?: 'FULL' | 'HALF' | 'ZERO' | 'CUSTOM' }>;
   homeworkImages?: Array<{ imageUrl: string; rotation?: number }>;
   teacherFeedbackNotes?: string;
+  hiddenFromTeacher?: boolean;
 }
 
 export interface QuizSubmissionStats {
@@ -72,6 +73,7 @@ export interface QuizSubmissionStats {
   pendingReviewCount: number;
   publishedCount: number;
   inProgressCount: number;
+  hiddenCount?: number;
 }
 
 export interface PendingEssayGrading {

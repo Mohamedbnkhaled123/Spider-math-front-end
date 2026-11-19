@@ -529,6 +529,9 @@ describe('StudentsSubscriptionsDevicesComponent', () => {
       expect(updatedEvents.length).toBe(1);
       expect(updatedEvents[0].id).toBe('s_pri5');
       expect(updatedEvents[0].gradeLevel).toBe('PRI_6');
+      expect(updatedEvents[0].totalXp).toBe(0);
+      expect(updatedEvents[0].hasActiveSubscription).toBeFalse();
+      expect(updatedEvents[0].subscriptionStatus).toBe('CANCELLED');
     });
 
     it('UI REQ-3: disables SAT / International term-less and already-Term-2 students in Term mode and excludes them from Select All', () => {

@@ -148,12 +148,22 @@ export class InteractiveGradingStudioComponent implements OnInit {
     totalSubmissions: 0,
     pendingReviewCount: 0,
     publishedCount: 0,
-    inProgressCount: 0
+    inProgressCount: 0,
+    hiddenCount: 0
   });
   readonly isLoadingSubmissions = signal<boolean>(false);
   readonly activeStatusFilter = signal<'ALL' | 'PENDING' | 'PUBLISHED' | 'IN_PROGRESS'>('ALL');
   readonly searchQuery = signal<string>('');
   readonly activeStudioTab = signal<'SUBMISSIONS' | 'CANVAS'>('SUBMISSIONS');
+
+  // Bulk & Teacher Hide/Delete Submissions Management State
+  readonly showHiddenSubmissions = signal<boolean>(false);
+  readonly selectedSubmissionIds = signal<Set<string>>(new Set());
+  readonly isDeleteSubmissionsModalOpen = signal<boolean>(false);
+  readonly deleteTargetSubmissionIds = signal<string[]>([]);
+  readonly deleteSubmissionMode = signal<'HIDE_FROM_TEACHER' | 'PERMANENT_DELETE'>('HIDE_FROM_TEACHER');
+  readonly isDeletingSubmissions = signal<boolean>(false);
+  readonly isRestoringSubmissions = signal<boolean>(false);
 
   // Pagination State (15 items per page with in-memory caching)
   readonly pageSize = 15;
@@ -585,7 +595,8 @@ export class InteractiveGradingStudioComponent implements OnInit {
       totalSubmissions: list.length,
       pendingReviewCount: list.filter((s) => s.status === 'PENDING').length,
       publishedCount: list.filter((s) => s.status === 'PUBLISHED').length,
-      inProgressCount: list.filter((s) => s.status === 'IN_PROGRESS').length
+      inProgressCount: list.filter((s) => s.status === 'IN_PROGRESS').length,
+      hiddenCount: this.submissionStats().hiddenCount ?? 0
     };
   });
 
@@ -611,6 +622,33 @@ export class InteractiveGradingStudioComponent implements OnInit {
     }
     return list;
   });
+
+  readonly visibleSubmissionIds = computed(() => this.filteredSubmissions().map((s) => s.id));
+
+  readonly isAllVisibleSubmissionsSelected = computed(() => {
+    const ids = this.visibleSubmissionIds();
+    const selected = this.selectedSubmissionIds();
+    return ids.length > 0 && ids.every((id) => selected.has(id));
+  });
+
+  readonly selectedVisibleSubmissionsCount = computed(() => {
+    const selected = this.selectedSubmissionIds();
+    return this.visibleSubmissionIds().filter((id) => selected.has(id)).length;
+  });
+
+  readonly selectedHiddenSubmissionsIds = computed(() => {
+    const selected = this.selectedSubmissionIds();
+    return this.filteredSubmissions()
+      .filter((s) => selected.has(s.id) && !!s.hiddenFromTeacher)
+      .map((s) => s.id);
+  });
+
+  readonly hiddenSubmissionsCount = computed(() =>
+    Math.max(
+      this.submissionStats().hiddenCount ?? 0,
+      this.allSubmissions().filter((s) => !!s.hiddenFromTeacher).length
+    )
+  );
 
   // Summary map of quiz counts per student (Total, Published, Pending)
   readonly studentQuizSummaryMap = computed(() => {
@@ -905,8 +943,10 @@ export class InteractiveGradingStudioComponent implements OnInit {
   }
 
   fetchAllSubmissions(forceRefresh = false, useActiveCategoryParams = false): void {
-    // 1. Instant 0ms Memory Cache Check (only for unfiltered default feed)
-    if (!forceRefresh && !useActiveCategoryParams && submissionsMemoryCache) {
+    const includeHidden = this.showHiddenSubmissions();
+
+    // 1. Instant 0ms Memory Cache Check (only for unfiltered default visible feed)
+    if (!forceRefresh && !useActiveCategoryParams && !includeHidden && submissionsMemoryCache) {
       this.allSubmissions.set(submissionsMemoryCache.submissions);
       this.submissionStats.set(submissionsMemoryCache.stats);
       this.isLoadingSubmissions.set(false);
@@ -916,25 +956,31 @@ export class InteractiveGradingStudioComponent implements OnInit {
       }
     }
 
-    if (!submissionsMemoryCache || useActiveCategoryParams) {
+    if (!submissionsMemoryCache || useActiveCategoryParams || includeHidden) {
       this.isLoadingSubmissions.set(true);
     }
 
     let url = '/api/v1/admin/submissions';
-    if (useActiveCategoryParams && this.hasActiveCategoryFilter()) {
+    const hasCategory = useActiveCategoryParams && this.hasActiveCategoryFilter();
+    if (hasCategory || includeHidden) {
       const params = new URLSearchParams();
-      if (this.selectedCurriculum() !== 'ALL') params.set('curriculum', this.selectedCurriculum());
-      if (this.selectedCurriculum() === 'GULF' && this.selectedGulfCountry() !== 'ALL') {
-        params.set('country', this.selectedGulfCountry());
+      if (hasCategory) {
+        if (this.selectedCurriculum() !== 'ALL') params.set('curriculum', this.selectedCurriculum());
+        if (this.selectedCurriculum() === 'GULF' && this.selectedGulfCountry() !== 'ALL') {
+          params.set('country', this.selectedGulfCountry());
+        }
+        if (this.selectedCurriculum() === 'INTERNATIONAL' && this.selectedIntlDivision() !== 'ALL') {
+          params.set('intlDivision', this.selectedIntlDivision());
+        }
+        if (this.selectedGrade() !== 'ALL') params.set('gradeLevel', this.selectedGrade());
+        if (this.currentCurriculumHasTerms() && this.selectedTerm() !== 'ALL') {
+          params.set('academicTerm', this.selectedTerm());
+        }
+        params.set('limit', '200');
       }
-      if (this.selectedCurriculum() === 'INTERNATIONAL' && this.selectedIntlDivision() !== 'ALL') {
-        params.set('intlDivision', this.selectedIntlDivision());
+      if (includeHidden) {
+        params.set('includeHidden', 'true');
       }
-      if (this.selectedGrade() !== 'ALL') params.set('gradeLevel', this.selectedGrade());
-      if (this.currentCurriculumHasTerms() && this.selectedTerm() !== 'ALL') {
-        params.set('academicTerm', this.selectedTerm());
-      }
-      params.set('limit', '200');
       url = `/api/v1/admin/submissions?${params.toString()}`;
     }
 
@@ -1150,12 +1196,13 @@ export class InteractiveGradingStudioComponent implements OnInit {
             clockTamperDetected: !!s.clock_tamper_detected,
             answers: mappedAnswers,
             homeworkImages: (s.uploaded_solution_imgs || []).map((img: any) => ({ imageUrl: img.image_url, rotation: img.rotation_deg })),
-            teacherFeedbackNotes: s.teacher_feedback_notes || ''
+            teacherFeedbackNotes: s.teacher_feedback_notes || '',
+            hiddenFromTeacher: !!s.hidden_from_teacher
           };
         });
 
         this.allSubmissions.set(mapped);
-        if (!useActiveCategoryParams) {
+        if (!useActiveCategoryParams && !includeHidden) {
           this.swrCache.set('admin_all_submissions', mapped);
           this.swrCache.set('admin_submission_stats', this.submissionStats());
           submissionsMemoryCache = {
@@ -1526,6 +1573,200 @@ export class InteractiveGradingStudioComponent implements OnInit {
           text: this.langService.isArabic() ? `تم اعتماد نتيجة ${item.studentName}` : `Grade approved for ${item.studentName}`,
           type: 'success'
         });
+      }
+    });
+  }
+
+  // =========================================================================
+  // Teacher Submission Bulk/Single Deletion, Hide-Only & Restore Controls
+  // =========================================================================
+  toggleShowHiddenSubmissions(): void {
+    this.showHiddenSubmissions.update((v) => !v);
+    this.selectedSubmissionIds.set(new Set());
+    this.currentPage.set(1);
+    this.fetchAllSubmissions(true, this.hasActiveCategoryFilter());
+  }
+
+  toggleSelectAllSubmissions(): void {
+    const visibleIds = this.visibleSubmissionIds();
+    if (visibleIds.length === 0) return;
+
+    const next = new Set(this.selectedSubmissionIds());
+    if (this.isAllVisibleSubmissionsSelected()) {
+      for (const id of visibleIds) {
+        next.delete(id);
+      }
+    } else {
+      for (const id of visibleIds) {
+        next.add(id);
+      }
+    }
+    this.selectedSubmissionIds.set(next);
+  }
+
+  toggleSubmissionSelection(submissionId: string): void {
+    const next = new Set(this.selectedSubmissionIds());
+    if (next.has(submissionId)) {
+      next.delete(submissionId);
+    } else {
+      next.add(submissionId);
+    }
+    this.selectedSubmissionIds.set(next);
+  }
+
+  isStudentGroupSelected(group: StudentQuizGroup): boolean {
+    if (!group.quizzes || group.quizzes.length === 0) return false;
+    const selected = this.selectedSubmissionIds();
+    return group.quizzes.every((q) => selected.has(q.id));
+  }
+
+  toggleStudentGroupSelection(group: StudentQuizGroup): void {
+    if (!group.quizzes || group.quizzes.length === 0) return;
+    const allSelected = this.isStudentGroupSelected(group);
+    const next = new Set(this.selectedSubmissionIds());
+    for (const q of group.quizzes) {
+      if (allSelected) {
+        next.delete(q.id);
+      } else {
+        next.add(q.id);
+      }
+    }
+    this.selectedSubmissionIds.set(next);
+  }
+
+  openDeleteSubmissionsModal(submissionIds: string[]): void {
+    const uniqueIds = Array.from(new Set(submissionIds.filter(Boolean)));
+    if (uniqueIds.length === 0) return;
+    this.deleteTargetSubmissionIds.set(uniqueIds);
+    this.deleteSubmissionMode.set('HIDE_FROM_TEACHER');
+    this.isDeleteSubmissionsModalOpen.set(true);
+  }
+
+  openBulkDeleteSelected(): void {
+    const selected = this.selectedSubmissionIds();
+    const visibleSelected = this.visibleSubmissionIds().filter((id) => selected.has(id));
+    this.openDeleteSubmissionsModal(visibleSelected);
+  }
+
+  closeDeleteSubmissionsModal(): void {
+    if (this.isDeletingSubmissions()) return;
+    this.isDeleteSubmissionsModalOpen.set(false);
+    this.deleteTargetSubmissionIds.set([]);
+  }
+
+  confirmDeleteOrHideSubmissions(): void {
+    const ids = this.deleteTargetSubmissionIds();
+    const mode = this.deleteSubmissionMode();
+    if (ids.length === 0 || this.isDeletingSubmissions()) return;
+
+    this.isDeletingSubmissions.set(true);
+    this.http.post<{
+      success: boolean;
+      data: { mode: 'HIDE_FROM_TEACHER' | 'PERMANENT_DELETE'; affectedCount: number; submissionIds: string[] };
+    }>('/api/v1/admin/submissions/bulk-delete', {
+      submissionIds: ids,
+      mode
+    }).subscribe({
+      next: (res) => {
+        this.isDeletingSubmissions.set(false);
+        const affectedIds = new Set(res?.data?.submissionIds || ids);
+        const affectedCount = res?.data?.affectedCount ?? affectedIds.size;
+
+        submissionsMemoryCache = null;
+        this.swrCache.remove('admin_all_submissions');
+        this.swrCache.remove('admin_submission_stats');
+
+        if (mode === 'PERMANENT_DELETE' || !this.showHiddenSubmissions()) {
+          this.allSubmissions.update((list) => list.filter((s) => !affectedIds.has(s.id)));
+        } else {
+          this.allSubmissions.update((list) =>
+            list.map((s) => (affectedIds.has(s.id) ? { ...s, hiddenFromTeacher: true } : s))
+          );
+        }
+
+        const remainingList = this.allSubmissions();
+        const visibleRemaining = remainingList.filter((s) => !s.hiddenFromTeacher);
+        this.submissionStats.update((prev) => ({
+          ...prev,
+          totalSubmissions: mode === 'PERMANENT_DELETE'
+            ? Math.max(0, prev.totalSubmissions - affectedCount)
+            : Math.max(visibleRemaining.length, Math.max(0, prev.totalSubmissions - (this.showHiddenSubmissions() ? 0 : affectedCount))),
+          hiddenCount: mode === 'HIDE_FROM_TEACHER'
+            ? (prev.hiddenCount ?? 0) + affectedCount
+            : Math.max(0, (prev.hiddenCount ?? 0) - remainingList.length + visibleRemaining.length)
+        }));
+
+        const nextSel = new Set(this.selectedSubmissionIds());
+        for (const id of affectedIds) nextSel.delete(id);
+        this.selectedSubmissionIds.set(nextSel);
+
+        this.isDeleteSubmissionsModalOpen.set(false);
+        this.deleteTargetSubmissionIds.set([]);
+
+        this.toastTriggered.emit({
+          text:
+            mode === 'HIDE_FROM_TEACHER'
+              ? (this.langService.isArabic()
+                  ? `تم إخفاء ${affectedCount} تسليم من لوحة المعلمة مع بقاء مراجعة الطالب`
+                  : `Hidden ${affectedCount} submission(s) from teacher view (kept for student review)`)
+              : (this.langService.isArabic()
+                  ? `تم حذف ${affectedCount} تسليم نهائياً من قاعدة البيانات`
+                  : `Permanently deleted ${affectedCount} submission(s)`),
+          type: mode === 'HIDE_FROM_TEACHER' ? 'success' : 'warning'
+        });
+      },
+      error: (err) => {
+        this.isDeletingSubmissions.set(false);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر تنفيذ عملية الحذف.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
+      }
+    });
+  }
+
+  restoreHiddenSubmissions(submissionIds: string[]): void {
+    const ids = Array.from(new Set(submissionIds.filter(Boolean)));
+    if (ids.length === 0 || this.isRestoringSubmissions()) return;
+
+    this.isRestoringSubmissions.set(true);
+    this.http.post<{
+      success: boolean;
+      data: { restoredCount: number; submissionIds: string[] };
+    }>('/api/v1/admin/submissions/restore-hidden', {
+      submissionIds: ids
+    }).subscribe({
+      next: (res) => {
+        this.isRestoringSubmissions.set(false);
+        const restoredIds = new Set(res?.data?.submissionIds || ids);
+        const restoredCount = res?.data?.restoredCount ?? restoredIds.size;
+
+        submissionsMemoryCache = null;
+        this.swrCache.remove('admin_all_submissions');
+        this.swrCache.remove('admin_submission_stats');
+
+        this.allSubmissions.update((list) =>
+          list.map((s) => (restoredIds.has(s.id) ? { ...s, hiddenFromTeacher: false } : s))
+        );
+        this.submissionStats.update((prev) => ({
+          ...prev,
+          totalSubmissions: prev.totalSubmissions + restoredCount,
+          hiddenCount: Math.max(0, (prev.hiddenCount ?? 0) - restoredCount)
+        }));
+
+        const nextSel = new Set(this.selectedSubmissionIds());
+        for (const id of restoredIds) nextSel.delete(id);
+        this.selectedSubmissionIds.set(nextSel);
+
+        this.toastTriggered.emit({
+          text: this.langService.isArabic()
+            ? `تمت استعادة ${restoredCount} تسليم إلى لوحة المعلمة`
+            : `Restored ${restoredCount} submission(s) to teacher view`,
+          type: 'success'
+        });
+      },
+      error: (err) => {
+        this.isRestoringSubmissions.set(false);
+        const errMsg = err?.error?.error?.message || err?.error?.message || 'تعذر استعادة التسليمات.';
+        this.toastTriggered.emit({ text: errMsg, type: 'error' });
       }
     });
   }

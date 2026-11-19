@@ -985,10 +985,18 @@ export class StudentsSubscriptionsDevicesComponent implements OnInit {
     for (const item of result.promoted || []) {
       const existing = currentById.get(item.studentId);
       if (!existing) continue;
+      const isGradeReset = result.mode === 'GRADE';
       this.studentUpdated.emit({
         ...existing,
         gradeLevel: item.toGrade || existing.gradeLevel,
-        academicTerm: (item.toTerm ?? existing.academicTerm ?? null) as 'TERM_1' | 'TERM_2' | null
+        academicTerm: (item.toTerm ?? existing.academicTerm ?? null) as 'TERM_1' | 'TERM_2' | null,
+        ...(isGradeReset
+          ? {
+              totalXp: 0,
+              hasActiveSubscription: false,
+              subscriptionStatus: 'CANCELLED' as const
+            }
+          : {})
       });
     }
 

@@ -1131,8 +1131,8 @@
                   </div>
                   <p class="text-[11px] text-text-muted leading-relaxed">
                     {{ langService.isArabic()
-                      ? 'متاح للمناهج ذات الفصول (المصري والخليجي فقط). المناهج بدون ترم مثل SAT والدولي تُستبعد تلقائياً.'
-                      : 'Only for term-based curricula (Egyptian & Gulf). Term-less tracks like SAT & International are skipped automatically.' }}
+                      ? 'متاح للمناهج ذات الفصول (المصري والخليجي فقط) ويحذف تسليمات الترم الأول تلقائياً. المناهج بدون ترم مثل SAT والدولي تُستبعد تلقائياً.'
+                      : 'Only for term-based curricula (Egyptian & Gulf) and automatically clears Term 1 submissions. Term-less tracks like SAT & International are skipped.' }}
                   </p>
                 </div>
               </button>
@@ -1162,8 +1162,8 @@
                   </div>
                   <p class="text-[11px] text-text-muted leading-relaxed">
                     {{ langService.isArabic()
-                      ? 'ينقل الطلاب للصف الأعلى ويعيد الترم للأول. طلاب نهاية المرحلة (مثل 3 ثانوي أو Grade 12 أو SAT) يدخلون شاشة التخرج.'
-                      : 'Advances students to the next grade. Final-grade students prompt for graduation (Archive vs Permanent Delete).' }}
+                      ? 'ينقل الطلاب للصف الأعلى مع Reset كامل (حذف التسليمات وسجل المشاهدة والاشتراكات السابقة وتصفير XP). طلاب نهاية المرحلة يدخلون شاشة التخرج.'
+                      : 'Advances to next grade with full reset (submissions, watch history, old subscriptions & XP). Final-grade students prompt for graduation.' }}
                   </p>
                 </div>
               </button>

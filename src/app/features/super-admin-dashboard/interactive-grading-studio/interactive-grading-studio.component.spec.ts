@@ -704,4 +704,138 @@ describe('InteractiveGradingStudioComponent', () => {
       expect(component.filteredPendingSubmissions().length).toBe(2);
     });
   });
+
+  describe('Teacher Submission Deletion, Select All & Show Hidden Requirements', () => {
+    it('should select all submissions, open 2-option modal, hide from teacher only, toggle Show Hidden, and restore or permanently delete', () => {
+      // Flush initial load queued by ngOnInit
+      httpMock.match('/api/v1/admin/submissions').forEach((r) => r.flush({ success: true, data: { submissions: [], stats: {} } }));
+
+      const baseItem = {
+        studentId: 'stu_vis_1',
+        studentName: 'يوسف أحمد',
+        haCode: 'HA2001',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_3',
+        academicTerm: 'TERM_1',
+        country: 'EG',
+        assessmentId: 'asm_vis_1',
+        assessmentTitle: 'واجب التفاضل',
+        assessmentType: 'HOMEWORK' as const,
+        attemptNumber: 1,
+        totalPoints: 10,
+        mcqAutoScore: 10,
+        essayManualScore: 0,
+        finalTotalScore: 10,
+        scorePercentage: 100,
+        status: 'PENDING' as const,
+        hasEssayQuestions: false,
+        submittedAt: '1/1/2026',
+        elapsedTimeSec: 120,
+        isSuspiciousFastSolve: false,
+        clockTamperDetected: false,
+        answers: [],
+        hiddenFromTeacher: false
+      };
+
+      component.allSubmissions.set([
+        { ...baseItem, id: 'sub_vis_1', studentId: 'stu_vis_1', studentName: 'يوسف أحمد', haCode: 'HA2001', status: 'PENDING' },
+        { ...baseItem, id: 'sub_vis_2', studentId: 'stu_vis_2', studentName: 'مريم حسن', haCode: 'HA2002', status: 'PUBLISHED' }
+      ]);
+      component.submissionStats.set({
+        totalSubmissions: 2,
+        pendingReviewCount: 1,
+        publishedCount: 1,
+        inProgressCount: 0,
+        hiddenCount: 0
+      });
+      fixture.detectChanges();
+
+      const hostEl = fixture.nativeElement as HTMLElement;
+
+      // 1. Select All checkboxes
+      const selectAll = hostEl.querySelector('[data-testid="grading-select-all-checkbox"]') as HTMLInputElement;
+      expect(selectAll).toBeTruthy();
+      selectAll.click();
+      fixture.detectChanges();
+      expect(component.selectedVisibleSubmissionsCount()).toBe(2);
+
+      // 2. Click Bulk Delete -> opens 2-option modal defaulting to HIDE_FROM_TEACHER
+      (hostEl.querySelector('[data-testid="grading-bulk-delete-btn"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(hostEl.querySelector('[data-testid="delete-submissions-modal"]')).toBeTruthy();
+      (hostEl.querySelector('[data-testid="delete-mode-hide"]') as HTMLButtonElement).click();
+      (hostEl.querySelector('[data-testid="confirm-delete-submissions-btn"]') as HTMLButtonElement).click();
+
+      const hideReq = httpMock.expectOne('/api/v1/admin/submissions/bulk-delete');
+      expect(hideReq.request.method).toBe('POST');
+      expect(hideReq.request.body).toEqual({
+        submissionIds: ['sub_vis_1', 'sub_vis_2'],
+        mode: 'HIDE_FROM_TEACHER'
+      });
+      hideReq.flush({
+        success: true,
+        data: { mode: 'HIDE_FROM_TEACHER', affectedCount: 2, submissionIds: ['sub_vis_1', 'sub_vis_2'] }
+      });
+      fixture.detectChanges();
+
+      expect(component.allSubmissions().length).toBe(0);
+      expect(component.hiddenSubmissionsCount()).toBe(2);
+
+      // 3. Toggle "Show Hidden" -> requests /api/v1/admin/submissions?includeHidden=true
+      (hostEl.querySelector('[data-testid="toggle-hidden-submissions-btn"]') as HTMLButtonElement).click();
+      const showHiddenReq = httpMock.expectOne('/api/v1/admin/submissions?includeHidden=true');
+      showHiddenReq.flush({
+        success: true,
+        data: {
+          submissions: [
+            {
+              _id: 'sub_vis_1',
+              student_id: { _id: 'st_1', full_name: 'يوسف أحمد', student_code: 'HA2001', curriculum: 'EGYPTIAN', grade_level: 'SEC_3', academic_term: 'TERM_1' },
+              assessment_id: { _id: 'asm_1', title_ar: 'واجب', curriculum: 'EGYPTIAN', grade_level: 'SEC_3', academic_term: 'TERM_1', total_points: 10, questions: [] },
+              result_visibility: 'HIDDEN_PENDING_TEACHER',
+              sync_queue_status: 'SYNCED_ONLINE',
+              hidden_from_teacher: true,
+              final_total_score: 0,
+              createdAt: new Date().toISOString()
+            }
+          ],
+          stats: { totalSubmissions: 1, pendingReviewCount: 1, publishedCount: 0, inProgressCount: 0, hiddenCount: 1 }
+        }
+      });
+      fixture.detectChanges();
+
+      expect(component.allSubmissions()[0].hiddenFromTeacher).toBeTrue();
+      // Switch to feed view to inspect row actions directly
+      component.viewGroupingMode.set('BY_SUBMISSION');
+      fixture.detectChanges();
+      expect(hostEl.querySelector('[data-testid="hidden-submission-badge"]')).toBeTruthy();
+
+      // 4. Restore hidden submission
+      (hostEl.querySelector('[data-testid="grading-restore-submission-btn"]') as HTMLButtonElement).click();
+      const restoreReq = httpMock.expectOne('/api/v1/admin/submissions/restore-hidden');
+      expect(restoreReq.request.method).toBe('POST');
+      expect(restoreReq.request.body).toEqual({ submissionIds: ['sub_vis_1'] });
+      restoreReq.flush({ success: true, data: { restoredCount: 1, submissionIds: ['sub_vis_1'] } });
+      fixture.detectChanges();
+      expect(component.allSubmissions()[0].hiddenFromTeacher).toBeFalse();
+
+      // 5. Permanent delete single submission
+      (hostEl.querySelector('[data-testid="grading-delete-submission-btn"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      (hostEl.querySelector('[data-testid="delete-mode-permanent"]') as HTMLButtonElement).click();
+      (hostEl.querySelector('[data-testid="confirm-delete-submissions-btn"]') as HTMLButtonElement).click();
+
+      const permReq = httpMock.expectOne('/api/v1/admin/submissions/bulk-delete');
+      expect(permReq.request.body).toEqual({
+        submissionIds: ['sub_vis_1'],
+        mode: 'PERMANENT_DELETE'
+      });
+      permReq.flush({
+        success: true,
+        data: { mode: 'PERMANENT_DELETE', affectedCount: 1, submissionIds: ['sub_vis_1'] }
+      });
+      fixture.detectChanges();
+      expect(component.allSubmissions().length).toBe(0);
+    });
+  });
 });

@@ -455,6 +455,70 @@
   <!-- TAB 1: ALL QUIZ SUBMISSIONS -->
   @if (activeStudioTab() === 'SUBMISSIONS') {
     <div class="space-y-4">
+      <!-- Bulk Selection, Delete/Hide & Show Hidden Toolbar -->
+      <div class="p-3.5 rounded-2xl border border-surface-border bg-surface-card shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <label class="inline-flex items-center gap-2 font-bold text-text-primary cursor-pointer select-none">
+            <input
+              type="checkbox"
+              data-testid="grading-select-all-checkbox"
+              [checked]="isAllVisibleSubmissionsSelected()"
+              [disabled]="visibleSubmissionIds().length === 0"
+              (change)="toggleSelectAllSubmissions()"
+              class="w-4 h-4 accent-brand-primary rounded cursor-pointer disabled:opacity-40"
+            />
+            <span>{{ langService.isArabic() ? 'تحديد الكل' : 'Select All' }}</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-surface-bg border border-surface-border text-text-secondary">
+              {{ visibleSubmissionIds().length }}
+            </span>
+          </label>
+
+          @if (selectedVisibleSubmissionsCount() > 0) {
+            <button
+              type="button"
+              (click)="openBulkDeleteSelected()"
+              data-testid="grading-bulk-delete-btn"
+              class="px-3 py-1.5 rounded-xl font-bold text-xs bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <app-icon name="trash" [size]="13" />
+              <span>{{ langService.isArabic() ? ('حذف المحدد (' + selectedVisibleSubmissionsCount() + ')') : ('Delete Selected (' + selectedVisibleSubmissionsCount() + ')') }}</span>
+            </button>
+          }
+
+          @if (selectedHiddenSubmissionsIds().length > 0) {
+            <button
+              type="button"
+              (click)="restoreHiddenSubmissions(selectedHiddenSubmissionsIds())"
+              [disabled]="isRestoringSubmissions()"
+              data-testid="grading-bulk-restore-btn"
+              class="px-3 py-1.5 rounded-xl font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <app-icon name="rotate-ccw" [size]="13" />
+              <span>{{ langService.isArabic() ? ('استعادة المحدد (' + selectedHiddenSubmissionsIds().length + ')') : ('Restore Selected (' + selectedHiddenSubmissionsIds().length + ')') }}</span>
+            </button>
+          }
+        </div>
+
+        <button
+          type="button"
+          (click)="toggleShowHiddenSubmissions()"
+          data-testid="toggle-hidden-submissions-btn"
+          class="px-3.5 py-1.5 rounded-xl font-bold text-xs border transition-all flex items-center gap-1.5 cursor-pointer"
+          [class.bg-brand-primary]="showHiddenSubmissions()"
+          [class.text-white]="showHiddenSubmissions()"
+          [class.border-brand-primary]="showHiddenSubmissions()"
+          [class.bg-surface-bg]="!showHiddenSubmissions()"
+          [class.text-text-secondary]="!showHiddenSubmissions()"
+          [class.border-surface-border]="!showHiddenSubmissions()"
+        >
+          <app-icon [name]="showHiddenSubmissions() ? 'eye-off' : 'eye'" [size]="14" />
+          <span>
+            {{ showHiddenSubmissions()
+              ? (langService.isArabic() ? 'إخفاء التسليمات المخفية' : 'Hide Hidden Submissions')
+              : (langService.isArabic() ? ('إظهار المخفيات (' + hiddenSubmissionsCount() + ')') : ('Show Hidden (' + hiddenSubmissionsCount() + ')')) }}
+          </span>
+        </button>
+      </div>
       <!-- Dedicated Filtered Student Summary Header Banner -->
       @if (activeStudentSummary(); as studentSummary) {
         <div class="p-4 rounded-2xl bg-brand-primary/5 border border-brand-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
@@ -540,6 +604,14 @@
                 <!-- Student Header Card -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div class="flex items-start sm:items-center gap-3.5">
+                    <input
+                      type="checkbox"
+                      data-testid="grading-student-group-checkbox"
+                      [checked]="isStudentGroupSelected(group)"
+                      (change)="toggleStudentGroupSelection(group)"
+                      class="w-4 h-4 accent-brand-primary rounded cursor-pointer shrink-0 mt-1 sm:mt-0"
+                      [title]="langService.isArabic() ? 'تحديد كل تسليمات هذا الطالب' : 'Select all quizzes for this student'"
+                    />
                     <div class="w-12 h-12 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary flex items-center justify-center font-black text-lg shrink-0">
                       {{ group.studentName.charAt(0) || 'ط' }}
                     </div>
@@ -610,42 +682,64 @@
                 @if (isStudentExpanded(group.studentKey)) {
                   <div class="pt-3 border-t border-surface-border space-y-2.5 animate-fade-in">
                     @for (quiz of group.quizzes; track quiz.id) {
-                      <div class="p-4 rounded-2xl bg-surface-bg/80 border border-surface-border hover:border-brand-primary/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div class="space-y-1">
-                          <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-sm font-black text-brand-primary dark:text-brand-accent">
-                              {{ quiz.assessmentTitle }}
-                            </span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-card border border-surface-border text-text-secondary">
-                              {{ langService.isArabic() ? ('محاولة رقم ' + quiz.attemptNumber) : ('Attempt #' + quiz.attemptNumber) }}
-                            </span>
-                            @if (quiz.status === 'PUBLISHED') {
-                              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
-                                <app-icon name="check" [size]="12" />
-                                <span>{{ langService.isArabic() ? 'تم اعتماد ونشر النتيجة' : 'Result Published' }}</span>
+                      <div
+                        data-testid="grading-submission-row"
+                        [attr.data-submission-id]="quiz.id"
+                        class="p-4 rounded-2xl bg-surface-bg/80 border border-surface-border hover:border-brand-primary/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3"
+                        [class.opacity-75]="quiz.hiddenFromTeacher"
+                      >
+                        <div class="flex items-start gap-3 min-w-0">
+                          <input
+                            type="checkbox"
+                            data-testid="grading-submission-checkbox"
+                            [checked]="selectedSubmissionIds().has(quiz.id)"
+                            (change)="toggleSubmissionSelection(quiz.id)"
+                            class="w-4 h-4 mt-1 accent-brand-primary rounded cursor-pointer shrink-0"
+                          />
+                          <div class="space-y-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                              <span class="text-sm font-black text-brand-primary dark:text-brand-accent">
+                                {{ quiz.assessmentTitle }}
                               </span>
-                            } @else if (quiz.status === 'PENDING') {
-                              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1 animate-pulse">
-                                <app-icon name="clock" [size]="12" />
-                                <span>{{ langService.isArabic() ? 'بانتظار اعتماد المعلمة' : 'Pending Review' }}</span>
+                              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-card border border-surface-border text-text-secondary">
+                                {{ langService.isArabic() ? ('محاولة رقم ' + quiz.attemptNumber) : ('Attempt #' + quiz.attemptNumber) }}
                               </span>
-                            } @else {
-                              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
-                                <span>{{ langService.isArabic() ? 'قيد الحل الآن' : 'In Progress' }}</span>
-                              </span>
-                            }
-                          </div>
+                              @if (quiz.hiddenFromTeacher) {
+                                <span
+                                  data-testid="hidden-submission-badge"
+                                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/15 text-slate-600 dark:text-slate-300 border border-slate-500/30"
+                                >
+                                  {{ langService.isArabic() ? 'مخفي عنكِ' : 'Hidden from Teacher' }}
+                                </span>
+                              }
+                              @if (quiz.status === 'PUBLISHED') {
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
+                                  <app-icon name="check" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'تم اعتماد ونشر النتيجة' : 'Result Published' }}</span>
+                                </span>
+                              } @else if (quiz.status === 'PENDING') {
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1 animate-pulse">
+                                  <app-icon name="clock" [size]="12" />
+                                  <span>{{ langService.isArabic() ? 'بانتظار اعتماد المعلمة' : 'Pending Review' }}</span>
+                                </span>
+                              } @else {
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
+                                  <span>{{ langService.isArabic() ? 'قيد الحل الآن' : 'In Progress' }}</span>
+                                </span>
+                              }
+                            </div>
 
-                          <div class="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                            <span>{{ langService.isArabic() ? 'تاريخ التسليم: ' : 'Submitted: ' }}<strong class="text-text-primary font-mono">{{ quiz.submittedAt }}</strong></span>
-                            @if (quiz.elapsedTimeSec > 0) {
-                              <span>• {{ langService.isArabic() ? 'المستغرق: ' : 'Elapsed: ' }}<strong class="text-text-primary font-mono">{{ (quiz.elapsedTimeSec / 60) | number:'1.0-1' }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}</strong></span>
-                            }
-                            <span>• {{ langService.isArabic() ? 'الدرجة: ' : 'Score: ' }}<strong class="text-emerald-600 font-mono font-bold">{{ quiz.finalTotalScore }} / {{ quiz.totalPoints }}</strong> ({{ quiz.scorePercentage }}%)</span>
+                            <div class="flex flex-wrap items-center gap-3 text-xs text-text-muted">
+                              <span>{{ langService.isArabic() ? 'تاريخ التسليم: ' : 'Submitted: ' }}<strong class="text-text-primary font-mono">{{ quiz.submittedAt }}</strong></span>
+                              @if (quiz.elapsedTimeSec > 0) {
+                                <span>• {{ langService.isArabic() ? 'المستغرق: ' : 'Elapsed: ' }}<strong class="text-text-primary font-mono">{{ (quiz.elapsedTimeSec / 60) | number:'1.0-1' }} {{ langService.isArabic() ? 'دقيقة' : 'mins' }}</strong></span>
+                              }
+                              <span>• {{ langService.isArabic() ? 'الدرجة: ' : 'Score: ' }}<strong class="text-emerald-600 font-mono font-bold">{{ quiz.finalTotalScore }} / {{ quiz.totalPoints }}</strong> ({{ quiz.scorePercentage }}%)</span>
+                            </div>
                           </div>
                         </div>
 
-                        <!-- Quiz Actions (Only 2 concise buttons: Approve & Answer Details) -->
+                        <!-- Quiz Actions -->
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
                           @if (quiz.status === 'PENDING') {
                             <button
@@ -668,6 +762,30 @@
                             <app-icon name="file-text" [size]="13" />
                             <span>{{ langService.isArabic() ? 'تفاصيل الإجابات' : 'Answer Details' }}</span>
                           </button>
+
+                          @if (quiz.hiddenFromTeacher) {
+                            <button
+                              type="button"
+                              (click)="restoreHiddenSubmissions([quiz.id])"
+                              [disabled]="isRestoringSubmissions()"
+                              data-testid="grading-restore-submission-btn"
+                              class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                            >
+                              <app-icon name="rotate-ccw" [size]="12" />
+                              <span>{{ langService.isArabic() ? 'استعادة' : 'Restore' }}</span>
+                            </button>
+                          }
+
+                          <button
+                            type="button"
+                            (click)="openDeleteSubmissionsModal([quiz.id])"
+                            data-testid="grading-delete-submission-btn"
+                            class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                            [title]="langService.isArabic() ? 'حذف أو إخفاء التسليم' : 'Delete or hide submission'"
+                          >
+                            <app-icon name="trash" [size]="12" />
+                            <span>{{ langService.isArabic() ? 'حذف' : 'Delete' }}</span>
+                          </button>
                         </div>
                       </div>
                     }
@@ -680,23 +798,44 @@
       } @else {
         <!-- VIEW MODE 2: BY_SUBMISSION Feed -->
         @for (sub of paginatedSubmissions(); track sub.id) {
-        <div class="p-6 rounded-3xl spider-rim-glass-card shadow-sm hover:border-brand-primary/30 transition-all">
+        <div
+          data-testid="grading-submission-row"
+          [attr.data-submission-id]="sub.id"
+          class="p-6 rounded-3xl spider-rim-glass-card shadow-sm hover:border-brand-primary/30 transition-all"
+          [class.opacity-75]="sub.hiddenFromTeacher"
+        >
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
             <!-- Student & Assessment Identity -->
-            <div class="space-y-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  (click)="viewStudentGroup(sub.studentName)"
-                  class="text-sm font-black text-text-primary hover:text-brand-primary transition-colors cursor-pointer text-start"
-                  [title]="langService.isArabic() ? 'تجميع كويزات هذا الطالب' : 'Group quizzes for this student'"
-                >
-                  {{ sub.studentName }}
-                </button>
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
-                  {{ sub.haCode }}
-                </span>
+            <div class="flex items-start gap-3 min-w-0">
+              <input
+                type="checkbox"
+                data-testid="grading-submission-checkbox"
+                [checked]="selectedSubmissionIds().has(sub.id)"
+                (change)="toggleSubmissionSelection(sub.id)"
+                class="w-4 h-4 mt-1 accent-brand-primary rounded cursor-pointer shrink-0"
+              />
+              <div class="space-y-2 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="viewStudentGroup(sub.studentName)"
+                    class="text-sm font-black text-text-primary hover:text-brand-primary transition-colors cursor-pointer text-start"
+                    [title]="langService.isArabic() ? 'تجميع كويزات هذا الطالب' : 'Group quizzes for this student'"
+                  >
+                    {{ sub.studentName }}
+                  </button>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-bg border border-surface-border text-brand-secondary">
+                    {{ sub.haCode }}
+                  </span>
+                  @if (sub.hiddenFromTeacher) {
+                    <span
+                      data-testid="hidden-submission-badge"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/15 text-slate-600 dark:text-slate-300 border border-slate-500/30"
+                    >
+                      {{ langService.isArabic() ? 'مخفي عنكِ' : 'Hidden from Teacher' }}
+                    </span>
+                  }
                 <span class="text-xs text-text-muted font-bold">
                   {{ getGradeLabel(sub.gradeLevel, sub.curriculum, sub.country) }} • {{ getCurriculumLabel(sub.curriculum) }}@if (getCountryLabel(sub.country) && getCurriculumLabel(sub.curriculum) === getCurriculumTrackName('GULF')) { ({{ getCountryLabel(sub.country) }})}@if (getTermLabel(sub.academicTerm)) { • {{ getTermLabel(sub.academicTerm) }}}
                 </span>
@@ -745,6 +884,7 @@
                     <span>{{ langService.isArabic() ? 'تسليم سريع مشبوه' : 'Suspicious Fast Submission' }}</span>
                   </span>
                 }
+              </div>
               </div>
             </div>
 
@@ -804,6 +944,30 @@
               >
                 <app-icon name="file-text" [size]="13" />
                 <span>{{ langService.isArabic() ? 'تفاصيل الإجابات' : 'Answer Details' }}</span>
+              </button>
+
+              @if (sub.hiddenFromTeacher) {
+                <button
+                  type="button"
+                  (click)="restoreHiddenSubmissions([sub.id])"
+                  [disabled]="isRestoringSubmissions()"
+                  data-testid="grading-restore-submission-btn"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                >
+                  <app-icon name="rotate-ccw" [size]="12" />
+                  <span>{{ langService.isArabic() ? 'استعادة' : 'Restore' }}</span>
+                </button>
+              }
+
+              <button
+                type="button"
+                (click)="openDeleteSubmissionsModal([sub.id])"
+                data-testid="grading-delete-submission-btn"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                [title]="langService.isArabic() ? 'حذف أو إخفاء التسليم' : 'Delete or hide submission'"
+              >
+                <app-icon name="trash" [size]="12" />
+                <span>{{ langService.isArabic() ? 'حذف' : 'Delete' }}</span>
               </button>
             </div>
           </div>
@@ -1659,6 +1823,148 @@
             } @else {
               <app-icon name="check-circle" [size]="14" />
               <span>{{ langService.isArabic() ? 'نعم، اعتماد ونشر' : 'Yes, Approve & Publish' }}</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 2-Option Delete / Hide Submissions Confirmation Modal -->
+  @if (isDeleteSubmissionsModalOpen()) {
+    <div
+      class="fixed inset-0 z-layer-modal bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-20 overflow-y-auto"
+      data-testid="delete-submissions-modal"
+      (click)="closeDeleteSubmissionsModal()"
+    >
+      <div
+        class="w-full max-w-lg rounded-3xl border border-surface-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 text-xs"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-start justify-between gap-3 pb-3 border-b border-surface-border">
+          <div class="flex items-start gap-3">
+            <span class="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-500 flex items-center justify-center shrink-0">
+              <app-icon name="trash" [size]="18" />
+            </span>
+            <div class="space-y-0.5">
+              <h3 class="font-black text-sm sm:text-base text-text-primary">
+                {{ langService.isArabic()
+                  ? ('إجراء على التسليمات والواجبات (' + deleteTargetSubmissionIds().length + ')')
+                  : ('Manage Selected Submissions (' + deleteTargetSubmissionIds().length + ')') }}
+              </h3>
+              <p class="text-[11px] text-text-muted">
+                {{ langService.isArabic()
+                  ? 'اختاري بين الحذف من لوحتك فقط مع بقاء مراجعة الطالب، أو الحذف النهائي من قاعدة البيانات.'
+                  : 'Choose whether to hide from teacher dashboard only (student retains review) or permanently delete.' }}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="closeDeleteSubmissionsModal()"
+            class="w-8 h-8 rounded-xl bg-surface-bg border border-surface-border flex items-center justify-center text-text-muted hover:text-text-primary cursor-pointer shrink-0"
+          >
+            <app-icon name="x" [size]="15" />
+          </button>
+        </div>
+
+        <!-- Option 1: Hide from Teacher Only (Student Keeps Review) -->
+        <div class="space-y-2.5">
+          <button
+            type="button"
+            (click)="deleteSubmissionMode.set('HIDE_FROM_TEACHER')"
+            data-testid="delete-mode-hide"
+            class="w-full p-3.5 rounded-2xl border text-start transition-all cursor-pointer flex items-start gap-3"
+            [class.border-brand-primary]="deleteSubmissionMode() === 'HIDE_FROM_TEACHER'"
+            [class.bg-brand-primary/10]="deleteSubmissionMode() === 'HIDE_FROM_TEACHER'"
+            [class.border-surface-border]="deleteSubmissionMode() !== 'HIDE_FROM_TEACHER'"
+            [class.bg-surface-bg]="deleteSubmissionMode() !== 'HIDE_FROM_TEACHER'"
+          >
+            <span
+              class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+              [class.bg-brand-primary]="deleteSubmissionMode() === 'HIDE_FROM_TEACHER'"
+              [class.text-white]="deleteSubmissionMode() === 'HIDE_FROM_TEACHER'"
+              [class.bg-surface-card]="deleteSubmissionMode() !== 'HIDE_FROM_TEACHER'"
+              [class.text-text-muted]="deleteSubmissionMode() !== 'HIDE_FROM_TEACHER'"
+            >
+              <app-icon name="eye-off" [size]="15" />
+            </span>
+            <div class="space-y-1">
+              <div class="font-black text-xs sm:text-sm text-text-primary">
+                {{ langService.isArabic()
+                  ? 'حذف من لوحة المعلمة فقط (مع بقاء مراجعة الطالب)'
+                  : 'Remove from Teacher View Only (Student Keeps Review)' }}
+              </div>
+              <p class="text-[11px] text-text-secondary leading-relaxed">
+                {{ langService.isArabic()
+                  ? 'يختفي التسليم من لوحة التصحيح ويمكنكِ إظهاره أو استعادته لاحقاً عبر زر «إظهار المخفيات». يظل الطالب وولي الأمر قادرين على مراجعة الدرجة والإجابات، ولا يمكن للطالب إعادة الحل.'
+                  : 'Hides submissions from your grading list (reversible via Show Hidden). Student & parent retain answer/score review and attempt limits stay enforced.' }}
+              </p>
+            </div>
+          </button>
+
+          <!-- Option 2: Permanent Delete -->
+          <button
+            type="button"
+            (click)="deleteSubmissionMode.set('PERMANENT_DELETE')"
+            data-testid="delete-mode-permanent"
+            class="w-full p-3.5 rounded-2xl border text-start transition-all cursor-pointer flex items-start gap-3"
+            [class.border-rose-500]="deleteSubmissionMode() === 'PERMANENT_DELETE'"
+            [class.bg-rose-500/10]="deleteSubmissionMode() === 'PERMANENT_DELETE'"
+            [class.border-surface-border]="deleteSubmissionMode() !== 'PERMANENT_DELETE'"
+            [class.bg-surface-bg]="deleteSubmissionMode() !== 'PERMANENT_DELETE'"
+          >
+            <span
+              class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+              [class.bg-rose-600]="deleteSubmissionMode() === 'PERMANENT_DELETE'"
+              [class.text-white]="deleteSubmissionMode() === 'PERMANENT_DELETE'"
+              [class.bg-surface-card]="deleteSubmissionMode() !== 'PERMANENT_DELETE'"
+              [class.text-rose-500]="deleteSubmissionMode() !== 'PERMANENT_DELETE'"
+            >
+              <app-icon name="alert-triangle" [size]="15" />
+            </span>
+            <div class="space-y-1">
+              <div class="font-black text-xs sm:text-sm text-rose-500">
+                {{ langService.isArabic()
+                  ? 'حذف نهائي من قاعدة البيانات'
+                  : 'Permanently Delete from Database' }}
+              </div>
+              <p class="text-[11px] text-text-secondary leading-relaxed">
+                {{ langService.isArabic()
+                  ? 'يمسح التسليم نهائياً من عند المعلمة والطالب وولي الأمر ولا يمكن استعادته (مع تحرير محاولة حل جديدة للطالب).'
+                  : 'Irreversibly erases the submission from teacher, student, and parent records.' }}
+              </p>
+            </div>
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-surface-border flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="closeDeleteSubmissionsModal()"
+            [disabled]="isDeletingSubmissions()"
+            class="px-4 py-2 rounded-xl border border-surface-border bg-surface-bg font-bold text-text-secondary hover:text-text-primary cursor-pointer"
+          >
+            {{ langService.isArabic() ? 'إلغاء' : 'Cancel' }}
+          </button>
+          <button
+            type="button"
+            (click)="confirmDeleteOrHideSubmissions()"
+            data-testid="confirm-delete-submissions-btn"
+            [disabled]="isDeletingSubmissions()"
+            class="px-5 py-2 rounded-xl font-black text-white shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            [class.bg-brand-primary]="deleteSubmissionMode() === 'HIDE_FROM_TEACHER'"
+            [class.bg-rose-600]="deleteSubmissionMode() === 'PERMANENT_DELETE'"
+          >
+            @if (isDeletingSubmissions()) {
+              <app-icon name="loader" [size]="14" className="animate-spin" />
+              <span>{{ langService.isArabic() ? 'جاري التنفيذ...' : 'Processing...' }}</span>
+            } @else if (deleteSubmissionMode() === 'HIDE_FROM_TEACHER') {
+              <app-icon name="eye-off" [size]="14" />
+              <span>{{ langService.isArabic() ? 'إخفاء من لوحتي الآن' : 'Hide from My View' }}</span>
+            } @else {
+              <app-icon name="trash" [size]="14" />
+              <span>{{ langService.isArabic() ? 'تأكيد الحذف النهائي' : 'Confirm Permanent Delete' }}</span>
             }
           </button>
         </div>
