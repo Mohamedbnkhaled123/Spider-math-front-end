@@ -123,4 +123,53 @@ describe('BrandHeaderComponent', () => {
       expect(portal.portalMode()).toBe('developer');
     });
   });
+
+  describe('Default-Enabled Notifications Without Login Prompt', () => {
+    it('should have live notifications enabled by default and never render the Allow / Do not allow permission banner', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+
+      spyOn(component.authService, 'isAuthenticated').and.returnValue(true);
+      component.notificationsService.permissionStatus.set('default');
+      fixture.detectChanges();
+
+      expect(component.notificationsService.notificationsEnabled()).toBeTrue();
+      expect(component.notificationsService.isPromptDismissed()).toBeTrue();
+
+      const headerText = (fixture.nativeElement as HTMLElement).textContent || '';
+      expect(headerText).not.toContain('السماح');
+      expect(headerText).not.toContain("Don't allow");
+    });
+
+    it('should toggle live alerts preference and display live in-app notification toast without browser permission', () => {
+      const fixture = TestBed.createComponent(BrandHeaderComponent);
+      const component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      component.notificationsService.activeToastNotification.set({
+        _id: 'notif_live_1',
+        alert_category: 'STUDENT_HOMEWORK_GRADED',
+        title_ar: 'تم تصحيح الواجب',
+        title_en: 'Homework Graded',
+        body_ar: 'تم رصد درجتك وملاحظات المعلمة.',
+        body_en: 'Your score and teacher feedback are ready.',
+        action_url: '/student',
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+      fixture.detectChanges();
+
+      const toast = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="live-notif-toast"]');
+      expect(toast).toBeTruthy();
+
+      component.dismissLiveToast();
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="live-notif-toast"]')).toBeNull();
+
+      component.toggleNotificationsEnabled();
+      expect(component.notificationsService.notificationsEnabled()).toBeFalse();
+      component.toggleNotificationsEnabled();
+      expect(component.notificationsService.notificationsEnabled()).toBeTrue();
+    });
+  });
 });

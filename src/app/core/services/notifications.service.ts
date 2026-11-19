@@ -24,13 +24,16 @@ export class NotificationsService {
   readonly isDropdownOpen = signal<boolean>(false);
   readonly permissionStatus = signal<NotificationPermission>('default');
   readonly isSupported = signal<boolean>(false);
-  readonly isPromptDismissed = signal<boolean>(false);
+  readonly isPromptDismissed = signal<boolean>(true);
+  readonly notificationsEnabled = signal<boolean>(true);
+  readonly activeToastNotification = signal<INotificationItem | null>(null);
   readonly isServiceWorkerReady = signal<boolean>(false);
 
   // Internal tracking
   private knownNotificationIds = new Set<string>();
   private isInitialLoadDone = false;
   private pollingTimer: ReturnType<typeof setInterval> | null = null;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -39,10 +42,13 @@ export class NotificationsService {
         this.permissionStatus.set(Notification.permission);
       }
 
-      // Check if user previously dismissed banner in this session
-      const dismissed = sessionStorage.getItem('spider_notif_prompt_dismissed');
-      if (dismissed === 'true') {
-        this.isPromptDismissed.set(true);
+      try {
+        const savedPref = localStorage.getItem('spider_notif_enabled');
+        if (savedPref === 'false') {
+          this.notificationsEnabled.set(false);
+        }
+      } catch {
+        // Ignore storage read errors
       }
 
       this.ngZone.runOutsideAngular(() => {
@@ -122,7 +128,51 @@ export class NotificationsService {
   }
 
   /**
-   * Dismisses the top floating notification prompt banner for the current session.
+   * Toggles in-app live notifications (sound chime + floating toast alerts).
+   * Enabled by default for all users without any permission prompt.
+   */
+  toggleNotificationsEnabled(): void {
+    const next = !this.notificationsEnabled();
+    this.notificationsEnabled.set(next);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('spider_notif_enabled', next ? 'true' : 'false');
+      } catch {
+        // Ignore storage write errors
+      }
+    }
+    if (!next) {
+      this.dismissToast();
+    }
+  }
+
+  /**
+   * Displays an in-app toast alert for newly received notifications.
+   */
+  private triggerToastAlert(notif: INotificationItem): void {
+    this.activeToastNotification.set(notif);
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      this.activeToastNotification.set(null);
+      this.toastTimer = null;
+    }, 6500);
+  }
+
+  /**
+   * Dismisses the currently visible live notification toast.
+   */
+  dismissToast(): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
+    this.activeToastNotification.set(null);
+  }
+
+  /**
+   * Dismisses the notification prompt flag for the current session.
    */
   dismissPrompt(): void {
     this.isPromptDismissed.set(true);
@@ -150,11 +200,14 @@ export class NotificationsService {
     body: string;
     url?: string;
     tag?: string;
+    playChime?: boolean;
   }): Promise<void> {
     if (!isPlatformBrowser(this.platformId) || !('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
 
-    this.playNotificationChime();
+    if (opts.playChime !== false) {
+      this.playNotificationChime();
+    }
 
     const title = opts.title || 'Spider Math Platform';
     const notifOptions: NotificationOptions = {
@@ -262,20 +315,28 @@ export class NotificationsService {
           const incomingList = data.notifications || [];
           const newUnreadCount = data.unreadCount ?? 0;
 
-          // If this is a subsequent poll, detect newly arrived unread notifications
-          if (this.isInitialLoadDone && this.permissionStatus() === 'granted') {
+          // If this is a subsequent poll, detect newly arrived unread notifications and alert by default
+          if (this.isInitialLoadDone && this.notificationsEnabled()) {
             const newlyArrived = incomingList.filter(
               (n) => !n.is_read && !this.knownNotificationIds.has(n._id)
             );
 
-            // Dispatch real browser notification for newly arrived items
-            for (const notif of newlyArrived) {
-              this.showRealBrowserNotification({
-                title: notif.title_ar || notif.title_en || 'Spider Math',
-                body: notif.body_ar || notif.body_en || 'لديك تنبيه جديد في منصة سبايدر ماث',
-                url: notif.action_url || '/',
-                tag: notif._id
-              });
+            if (newlyArrived.length > 0) {
+              this.playNotificationChime();
+              this.triggerToastAlert(newlyArrived[0]);
+
+              // Dispatch native browser notification as well if browser permission was granted
+              if (this.permissionStatus() === 'granted') {
+                for (const notif of newlyArrived) {
+                  this.showRealBrowserNotification({
+                    title: notif.title_ar || notif.title_en || 'Spider Math',
+                    body: notif.body_ar || notif.body_en || 'لديك تنبيه جديد في منصة سبايدر ماث',
+                    url: notif.action_url || '/',
+                    tag: notif._id,
+                    playChime: false
+                  });
+                }
+              }
             }
           }
 

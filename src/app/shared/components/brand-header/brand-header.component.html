@@ -1,31 +1,4 @@
 <header class="header-glass-bar transition-colors duration-300 sticky top-0 z-layer-header w-full">
-  
-  <!-- Real Web Notifications Permission Request Banner (Solid Flat Background, No Descriptive Text, Allow & Disallow Actions Only) -->
-  @if (authService.isAuthenticated() && notificationsService.permissionStatus() === 'default' && !notificationsService.isPromptDismissed()) {
-    <div class="bg-surface-card border-b border-surface-border text-text-primary px-4 py-2 text-xs flex items-center justify-center sm:justify-end gap-3 shadow-sm animate-fade-in relative z-50">
-      <div class="flex items-center gap-2">
-        <app-icon name="bell" [size]="16" className="text-brand-gold shrink-0" />
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          (click)="requestPermission()"
-          class="px-4 py-1.5 rounded-xl bg-brand-primary text-white hover:bg-brand-primary-hover font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-        >
-          <app-icon name="check" [size]="12" />
-          <span>{{ langService.isArabic() ? 'السماح' : 'Allow' }}</span>
-        </button>
-        <button
-          type="button"
-          (click)="dismissNotificationBanner()"
-          class="px-4 py-1.5 rounded-xl border border-surface-border bg-surface-bg hover:bg-surface-secondary text-text-secondary hover:text-text-primary font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-        >
-          <app-icon name="x" [size]="12" />
-          <span>{{ langService.isArabic() ? 'رفض' : 'Don\'t allow' }}</span>
-        </button>
-      </div>
-    </div>
-  }
 
   <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4 w-full min-w-0">
     
@@ -188,7 +161,7 @@
             class="notifications-dropdown absolute top-full right-0 rtl:right-auto rtl:left-0 mt-3 w-80 sm:w-96 rounded-2xl border border-surface-border bg-surface-card shadow-2xl z-layer-header-dropdown overflow-hidden animate-fade-in"
           >
             <!-- Dropdown Header -->
-            <div class="p-3.5 border-b border-surface-border flex items-center justify-between bg-surface-secondary/50">
+            <div class="p-3.5 border-b border-surface-border flex items-center justify-between gap-2 bg-surface-secondary/50">
               <div class="flex items-center gap-2">
                 <app-icon name="bell" [size]="16" className="text-brand-gold" />
                 <span class="text-xs font-black text-text-primary">
@@ -196,15 +169,27 @@
                 </span>
               </div>
 
-              @if (notificationsService.unreadCount() > 0) {
+              <div class="flex items-center gap-2">
                 <button
                   type="button"
-                  (click)="markAllRead()"
-                  class="text-[11px] font-bold text-brand-gold hover:underline cursor-pointer"
+                  (click)="toggleNotificationsEnabled()"
+                  data-testid="toggle-live-notifications-btn"
+                  class="p-1.5 rounded-lg border border-surface-border/70 bg-surface-bg hover:border-brand-gold/50 text-text-secondary hover:text-brand-gold transition-colors cursor-pointer flex items-center justify-center"
+                  [title]="notificationsService.notificationsEnabled() ? (langService.isArabic() ? 'كتم التنبيهات الصوتية والمنبثقة' : 'Mute live alerts') : (langService.isArabic() ? 'تفعيل التنبيهات الصوتية والمنبثقة' : 'Enable live alerts')"
                 >
-                  {{ langService.isArabic() ? 'قراءة الكل' : 'Mark all read' }}
+                  <app-icon [name]="notificationsService.notificationsEnabled() ? 'volume-2' : 'volume-x'" [size]="13" />
                 </button>
-              }
+
+                @if (notificationsService.unreadCount() > 0) {
+                  <button
+                    type="button"
+                    (click)="markAllRead()"
+                    class="text-[11px] font-bold text-brand-gold hover:underline cursor-pointer"
+                  >
+                    {{ langService.isArabic() ? 'قراءة الكل' : 'Mark all read' }}
+                  </button>
+                }
+              </div>
             </div>
 
             <!-- Notifications List -->
@@ -444,6 +429,35 @@
           </button>
         </div>
       }
+    </div>
+  }
+
+  <!-- Live Default In-App Notification Toast -->
+  @if (notificationsService.activeToastNotification(); as liveNotif) {
+    <div
+      data-testid="live-notif-toast"
+      (click)="onLiveToastClick(liveNotif)"
+      class="fixed bottom-5 end-4 sm:end-6 z-layer-modal w-[calc(100vw-2rem)] max-w-sm p-4 rounded-2xl border border-brand-gold/40 bg-surface-card/95 backdrop-blur-xl shadow-2xl flex items-start gap-3 cursor-pointer animate-fade-in hover:border-brand-gold transition-all"
+    >
+      <div class="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold flex items-center justify-center shrink-0">
+        <app-icon name="bell" [size]="16" />
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-black text-text-primary truncate">
+          {{ langService.isArabic() ? liveNotif.title_ar : liveNotif.title_en }}
+        </p>
+        <p class="text-[11px] text-text-secondary line-clamp-2 mt-0.5 leading-relaxed">
+          {{ langService.isArabic() ? liveNotif.body_ar : liveNotif.body_en }}
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="dismissLiveToast($event)"
+        class="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors cursor-pointer shrink-0"
+        [attr.aria-label]="langService.isArabic() ? 'إغلاق' : 'Close'"
+      >
+        <app-icon name="x" [size]="14" />
+      </button>
     </div>
   }
 

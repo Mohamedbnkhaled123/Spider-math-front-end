@@ -155,16 +155,20 @@ export class BrandHeaderComponent implements OnInit, OnDestroy {
     this.notificationsService.markAllAsRead().subscribe();
   }
 
-  requestPermission(): void {
-    this.notificationsService.requestNotificationPermission();
+  toggleNotificationsEnabled(): void {
+    this.notificationsService.toggleNotificationsEnabled();
   }
 
-  sendTestNotification(): void {
-    this.notificationsService.sendTestNotification();
+  dismissLiveToast(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsService.dismissToast();
   }
 
-  dismissNotificationBanner(): void {
-    this.notificationsService.dismissPrompt();
+  onLiveToastClick(notif: INotificationItem): void {
+    this.notificationsService.dismissToast();
+    this.onNotificationClick(notif);
   }
 
   copyHaCode(code: string, event?: Event): void {
