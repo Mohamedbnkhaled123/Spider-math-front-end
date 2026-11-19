@@ -923,8 +923,8 @@
                                   (change)="setCorrectOption(q, $index)"
                                   class="w-4 h-4 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
                                 />
-                                <span class="font-mono font-bold text-xs" [class.text-emerald-500]="q.correct_option_index === $index">
-                                  {{ ['A', 'B', 'C', 'D'][$index] || ($index + 1) }}
+                                <span class="font-mono font-bold text-xs lowercase shrink-0" [class.text-emerald-500]="q.correct_option_index === $index">
+                                  {{ ['a:', 'b:', 'c:', 'd:'][$index] || (($index + 1) + ':') }}
                                 </span>
                               </label>
                             </div>

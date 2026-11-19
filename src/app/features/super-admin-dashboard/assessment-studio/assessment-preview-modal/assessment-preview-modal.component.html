@@ -209,6 +209,10 @@
                         }
                       </div>
 
+                      <span class="font-bold font-mono text-xs lowercase shrink-0 text-text-muted" [class.text-brand-primary]="isOptionSelected(q.id, optIdx)">
+                        {{ ['a:', 'b:', 'c:', 'd:'][optIdx] || ((optIdx + 1) + ':') }}
+                      </span>
+
                       <div class="text-xs sm:text-sm font-bold text-text-primary">
                         <app-math-formula [text]="opt" />
                       </div>
@@ -584,6 +588,9 @@
                           [class.text-text-secondary]="optIdx !== q.correctOptionIndex && optIdx !== selectedMcqAnswers()[q.id]"
                         >
                           <div class="flex items-center gap-2">
+                            <span class="font-bold font-mono text-xs lowercase shrink-0 text-text-muted" [class.text-emerald-600]="optIdx === q.correctOptionIndex">
+                              {{ ['a:', 'b:', 'c:', 'd:'][optIdx] || ((optIdx + 1) + ':') }}
+                            </span>
                             @if (optIdx === q.correctOptionIndex) {
                               <app-icon name="check-circle" [size]="14" className="text-emerald-500 shrink-0" />
                             } @else if (optIdx === selectedMcqAnswers()[q.id]) {

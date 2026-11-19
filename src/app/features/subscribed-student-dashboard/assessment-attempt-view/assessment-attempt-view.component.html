@@ -266,6 +266,10 @@
                   }
                 </div>
 
+                <span class="font-bold font-mono text-xs lowercase shrink-0 text-text-muted" [class.text-brand-gold]="isOptionSelected(opt.optionIndex)">
+                  {{ ['a:', 'b:', 'c:', 'd:'][opt.optionIndex] || ((opt.optionIndex + 1) + ':') }}
+                </span>
+
                 <span class="text-xs sm:text-sm font-bold text-text-primary">
                   <app-math-formula [text]="opt.textAr" />
                 </span>

@@ -1257,7 +1257,7 @@
                       [class.bg-surface-card]="optIdx !== q.selectedOptionIndex && optIdx !== q.correctOptionIndex"
                     >
                       <div class="flex items-center gap-2">
-                        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold font-mono border"
+                        <span class="px-1.5 py-0.5 rounded-md flex items-center justify-center text-[10px] font-bold font-mono border lowercase shrink-0"
                           [class.bg-emerald-500]="optIdx === q.correctOptionIndex"
                           [class.text-white]="optIdx === q.correctOptionIndex"
                           [class.border-emerald-600]="optIdx === q.correctOptionIndex"
@@ -1265,7 +1265,7 @@
                           [class.text-white]="optIdx === q.selectedOptionIndex && optIdx !== q.correctOptionIndex"
                           [class.border-rose-600]="optIdx === q.selectedOptionIndex && optIdx !== q.correctOptionIndex"
                         >
-                          {{ optIdx + 1 }}
+                          {{ ['a:', 'b:', 'c:', 'd:'][optIdx] || ((optIdx + 1) + ':') }}
                         </span>
                         <app-math-formula [text]="opt" />
                       </div>

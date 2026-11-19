@@ -391,6 +391,9 @@ describe('InteractiveGradingStudioComponent', () => {
 
   describe('Half-Point Preservation & Question Image Isolation', () => {
     it('should isolate Question 8 and Question 9 images and preserve 0.5 half-point grades over stale essay_manual_score', () => {
+      // Flush initial load queued by ngOnInit if unfulfilled
+      httpMock.match('/api/v1/admin/submissions').forEach((r) => r.flush({ success: true, data: { submissions: [], stats: {} } }));
+
       component.fetchAllSubmissions(true);
       const req = httpMock.expectOne('/api/v1/admin/submissions');
       req.flush({

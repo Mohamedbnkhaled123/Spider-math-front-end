@@ -57,6 +57,7 @@ import { ScheduleAlarmPickerComponent } from '../../../shared/components/schedul
 import { MathFormulaComponent } from '../../../shared/components/math-formula/math-formula.component';
 import { MathVirtualKeyboardComponent } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.component';
 import { toVisualMath, stripLatexDelimiters } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
+import { cleanOptionText, getMcqOptionLabel } from '../../../shared/utils/option-formatter.util';
 import { AiQuestionExtractionModalComponent } from './ai-question-extraction-modal/ai-question-extraction-modal.component';
 import { ICachedFileSession } from './ai-question-extraction-modal/ai-question-extraction-modal.models';
 import { ManualImageSlicerModalComponent } from '../../../shared/components/manual-image-slicer-modal/manual-image-slicer-modal.component';
@@ -621,6 +622,8 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   readonly newQuestionYoutubeUrl = signal<string>('');
   readonly newQuestionSolutionType = signal<'VIDEO' | 'POST'>('VIDEO');
   readonly editingQuestionId = signal<string | null>(null);
+  readonly cleanOptionText = cleanOptionText;
+  readonly getMcqOptionLabel = getMcqOptionLabel;
 
   // Multi-Module Questions Filtering in Studio
   readonly moduleFilterTab = signal<'ALL' | 1 | 2>('ALL');
@@ -1153,7 +1156,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     const sanitizeMcq = (rawOpts: string[] | undefined, rawCorrectIdx: number | undefined): { options: string[]; correctIndex: number } => {
       const seen = new Set<string>();
-      const trimmed = (rawOpts || []).map((o) => (o || '').trim());
+      const trimmed = (rawOpts || []).map((o) => cleanOptionText(o).trim());
       const selectedText = typeof rawCorrectIdx === 'number' && rawCorrectIdx >= 0 && rawCorrectIdx < trimmed.length ? trimmed[rawCorrectIdx] : '';
       const uniqueOpts: string[] = [];
       let mappedCorrect = -1;
@@ -2334,9 +2337,9 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
 
     if (typeof document !== 'undefined') {
       setTimeout(() => {
-        const composerEl = document.getElementById('questionComposerSection');
-        if (composerEl) {
-          composerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const questionCard = document.getElementById(`question-card-${q.id}`);
+        if (questionCard) {
+          questionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }, 50);
     }
@@ -2350,7 +2353,16 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
   }
 
   cancelQuestionEdit(): void {
+    const editId = this.editingQuestionId();
     this.resetQuestionForm();
+    if (editId && typeof document !== 'undefined') {
+      setTimeout(() => {
+        const questionCard = document.getElementById(`question-card-${editId}`);
+        if (questionCard) {
+          questionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 50);
+    }
     this.toastTriggered.emit({
       text: this.langService.isArabic() ? 'تم إلغاء التعديل' : 'Edit cancelled',
       type: 'warning'
@@ -2433,7 +2445,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       type: this.newQuestionType(),
       textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
       questionImageUrl: this.newQuestionImageUrl(),
-      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
+      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => cleanOptionText(o).trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
       acceptedAnswers: this.newQuestionType() === 'INPUT_TEXT'
         ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean)
@@ -2469,6 +2481,16 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       text: this.langService.isArabic() ? 'تم حفظ السؤال' : 'Question saved',
       type: 'success'
     });
+
+    if (typeof document !== 'undefined' && editId) {
+      setTimeout(() => {
+        const questionCard = document.getElementById(`question-card-${editId}`);
+        if (questionCard) {
+          questionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 50);
+    }
+
     return true;
   }
 
@@ -2537,7 +2559,7 @@ export class AssessmentStudioComponent implements OnInit, OnDestroy {
       type: this.newQuestionType(),
       textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
       questionImageUrl: this.newQuestionImageUrl(),
-      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => o.trim()) : [],
+      options: this.newQuestionType() === 'MCQ' ? this.newQuestionOptions().map((o) => cleanOptionText(o).trim()) : [],
       correctOptionIndex: this.newQuestionType() === 'MCQ' ? this.newQuestionCorrectIndex() : -1,
       acceptedAnswers: this.newQuestionType() === 'INPUT_TEXT'
         ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean)

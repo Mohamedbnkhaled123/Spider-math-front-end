@@ -503,6 +503,16 @@
                       }
                     </div>
 
+                    <span
+                      class="font-bold font-mono text-xs lowercase shrink-0"
+                      [ngClass]="{
+                        'text-brand-gold font-black': selectedAnswers()[activeQ.question_id] === optIdx,
+                        'text-text-muted': selectedAnswers()[activeQ.question_id] !== optIdx
+                      }"
+                    >
+                      {{ ['a:', 'b:', 'c:', 'd:'][optIdx] || ((optIdx + 1) + ':') }}
+                    </span>
+
                     <!-- Option Text -->
                     <span
                       class="text-sm font-bold flex-1"

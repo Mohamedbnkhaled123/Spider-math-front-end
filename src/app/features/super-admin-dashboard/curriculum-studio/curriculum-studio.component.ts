@@ -48,6 +48,7 @@ import {
   stripLatexDelimiters,
   toVisualMath
 } from '../../../shared/components/math-virtual-keyboard/math-virtual-keyboard.models';
+import { cleanOptionText, getMcqOptionLabel } from '../../../shared/utils/option-formatter.util';
 import {
   AcademicTermCode,
   AssessmentAdminItem,
@@ -993,6 +994,8 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
   // Active Question Editing (R2) & New Question Form within Assessment Builder
   readonly editingQuestionId = signal<string | null>(null);
+  readonly cleanOptionText = cleanOptionText;
+  readonly getMcqOptionLabel = getMcqOptionLabel;
   readonly newQuestionType = signal<'MCQ' | 'INPUT_TEXT' | 'ESSAY'>('MCQ');
   readonly newQuestionTextAr = signal<string>('');
   readonly newQuestionImageUrl = signal<string | null>(null);
@@ -3498,9 +3501,9 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
 
     if (typeof document !== 'undefined') {
       setTimeout(() => {
-        const composerEl = document.getElementById('curriculumQuestionComposer');
-        if (composerEl) {
-          composerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const questionEl = document.getElementById(`curriculum-question-${targetId}`);
+        if (questionEl) {
+          questionEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }, 50);
     }
@@ -3514,6 +3517,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
   }
 
   cancelQuestionEdit(preserveModule = false): void {
+    const editId = this.editingQuestionId();
     this.isMathKeyboardOpen.set(false);
     this.mathKeyboardTarget.set(null);
     this.newQuestionTextAr.set('');
@@ -3528,6 +3532,14 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       this.newQuestionModuleIndex.set(filter === 2 ? 2 : 1);
     }
     this.editingQuestionId.set(null);
+    if (editId && typeof document !== 'undefined') {
+      setTimeout(() => {
+        const questionEl = document.getElementById(`curriculum-question-${editId}`);
+        if (questionEl) {
+          questionEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 50);
+    }
   }
 
   addQuestionToAssessment(): void {
@@ -3595,7 +3607,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         type: qType,
         textAr: text || (this.langService.isArabic() ? 'مسألة رياضية مصورة' : 'Visual Math Problem'),
         questionImageUrl: this.newQuestionImageUrl(),
-        options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
+        options: isMcq ? this.newQuestionOptions().map((o) => cleanOptionText(o).trim()) : [],
         correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
         acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
         points: this.newQuestionPoints(),
@@ -3618,9 +3630,18 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         this.autoRegradeWarning.set(true);
       }
 
+      const editedTargetId = editId;
       this.cancelQuestionEdit(true);
       this.triggerDraftAutoSave(true);
       this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
+      if (typeof document !== 'undefined' && editedTargetId) {
+        setTimeout(() => {
+          const questionEl = document.getElementById(`curriculum-question-${editedTargetId}`);
+          if (questionEl) {
+            questionEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 50);
+      }
 
       this.toastTriggered.emit({
         text: this.langService.isArabic() ? 'تم تحديث السؤال بنجاح' : 'Question updated successfully',
@@ -3634,7 +3655,7 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
         type: qType,
         textAr: text || 'مسألة رياضية مصورة',
         questionImageUrl: this.newQuestionImageUrl(),
-        options: isMcq ? this.newQuestionOptions().map((o) => o.trim()) : [],
+        options: isMcq ? this.newQuestionOptions().map((o) => cleanOptionText(o).trim()) : [],
         correctOptionIndex: isMcq ? this.newQuestionCorrectIndex() : 0,
         acceptedAnswers: isInputText ? this.newQuestionAcceptedAnswers().map((a) => a.trim()).filter(Boolean) : undefined,
         points: this.newQuestionPoints(),
@@ -3649,9 +3670,18 @@ export class CurriculumStudioComponent implements OnInit, OnDestroy {
       this.activeAssessment.set(updatedAsm);
       this.assessmentSaved.emit(updatedAsm);
 
+      const editedTargetId = editId;
       this.cancelQuestionEdit(true);
       this.triggerDraftAutoSave(true);
       this.autoPersistCurriculumAssessmentToBackend(updatedAsm);
+      if (typeof document !== 'undefined' && editedTargetId) {
+        setTimeout(() => {
+          const questionEl = document.getElementById(`curriculum-question-${editedTargetId}`);
+          if (questionEl) {
+            questionEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 50);
+      }
 
       this.toastTriggered.emit({ text: 'تمت إضافة السؤال', type: 'success' });
     }
