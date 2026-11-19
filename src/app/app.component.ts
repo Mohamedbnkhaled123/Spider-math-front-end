@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
 import {
   RouterOutlet,
   Router,
@@ -42,7 +42,7 @@ import { SeoMetaService } from './core/seo-theme-i18n/seo-meta.service';
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   readonly langService = inject(LangService);
   readonly themeService = inject(ThemeService);
   readonly confirmDialogService = inject(ConfirmDialogService);
@@ -52,6 +52,8 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private speedInsightsHandler: ReturnType<typeof injectSpeedInsights> | null = null;
+  private navSkeletonTimer: ReturnType<typeof setTimeout> | null = null;
+  private hasCompletedInitialNav = false;
 
   readonly isExamOrQuizPage = signal<boolean>(false);
   readonly isRouteNavigating = signal<boolean>(false);
@@ -63,33 +65,42 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.speedInsightsHandler = injectSpeedInsights({ framework: 'angular' });
+      // Defer analytics injection until browser idle so it never competes with initial LCP/TBT
+      const initSpeedInsights = () => {
+        if (!this.speedInsightsHandler) {
+          this.speedInsightsHandler = injectSpeedInsights({ framework: 'angular' });
+          if (this.router.url) {
+            this.speedInsightsHandler?.setRoute(this.router.url);
+          }
+        }
+      };
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(initSpeedInsights, { timeout: 3000 });
+      } else {
+        setTimeout(initSpeedInsights, 2000);
+      }
     }
 
     this.seoMetaService.setDefaultPlatformSeo(this.langService.currentLang());
     this.checkIsExamPage(this.router.url);
 
-    // Detect if initial route navigation is in progress during bootstrap
-    const currentNav = this.router.getCurrentNavigation();
-    if (currentNav) {
-      this.isRouteNavigating.set(true);
-      const url = currentNav.initialUrl?.toString() || currentNav.extractedUrl?.toString() || '';
-      if (url) {
-        this.navigatingUrl.set(url);
-      }
-    }
-
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
-        this.navigatingUrl.set(event.url);
-        this.isRouteNavigating.set(true);
+        if (this.hasCompletedInitialNav) {
+          this.navigatingUrl.set(event.url);
+          this.scheduleRouteSkeleton();
+        }
       } else if (event instanceof RouteConfigLoadStart) {
-        this.isRouteNavigating.set(true);
+        if (this.hasCompletedInitialNav) {
+          this.scheduleRouteSkeleton();
+        }
       } else if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
+        this.hasCompletedInitialNav = true;
+        this.clearRouteSkeletonTimer();
         if (event instanceof NavigationEnd) {
           const activeUrl = event.urlAfterRedirects || event.url;
           this.checkIsExamPage(activeUrl);
@@ -105,6 +116,26 @@ export class AppComponent implements OnInit {
         this.isRouteNavigating.set(false);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.clearRouteSkeletonTimer();
+  }
+
+  private scheduleRouteSkeleton(): void {
+    if (this.isRouteNavigating() || this.navSkeletonTimer !== null) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.navSkeletonTimer = setTimeout(() => {
+      this.navSkeletonTimer = null;
+      this.isRouteNavigating.set(true);
+    }, 120);
+  }
+
+  private clearRouteSkeletonTimer(): void {
+    if (this.navSkeletonTimer !== null) {
+      clearTimeout(this.navSkeletonTimer);
+      this.navSkeletonTimer = null;
+    }
   }
 
   private checkIsExamPage(url: string): void {

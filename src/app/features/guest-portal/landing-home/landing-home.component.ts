@@ -277,10 +277,10 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly heroHeadline = computed<string>(() => {
     const data = this.landingData();
     if (this.langService.isArabic()) {
-      return data?.heroHeadlineAr?.trim() || 'التميز\nالرياضي الهندسي\nالمتقدم';
+      return data?.heroHeadlineAr?.trim() || 'التميز الرياضي المتقدم';
     }
 
-    return data?.heroHeadlineEn?.trim() || 'Advanced\nMathematics\nMastery';
+    return data?.heroHeadlineEn?.trim() || 'Advanced Mathematics Mastery';
   });
   readonly heroHeadlineLines = computed<string[]>(() => {
     return this.heroHeadline()
@@ -291,10 +291,10 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly heroSubheadline = computed<string>(() => {
     const data = this.landingData();
     if (this.langService.isArabic()) {
-      return data?.heroSubheadlineAr?.trim() || 'إعداد جامعي وتميز أكاديمي\n(الثانوية العامة • IGCSE • SAT)';
+      return data?.heroSubheadlineAr?.trim() || 'إعداد جامعي وتميز لطلاب الثانوية العامة والأنظمة الدولية (الثانوية العامة • IGCSE • SAT)';
     }
 
-    return data?.heroSubheadlineEn?.trim() || 'University-Prep & Academic Excellence\n(Thanweya Amma • IGCSE • SAT)';
+    return data?.heroSubheadlineEn?.trim() || 'University-Prep & High School Excellence (Thanweya Amma • IGCSE • SAT)';
   });
   readonly aboutHeadlineLines = computed<string[]>(() => {
     const data = this.landingData();
@@ -806,15 +806,9 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (!isPlatformBrowser(this.platformId)) {
-      this.discoveryService.getLandingData().subscribe({
-        next: data => {
-          this.landingData.set(data);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.isLoading.set(false);
-        }
-      });
+      // During SSR/SSG prerendering, use synchronous default landing data (already synced to CMS)
+      // to prevent failed relative /api calls on build hosts and guarantee zero hydration CLS.
+      this.isLoading.set(false);
     } else {
       // In browser: Initial Hero is rendered instantly from getDefaultLandingData().
       // Defer API call until idle so it does not chain into critical path before LCP.
@@ -837,7 +831,7 @@ export class LandingHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    if (!isPlatformBrowser(this.platformId) || typeof IntersectionObserver === 'undefined') {
+    if (isPlatformBrowser(this.platformId) && typeof IntersectionObserver === 'undefined') {
       this.loadTestimonials();
     }
   }

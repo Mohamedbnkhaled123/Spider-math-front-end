@@ -15,12 +15,13 @@ const stylesFile = files.find((f) => /^styles(?:-[A-Za-z0-9_-]+)?\.css$/.test(f)
 const polyfillsFile = files.find((f) => /^polyfills(?:-[A-Za-z0-9_-]+)?\.js$/.test(f));
 const mainFile = files.find((f) => /^main(?:-[A-Za-z0-9_-]+)?\.js$/.test(f));
 
-function collectCriticalModulePreloads() {
+function collectCriticalModulePreloads(includeLandingRoute = true) {
+  // Keep modulepreload strictly lean (main + optional landing route entry chunk) so slow 4G
+  // connections don't saturate bandwidth with 20+ JS chunks ahead of FCP/LCP image & CSS.
   const preloads = new Set();
   if (mainFile) preloads.add(mainFile);
 
-  // Preload entry route chunk for landing-home without chaining deep subchunks
-  if (mainFile) {
+  if (includeLandingRoute && mainFile) {
     const mainContent = fs.readFileSync(path.join(browserDir, mainFile), 'utf8');
     const dynMatch = mainContent.match(/import\(\s*["']\.\/(chunk-[A-Za-z0-9_-]+\.js)["']\s*\)/);
     if (dynMatch && dynMatch[1]) {
@@ -31,32 +32,57 @@ function collectCriticalModulePreloads() {
   return Array.from(preloads);
 }
 
-const criticalPreloads = collectCriticalModulePreloads();
+const criticalPreloads = collectCriticalModulePreloads(true);
+const coreOnlyPreloads = collectCriticalModulePreloads(false);
 
-function injectBundles(html) {
+function injectBundles(html, preloads = criticalPreloads, options = {}) {
+  const { blockingStyles = false } = options;
   let updated = html;
 
   if (stylesFile) {
-    const nonBlockingCss = `  <link rel="preload" href="/${stylesFile}" as="style">\n  <link rel="stylesheet" href="/${stylesFile}" media="print" onload="this.media='all'">\n  <noscript><link rel="stylesheet" href="/${stylesFile}"></noscript>`;
-    // Replace any existing blocking stylesheet link for stylesFile or inject before </head>
-    const blockingLinkRe = new RegExp(
-      `<link[^>]*rel=["']stylesheet["'][^>]*href=["']\\/?${stylesFile.replace('.', '\\.')}["'][^>]*>`,
-      'i'
-    );
-    if (!updated.includes(stylesFile)) {
-      updated = updated.replace('</head>', `${nonBlockingCss}\n</head>`);
-    } else if (blockingLinkRe.test(updated) && !updated.includes(`onload="this.media='all'"`)) {
-      updated = updated.replace(blockingLinkRe, nonBlockingCss.trim());
+    const escapedStyles = stylesFile.replace('.', '\\.');
+    if (blockingStyles) {
+      // On prerendered SSG pages, load the small (~16 KB gzipped) main stylesheet synchronously
+      // so the prerendered DOM paints 100% styled on frame 1 with zero FOUC and zero CLS.
+      const blockingCss = `  <link rel="stylesheet" href="/${stylesFile}">`;
+      if (!updated.includes(stylesFile)) {
+        updated = updated.replace('</head>', `${blockingCss}\n</head>`);
+      } else {
+        // Normalize any media="print" async trick back to standard blocking stylesheet on SSG page
+        updated = updated.replace(
+          new RegExp(`\\s*<link[^>]*rel=["']preload["'][^>]*href=["']\\/?${escapedStyles}["'][^>]*>`, 'gi'),
+          ''
+        );
+        updated = updated.replace(
+          new RegExp(`\\s*<noscript>\\s*<link[^>]*href=["']\\/?${escapedStyles}["'][^>]*>\\s*<\\/noscript>`, 'gi'),
+          ''
+        );
+        updated = updated.replace(
+          new RegExp(`<link[^>]*rel=["']stylesheet["'][^>]*href=["']\\/?${escapedStyles}["'][^>]*>`, 'gi'),
+          `<link rel="stylesheet" href="/${stylesFile}">`
+        );
+      }
+    } else {
+      const nonBlockingCss = `  <link rel="preload" href="/${stylesFile}" as="style">\n  <link rel="stylesheet" href="/${stylesFile}" media="print" onload="this.media='all'">\n  <noscript><link rel="stylesheet" href="/${stylesFile}"></noscript>`;
+      const blockingLinkRe = new RegExp(
+        `<link[^>]*rel=["']stylesheet["'][^>]*href=["']\\/?${escapedStyles}["'][^>]*>`,
+        'i'
+      );
+      if (!updated.includes(stylesFile)) {
+        updated = updated.replace('</head>', `${nonBlockingCss}\n</head>`);
+      } else if (blockingLinkRe.test(updated) && !updated.includes(`onload="this.media='all'"`)) {
+        updated = updated.replace(blockingLinkRe, nonBlockingCss.trim());
+      }
     }
-    // Ensure root-relative href for stylesFile
+    // Ensure root-relative href for stylesFile (works on nested routes like /topic/slug)
     updated = updated.replace(
-      new RegExp(`href=["']${stylesFile.replace('.', '\\.')}["']`, 'g'),
+      new RegExp(`href=["']${escapedStyles}["']`, 'g'),
       `href="/${stylesFile}"`
     );
   }
 
-  // Inject modulepreload links for critical chunks to flatten the network dependency waterfall
-  const preloadTags = criticalPreloads
+  // Inject lean modulepreload links for critical chunks
+  const preloadTags = preloads
     .filter((chunk) => !updated.includes(`href="/${chunk}"`) && !updated.includes(`href="${chunk}"`))
     .map((chunk) => `  <link rel="modulepreload" href="/${chunk}">`);
   if (preloadTags.length > 0) {
@@ -64,17 +90,25 @@ function injectBundles(html) {
   }
 
   const scriptsToInject = [];
-  if (polyfillsFile && !updated.includes(polyfillsFile)) {
+  if (polyfillsFile) {
+    updated = updated.replace(
+      new RegExp(`\\s*<script[^>]*src=["']\\/?${polyfillsFile.replace('.', '\\.')}["'][^>]*><\\/script>`, 'gi'),
+      ''
+    );
     scriptsToInject.push(`  <script type="module" src="/${polyfillsFile}"></script>`);
   }
-  if (mainFile && !updated.includes(`src="/${mainFile}"`) && !updated.includes(`src="${mainFile}"`)) {
+  if (mainFile) {
+    updated = updated.replace(
+      new RegExp(`\\s*<script[^>]*src=["']\\/?${mainFile.replace('.', '\\.')}["'][^>]*><\\/script>`, 'gi'),
+      ''
+    );
     scriptsToInject.push(`  <script type="module" src="/${mainFile}"></script>`);
   }
 
   if (scriptsToInject.length > 0) {
     updated = updated.replace(
       '</body>',
-      `${scriptsToInject.join('\n')}\n</body>`
+      `\n${scriptsToInject.join('\n')}\n</body>`
     );
   }
 
@@ -83,16 +117,35 @@ function injectBundles(html) {
 
 const csrPath = path.join(browserDir, 'index.csr.html');
 const indexPath = path.join(browserDir, 'index.html');
-const sourceHtmlPath = fs.existsSync(csrPath) ? csrPath : indexPath;
 
+let csrHtml = '';
+if (fs.existsSync(csrPath)) {
+  const rawCsrHtml = fs.readFileSync(csrPath, 'utf8');
+  csrHtml = injectBundles(rawCsrHtml, coreOnlyPreloads);
+  fs.writeFileSync(csrPath, csrHtml, 'utf8');
+}
+
+// Preserve prerendered SSG index.html for '/' (do NOT overwrite with CSR skeleton!)
 let finalHtml = '';
-if (fs.existsSync(sourceHtmlPath)) {
-  const rawHtml = fs.readFileSync(sourceHtmlPath, 'utf8');
-  finalHtml = injectBundles(rawHtml);
-  fs.writeFileSync(csrPath, finalHtml, 'utf8');
+if (fs.existsSync(indexPath)) {
+  const rawIndexHtml = fs.readFileSync(indexPath, 'utf8');
+  const isPrerendered = rawIndexHtml.includes('ng-server-context=') || rawIndexHtml.includes('<app-landing-home');
+  finalHtml = injectBundles(rawIndexHtml, criticalPreloads, { blockingStyles: isPrerendered });
   fs.writeFileSync(indexPath, finalHtml, 'utf8');
   console.log(
-    `[prepare-browser-index] Synced index.html & index.csr.html with bundles: ${[
+    `[prepare-browser-index] Processed ${isPrerendered ? 'PRERENDERED SSG' : 'CSR'} index.html & index.csr.html with bundles: ${[
+      stylesFile,
+      polyfillsFile,
+      mainFile,
+    ]
+      .filter(Boolean)
+      .join(', ')}`
+  );
+} else if (csrHtml) {
+  finalHtml = injectBundles(csrHtml, criticalPreloads);
+  fs.writeFileSync(indexPath, finalHtml, 'utf8');
+  console.log(
+    `[prepare-browser-index] Synced index.html from index.csr.html with bundles: ${[
       stylesFile,
       polyfillsFile,
       mainFile,
@@ -101,6 +154,8 @@ if (fs.existsSync(sourceHtmlPath)) {
       .join(', ')}`
   );
 }
+
+const seoBaseHtml = csrHtml || finalHtml;
 
 // Keep SSR server assets in sync as well
 const serverIndexHtmlPath = path.join(serverDir, 'index.server.html');
@@ -363,7 +418,9 @@ function generateStaticSeoPages(baseHtml) {
   console.log(`[prepare-browser-index] Successfully pre-rendered static HTML for ${pages.length} keywords & /topics!`);
 }
 
-if (typeof finalHtml !== 'undefined') {
+if (typeof seoBaseHtml !== 'undefined' && seoBaseHtml) {
+  generateStaticSeoPages(seoBaseHtml);
+} else if (typeof finalHtml !== 'undefined' && finalHtml) {
   generateStaticSeoPages(finalHtml);
 }
 

@@ -64,25 +64,27 @@
   <link
     rel="preload"
     as="style"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&family=Tajawal:wght@700;800;900&display=swap"
   >
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&family=Tajawal:wght@700;800;900&display=swap"
     media="print"
     onload="this.media='all'"
   >
   <noscript>
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@500;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&family=Tajawal:wght@700;800;900&display=swap"
     >
   </noscript>
   <link rel="dns-prefetch" href="https://i.ytimg.com">
   <meta name="theme-color" content="#2A1D37">
   <style id="spider-critical-css">
     *,::before,::after{box-sizing:border-box}
-    :root,.dark,[data-theme='dark']{--surface-bg-primary:#2A1D37;--surface-bg-secondary:#211931;--surface-bg-card:rgba(42,29,55,0.78);--surface-glass-header:rgba(33,25,49,0.90);--surface-gradient-bg:radial-gradient(circle at center,#342745 0%,#2A1D37 45%,#211931 70%,#120B1A 100%);--text-primary:#F8FAFC;--text-secondary:#D4C7E2;--text-muted:#9F8EB5;--color-brand-gold:#D4AF6A;--color-brand-primary:#D4AF6A;--surface-border:rgba(212,175,106,0.42);--font-arabic-heading:'Tajawal',system-ui,sans-serif;--font-arabic-body:'IBM Plex Sans Arabic',system-ui,sans-serif;--font-english:'Inter',system-ui,-apple-system,sans-serif}
+    @font-face{font-family:'Tajawal Fallback';src:local('Arial'),local('Segoe UI'),local('Tahoma');size-adjust:94%;ascent-override:92%;descent-override:32%;line-gap-override:0%}
+    @font-face{font-family:'IBM Plex Arabic Fallback';src:local('Segoe UI'),local('Arial'),local('Tahoma');size-adjust:99%;ascent-override:100%;descent-override:35%;line-gap-override:0%}
+    :root,.dark,[data-theme='dark']{--surface-bg-primary:#2A1D37;--surface-bg-secondary:#211931;--surface-bg-card:rgba(42,29,55,0.78);--surface-glass-header:rgba(33,25,49,0.90);--surface-gradient-bg:radial-gradient(circle at center,#342745 0%,#2A1D37 45%,#211931 70%,#120B1A 100%);--text-primary:#F8FAFC;--text-secondary:#D4C7E2;--text-muted:#9F8EB5;--color-brand-gold:#D4AF6A;--color-brand-primary:#D4AF6A;--surface-border:rgba(212,175,106,0.42);--font-arabic-heading:'Tajawal','Tajawal Fallback',system-ui,sans-serif;--font-arabic-body:'IBM Plex Sans Arabic','IBM Plex Arabic Fallback',system-ui,sans-serif;--font-english:'Inter',system-ui,-apple-system,sans-serif}
     .light,[data-theme='light']{--surface-bg-primary:#F8F1EB;--surface-bg-secondary:#F4EAE1;--surface-bg-card:rgba(250,243,237,0.88);--surface-glass-header:rgba(250,243,237,0.90);--surface-gradient-bg:linear-gradient(180deg,#FAF3ED 0%,#F8F1EB 50%,#F4EAE1 100%);--text-primary:#111629;--text-secondary:#3E4559;--text-muted:#6E7587;--color-brand-gold:#9E6F18;--color-brand-primary:#9E6F18;--surface-border:rgba(158,111,24,0.55)}
     html,body{margin:0;padding:0;min-height:100vh;background-color:var(--surface-bg-primary);color:var(--text-primary);font-family:var(--font-arabic-body);overflow-x:clip;width:100%;max-width:100%}
     img,svg,video,canvas{display:block;max-width:100%;height:auto}
@@ -99,30 +101,49 @@
     .justify-center{justify-content:center}
     .justify-between{justify-content:space-between}
     .relative{position:relative}
+    .absolute{position:absolute}
     .sticky{position:sticky}
     .fixed{position:fixed}
     .inset-0{inset:0px}
     .top-0{top:0px}
+    .z-0{z-index:0}
     .z-10{z-index:10}
     .z-50{z-index:50}
+    .pointer-events-none{pointer-events:none}
+    .select-none{user-select:none}
+    .text-center{text-align:center}
     .w-full{width:100%}
     .w-7{width:1.75rem}
     .h-7{height:1.75rem}
+    .w-8{width:2rem}
+    .h-8{height:2rem}
     .w-9{width:2.25rem}
     .h-9{height:2.25rem}
     .h-14{height:3.5rem}
+    .h-16{height:4rem}
     .h-auto{height:auto}
     .min-h-screen{min-height:100vh}
+    .max-w-md{max-width:28rem}
+    .max-w-2xl{max-width:42rem}
     .max-w-7xl{max-width:80rem}
     .max-w-\[360px\]{max-width:360px}
     .mx-auto{margin-left:auto;margin-right:auto}
+    .gap-10{gap:2.5rem}
+    .px-4{padding-left:1rem;padding-right:1rem}
+    .pt-6{padding-top:1.5rem}
+    .pt-8{padding-top:2rem}
+    .pb-16{padding-bottom:4rem}
+    .mb-6{margin-bottom:1.5rem}
+    .mb-8{margin-bottom:2rem}
     .aspect-square{aspect-ratio:1/1}
     .aspect-video{aspect-ratio:16/9}
     .overflow-hidden{overflow:hidden}
-    @keyframes spiderInitialShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-    .spider-skel-shimmer{background:linear-gradient(90deg,rgba(52,39,69,0.45) 0%,rgba(80,58,107,0.75) 50%,rgba(52,39,69,0.45) 100%);background-size:200% 100%;animation:spiderInitialShimmer 1.8s cubic-bezier(0.4,0,0.2,1) infinite;}
-    .spider-skel-gold{background:linear-gradient(90deg,rgba(212,175,106,0.12) 0%,rgba(212,175,106,0.32) 50%,rgba(212,175,106,0.12) 100%);background-size:200% 100%;animation:spiderInitialShimmer 1.8s cubic-bezier(0.4,0,0.2,1) infinite;}
-    @media(min-width:640px){.sm\:block{display:block}.sm\:hidden{display:none}.sm\:h-16{height:4rem}.sm\:w-10{width:2.5rem}.sm\:h-10{height:2.5rem}.sm\:max-w-\[440px\]{max-width:440px}}
+    .global-floating-math-layer,.mascot-lighting-glow{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+    .mascot-lighting-glow{position:absolute;inset:auto}
+    @keyframes spiderInitialPulse{0%,100%{opacity:0.55}50%{opacity:1}}
+    .spider-skel-shimmer{background:rgba(70,51,95,0.65);animation:spiderInitialPulse 1.6s ease-in-out infinite;will-change:opacity}
+    .spider-skel-gold{background:rgba(212,175,106,0.24);animation:spiderInitialPulse 1.6s ease-in-out infinite;will-change:opacity}
+    @media(min-width:640px){.sm\:block{display:block}.sm\:hidden{display:none}.sm\:h-16{height:4rem}.sm\:h-20{height:5rem}.sm\:w-10{width:2.5rem}.sm\:h-10{height:2.5rem}.sm\:w-11{width:2.75rem}.sm\:h-11{height:2.75rem}.sm\:max-w-\[440px\]{max-width:440px}}
     @media(min-width:1024px){.lg\:block{display:block}.lg\:hidden{display:none}.lg\:max-w-\[500px\]{max-width:500px}}
   </style>
 </head>

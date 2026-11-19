@@ -27,7 +27,6 @@ $axis-blue: #0284C7;
 .landing-home-root {
   background-color: transparent;
   color: var(--text-primary);
-  transition: color 0.3s ease;
 }
 
 :host-context([data-theme='light']) .landing-home-root,
@@ -468,19 +467,31 @@ $axis-blue: #0284C7;
 }
 
 
-// Mascot Gentle Float
+// Mascot Gentle Float (Strictly GPU-composited translate3d)
 @keyframes mascotGentleFloat {
   0%, 100% {
-    transform: translateY(0px);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translate3d(0, -8px, 0);
   }
 }
 
 .animate-mascot-float {
   animation: mascotGentleFloat 5s ease-in-out infinite;
   will-change: transform;
+  backface-visibility: hidden;
+}
+
+// Below-the-fold layout/style isolation for fast initial Hero LCP layout
+.landing-below-fold-section {
+  contain: layout style;
+}
+
+.landing-deep-section {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
 }
 
 // ------------------------------------------------------------------------------
