@@ -184,7 +184,7 @@
   </div>
 
   <!-- 2. Pure Landing Page CMS Editor (Zero SEO fields per RULES.md) -->
-  <div class="p-6 sm:p-8 rounded-3xl spider-rim-glass-card shadow-sm space-y-6">
+  <div class="p-4 sm:p-8 rounded-3xl spider-rim-glass-card shadow-sm space-y-6">
     
     <!-- Header with Bilingual Control Overview -->
     <div class="pb-5 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -413,7 +413,7 @@
         </div>
 
         <!-- 3. نبذة المعلمة ومؤهلاتها (Teacher Profile - عربي) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
             <h4>{{ langService.isArabic() ? 'نبذة المعلمة ومؤهلاتها' : 'Teacher Profile & Bio (Arabic)' }}</h4>
@@ -453,18 +453,19 @@
           <!-- قائمة المؤهلات والإنجازات (عربي) -->
           <div class="space-y-2 pt-2">
             <label class="block font-bold text-text-secondary">{{ langService.isArabic() ? 'المؤهلات والإنجازات:' : 'Key Qualifications & Achievements (Arabic):' }}</label>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 min-w-0" data-testid="qual-add-row-ar">
               <input
                 type="text"
                 [(ngModel)]="newQualAr"
                 (keydown.enter)="addQualificationAr()"
                 [placeholder]="langService.isArabic() ? 'اكتب مؤهلاً جديداً واضغط إضافة...' : 'Type qualification and press Add...'"
-                class="flex-1 px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
+                class="w-full sm:flex-1 min-w-0 px-3.5 py-2.5 sm:py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
               />
               <button
                 type="button"
                 (click)="addQualificationAr()"
-                class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+                data-testid="qual-add-btn-ar"
+                class="w-full sm:w-auto shrink-0 whitespace-nowrap inline-flex items-center justify-center px-4 py-2.5 sm:py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer transition-colors"
               >
                 {{ langService.isArabic() ? '+ إضافة مؤهل' : '+ Add Qualification' }}
               </button>
@@ -472,15 +473,15 @@
 
             <div class="space-y-1.5 pt-1">
               @for (q of editableCms().teacherQualificationsAr; track $index) {
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs">
-                  <span class="font-bold text-text-primary flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    <span>{{ q }}</span>
+                <div class="flex items-start sm:items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs min-w-0" data-testid="qual-item-ar">
+                  <span class="font-bold text-text-primary flex items-start sm:items-center gap-2 min-w-0 flex-1">
+                    <span class="text-emerald-500 shrink-0">✓</span>
+                    <span class="min-w-0 break-words leading-relaxed">{{ q }}</span>
                   </span>
                   <button
                     type="button"
                     (click)="removeQualificationAr($index)"
-                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer"
+                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer shrink-0 whitespace-nowrap"
                   >
                     {{ langService.isArabic() ? 'حذف' : 'Delete' }}
                   </button>
@@ -763,7 +764,7 @@
         </div>
 
         <!-- 3. Teacher Profile (English) -->
-        <div class="p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-bg space-y-4">
           <div class="flex items-center gap-2 text-purple-600 font-black text-sm pb-2 border-b border-surface-border">
             <app-icon name="user" [size]="16" />
             <h4>Teacher Profile & Qualifications (English)</h4>
@@ -803,18 +804,19 @@
           <!-- Qualifications Checklist (English) -->
           <div class="space-y-2 pt-2">
             <label class="block font-bold text-text-secondary">Key Qualifications & Milestones (English):</label>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 min-w-0" data-testid="qual-add-row-en">
               <input
                 type="text"
                 [(ngModel)]="newQualEn"
                 (keydown.enter)="addQualificationEn()"
                 placeholder="Add a new qualification and press Enter..."
-                class="flex-1 px-3.5 py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
+                class="w-full sm:flex-1 min-w-0 px-3.5 py-2.5 sm:py-2 rounded-xl border border-surface-border bg-surface-card text-xs text-text-primary"
               />
               <button
                 type="button"
                 (click)="addQualificationEn()"
-                class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+                data-testid="qual-add-btn-en"
+                class="w-full sm:w-auto shrink-0 whitespace-nowrap inline-flex items-center justify-center px-4 py-2.5 sm:py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer transition-colors"
               >
                 + Add Item
               </button>
@@ -822,15 +824,15 @@
 
             <div class="space-y-1.5 pt-1">
               @for (q of editableCms().teacherQualificationsEn; track $index) {
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs">
-                  <span class="font-bold text-text-primary flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    <span>{{ q }}</span>
+                <div class="flex items-start sm:items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-card border border-surface-border text-xs min-w-0" data-testid="qual-item-en">
+                  <span class="font-bold text-text-primary flex items-start sm:items-center gap-2 min-w-0 flex-1">
+                    <span class="text-emerald-500 shrink-0">✓</span>
+                    <span class="min-w-0 break-words leading-relaxed">{{ q }}</span>
                   </span>
                   <button
                     type="button"
                     (click)="removeQualificationEn($index)"
-                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer"
+                    class="text-rose-500 hover:text-rose-700 font-bold text-[11px] cursor-pointer shrink-0 whitespace-nowrap"
                   >
                     Remove
                   </button>
