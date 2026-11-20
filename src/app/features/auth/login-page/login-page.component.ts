@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID, NgZone } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -15,7 +15,8 @@ import {
   findGulfCountry,
   INTERNATIONAL_DIVISIONS_DATA,
   findInternationalDivision,
-  curriculumHasTerms
+  curriculumHasTerms,
+  detectInternationalDivisionForGrade
 } from '../../../core/constants/curriculum-tree.constant';
 import { EGYPT_GOVERNORATES } from '../../../core/constants/governorates.constant';
 import {
@@ -27,6 +28,11 @@ import {
 } from '../../../core/utils/phone-validator.util';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { ensureGoogleGsiScriptLoaded, SPIDER_GOOGLE_CLIENT_ID } from '../../../core/auth/google-gsi.util';
+import {
+  getPendingPlacementResult,
+  buildPlacementResultReturnUrl,
+  isValidMongoObjectId
+} from '../../../core/utils/pending-placement.util';
 import { LoginTab } from './login-page.models';
 
 declare const google: any;
@@ -47,11 +53,15 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
   private readonly discoveryService = inject(PublicDiscoveryService);
+  private readonly ngZone = inject(NgZone);
   readonly langService = inject(LangService);
 
   // Active navigation tab
   readonly activeTab = signal<LoginTab>('student');
   readonly studentAuthMode = signal<'login' | 'signup'>('login');
+  readonly isFromPlacementTest = signal<boolean>(false);
+  readonly placementAttemptId = signal<string | null>(null);
+  private hasExplicitPlacementTerm = false;
 
   // Request & Feedback States
   readonly isSubmitting = signal<boolean>(false);
@@ -116,9 +126,52 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    const qp = this.route.snapshot.queryParams;
+    const pending = getPendingPlacementResult();
+    const fromPlacement =
+      qp['from'] === 'placement-test' ||
+      (typeof qp['returnUrl'] === 'string' && qp['returnUrl'].includes('/placement-test')) ||
+      Boolean(pending);
+
+    if (fromPlacement) {
+      this.isFromPlacementTest.set(true);
+      this.placementAttemptId.set(qp['attemptId'] || pending?.attemptId || null);
+
+      const initCurr = (qp['curriculum'] || pending?.curriculum) as CurriculumCode | undefined;
+      const initGrade = qp['gradeLevel'] || pending?.gradeLevel;
+      const initTerm = (qp['term'] || pending?.academicTerm) as AcademicTermCode | undefined;
+      const initCountry = qp['countryCode'] || pending?.countryCode;
+      const initDiv = qp['divisionCode'] || pending?.divisionCode;
+
+      if (initCurr) {
+        this.regCurriculum.set(initCurr);
+        if (initCurr === 'GULF') {
+          this.regCountry.set(
+            initCountry && ['SA', 'QA', 'AE', 'KW'].includes(initCountry) ? initCountry : 'SA'
+          );
+        } else if (initCurr === 'INTERNATIONAL') {
+          if (initDiv && ['AMERICAN_CURRICULUM', 'BRITISH_CURRICULUM'].includes(initDiv)) {
+            this.regSelectedIntlDivision.set(initDiv as 'AMERICAN_CURRICULUM' | 'BRITISH_CURRICULUM');
+          } else if (initGrade) {
+            this.regSelectedIntlDivision.set(detectInternationalDivisionForGrade(initGrade));
+          }
+        }
+      }
+      if (initGrade) {
+        this.regGradeLevel.set(initGrade);
+      }
+      if (initTerm) {
+        this.hasExplicitPlacementTerm = true;
+        this.regAcademicTerm.set(initTerm);
+      }
+      if (qp['mode'] === 'signup') {
+        this.studentAuthMode.set('signup');
+      }
+    }
+
     this.discoveryService.loadActiveGradesAndTracks().subscribe();
     this.discoveryService.getLandingData().subscribe(data => {
-      if (data?.activeAcademicTerm) {
+      if (data?.activeAcademicTerm && !this.hasExplicitPlacementTerm) {
         this.regAcademicTerm.set(data.activeAcademicTerm);
       }
     });
@@ -132,7 +185,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
       this.startApprovalPolling();
     }
 
-    const qp = this.route.snapshot.queryParams;
     if (qp['roleMismatch'] === 'true' || qp['role']) {
       if (qp['requiredRole']?.includes('SUPER_ADMIN') || qp['role'] === 'ADMIN') {
         if (qp['roleMismatch'] === 'true') {
@@ -148,12 +200,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
     if (this.authService.isAuthenticated()) {
       if (this.authService.isStudent()) {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        if (returnUrl) {
-          this.router.navigateByUrl(returnUrl);
-          return;
-        }
-        this.router.navigateByUrl('/student');
+        this.navigateStudentAfterAuth();
         return;
       }
       if (this.authService.isParent()) {
@@ -329,6 +376,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     this.errorMessage.set(null);
 
     const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+    const attemptId = this.placementAttemptId() || getPendingPlacementResult()?.attemptId || null;
 
     this.http.post<{
       success: boolean;
@@ -347,6 +395,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
       academicTerm: this.regAcademicTerm(),
       country,
       governorate: this.isRegEgypt() ? this.regGovernorate() : null,
+      ...(isValidMongoObjectId(attemptId) ? { placementAttemptId: attemptId! } : {}),
       deviceUuid: deviceIdentity.deviceUuid,
       deviceType: deviceIdentity.deviceType,
       browserInfo: deviceIdentity.browserInfo
@@ -418,23 +467,25 @@ export class LoginPageComponent implements OnInit, OnDestroy {
         scope: 'email profile openid',
         prompt: 'select_account',
         callback: (response: any) => {
-          if (response?.error) {
-            console.error('Google OAuth token client error:', response);
-            if (response.error !== 'popup_closed_by_user') {
-              if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
-                this.googleAuthErrorMessage.set(
-                  'تعذر الدخول عبر Google. استخدم كود الطالب.'
-                );
-              } else {
-                this.googleAuthErrorMessage.set('تعذر الاتصال بـ Google. أعد المحاولة.');
+          this.ngZone.run(() => {
+            if (response?.error) {
+              console.error('Google OAuth token client error:', response);
+              if (response.error !== 'popup_closed_by_user') {
+                if (response.error === 'origin_mismatch' || String(response.error).includes('origin')) {
+                  this.googleAuthErrorMessage.set(
+                    'تعذر الدخول عبر Google. استخدم كود الطالب.'
+                  );
+                } else {
+                  this.googleAuthErrorMessage.set('تعذر الاتصال بـ Google. أعد المحاولة.');
+                }
               }
+              return;
             }
-            return;
-          }
 
-          if (response?.access_token) {
-            this.handleVerifiedGoogleToken(response.access_token, intent);
-          }
+            if (response?.access_token) {
+              this.handleVerifiedGoogleToken(response.access_token, intent);
+            }
+          });
         }
       });
 
@@ -451,6 +502,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     this.unregisteredGoogleEmail.set(null);
 
     const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+    const attemptId = this.placementAttemptId() || getPendingPlacementResult()?.attemptId || null;
 
     this.http.post<{
       success: boolean;
@@ -466,6 +518,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
       deviceUuid: deviceIdentity.deviceUuid,
       deviceType: deviceIdentity.deviceType,
       browserInfo: deviceIdentity.browserInfo,
+      ...(isValidMongoObjectId(attemptId) ? { placementAttemptId: attemptId! } : {}),
       intent
     }).subscribe({
       next: (res) => {
@@ -502,17 +555,27 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
           this.authService.setSession(data.token, userPayload);
 
-          // If signup intent OR profile not completed -> Redirect to Complete Profile!
-          if (intent === 'signup' || !data.isProfileCompleted) {
-            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+          // If profile not completed -> Redirect to Complete Profile preserving placement context
+          if (!data.isProfileCompleted) {
+            const targetReturnUrl = this.resolveStudentPostAuthUrl();
+            const activeAttemptId = this.placementAttemptId() || getPendingPlacementResult()?.attemptId || null;
             this.router.navigate(['/complete-profile'], {
               queryParams: {
                 fullName: data.user.fullName || data.user.full_name || '',
-                ...(returnUrl ? { returnUrl } : {})
+                ...(this.isFromPlacementTest() ? { from: 'placement-test' } : {}),
+                ...(activeAttemptId ? { attemptId: activeAttemptId } : {}),
+                ...(this.isFromPlacementTest()
+                  ? {
+                      curriculum: this.regCurriculum(),
+                      gradeLevel: this.regGradeLevel(),
+                      academicTerm: this.regAcademicTerm()
+                    }
+                  : {}),
+                ...(targetReturnUrl !== '/student' ? { returnUrl: targetReturnUrl } : {})
               }
             });
           } else {
-            // Already registered & profile completed -> Target or Student Dashboard
+            // Already registered & profile completed -> Target (Placement Result or Student Dashboard)
             this.navigateStudentAfterAuth();
           }
         }
@@ -561,11 +624,13 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     this.errorMessage.set(null);
 
     const deviceIdentity = await this.fingerprintService.getOrCreateDeviceIdentity();
+    const attemptId = this.placementAttemptId() || getPendingPlacementResult()?.attemptId || null;
 
     this.http.post<{ success: boolean; data: { token: string; user: any } }>(
       '/api/v1/auth/student-code-login',
       {
         student_ha_code: code,
+        ...(isValidMongoObjectId(attemptId) ? { placementAttemptId: attemptId! } : {}),
         deviceUuid: deviceIdentity.deviceUuid
       }
     ).subscribe({
@@ -719,12 +784,20 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     return fallback;
   }
 
-  private navigateStudentAfterAuth(): void {
+  private resolveStudentPostAuthUrl(): string {
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    if (returnUrl) {
-      this.router.navigateByUrl(returnUrl);
-    } else {
-      this.router.navigateByUrl('/student');
+    if (returnUrl && returnUrl.startsWith('/')) {
+      return returnUrl;
     }
+    const pending = getPendingPlacementResult();
+    if (this.isFromPlacementTest() || pending) {
+      const attemptId = this.placementAttemptId() || pending?.attemptId || null;
+      return buildPlacementResultReturnUrl(attemptId);
+    }
+    return '/student';
+  }
+
+  private navigateStudentAfterAuth(): void {
+    this.router.navigateByUrl(this.resolveStudentPostAuthUrl());
   }
 }

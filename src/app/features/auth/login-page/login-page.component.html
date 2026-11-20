@@ -30,6 +30,18 @@
       <!-- ===================================================================== -->
       <div class="spider-rim-glass-card rounded-[2rem] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative">
 
+        <!-- Placement Exam Return Context Banner -->
+        @if (isFromPlacementTest()) {
+          <div data-testid="placement-login-banner" class="p-3.5 mb-5 rounded-2xl bg-brand-gold/15 border border-brand-gold/35 text-xs sm:text-sm font-bold text-text-primary flex items-center gap-2.5">
+            <app-icon name="award" [size]="18" className="text-brand-gold shrink-0" />
+            <span>
+              {{ langService.isArabic()
+                ? 'تم تسليم اختبار تحديد المستوى بنجاح — سجل الدخول أو أنشئ حساباً جديداً لعرض نتيجتك مباشرة.'
+                : 'Placement test submitted — Sign in or create a new account to view your result immediately.' }}
+            </span>
+          </div>
+        }
+
         <!-- Tabs Navigation -->
         <div class="flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-2xl bg-surface-bg border border-surface-border mb-6">
           <button

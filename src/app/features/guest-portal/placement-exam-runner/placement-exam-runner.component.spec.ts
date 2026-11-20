@@ -1,19 +1,28 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { provideRouter, Router, ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { of } from 'rxjs';
 
 import { PlacementExamRunnerComponent } from './placement-exam-runner.component';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import {
+  savePendingPlacementResult,
+  getPendingPlacementResult,
+  clearPendingPlacementResult
+} from '../../../core/utils/pending-placement.util';
 
 describe('PlacementExamRunnerComponent', () => {
   let component: PlacementExamRunnerComponent;
   let fixture: ComponentFixture<PlacementExamRunnerComponent>;
 
   beforeEach(async () => {
+    clearPendingPlacementResult();
+    localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [
         PlacementExamRunnerComponent,
@@ -32,6 +41,12 @@ describe('PlacementExamRunnerComponent', () => {
     fixture = TestBed.createComponent(PlacementExamRunnerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    clearPendingPlacementResult();
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('should create the PlacementExamRunnerComponent', () => {
@@ -287,6 +302,111 @@ describe('PlacementExamRunnerComponent', () => {
 
       const navBtn = hostEl.querySelector('[data-testid="placement-coming-soon-nav-btn"]');
       expect(navBtn).toBeTruthy();
+    });
+  });
+
+  describe('Guest Post-Submission Direct Login & Immediate Result Display', () => {
+    it('should redirect anonymous guest straight to /login after submitting and save pending result without opening LeadGate', async () => {
+      const discoveryService = TestBed.inject(PublicDiscoveryService);
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      const router = TestBed.inject(Router);
+      const authService = TestBed.inject(AuthService);
+      authService.clearSession('/');
+
+      spyOn(confirmDialogService, 'confirm').and.resolveTo(true);
+      const navSpy = spyOn(router, 'navigate');
+      spyOn(discoveryService, 'submitAnonymousPlacement').and.returnValue(of({
+        attemptId: '673000000000000000000111',
+        score: 4,
+        maxScore: 5,
+        percentage: 80,
+        passed: true,
+        totalQuestions: 5,
+        correctAnswersCount: 4,
+        isUnlocked: false
+      }));
+
+      component.selectedAnswers.set({ q_1: 1 });
+      await component.submitExam(false);
+
+      expect(component.isLeadGateOpen()).toBeFalse();
+      const pending = getPendingPlacementResult();
+      expect(pending).toBeTruthy();
+      expect(pending?.attemptId).toBe('673000000000000000000111');
+      expect(pending?.percentage).toBe(80);
+      expect(navSpy).toHaveBeenCalledWith(
+        ['/login'],
+        jasmine.objectContaining({
+          queryParams: jasmine.objectContaining({
+            from: 'placement-test',
+            attemptId: '673000000000000000000111',
+            returnUrl: '/placement-test?showResult=true&attemptId=673000000000000000000111'
+          })
+        })
+      );
+    });
+
+    it('should immediately render saved placement result and claim attempt when authenticated student returns', () => {
+      const authService = TestBed.inject(AuthService);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const route = TestBed.inject(ActivatedRoute);
+
+      savePendingPlacementResult({
+        attemptId: '673000000000000000000222',
+        curriculum: 'EGYPTIAN',
+        gradeLevel: 'SEC_3',
+        academicTerm: 'TERM_1',
+        score: 4,
+        maxScore: 5,
+        percentage: 80,
+        passed: true,
+        totalQuestions: 5,
+        correctAnswersCount: 4
+      });
+
+      authService.setSession('jwt_student_token', {
+        _id: 'std_222',
+        full_name: 'Omar Ali',
+        email: 'omar@spidermath.edu',
+        role: 'STUDENT',
+        curriculum: 'EGYPTIAN',
+        grade_level: 'SEC_3',
+        academic_term: 'TERM_1'
+      });
+
+      (route as any).snapshot = {
+        ...route.snapshot,
+        queryParams: { showResult: 'true', attemptId: '673000000000000000000222' },
+        queryParamMap: convertToParamMap({ showResult: 'true', attemptId: '673000000000000000000222' })
+      };
+
+      const returnFixture = TestBed.createComponent(PlacementExamRunnerComponent);
+      const returnComp = returnFixture.componentInstance;
+      returnFixture.detectChanges();
+
+      expect(returnComp.studentExamFinished()).toBeTrue();
+      expect(returnComp.studentFinalResult()?.percentage).toBe(80);
+      expect(returnComp.studentFinalResult()?.score).toBe(4);
+      expect(getPendingPlacementResult()).toBeNull();
+
+      const claimReq = httpMock.expectOne('/api/v1/public/placement-test/673000000000000000000222/claim');
+      expect(claimReq.request.method).toBe('POST');
+      claimReq.flush({
+        success: true,
+        data: {
+          attemptId: '673000000000000000000222',
+          score: 4,
+          maxScore: 5,
+          percentage: 80,
+          passed: true,
+          totalQuestions: 5,
+          correctAnswersCount: 4,
+          isUnlocked: true
+        }
+      });
+
+      returnFixture.detectChanges();
+      expect(returnFixture.nativeElement.textContent).toContain('80%');
     });
   });
 });

@@ -305,6 +305,9 @@ export interface ISubmitPlacementPayload {
 
 export interface ISubmitPlacementResult {
   attemptId: string;
+  curriculum?: CurriculumCode;
+  gradeLevel?: string;
+  academicTerm?: AcademicTermCode;
   score: number;
   maxScore: number;
   percentage: number;
@@ -348,6 +351,7 @@ export interface ICompleteProfilePayload {
   academicTerm: AcademicTermCode;
   country: string;
   governorate?: string | null;
+  placementAttemptId?: string;
 }
 
 export interface ICompleteProfileResult {

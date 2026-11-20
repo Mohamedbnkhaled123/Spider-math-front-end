@@ -15,6 +15,7 @@ import { AppIconComponent } from '../../../shared/components/app-icon/app-icon.c
 import { PublicDiscoveryService } from '../../../core/services/public-discovery.service';
 import { IUnlockPlacementResult } from '../../../core/services/public-discovery.models';
 import { LangService } from '../../../core/seo-theme-i18n/lang.service';
+import { buildPlacementResultReturnUrl } from '../../../core/utils/pending-placement.util';
 
 @Component({
   selector: 'app-lead-gate-modal',
@@ -119,7 +120,14 @@ export class LeadGateModalComponent {
   goToLogin(): void {
     this.closeModal();
     this.router.navigate(['/login'], {
-      queryParams: { returnUrl: '/placement-test' }
+      queryParams: {
+        from: 'placement-test',
+        attemptId: this.attemptId(),
+        curriculum: this.curriculum(),
+        gradeLevel: this.gradeLevel(),
+        term: this.academicTerm(),
+        returnUrl: buildPlacementResultReturnUrl(this.attemptId())
+      }
     });
   }
 }

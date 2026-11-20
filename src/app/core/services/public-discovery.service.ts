@@ -709,6 +709,50 @@ export class PublicDiscoveryService {
   }
 
   /**
+   * Claims and unlocks a placement attempt for an authenticated student after login/signup.
+   */
+  claimPlacementAttempt(attemptId: string): Observable<ISubmitPlacementResult | null> {
+    return this.http.post<{ success: boolean; data: ISubmitPlacementResult }>(
+      `${this.apiBase}/public/placement-test/${attemptId}/claim`,
+      {}
+    ).pipe(
+      map(res => res?.data || null),
+      catchError(() => of(null))
+    );
+  }
+
+  /**
+   * Retrieves the latest authenticated student's placement attempt.
+   */
+  getMyPlacementAttempt(): Observable<ISubmitPlacementResult | null> {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiBase}/public/placement-test/my-attempt`
+    ).pipe(
+      map(res => {
+        const d = res?.data;
+        if (!d) return null;
+        const pct = d.percentage ?? d.scorePercentage ?? 0;
+        const totalQ = d.totalQuestions ?? 0;
+        const correctCnt = d.correctAnswersCount ?? d.correctCount ?? 0;
+        return {
+          attemptId: d.attemptId,
+          curriculum: d.curriculum,
+          gradeLevel: d.gradeLevel,
+          academicTerm: d.academicTerm,
+          score: d.score ?? correctCnt,
+          maxScore: d.maxScore ?? Math.max(1, totalQ),
+          percentage: pct,
+          passed: d.passed ?? pct >= 50,
+          totalQuestions: totalQ,
+          correctAnswersCount: correctCnt,
+          isUnlocked: true
+        } as ISubmitPlacementResult;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  /**
    * Unlocks placement report with Lead info (Name + WhatsApp Phone).
    */
   unlockPlacement(

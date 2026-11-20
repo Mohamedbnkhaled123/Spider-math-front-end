@@ -30,6 +30,11 @@ import {
   arePhoneNumbersIdentical,
   getPhonePlaceholderByCountry
 } from '../../../core/utils/phone-validator.util';
+import {
+  getPendingPlacementResult,
+  buildPlacementResultReturnUrl,
+  isValidMongoObjectId
+} from '../../../core/utils/pending-placement.util';
 
 @Component({
   selector: 'app-student-profile-completion',
@@ -59,6 +64,19 @@ export class StudentProfileCompletionComponent implements OnInit {
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly issuedHaCode = signal<string | null>(null);
+  readonly attemptId = signal<string | null>(null);
+  private hasExplicitTerm = false;
+
+  readonly isPlacementReturn = computed<boolean>(() => {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    const from = this.route.snapshot.queryParamMap.get('from');
+    return Boolean(
+      (returnUrl && returnUrl.includes('/placement-test')) ||
+      from === 'placement-test' ||
+      this.attemptId() ||
+      getPendingPlacementResult()
+    );
+  });
 
   // Constants & Sub-divisions
   readonly curriculumTree = CANONICAL_CURRICULUM_TREE;
@@ -84,9 +102,24 @@ export class StudentProfileCompletionComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const qp = this.route.snapshot.queryParams;
+    const pending = getPendingPlacementResult();
+    if (qp['attemptId']) {
+      this.attemptId.set(qp['attemptId']);
+    } else if (pending?.attemptId) {
+      this.attemptId.set(pending.attemptId);
+    }
+    if (qp['academicTerm']) {
+      this.hasExplicitTerm = true;
+      this.academicTerm.set(qp['academicTerm'] as AcademicTermCode);
+    } else if (pending?.academicTerm) {
+      this.hasExplicitTerm = true;
+      this.academicTerm.set(pending.academicTerm as AcademicTermCode);
+    }
+
     this.discoveryService.loadActiveGradesAndTracks().subscribe();
     this.discoveryService.getLandingData().subscribe(data => {
-      if (data?.activeAcademicTerm) {
+      if (data?.activeAcademicTerm && !this.hasExplicitTerm) {
         this.academicTerm.set(data.activeAcademicTerm);
       }
     });
@@ -96,6 +129,13 @@ export class StudentProfileCompletionComponent implements OnInit {
     }
     if (user?.phone && !this.phone()) {
       this.phone.set(user.phone);
+    }
+
+    if (pending?.curriculum && !qp['curriculum']) {
+      this.curriculum.set(pending.curriculum as CurriculumCode);
+    }
+    if (pending?.gradeLevel && !qp['gradeLevel']) {
+      this.gradeLevel.set(pending.gradeLevel);
     }
 
     this.route.queryParams.subscribe(params => {
@@ -110,6 +150,13 @@ export class StudentProfileCompletionComponent implements OnInit {
       }
       if (params['gradeLevel']) {
         this.gradeLevel.set(params['gradeLevel']);
+      }
+      if (params['academicTerm']) {
+        this.hasExplicitTerm = true;
+        this.academicTerm.set(params['academicTerm'] as AcademicTermCode);
+      }
+      if (params['attemptId']) {
+        this.attemptId.set(params['attemptId']);
       }
     });
   }
@@ -209,8 +256,25 @@ export class StudentProfileCompletionComponent implements OnInit {
       return;
     }
 
+    if (!this.authService.isAuthenticated()) {
+      const targetAttemptId = this.attemptId() || getPendingPlacementResult()?.attemptId || null;
+      this.router.navigate(['/login'], {
+        queryParams: {
+          mode: 'signup',
+          ...(this.isPlacementReturn() ? { from: 'placement-test' } : {}),
+          ...(targetAttemptId ? { attemptId: targetAttemptId } : {}),
+          ...(this.isPlacementReturn()
+            ? { returnUrl: buildPlacementResultReturnUrl(targetAttemptId) }
+            : {})
+        }
+      });
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
+
+    const activeAttemptId = this.attemptId() || getPendingPlacementResult()?.attemptId || null;
 
     this.discoveryService.completeStudentProfile({
       fullName: name,
@@ -220,7 +284,8 @@ export class StudentProfileCompletionComponent implements OnInit {
       gradeLevel: this.gradeLevel(),
       academicTerm: this.academicTerm(),
       country: selectedCountry,
-      governorate: this.isEgypt() ? this.governorate() : null
+      governorate: this.isEgypt() ? this.governorate() : null,
+      ...(isValidMongoObjectId(activeAttemptId) ? { placementAttemptId: activeAttemptId! } : {})
     }).subscribe({
       next: res => {
         this.isSubmitting.set(false);
@@ -263,11 +328,17 @@ export class StudentProfileCompletionComponent implements OnInit {
 
   goToInactivePortal(): void {
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    if (returnUrl) {
+    if (returnUrl && returnUrl.startsWith('/')) {
       this.router.navigateByUrl(returnUrl);
-    } else {
-      this.router.navigate(['/inactive-student-portal']);
+      return;
     }
+    const pending = getPendingPlacementResult();
+    if (this.isPlacementReturn() || pending) {
+      const activeAttemptId = this.attemptId() || pending?.attemptId || null;
+      this.router.navigateByUrl(buildPlacementResultReturnUrl(activeAttemptId));
+      return;
+    }
+    this.router.navigate(['/inactive-student-portal']);
   }
 
   openWhatsAppActivation(): void {

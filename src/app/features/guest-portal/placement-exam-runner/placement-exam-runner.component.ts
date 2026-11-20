@@ -43,6 +43,14 @@ import { LangService } from '../../../core/seo-theme-i18n/lang.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { SwrCacheService } from '../../../core/services/swr-cache.service';
+import {
+  IPendingPlacementResult,
+  savePendingPlacementResult,
+  getPendingPlacementResult,
+  clearPendingPlacementResult,
+  buildPlacementResultReturnUrl,
+  isValidMongoObjectId
+} from '../../../core/utils/pending-placement.util';
 
 @Component({
   selector: 'app-placement-exam-runner',
@@ -244,8 +252,17 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
       if (student.academic_term) {
         this.term.set(student.academic_term as AcademicTermCode);
       }
-      this.loadExam();
-      this.scrollToTop(false);
+
+      const qp = this.route.snapshot.queryParams;
+      const pending = getPendingPlacementResult();
+      const shouldShowResult = qp['showResult'] === 'true' || Boolean(qp['attemptId']) || Boolean(pending);
+
+      if (shouldShowResult) {
+        this.restoreAuthenticatedPlacementResult(qp['attemptId'], pending);
+      } else {
+        this.loadExam();
+        this.scrollToTop(false);
+      }
     } else {
       this.route.queryParams.subscribe(params => {
         if (params['curriculum']) {
@@ -473,39 +490,38 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
       next: result => {
         this.isSubmitting.set(false);
         if (this.authService.isAuthenticated()) {
-          // Logged in student: Direct Instant Score Report without lead gate!
+          clearPendingPlacementResult();
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(result);
           if (result.percentage >= 70) {
             this.isCelebrationOpen.set(true);
           }
         } else {
-          // Guest: open lead gate to claim report and start onboarding
-          this.submissionResult.set(result);
-          this.isLeadGateOpen.set(true);
+          this.redirectGuestToLoginWithResult(result);
         }
       },
       error: () => {
         this.isSubmitting.set(false);
-        const fallback = {
+        const totalQ = this.totalQuestionsCount();
+        const fallback: ISubmitPlacementResult = {
           attemptId: 'att_' + Date.now(),
           score: 85,
           maxScore: 100,
           percentage: 85,
           passed: true,
-          totalQuestions: this.totalQuestionsCount(),
-          correctAnswersCount: Math.ceil(this.totalQuestionsCount() * 0.85),
-          isUnlocked: true
+          totalQuestions: totalQ,
+          correctAnswersCount: Math.ceil(totalQ * 0.85),
+          isUnlocked: false
         };
         if (this.authService.isAuthenticated()) {
+          clearPendingPlacementResult();
           this.studentExamFinished.set(true);
           this.studentFinalResult.set(fallback);
           if (fallback.percentage >= 70) {
             this.isCelebrationOpen.set(true);
           }
         } else {
-          this.submissionResult.set(fallback);
-          this.isLeadGateOpen.set(true);
+          this.redirectGuestToLoginWithResult(fallback);
         }
       }
     });
@@ -531,7 +547,128 @@ export class PlacementExamRunnerComponent implements OnInit, OnDestroy {
   }
 
   retakeExam(): void {
+    clearPendingPlacementResult();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { showResult: null, attemptId: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
     this.loadExam();
+  }
+
+  private redirectGuestToLoginWithResult(result: ISubmitPlacementResult): void {
+    this.submissionResult.set(result);
+    savePendingPlacementResult({
+      attemptId: result.attemptId,
+      curriculum: this.curriculum(),
+      gradeLevel: this.gradeLevel(),
+      academicTerm: this.term(),
+      countryCode: this.curriculum() === 'GULF' ? this.selectedGulfCountry() : undefined,
+      divisionCode: this.curriculum() === 'INTERNATIONAL' ? this.selectedIntlDivision() : undefined,
+      score: result.score,
+      maxScore: result.maxScore,
+      percentage: result.percentage,
+      passed: result.passed,
+      totalQuestions: result.totalQuestions,
+      correctAnswersCount: result.correctAnswersCount
+    });
+
+    const returnUrl = buildPlacementResultReturnUrl(result.attemptId);
+    this.router.navigate(['/login'], {
+      queryParams: {
+        from: 'placement-test',
+        attemptId: result.attemptId,
+        curriculum: this.curriculum(),
+        gradeLevel: this.gradeLevel(),
+        term: this.term(),
+        ...(this.curriculum() === 'GULF' ? { countryCode: this.selectedGulfCountry() } : {}),
+        ...(this.curriculum() === 'INTERNATIONAL' ? { divisionCode: this.selectedIntlDivision() } : {}),
+        returnUrl
+      }
+    });
+  }
+
+  private restoreAuthenticatedPlacementResult(
+    queryAttemptId: string | undefined,
+    pending: IPendingPlacementResult | null
+  ): void {
+    this.clearTimer();
+
+    if (pending && (!queryAttemptId || pending.attemptId === queryAttemptId)) {
+      if (pending.curriculum) this.curriculum.set(pending.curriculum as CurriculumCode);
+      if (pending.gradeLevel) this.gradeLevel.set(pending.gradeLevel);
+      if (pending.academicTerm) this.term.set(pending.academicTerm as AcademicTermCode);
+
+      this.studentFinalResult.set({
+        score: pending.score,
+        maxScore: pending.maxScore,
+        percentage: pending.percentage,
+        passed: pending.passed,
+        correctAnswersCount: pending.correctAnswersCount,
+        totalQuestions: pending.totalQuestions
+      });
+      this.studentExamFinished.set(true);
+      this.isLoading.set(false);
+      if (pending.percentage >= 70) {
+        this.isCelebrationOpen.set(true);
+      }
+      clearPendingPlacementResult();
+      this.scrollToTop(false);
+
+      if (isValidMongoObjectId(pending.attemptId)) {
+        this.discoveryService.claimPlacementAttempt(pending.attemptId).subscribe(claimed => {
+          if (claimed) {
+            this.studentFinalResult.set(claimed);
+          }
+        });
+      }
+      return;
+    }
+
+    if (isValidMongoObjectId(queryAttemptId)) {
+      this.isLoading.set(true);
+      this.discoveryService.claimPlacementAttempt(queryAttemptId!).subscribe(claimed => {
+        if (claimed) {
+          if (claimed.curriculum) this.curriculum.set(claimed.curriculum);
+          if (claimed.gradeLevel) this.gradeLevel.set(claimed.gradeLevel);
+          if (claimed.academicTerm) this.term.set(claimed.academicTerm);
+          this.studentFinalResult.set(claimed);
+          this.studentExamFinished.set(true);
+          this.isLoading.set(false);
+          if (claimed.percentage >= 70) {
+            this.isCelebrationOpen.set(true);
+          }
+          clearPendingPlacementResult();
+          this.scrollToTop(false);
+        } else {
+          this.loadExam();
+          this.scrollToTop(false);
+        }
+      });
+      return;
+    }
+
+    // Fallback: look up latest placement attempt on account when showResult=true has no ID
+    this.isLoading.set(true);
+    this.discoveryService.getMyPlacementAttempt().subscribe(latest => {
+      if (latest) {
+        if (latest.curriculum) this.curriculum.set(latest.curriculum);
+        if (latest.gradeLevel) this.gradeLevel.set(latest.gradeLevel);
+        if (latest.academicTerm) this.term.set(latest.academicTerm);
+        this.studentFinalResult.set(latest);
+        this.studentExamFinished.set(true);
+        this.isLoading.set(false);
+        if (latest.percentage >= 70) {
+          this.isCelebrationOpen.set(true);
+        }
+        clearPendingPlacementResult();
+        this.scrollToTop(false);
+      } else {
+        this.loadExam();
+        this.scrollToTop(false);
+      }
+    });
   }
 
 
