@@ -483,42 +483,6 @@ $axis-blue: #0284C7;
   backface-visibility: hidden;
 }
 
-// Mascot Smooth Radial Gradient Blend & Borderless Soft Vignette
-// Completely eliminates rectangular edge artifacts and seamlessly blends the 3D mascot into the dark canvas
-.mascot-blend-wrapper {
-  -webkit-mask-image: radial-gradient(
-    ellipse 85% 82% at 50% 50%,
-    #000 62%,
-    rgba(0, 0, 0, 0.94) 74%,
-    rgba(0, 0, 0, 0.45) 88%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 85% 82% at 50% 50%,
-    #000 62%,
-    rgba(0, 0, 0, 0.94) 74%,
-    rgba(0, 0, 0, 0.45) 88%,
-    transparent 100%
-  );
-}
-
-.mascot-blend-img {
-  -webkit-mask-image: radial-gradient(
-    ellipse 86% 84% at 50% 50%,
-    #000 65%,
-    rgba(0, 0, 0, 0.95) 76%,
-    rgba(0, 0, 0, 0.5) 90%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 86% 84% at 50% 50%,
-    #000 65%,
-    rgba(0, 0, 0, 0.95) 76%,
-    rgba(0, 0, 0, 0.5) 90%,
-    transparent 100%
-  );
-}
-
 // Below-the-fold layout/style isolation for fast initial Hero LCP layout
 .landing-below-fold-section {
   contain: layout style;

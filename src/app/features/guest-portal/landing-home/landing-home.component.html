@@ -112,8 +112,8 @@
           </div>
 
           <div class="relative w-full max-w-md lg:max-w-lg flex flex-col items-center">
-            <!-- 3D Mascot Image with Book (Transparent WebP with Gentle Float & Smooth Radial Blend) -->
-            <div class="mascot-blend-wrapper relative z-10 w-full flex items-center justify-center pt-6">
+            <!-- 3D Mascot Image with Book (Transparent WebP with Gentle Float) -->
+            <div class="relative z-10 w-full flex items-center justify-center pt-6">
               <img
                 [attr.srcset]="langService.isArabic() ? '/assets/branding/spider-mascot-hero-book-ar-sm-v3.webp?v=12 480w, /assets/branding/spider-mascot-hero-book-ar-v3.webp?v=12 640w' : '/assets/branding/spider-mascot-hero-book-sm-v3.webp?v=12 480w, /assets/branding/spider-mascot-hero-book-v3.webp?v=12 640w'"
                 sizes="(max-width: 640px) 360px, (max-width: 1023px) 440px, 500px"
@@ -123,7 +123,7 @@
                 height="640"
                 fetchpriority="high"
                 decoding="sync"
-                class="mascot-blend-img w-full max-w-[360px] sm:max-w-[440px] lg:max-w-[500px] aspect-square h-auto object-contain drop-shadow-[0_14px_24px_rgba(0,0,0,0.42)] animate-mascot-float"
+                class="w-full max-w-[360px] sm:max-w-[440px] lg:max-w-[500px] aspect-square h-auto object-contain drop-shadow-[0_14px_24px_rgba(0,0,0,0.42)] animate-mascot-float"
               />
             </div>
           </div>
